@@ -1,0 +1,62 @@
+rules_version = '2';
+
+// Reglas de seguridad de Firestore compartidas por Nestor Forex y su app
+// hermana Nestor Forex Intradía (mismo proyecto de Firebase, mismas cuentas
+// de usuarios/administrador — la fuente de la verdad de este archivo vive en
+// el repositorio de Nestor Forex; esta es una copia idéntica para que quien
+// lea este repo vea las reglas completas sin tener que cruzar repos).
+//
+// Cómo funciona el acceso:
+// - Cada persona solo puede leer y crear SU PROPIO documento en `users`.
+// - Solo el administrador (identificado por su correo, más abajo) puede
+//   leer la lista completa de usuarios, aprobar o retirar a alguien.
+// - Nadie puede aprobarse a sí mismo: al crear su solicitud, el estado
+//   queda forzado a 'pendiente', y un usuario normal no puede cambiar su
+//   propio campo `estado`.
+// - Las operaciones del diario de swing (`trades`) y las de intradía
+//   (`trades_intradia`) de cada usuario solo son visibles para ese mismo
+//   usuario, y solo si su cuenta está aprobada. Van en colecciones
+//   separadas para no mezclar las estadísticas de una app con la otra.
+//
+// Para cambiar quién es el administrador, actualiza el correo en
+// ADMIN_EMAIL abajo y vuelve a publicar estas reglas (Firebase Console →
+// Firestore Database → Reglas, o `firebase deploy --only firestore:rules`).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function esAdmin() {
+      return request.auth != null
+        && request.auth.token.email == 'nesdian2204@gmail.com';
+    }
+
+    function esPropio(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    match /users/{uid} {
+      allow get: if esPropio(uid) || esAdmin();
+      allow list: if esAdmin();
+
+      allow create: if esPropio(uid)
+        && request.resource.data.estado == 'pendiente'
+        && request.resource.data.email == request.auth.token.email;
+
+      allow update: if esAdmin()
+        || (esPropio(uid)
+            && request.resource.data.estado == resource.data.estado
+            && request.resource.data.email == resource.data.email);
+
+      allow delete: if esAdmin();
+
+      match /trades/{tradeId} {
+        allow read, write: if esPropio(uid)
+          && get(/databases/$(database)/documents/users/$(uid)).data.estado == 'aprobado';
+      }
+
+      match /trades_intradia/{tradeId} {
+        allow read, write: if esPropio(uid)
+          && get(/databases/$(database)/documents/users/$(uid)).data.estado == 'aprobado';
+      }
+    }
+  }
+}

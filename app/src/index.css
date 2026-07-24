@@ -1,0 +1,180 @@
+:root {
+  --bg-page: oklch(0.13 0.015 255);
+  --bg-surface: oklch(0.16 0.015 255);
+  --bg-card: oklch(0.185 0.015 255);
+  --bg-input: oklch(0.2 0.015 255);
+
+  --border: oklch(0.26 0.02 255);
+  --border-strong: oklch(0.32 0.02 255);
+
+  --text: oklch(0.93 0.005 255);
+  --text-secondary: oklch(0.7 0.02 255);
+  --text-muted: oklch(0.6 0.02 255);
+
+  --green: oklch(0.72 0.13 155);
+  --green-strong: oklch(0.78 0.13 155);
+  --red: oklch(0.66 0.13 25);
+  --amber: oklch(0.75 0.13 85);
+  --gray-mid: oklch(0.6 0.04 255);
+
+  --radius-control: 8px;
+  --radius-card: 10px;
+  --tap-min: 44px;
+
+  --font-sans: 'IBM Plex Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100vh;
+}
+
+body {
+  background: var(--bg-page);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: oklch(0.75 0.1 155);
+}
+a:hover {
+  color: oklch(0.85 0.1 155);
+}
+
+input,
+select,
+textarea,
+button {
+  font-family: var(--font-sans);
+}
+
+button {
+  touch-action: manipulation;
+}
+
+.app-frame {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  background: var(--bg-page);
+}
+
+.app-screen {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  position: relative;
+  background: var(--bg-surface);
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes nf-pulse {
+  0%, 100% { opacity: 0.25; transform: scaleY(0.6); }
+  50% { opacity: 1; transform: scaleY(1); }
+}
+
+.nf-loading-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  height: 22px;
+}
+
+.nf-loading-bars span {
+  display: block;
+  width: 5px;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--green);
+  animation: nf-pulse 1s ease-in-out infinite;
+  transform-origin: bottom;
+}
+
+.nf-loading-bars span:nth-child(2) { animation-delay: 0.15s; }
+.nf-loading-bars span:nth-child(3) { animation-delay: 0.3s; }
+
+.field {
+  min-height: var(--tap-min);
+  padding: 0 14px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-input);
+  color: var(--text);
+  font-size: 15px;
+  width: 100%;
+}
+
+.field:focus {
+  outline: 2px solid var(--green);
+  outline-offset: -1px;
+}
+
+.btn {
+  min-height: 48px;
+  border: none;
+  border-radius: var(--radius-control);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+
+.btn-primary {
+  background: var(--green);
+  color: oklch(0.15 0.01 255);
+}
+.btn-primary:hover {
+  background: var(--green-strong);
+}
+
+.btn-ghost {
+  min-height: var(--tap-min);
+  padding: 0 14px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--border-strong);
+  background: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--bg-card);
+  padding: 14px;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: var(--green);
+  text-transform: uppercase;
+}
+
+.section-title {
+  margin: 0 0 14px;
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+::selection {
+  background: oklch(0.72 0.13 155 / 0.35);
+}
