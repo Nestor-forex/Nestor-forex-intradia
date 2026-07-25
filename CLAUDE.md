@@ -48,27 +48,28 @@ Nestor Forex ya documenta que su ATR es "proxy cierre-a-cierre").
 - ✅ Probado visualmente con datos simulados (arnés temporal, revertido
   antes de commitear): pantalla sin configurar, tablero con pivotes y
   fuerza relativa por hora se ven correctos.
-- ⏳ **Pendiente — bloqueante para que funcione de verdad:** falta la
-  llave gratuita de [twelvedata.com](https://twelvedata.com) en
-  `VITE_TWELVEDATA_KEY` (`app/.env.production`). Mientras esté vacía, la
-  pestaña Barrido muestra un aviso ámbar en vez de romperse. En cuanto
-  Néstor consiga la llave y la pase, se pega ahí y el barrido intradía
-  empieza a funcionar solo — no hace falta ningún otro cambio de código.
-  **Importante:** el fetch de Twelve Data (`useMarketData.js`) todavía NO
-  se ha probado contra la API real (sin llave no se puede) — hay que
-  verificar en la próxima sesión que el batch de `time_series` responde
-  con el formato esperado (claves por símbolo) y ajustar si Twelve Data
-  cambió algo desde que se escribió este código.
-- ⏳ **Pendiente — bloqueante para que el Diario funcione:** las reglas de
-  Firestore (`firestore.rules`, mismo archivo en ambos repos) ya incluyen
-  la colección `trades_intradia`, pero **hay que volver a publicarlas en
-  la consola de Firebase** (Firebase Console → Firestore Database →
-  Reglas → pegar el contenido actualizado → Publicar) para que el cambio
-  tenga efecto real. Es el mismo paso manual que ya se hace cuando cambia
-  el correo del administrador.
-- ⏳ Falta la primera publicación en GitHub Pages (el workflow ya está
-  copiado y adaptado, debería funcionar solo en el primer push a `main`,
-  tal como pasó con el repositorio original).
+- ✅ **(24 de julio de 2026, más tarde el mismo día)** Néstor consiguió su
+  llave gratuita de [twelvedata.com](https://twelvedata.com) y la pegó en
+  `VITE_TWELVEDATA_KEY` (`app/.env.production`).
+  **Importante para la próxima sesión:** el fetch de Twelve Data
+  (`useMarketData.js`) NO se pudo probar contra la API real desde este
+  entorno de desarrollo (el proxy de red de la sesión bloquea
+  `api.twelvedata.com`, igual que bloqueó otros dominios antes). Se
+  publicó "a ciegas" confiando en la documentación de Twelve Data — si el
+  usuario reporta que la pestaña Barrido muestra un error en vez de
+  precios, el mensaje de error (viene de `e.message` en el catch de
+  `useMarketData.js`, se muestra tal cual en pantalla) es la primera
+  pista: probablemente el formato de la respuesta batch de `time_series`
+  no es exactamente `{ [simbolo]: { values: [...] } }` como se asumió, o
+  cambió algo en la API. Pedirle una captura de pantalla del error exacto
+  y ajustar `obtenerVelas()` en consecuencia.
+- ✅ Reglas de Firestore (con `trades_intradia`) publicadas en la consola
+  de Firebase por Néstor. PR correspondiente (`nestor-forex/nestor-forex`
+  #7) fusionado.
+- ✅ Primera publicación en GitHub Pages hecha (hubo que activar
+  manualmente "Source: GitHub Actions" en Settings → Pages del repo la
+  primera vez — paso normal de GitHub para cualquier repo nuevo, no un
+  error de configuración; ya quedó automático de ahí en adelante).
 
 ## Arquitectura
 
