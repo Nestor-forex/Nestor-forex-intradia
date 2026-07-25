@@ -48,21 +48,9 @@ Nestor Forex ya documenta que su ATR es "proxy cierre-a-cierre").
 - ✅ Probado visualmente con datos simulados (arnés temporal, revertido
   antes de commitear): pantalla sin configurar, tablero con pivotes y
   fuerza relativa por hora se ven correctos.
-- ✅ **(24 de julio de 2026, más tarde el mismo día)** Néstor consiguió su
-  llave gratuita de [twelvedata.com](https://twelvedata.com) y la pegó en
+- ✅ Néstor consiguió su llave gratuita de
+  [twelvedata.com](https://twelvedata.com) y la pegó en
   `VITE_TWELVEDATA_KEY` (`app/.env.production`).
-  **Importante para la próxima sesión:** el fetch de Twelve Data
-  (`useMarketData.js`) NO se pudo probar contra la API real desde este
-  entorno de desarrollo (el proxy de red de la sesión bloquea
-  `api.twelvedata.com`, igual que bloqueó otros dominios antes). Se
-  publicó "a ciegas" confiando en la documentación de Twelve Data — si el
-  usuario reporta que la pestaña Barrido muestra un error en vez de
-  precios, el mensaje de error (viene de `e.message` en el catch de
-  `useMarketData.js`, se muestra tal cual en pantalla) es la primera
-  pista: probablemente el formato de la respuesta batch de `time_series`
-  no es exactamente `{ [simbolo]: { values: [...] } }` como se asumió, o
-  cambió algo en la API. Pedirle una captura de pantalla del error exacto
-  y ajustar `obtenerVelas()` en consecuencia.
 - ✅ Reglas de Firestore (con `trades_intradia`) publicadas en la consola
   de Firebase por Néstor. PR correspondiente (`nestor-forex/nestor-forex`
   #7) fusionado.
@@ -70,6 +58,16 @@ Nestor Forex ya documenta que su ATR es "proxy cierre-a-cierre").
   manualmente "Source: GitHub Actions" en Settings → Pages del repo la
   primera vez — paso normal de GitHub para cualquier repo nuevo, no un
   error de configuración; ya quedó automático de ahí en adelante).
+- ✅ **Confirmado con capturas del usuario contra la app publicada:** el
+  fetch de Twelve Data (`useMarketData.js`) SÍ funciona contra la API
+  real — fuerza relativa, pares, RSI, sparkline, %/20h y pivotes se ven
+  con datos reales y coherentes. No hubo que tocar el parseo de la
+  respuesta batch; el formato asumido (`{ [símbolo]: { values: [...] } }`)
+  era correcto. También se confirmó que las 4 cuentas ya aprobadas en
+  Nestor Forex aparecen automáticamente aprobadas aquí también (mismo
+  proyecto de Firebase, sin necesidad de volver a registrarse), y que el
+  Diario de esta app arranca vacío y separado del de la app hermana.
+  **La app quedó completamente funcional de punta a punta.**
 
 ## Arquitectura
 
