@@ -2,7 +2,7 @@ name: Reporte diario del barrido intradía
 
 on:
   schedule:
-    - cron: '0 13 * * *' # 8:00 a.m. hora de Colombia (UTC-5)
+    - cron: '0 13 * * 1-5' # 8:00 a.m. hora de Colombia (UTC-5), lunes a viernes
   workflow_dispatch:
 
 jobs:
