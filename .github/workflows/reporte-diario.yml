@@ -1,0 +1,18 @@
+name: Reporte diario del barrido intradía
+
+on:
+  schedule:
+    - cron: '0 13 * * *' # 8:00 a.m. hora de Colombia (UTC-5)
+  workflow_dispatch:
+
+jobs:
+  reporte:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Generar reporte
+        working-directory: app
+        run: node scripts/reporte-diario.mjs
