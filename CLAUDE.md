@@ -98,3 +98,67 @@ antes de cada fase grande. Rama de trabajo: se commitea directo a `main`
 mientras el repo es nuevo (mismo patrón que el primer commit "Add files
 via upload" del repo original); una vez publicada la primera versión,
 usar ramas + PR como en Nestor Forex.
+
+## Precio en vivo con TrueFX (2026-07-27/28, en curso)
+
+El usuario pidió que la app diera "información real y precisa en tiempo
+real" a cada suscriptor que la abre. Twelve Data (refresco cada 15 min)
+se queda como la fuente del historial de 100 velas H1 — TrueFX no da
+historial gratis, solo el precio del momento, así que **complementa, no
+reemplaza**. Se evaluaron y descartaron antes de llegar aquí: subir de
+plan en Twelve Data ($99/mes Pro para WebSocket real), OANDA (la cuenta
+que abrió el usuario quedó en la división "OANDA Global Markets", que su
+propia documentación excluye de la API v20 — además esa cuenta resultó
+ser MT5, ni siquiera v20), AvaTrade (sin API pública para developers),
+MetaApi.cloud (no es gratis, $30/mes mínimo), Interactive Brokers (las
+cuentas demo no pueden recibir datos por API).
+
+- **PR #1 (fusionado):** agrega `app/src/lib/useTrueFXLive.js` —
+  mientras la app está abierta, abre sesión en TrueFX
+  (`webrates.truefx.com/rates/connect.html`) y consulta cada 10s el
+  precio de las 7 divisas. `useMarketData.js` reemplaza el cierre de la
+  vela más reciente con ese precio en vivo antes de recalcular (EMA,
+  RSI, fuerza relativa, pivotes) — si TrueFX falla, no pasa nada, la app
+  sigue solo con Twelve Data, nunca se rompe por esto.
+  `VITE_TRUEFX_USER`/`VITE_TRUEFX_PASS` en `.env.production`, mismo
+  criterio que la llave de Twelve Data (cuenta de solo datos, sin
+  fondos, bajo riesgo real de publicarla). Usuario: `NESTOR`.
+- ⚠️ **Probado en la app real y TrueFX respondió `"not authorized"`**
+  (confirmado con un script de diagnóstico corrido en GitHub Actions —
+  PR #2, ya revertido/eliminado tras el diagnóstico, el entorno de
+  desarrollo normal tiene bloqueado `webrates.truefx.com` igual que
+  `api.twelvedata.com`). La app no se rompió (cayó de vuelta a "fuente:
+  Twelve Data" sola, tal como se diseñó), pero el precio en vivo
+  **todavía no funciona**. Causa más probable: la cuenta de TrueFX se
+  registró pero le falta activar algo — el panel "Mi cuenta" del
+  usuario mostraba pestañas "Suscripciones" y "Pagos", sugiriendo que
+  TrueFX ahora exige elegir/activar un plan (aunque sea gratuito) antes
+  de dar acceso a la API, no solo registrarse. **Pendiente:** pedirle a
+  Néstor que revise esas pestañas en `truefx.com/truefx-account/` y
+  confirme si hay algo por activar/suscribir.
+- Fuera de eso, la fórmula de conversión (TrueFX cotiza EUR/GBP/AUD/NZD
+  como "USD por 1 X", hay que invertir esos 4; JPY/CHF/CAD ya vienen
+  como "X por 1 USD", se usan tal cual) y el parseo del CSV
+  (`bidGrande + bidPips/100000`, promedio bid/offer) están hechos según
+  la documentación oficial de TrueFX pero **sin verificar contra una
+  respuesta real con datos** (solo se pudo confirmar el mensaje de
+  error) — revisar de nuevo esa parte en cuanto la cuenta quede
+  autorizada, por si el formato real difiere del documentado.
+
+## Reporte diario automático (2026-07-27, en curso)
+
+`reporte-diario.yml` corre cada día de semana a las 8:00 am hora de
+Colombia (13:00 UTC), calcula el barrido con Twelve Data (necesita
+internet real, por eso corre en GitHub Actions y no en el entorno de la
+sesión de Claude) y **solo imprime el resultado en los logs** — nunca
+lo envía a ningún lado por sí solo. Se creó una Routine (`trig_
+01Gse2QF87kvjwVQD2dUzU4f`, cuenta de Néstor) que se dispara cada día de
+semana a las 13:07 UTC, lee esos logs y le manda el reporte a Néstor por
+este mismo chat. Advertencia real: al crearla, el sistema avisó que las
+Routines no heredan automáticamente las herramientas de GitHub como un
+"conector" — quedó atada a esta sesión (self-bind) en vez de crear una
+sesión nueva en cada disparo, con la esperanza de que así sí mantenga
+acceso. **No confirmado todavía si el primer disparo automático (mañana)
+va a funcionar de punta a punta** — se hizo una prueba manual
+(`fire_trigger`) pero no se alcanzó a verificar el resultado en esta
+sesión antes de seguir con otras tareas.
