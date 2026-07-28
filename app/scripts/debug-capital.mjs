@@ -7,9 +7,9 @@
 const BASE = 'https://demo-api-capital.backend-capital.com'
 
 // Credenciales de la cuenta DEMO de Capital.com (sin fondos reales).
-const apiKey = 'WIxYWRDhBnhQ3yNO'
+const apiKey = 'BEJr8Y3aNS5NnZPs'
 const identifier = 'nesdian2204@gmail.com'
-const password = 'N2405d@m'
+const password = 'Yd2405@m'
 
 console.log('--- 1) Crear sesión ---')
 const rSession = await fetch(`${BASE}/api/v1/session`, {
