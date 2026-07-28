@@ -128,22 +128,35 @@ cuentas demo no pueden recibir datos por API).
   PR #2, ya revertido/eliminado tras el diagnóstico, el entorno de
   desarrollo normal tiene bloqueado `webrates.truefx.com` igual que
   `api.twelvedata.com`). La app no se rompió (cayó de vuelta a "fuente:
-  Twelve Data" sola, tal como se diseñó), pero el precio en vivo
-  **todavía no funciona**. Causa más probable: la cuenta de TrueFX se
-  registró pero le falta activar algo — el panel "Mi cuenta" del
-  usuario mostraba pestañas "Suscripciones" y "Pagos", sugiriendo que
-  TrueFX ahora exige elegir/activar un plan (aunque sea gratuito) antes
-  de dar acceso a la API, no solo registrarse. **Pendiente:** pedirle a
-  Néstor que revise esas pestañas en `truefx.com/truefx-account/` y
-  confirme si hay algo por activar/suscribir.
-- Fuera de eso, la fórmula de conversión (TrueFX cotiza EUR/GBP/AUD/NZD
-  como "USD por 1 X", hay que invertir esos 4; JPY/CHF/CAD ya vienen
-  como "X por 1 USD", se usan tal cual) y el parseo del CSV
-  (`bidGrande + bidPips/100000`, promedio bid/offer) están hechos según
-  la documentación oficial de TrueFX pero **sin verificar contra una
-  respuesta real con datos** (solo se pudo confirmar el mensaje de
-  error) — revisar de nuevo esa parte en cuanto la cuenta quede
-  autorizada, por si el formato real difiere del documentado.
+  Twelve Data" sola, tal como se diseñó), pero el precio en vivo no
+  funcionaba con TrueFX.
+- ✅ **Causa real confirmada, y resuelta cambiando de proveedor:** no era
+  la suscripción (el panel "Suscripciones" de Néstor mostraba "Vida /
+  Gratis / Activo: Sí"). La verdadera razón: la página de precios
+  actual de TrueFX (truefx.com) muestra planes de pago institucionales
+  (uno visible en $7,450) — su API de streaming ya no es gratis para
+  cuentas nuevas, pese a que la documentación de 2009-2019 (la única
+  que se encontró al investigar) la describía como gratis con solo
+  registrarse. Se abandonó TrueFX por completo.
+- ✅ **PR #3 (fusionado):** se reemplazó por **Capital.com**
+  (`useCapitalLive.js`), bróker de CFDs con API REST/WebSocket gratis
+  confirmada en cuenta demo (sin fondos reales). Esta vez sí se probó
+  con datos reales antes de fusionar (script de diagnóstico temporal en
+  GitHub Actions): sesión exitosa, y los 7 precios de las divisas
+  contra USD confirmados en una sola consulta batch
+  (`GET /api/v1/markets?epics=...`). Credenciales en `.env.production`
+  como `VITE_CAPITAL_API_KEY`/`VITE_CAPITAL_IDENTIFIER`/
+  `VITE_CAPITAL_PASSWORD` (cuenta demo, mismo criterio de transparencia
+  que las demás credenciales del archivo). Pendiente de confirmar en la
+  app real: que el navegador no bloquee la llamada por CORS (no se pudo
+  probar esa parte desde Node/GitHub Actions).
+- **Aclaración importante sobre los 14 pares:** la app muestra 14 pares
+  (7 "mayores" contra USD + 7 cruces como EUR/CHF, GBP/JPY, etc.), pero
+  el motor (`computarBarrido` en `marketCalc.js`) calcula los cruces
+  matemáticamente a partir de las 7 divisas contra USD — no hace falta
+  pedirle datos en vivo de los 14 por separado a ningún proveedor. Con
+  los 7 precios en vivo de Capital.com, los 14 pares completos quedan
+  actualizados.
 
 ## Reporte diario automático (2026-07-27, en curso)
 
