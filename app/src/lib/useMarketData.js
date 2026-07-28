@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { computarBarrido, derivarVista } from './marketCalc'
-import { useTrueFXLive } from './useTrueFXLive'
+import { useCapitalLive } from './useCapitalLive'
 
 const CACHE_KEY = 'nfi_market_cache_v1'
 const REFRESH_MS = 15 * 60 * 1000 // refrescar cada 15 min mientras la app está abierta
@@ -84,7 +84,7 @@ export function useMarketData({ thr = 0.5, topN = 3 } = {}) {
   const [stale, setStale] = useState(false)
   const [guardadoEl, setGuardadoEl] = useState(null)
   const primeraCarga = useRef(true)
-  const { filaViva, actualizadoEl: vivoActualizadoEl, configurado: vivoConfigurado } = useTrueFXLive()
+  const { filaViva, actualizadoEl: vivoActualizadoEl, configurado: vivoConfigurado } = useCapitalLive()
 
   useEffect(() => {
     if (sinConfigurar) return
@@ -120,11 +120,11 @@ export function useMarketData({ thr = 0.5, topN = 3 } = {}) {
     }
   }, [sinConfigurar])
 
-  // Si TrueFX trae un precio en vivo más fresco, reemplaza el cierre de la
-  // vela más reciente antes de recalcular — así los indicadores reflejan el
-  // precio de ahora mismo en vez del último refresco de Twelve Data (hasta
-  // 15 min de atraso). Si TrueFX no está configurado o falla, esto no hace
-  // nada y queda igual que antes (solo Twelve Data).
+  // Si Capital.com trae un precio en vivo más fresco, reemplaza el cierre de
+  // la vela más reciente antes de recalcular — así los indicadores reflejan
+  // el precio de ahora mismo en vez del último refresco de Twelve Data
+  // (hasta 15 min de atraso). Si Capital.com no está configurado o falla,
+  // esto no hace nada y queda igual que antes (solo Twelve Data).
   const vivo = Boolean(filaViva)
   const data = useMemo(() => {
     if (!crudo) return null

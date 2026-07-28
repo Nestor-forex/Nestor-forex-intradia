@@ -228,7 +228,7 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false } = {}) {
   const setups = [...comprasRaw.slice(0, topN).map((p) => mkSetup(p, 'COMPRA')), ...ventasRaw.slice(0, topN).map((p) => mkSetup(p, 'VENTA'))]
 
   const fechaHora = new Date(data.ultima).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' })
-  const fuente = vivo ? 'Twelve Data + TrueFX (precio en vivo)' : 'Twelve Data'
+  const fuente = vivo ? 'Twelve Data + Capital.com (precio en vivo)' : 'Twelve Data'
   const corte = `Vela H1 más reciente: ${fechaHora} UTC · fuente: ${fuente}`
 
   return { monedas, pares, compras, ventas, vigilancia, setups, corte }
