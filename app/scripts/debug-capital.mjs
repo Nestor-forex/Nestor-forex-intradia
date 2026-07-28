@@ -45,3 +45,17 @@ for (const term of ['GBPUSD', 'USDJPY', 'USDCHF', 'AUDUSD', 'USDCAD', 'NZDUSD'])
   const epics = j?.markets?.map((m) => `${m.epic} (${m.instrumentName})`).slice(0, 3)
   console.log(term, '->', r.status, JSON.stringify(epics))
 }
+
+console.log('\n--- 4) Pedir los 7 precios juntos en una sola consulta ---')
+const todos = ['EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'AUDUSD', 'USDCAD', 'NZDUSD']
+const rBatch = await fetch(`${BASE}/api/v1/markets?epics=${todos.join(',')}`, {
+  headers: { 'X-CAP-API-KEY': apiKey, CST: cst, 'X-SECURITY-TOKEN': securityToken },
+})
+console.log('status:', rBatch.status)
+const jBatch = await rBatch.json().catch(() => null)
+console.log(
+  'pares recibidos:',
+  jBatch?.marketDetails?.length ?? jBatch?.markets?.length ?? 0,
+  '/ esperados 7'
+)
+console.log('body (recortado a 2000):', JSON.stringify(jBatch).slice(0, 2000))
