@@ -188,7 +188,9 @@ const mkSetup = (p, lado) => {
 const porDifAbs = (a, b) => Math.abs(b.dif) - Math.abs(a.dif)
 
 // data: salida de computarBarrido(). Devuelve todo ya formateado para las pantallas.
-export function derivarVista(data, { thr = 0.5, topN = 3 } = {}) {
+// vivo: si la vela más reciente trae el precio en vivo de TrueFX (en vez de
+// solo el último cierre de Twelve Data) — únicamente cambia el texto de "corte".
+export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false } = {}) {
   const { esc, pares: paresRaw } = data
 
   const monedas = Object.keys(esc)
@@ -226,7 +228,8 @@ export function derivarVista(data, { thr = 0.5, topN = 3 } = {}) {
   const setups = [...comprasRaw.slice(0, topN).map((p) => mkSetup(p, 'COMPRA')), ...ventasRaw.slice(0, topN).map((p) => mkSetup(p, 'VENTA'))]
 
   const fechaHora = new Date(data.ultima).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' })
-  const corte = `Vela H1 más reciente: ${fechaHora} UTC · fuente: Twelve Data`
+  const fuente = vivo ? 'Twelve Data + TrueFX (precio en vivo)' : 'Twelve Data'
+  const corte = `Vela H1 más reciente: ${fechaHora} UTC · fuente: ${fuente}`
 
   return { monedas, pares, compras, ventas, vigilancia, setups, corte }
 }
