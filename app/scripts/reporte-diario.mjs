@@ -21,7 +21,7 @@ const SYM_TO_CCY = { 'USD/EUR': 'EUR', 'USD/GBP': 'GBP', 'USD/JPY': 'JPY', 'USD/
 
 async function obtenerVelas(apiKey) {
   const r = await fetch(
-    `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(SYMBOLS.join(','))}&interval=1h&outputsize=100&apikey=${apiKey}`
+    `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(SYMBOLS.join(','))}&interval=1h&outputsize=100&timezone=UTC&apikey=${apiKey}`
   )
   if (!r.ok) throw new Error('HTTP ' + r.status)
   const j = await r.json()
