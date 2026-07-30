@@ -15,8 +15,10 @@ export default defineConfig({
         theme_color: '#23262f',
         background_color: '#23262f',
         display: 'standalone',
-        start_url: '/',
-        scope: '/',
+        // start_url y scope se omiten a propósito: vite-plugin-pwa los deriva
+        // del `base` de Vite. En producción el build pasa
+        // --base=/Nestor-forex-intradia/, así que el ícono instalado abre la
+        // app y no la raíz del dominio (que no existe). En local queda en '/'.
         icons: [
           { src: 'pwa-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'pwa-512.png', sizes: '512x512', type: 'image/png' },
