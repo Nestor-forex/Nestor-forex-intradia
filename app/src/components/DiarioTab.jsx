@@ -1,15 +1,28 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { PAIR_NAMES, monedasDe } from '../lib/pairs'
 
 const esAbierta = (t) => t.estado === 'abierta'
 
-export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCerrar }) {
+export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCerrar, prellenar, onPrellenado }) {
   const [par, setPar] = useState(PAIR_NAMES[0])
   const [dir, setDir] = useState('Compra')
   const [lote, setLote] = useState('')
   const [pl, setPl] = useState('')
   const [nota, setNota] = useState('')
   const [abierta, setAbierta] = useState(false)
+
+  // Cuando se llega aquí desde el detalle de un setup, el formulario arranca
+  // con el par, la dirección y la nota ya puestos. Falta el lote, que depende
+  // de cuánto quiera arriesgar Néstor.
+  useEffect(() => {
+    if (!prellenar) return
+    if (PAIR_NAMES.includes(prellenar.par)) setPar(prellenar.par)
+    if (prellenar.dir) setDir(prellenar.dir)
+    if (prellenar.nota) setNota(prellenar.nota)
+    setAbierta(Boolean(prellenar.abierta))
+    setPl('')
+    onPrellenado?.()
+  }, [prellenar, onPrellenado])
 
   const cerradas = trades.filter((t) => !esAbierta(t))
   const abiertas = trades.filter(esAbierta)

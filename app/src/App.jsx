@@ -7,6 +7,7 @@ import Header from './components/Header'
 import BottomNav from './components/BottomNav'
 import BarridoTab from './components/BarridoTab'
 import TableroCompleto from './components/TableroCompleto'
+import SetupDetalle from './components/SetupDetalle'
 import DiarioTab from './components/DiarioTab'
 import CalculadoraTab from './components/CalculadoraTab'
 import MiembrosTab from './components/MiembrosTab'
@@ -44,6 +45,13 @@ export default function App() {
   const [screen, setScreen] = useState('splash')
   const [tab, setTab] = useState('barrido')
   const [msgAuth, setMsgAuth] = useState('')
+  // Setup abierto en la pantalla de detalle, guardado por nombre + lado en vez
+  // de por objeto: así, cuando llega precio en vivo, el detalle se actualiza
+  // solo en lugar de quedarse con los números del momento en que se abrió.
+  const [detalleId, setDetalleId] = useState(null)
+  // Datos con los que llega precargado el formulario del Diario cuando se
+  // anota un setup desde su detalle.
+  const [prellenarDiario, setPrellenarDiario] = useState(null)
 
   useEffect(() => {
     if (authUser) setScreen('app')
@@ -84,6 +92,24 @@ export default function App() {
     return r
   }
 
+  const detalle = detalleId ? mercado.setups.find((s) => s.name + s.lado === detalleId) : null
+
+  // Pasa el setup al Diario: llena el par, la dirección y una nota con los
+  // niveles, y lo deja como operación abierta. El lote y el resultado los pone
+  // Néstor, que son lo único que la app no puede saber.
+  const anotarEnDiario = (s) => {
+    const c = s.crudo
+    const niveles = c ? ` · entrada ${c.precio.toFixed(c.dec)} · SL ${c.sl.toFixed(c.dec)} · TP ${c.tp.toFixed(c.dec)} · R/B 1:${c.rr.toFixed(1)}` : ''
+    setPrellenarDiario({
+      par: s.name,
+      dir: s.lado === 'COMPRA' ? 'Compra' : 'Venta',
+      nota: `Setup del barrido intradía${niveles}`,
+      abierta: true,
+    })
+    setDetalleId(null)
+    setTab('diario')
+  }
+
   const ingresarYSeguir = async (email, clave) => {
     const r = await ingresar(email, clave)
     if (r.ok) setMsgAuth('')
@@ -119,7 +145,7 @@ export default function App() {
           <Pendiente nombreApp={NOMBRE_APP} mensaje="Tu solicitud queda pendiente hasta que Néstor la autorice." onSalir={salirYVolver} />
         )}
 
-        {authUser && perfilEstado === 'aprobado' && tab !== 'tablero' && (
+        {authUser && perfilEstado === 'aprobado' && !detalle && tab !== 'tablero' && (
           <>
             <Header nombreApp={NOMBRE_APP} saludo={esAdmin ? 'Administrador' : authUser.email || ''} onSalir={salirYVolver} />
             <main style={{ flex: 1, padding: '18px 18px 96px', display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -137,7 +163,15 @@ export default function App() {
                 />
               )}
               {tab === 'diario' && (
-                <DiarioTab trades={diario.trades} cargando={diario.cargando} onGuardar={diario.guardar} onBorrar={diario.borrar} onCerrar={diario.cerrar} />
+                <DiarioTab
+                  trades={diario.trades}
+                  cargando={diario.cargando}
+                  onGuardar={diario.guardar}
+                  onBorrar={diario.borrar}
+                  onCerrar={diario.cerrar}
+                  prellenar={prellenarDiario}
+                  onPrellenado={() => setPrellenarDiario(null)}
+                />
               )}
               {tab === 'calc' && (
                 <CalculadoraTab
@@ -154,9 +188,14 @@ export default function App() {
           </>
         )}
 
-        {authUser && perfilEstado === 'aprobado' && tab === 'tablero' && (
+        {authUser && perfilEstado === 'aprobado' && detalle && (
+          <SetupDetalle setup={detalle} corte={mercado.corte} onVolver={() => setDetalleId(null)} onAnotar={anotarEnDiario} />
+        )}
+
+        {authUser && perfilEstado === 'aprobado' && !detalle && tab === 'tablero' && (
           <TableroCompleto
             onVolver={() => setTab('barrido')}
+            onVerSetup={(s) => setDetalleId(s.name + s.lado)}
             loading={mercado.loading}
             error={mercado.error}
             sinConfigurar={mercado.sinConfigurar}
