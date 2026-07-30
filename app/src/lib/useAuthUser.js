@@ -8,10 +8,12 @@ import {
 import { doc, onSnapshot, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore'
 import { ADMIN_EMAIL, auth, db, firebaseListo } from './firebase'
 import { mensajeError } from './authErrors'
+import { useT } from './i18n'
 
 // Sesión (Firebase Auth) + perfil (Firestore) del usuario actual, en vivo.
 // perfilEstado: 'sin-sesion' | 'cargando' | 'pendiente' | 'aprobado' | 'retirado'
 export function useAuthUser() {
+  const t = useT()
   const [authUser, setAuthUser] = useState(null)
   const [cargandoAuth, setCargandoAuth] = useState(true)
   const [perfil, setPerfil] = useState(null)
@@ -60,7 +62,7 @@ export function useAuthUser() {
 
   const registrar = async (nombre, email, clave) => {
     const correo = (email || '').trim().toLowerCase()
-    if (!nombre?.trim() || !correo || !clave) return { ok: false, msg: 'Completa nombre, correo y clave.' }
+    if (!nombre?.trim() || !correo || !clave) return { ok: false, msg: t('auth.faltanCampos') }
     try {
       const cred = await createUserWithEmailAndPassword(auth, correo, clave)
       await setDoc(doc(db, 'users', cred.user.uid), {
@@ -77,18 +79,18 @@ export function useAuthUser() {
       }
       return { ok: true }
     } catch (e) {
-      return { ok: false, msg: mensajeError(e) }
+      return { ok: false, msg: mensajeError(e, t) }
     }
   }
 
   const ingresar = async (email, clave) => {
     const correo = (email || '').trim().toLowerCase()
-    if (!correo || !clave) return { ok: false, msg: 'Escribe tu correo y tu clave.' }
+    if (!correo || !clave) return { ok: false, msg: t('auth.faltanCredenciales') }
     try {
       await signInWithEmailAndPassword(auth, correo, clave)
       return { ok: true }
     } catch (e) {
-      return { ok: false, msg: mensajeError(e) }
+      return { ok: false, msg: mensajeError(e, t) }
     }
   }
 

@@ -9,6 +9,7 @@
 // bróker y no puede ejecutar nada. La acción real es pasar el setup al Diario.
 
 import { useId, useState } from 'react'
+import { useT } from '../lib/i18n'
 
 // Geometría del lienzo. El canal de la derecha queda libre para las pastillas.
 const W = 380
@@ -45,6 +46,7 @@ function acomodar(items, minGap, lo, hi) {
 }
 
 export default function SetupDetalle({ setup, corte, onVolver, onAnotar }) {
+  const t = useT()
   const [copiado, setCopiado] = useState(false)
   // Id propio del degradado: con un id fijo, dos gráficos en la misma página
   // compartirían la definición y el segundo heredaría el color del primero.
@@ -56,10 +58,10 @@ export default function SetupDetalle({ setup, corte, onVolver, onAnotar }) {
   if (!c) {
     return (
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <Encabezado onVolver={onVolver} />
+        <Encabezado onVolver={onVolver} t={t} />
         <main style={{ padding: '24px 18px' }}>
           <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
-            Este setup viene de un barrido guardado antes de esta versión, así que no trae los datos del gráfico. Recarga la app para verlo completo.
+            {t('detalle.sinDatos')}
           </p>
         </main>
       </div>
@@ -99,9 +101,9 @@ export default function SetupDetalle({ setup, corte, onVolver, onAnotar }) {
   // Niveles de contexto: se dibujan quietos, con la etiqueta a la izquierda.
   const contexto = acomodar(
     [
-      { etiqueta: 'RESIST.', valor: res, y: y(res), color: 'oklch(0.6 0.02 255)', trazo: '2 4' },
-      { etiqueta: 'PIVOTE', valor: pivote, y: y(pivote), color: 'var(--accent)', trazo: '5 4' },
-      { etiqueta: 'SOPORTE', valor: sup, y: y(sup), color: 'oklch(0.6 0.02 255)', trazo: '2 4' },
+      { etiqueta: t('detalle.etqResistencia'), valor: res, y: y(res), color: 'oklch(0.6 0.02 255)', trazo: '2 4' },
+      { etiqueta: t('detalle.etqPivote'), valor: pivote, y: y(pivote), color: 'var(--accent)', trazo: '5 4' },
+      { etiqueta: t('detalle.etqSoporte'), valor: sup, y: y(sup), color: 'oklch(0.6 0.02 255)', trazo: '2 4' },
     ],
     12,
     Y0 + 8,
@@ -109,12 +111,12 @@ export default function SetupDetalle({ setup, corte, onVolver, onAnotar }) {
   )
 
   const textoNiveles = [
-    `${setup.name} — ${setup.lado}`,
-    `Entrada: ${f(precio)}`,
-    `Stop-loss: ${f(sl)}`,
-    `Take-profit: ${f(tp)}`,
-    `Riesgo/beneficio: 1:${rr.toFixed(1)}`,
-    `Riesgo ${Math.round(pipRiesgo)} pips · beneficio ${Math.round(pipBeneficio)} pips`,
+    `${setup.name} — ${t(`lado.${setup.lado}`)}`,
+    t('detalle.copiaEntrada', { v: f(precio) }),
+    t('detalle.copiaSl', { v: f(sl) }),
+    t('detalle.copiaTp', { v: f(tp) }),
+    t('detalle.copiaRb', { v: rr.toFixed(1) }),
+    t('detalle.copiaPips', { riesgo: Math.round(pipRiesgo), beneficio: Math.round(pipBeneficio) }),
     corte ? `(${corte})` : '',
   ]
     .filter(Boolean)
@@ -135,7 +137,7 @@ export default function SetupDetalle({ setup, corte, onVolver, onAnotar }) {
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-      <Encabezado onVolver={onVolver} />
+      <Encabezado onVolver={onVolver} t={t} />
 
       <main style={{ flex: 1, padding: '16px 16px 48px', display: 'flex', flexDirection: 'column', gap: 16 }}>
         {/* --- par y lado --- */}
@@ -145,7 +147,7 @@ export default function SetupDetalle({ setup, corte, onVolver, onAnotar }) {
               {setup.name}
             </div>
             <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>
-              {dec === 2 ? '1 pip = 0.01' : '1 pip = 0.0001'} · vela de 1 hora
+              {dec === 2 ? t('detalle.pip2') : t('detalle.pip4')} · {t('detalle.granularidad')}
             </div>
           </div>
           <span
@@ -162,7 +164,7 @@ export default function SetupDetalle({ setup, corte, onVolver, onAnotar }) {
               border: `1px solid ${compra ? 'oklch(0.72 0.13 155 / 0.4)' : 'oklch(0.66 0.13 25 / 0.4)'}`,
             }}
           >
-            {setup.lado}
+            {t(`lado.${setup.lado}`)}
           </span>
         </div>
 
@@ -170,9 +172,14 @@ export default function SetupDetalle({ setup, corte, onVolver, onAnotar }) {
         <div className="card" style={{ padding: '10px 6px 6px' }}>
           <svg
             viewBox={`0 0 ${W} ${H}`}
-            style={{ display: 'block', width: '100%', height: 'auto' }}
+            // El gráfico NO se voltea en árabe: sus coordenadas son números
+            // fijos, y al heredar la dirección del documento el texto de las
+            // etiquetas se dibujaba hacia el lado contrario, saliéndose de las
+            // pastillas y quedando cortado contra el borde.
+            dir="ltr"
+            style={{ display: 'block', width: '100%', height: 'auto', direction: 'ltr' }}
             role="img"
-            aria-label={`Últimos ${serie20.length} cierres de ${setup.name}. Precio ahora ${f(precio)}, stop-loss ${f(sl)}, objetivo ${f(tp)}.`}
+            aria-label={t('detalle.graficoAria', { n: serie20.length, par: setup.name, precio: f(precio), sl: f(sl), tp: f(tp) })}
           >
             <defs>
               <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
@@ -268,16 +275,16 @@ export default function SetupDetalle({ setup, corte, onVolver, onAnotar }) {
             className="mono"
             style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 6px 0', fontSize: 10, color: 'var(--text-muted)' }}
           >
-            <span>hace {serie20.length} horas</span>
-            <span>cierres · sin velas</span>
-            <span>ahora</span>
+            <span>{t('detalle.hace', { n: serie20.length })}</span>
+            <span>{t('detalle.sinVelas')}</span>
+            <span>{t('detalle.ahora')}</span>
           </div>
         </div>
 
         {/* --- riesgo / beneficio --- */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-            <Rotulo>Riesgo / beneficio</Rotulo>
+            <Rotulo>{t('detalle.riesgoBeneficio')}</Rotulo>
             <span
               className="mono"
               style={{ marginLeft: 'auto', fontSize: 17, fontWeight: 600, color: rrOk ? 'var(--green-strong)' : 'var(--amber)' }}
@@ -288,46 +295,51 @@ export default function SetupDetalle({ setup, corte, onVolver, onAnotar }) {
           <div
             style={{ display: 'flex', height: 12, borderRadius: 999, overflow: 'hidden', background: 'var(--bg-input)' }}
             role="img"
-            aria-label={`El riesgo es ${Math.round(pctRiesgo)} por ciento de la operación.`}
+            aria-label={t('detalle.barraAria', { pct: Math.round(pctRiesgo) })}
           >
             <i style={{ width: `${pctRiesgo}%`, background: 'var(--red)' }} />
             <i style={{ width: `${100 - pctRiesgo}%`, background: rrOk ? 'var(--green)' : 'var(--amber)' }} />
           </div>
           <div className="mono" style={{ display: 'flex', gap: 14, fontSize: 10.5, color: 'var(--text-secondary)' }}>
-            <span>Riesgo {Math.round(pipRiesgo)} pips</span>
-            <span>Beneficio {Math.round(pipBeneficio)} pips</span>
+            <span>{t('detalle.riesgoPips', { n: Math.round(pipRiesgo) })}</span>
+            <span>{t('detalle.beneficioPips', { n: Math.round(pipBeneficio) })}</span>
           </div>
           {!rrOk && (
             <div style={{ fontSize: 11.5, color: 'var(--amber)' }}>
-              Por debajo de 1:1.5 — arriesgas casi lo mismo que puedes ganar. Considera saltarte este.
+              {t('detalle.rbBajo')}
             </div>
           )}
         </div>
 
         {/* --- escenario --- */}
         <div className="card" style={{ borderLeft: `2px solid ${colorLado}`, display: 'flex', flexDirection: 'column', gap: 5 }}>
-          <Rotulo>Escenario de {compra ? 'compra' : 'venta'}</Rotulo>
+          <Rotulo>{compra ? t('detalle.escenarioCompra') : t('detalle.escenarioVenta')}</Rotulo>
           <p style={{ margin: 0, fontSize: 13.5 }}>
-            {compra ? b : q} es la divisa fuerte del barrido y {compra ? q : b} va rezagada, con el par en tendencia{' '}
-            {compra ? 'alcista' : 'bajista'}. {compra ? 'Comprar por encima' : 'Vender por debajo'} de{' '}
-            <span className="mono">{f(precio)}</span>, con el objetivo en <span className="mono">{f(tp)}</span>. Mejor entrada en un retroceso
-            hacia la EMA9 (<span className="mono">{f(ema)}</span>).
+            {t('detalle.escenarioTexto', {
+              fuerte: compra ? b : q,
+              debil: compra ? q : b,
+              direccion: compra ? t('detalle.alcista') : t('detalle.bajista'),
+              accion: compra ? t('detalle.comprarPorEncima') : t('detalle.venderPorDebajo'),
+              precio: f(precio),
+              tp: f(tp),
+              ema: f(ema),
+            })}
           </p>
         </div>
 
         {/* --- niveles --- */}
         <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-card)', overflow: 'hidden' }}>
-          <Nivel color="var(--text)" nombre="Entrada" valor={f(precio)} nota="actual" destacado />
-          <Nivel color="var(--red)" nombre="Stop-loss" valor={f(sl)} nota={`${Math.round(pipRiesgo)} p`} destacado />
-          <Nivel color="var(--green)" nombre="Take-profit" valor={f(tp)} nota={`${Math.round(pipBeneficio)} p`} destacado />
-          <Nivel color="var(--accent)" nombre="Pivote" valor={f(pivote)} nota="sesión" />
-          <Nivel color="oklch(0.6 0.02 255)" nombre="Resistencia" valor={f(res)} nota="máx. 20" />
-          <Nivel color="oklch(0.6 0.02 255)" nombre="Soporte" valor={f(sup)} nota="mín. 20" ultimo />
+          <Nivel color="var(--text)" nombre={t('setup.entrada')} valor={f(precio)} nota={t('detalle.nivelActual')} destacado />
+          <Nivel color="var(--red)" nombre={t('setup.stopLoss')} valor={f(sl)} nota={`${Math.round(pipRiesgo)} p`} destacado />
+          <Nivel color="var(--green)" nombre={t('setup.takeProfit')} valor={f(tp)} nota={`${Math.round(pipBeneficio)} p`} destacado />
+          <Nivel color="var(--accent)" nombre={t('detalle.pivote')} valor={f(pivote)} nota={t('detalle.nivelSesion')} />
+          <Nivel color="oklch(0.6 0.02 255)" nombre={t('setup.resistencia')} valor={f(res)} nota={t('detalle.nivelMax20')} />
+          <Nivel color="oklch(0.6 0.02 255)" nombre={t('setup.soporte')} valor={f(sup)} nota={t('detalle.nivelMin20')} ultimo />
         </div>
 
         {/* --- por qué --- */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <Rotulo>Por qué aparece</Rotulo>
+          <Rotulo>{t('detalle.porQue')}</Rotulo>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {Number.isFinite(fuerzaB) && Number.isFinite(fuerzaQ) && (
               <Chip>
@@ -336,9 +348,9 @@ export default function SetupDetalle({ setup, corte, onVolver, onAnotar }) {
             )}
             <Chip>
               RSI <b className="mono">{rsi}</b>
-              {rsi > 70 || rsi < 30 ? ' · extendido' : rsi >= 40 && rsi <= 60 ? ' · continuación' : ''}
+              {rsi > 70 || rsi < 30 ? t('detalle.chipExtendido') : rsi >= 40 && rsi <= 60 ? t('detalle.chipContinuacion') : ''}
             </Chip>
-            <Chip>EMA9/21 alineadas</Chip>
+            <Chip>{t('detalle.chipEmas')}</Chip>
             <Chip>
               ATR <b className="mono">{atrPct.toFixed(2)}%</b>
             </Chip>
@@ -360,29 +372,28 @@ export default function SetupDetalle({ setup, corte, onVolver, onAnotar }) {
           <span style={{ color: 'var(--amber)', fontWeight: 700, flexShrink: 0 }} aria-hidden="true">
             !
           </span>
-          <span>{setup.inval ? `Se invalida con un ${setup.inval}` : 'Sin condición de invalidación.'}</span>
+          <span>{setup.inval ? t('detalle.seInvalida', { cond: setup.inval }) : t('detalle.sinInvalidacion')}</span>
         </div>
 
         {/* --- acciones --- */}
         <div style={{ display: 'flex', gap: 9 }}>
           <button type="button" className="btn btn-primary" style={{ flex: 1 }} onClick={() => onAnotar?.(setup)}>
-            Anotar en el Diario
+            {t('detalle.anotar')}
           </button>
           <button type="button" className="btn" style={{ flex: 1 }} onClick={copiar}>
-            {copiado ? 'Copiado' : 'Copiar niveles'}
+            {copiado ? t('detalle.copiado') : t('detalle.copiar')}
           </button>
         </div>
 
         <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-          Los niveles salen del barrido, no de un bróker. La app no ejecuta operaciones: “Anotar en el Diario” solo llena tu registro con
-          estos datos para que después midas el resultado.
+          {t('detalle.aviso')}
         </p>
       </main>
     </div>
   )
 }
 
-function Encabezado({ onVolver }) {
+function Encabezado({ onVolver, t }) {
   return (
     <header
       style={{
@@ -398,10 +409,10 @@ function Encabezado({ onVolver }) {
       }}
     >
       <button onClick={onVolver} className="btn-ghost" style={{ padding: '0 12px', minHeight: 36, fontSize: 13, flexShrink: 0 }}>
-        ← Volver
+        {t('detalle.volver')}
       </button>
       <div className="mono" style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-        Detalle de la señal
+        {t('detalle.encabezado')}
       </div>
     </header>
   )

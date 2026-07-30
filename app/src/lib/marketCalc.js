@@ -1,3 +1,6 @@
+import { crearT } from './i18n/crearT.js'
+import { IDIOMA_BASE, localeDe } from './i18n/idiomas.js'
+
 // Cálculos del barrido intradía: mismo motor que Nestor Forex (portado de los
 // prototipos originales) pero recalibrado para velas de 1 hora (H1) en vez de
 // velas diarias — ventanas más cortas, EMAs más rápidas, y puntos pivote /
@@ -158,17 +161,24 @@ const clasificar = (p, thr) => {
   return '—'
 }
 
-const razon = (p, esc) => {
-  const ext =
+const razon = (p, esc, t) => {
+  const extra =
     p.rsiV > 70 || p.rsiV < 30
-      ? ' — RSI extendido, no perseguir, esperar retroceso'
+      ? t('calc_barrido.rsiExtendido')
       : p.rsiV >= 40 && p.rsiV <= 60
-        ? ' — RSI en zona de continuación'
+        ? t('calc_barrido.rsiContinuacion')
         : ''
-  return `${p.b} (${esc[p.b].toFixed(1)}) vs ${p.q} (${esc[p.q].toFixed(1)}), EMA9/21 alineadas, RSI ${p.rsiV.toFixed(0)}${ext}`
+  return t('calc_barrido.razon', {
+    b: p.b,
+    fb: esc[p.b].toFixed(1),
+    q: p.q,
+    fq: esc[p.q].toFixed(1),
+    rsi: p.rsiV.toFixed(0),
+    extra,
+  })
 }
 
-const mkSetup = (p, lado, esc = {}) => {
+const mkSetup = (p, lado, esc = {}, t) => {
   const d = p.dec
   const compra = lado === 'COMPRA'
   const sl = compra ? p.lo10 - 0.5 * p.atrAbs : p.hi10 + 0.5 * p.atrAbs
@@ -206,10 +216,10 @@ const mkSetup = (p, lado, esc = {}) => {
     },
     sup: p.lo20.toFixed(d),
     res: p.hi20.toFixed(d),
-    entrada: `${p.c.toFixed(d)} actual · mejor en retroceso a EMA9 (${p.e9.toFixed(d)})`,
-    sl: sl.toFixed(d) + (compra ? ' (bajo el mínimo de 10 horas − ½ ATR)' : ' (sobre el máximo de 10 horas + ½ ATR)'),
+    entrada: t('calc_barrido.entrada', { precio: p.c.toFixed(d), ema: p.e9.toFixed(d) }),
+    sl: sl.toFixed(d) + (compra ? t('calc_barrido.slCompra') : t('calc_barrido.slVenta')),
     tp: tp.toFixed(d),
-    rr: '1:' + rr.toFixed(1) + (rr < 1.5 ? ' ⚠ por debajo de 1:1.5' : ''),
+    rr: '1:' + rr.toFixed(1) + (rr < 1.5 ? t('calc_barrido.rbBajo') : ''),
     rrOk: rr >= 1.5,
     pivots: {
       p: p.pivots.p.toFixed(d),
@@ -219,8 +229,8 @@ const mkSetup = (p, lado, esc = {}) => {
       r2: p.pivots.r2.toFixed(d),
     },
     inval: compra
-      ? `cierre horario por debajo de ${sl.toFixed(d)}, o pérdida de fuerza de ${p.b} en el ranking.`
-      : `cierre horario por encima de ${sl.toFixed(d)}, o recuperación de fuerza de ${p.q}.`,
+      ? t('calc_barrido.invalCompra', { sl: sl.toFixed(d), b: p.b })
+      : t('calc_barrido.invalVenta', { sl: sl.toFixed(d), q: p.q }),
   }
 }
 
@@ -229,7 +239,7 @@ const porDifAbs = (a, b) => Math.abs(b.dif) - Math.abs(a.dif)
 // data: salida de computarBarrido(). Devuelve todo ya formateado para las pantallas.
 // vivo: si la vela más reciente trae el precio en vivo de TrueFX (en vez de
 // solo el último cierre de Twelve Data) — únicamente cambia el texto de "corte".
-export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false } = {}) {
+export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crearT(IDIOMA_BASE), locale } = {}) {
   const { esc, pares: paresRaw } = data
 
   const monedas = Object.keys(esc)
@@ -257,14 +267,18 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false } = {}) {
   const ventasRaw = cands.filter((p) => clasificar(p, thr) === 'VENTA').slice(0, 5)
   const vigilanciaRaw = cands.filter((p) => clasificar(p, thr) === 'VIGILAR').slice(0, 4)
 
-  const compras = comprasRaw.map((p) => ({ name: p.name, razon: razon(p, esc) }))
-  const ventas = ventasRaw.map((p) => ({ name: p.name, razon: razon(p, esc) }))
+  const compras = comprasRaw.map((p) => ({ name: p.name, razon: razon(p, esc, t) }))
+  const ventas = ventasRaw.map((p) => ({ name: p.name, razon: razon(p, esc, t) }))
   const vigilancia = vigilanciaRaw.map((p) => ({
     name: p.name,
-    razon: `Diferencial ${p.dif >= 0 ? '+' : ''}${p.dif.toFixed(1)} a favor de ${p.dif > 0 ? p.b : p.q}, pero el par sigue en ${p.tend.toLowerCase()} — fuerza sin confirmación técnica todavía.`,
+    razon: t('calc_barrido.vigilancia', {
+      dif: (p.dif >= 0 ? '+' : '') + p.dif.toFixed(1),
+      favor: p.dif > 0 ? p.b : p.q,
+      tend: t(`tend.${p.tend}`).toLowerCase(),
+    }),
   }))
 
-  const setups = [...comprasRaw.slice(0, topN).map((p) => mkSetup(p, 'COMPRA', esc)), ...ventasRaw.slice(0, topN).map((p) => mkSetup(p, 'VENTA', esc))]
+  const setups = [...comprasRaw.slice(0, topN).map((p) => mkSetup(p, 'COMPRA', esc, t)), ...ventasRaw.slice(0, topN).map((p) => mkSetup(p, 'VENTA', esc, t))]
 
   const ultima = aFechaUTC(data.ultima)
   // Ambas mitades llevan su propia fecha. Antes la de Colombia era solo la
@@ -273,10 +287,11 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false } = {}) {
   // local: "30/07/2026, 1:00 a. m. UTC (8:00 p. m. en Colombia)" cuando en
   // Colombia eran las 8:00 p. m. del 29. Se pone Colombia primero por ser la
   // hora de quien usa la app.
-  const enUTC = ultima.toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' })
-  const enCO = ultima.toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Bogota' })
-  const fuente = vivo ? 'Twelve Data + Capital.com (precio en vivo)' : 'Twelve Data'
-  const corte = `Vela H1 más reciente: ${enCO} hora de Colombia (${enUTC} UTC) · fuente: ${fuente}`
+  const loc = locale || localeDe(IDIOMA_BASE)
+  const enUTC = ultima.toLocaleString(loc, { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' })
+  const enCO = ultima.toLocaleString(loc, { dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Bogota' })
+  const fuente = vivo ? t('calc_barrido.fuenteVivo') : t('calc_barrido.fuenteCierre')
+  const corte = t('calc_barrido.corte', { local: enCO, utc: enUTC, fuente })
 
   return { monedas, pares, compras, ventas, vigilancia, setups, corte }
 }

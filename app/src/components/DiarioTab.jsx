@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { PAIR_NAMES, monedasDe } from '../lib/pairs'
+import { useT } from '../lib/i18n'
 
 const esAbierta = (t) => t.estado === 'abierta'
 
 export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCerrar, prellenar, onPrellenado }) {
+  const tr = useT()
   const [par, setPar] = useState(PAIR_NAMES[0])
   const [dir, setDir] = useState('Compra')
   const [lote, setLote] = useState('')
@@ -63,7 +65,7 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
   }
 
   const cerrarOperacion = (t) => {
-    const entrada = window.prompt(`Resultado final de ${t.par} (USD, usa - para pérdida):`)
+    const entrada = window.prompt(tr('diario.promptCerrar', { par: t.par }))
     if (entrada === null) return
     const plNum = parseFloat(entrada)
     if (!isFinite(plNum)) return
@@ -81,12 +83,12 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <h2 style={{ margin: 0, fontSize: 18 }}>Diario de operaciones</h2>
+      <h2 style={{ margin: 0, fontSize: 18 }}>{tr('diario.titulo')}</h2>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-        {stat(String(trades.length), 'Operaciones', 'var(--text)')}
-        {stat(statWin === '—' ? '—' : statWin + '%', '% ganadas', 'var(--text)')}
-        {stat(statPl, 'P/L (USD)', plTot >= 0 ? 'var(--green)' : 'var(--red)')}
+        {stat(String(trades.length), tr('diario.operaciones'), 'var(--text)')}
+        {stat(statWin === '—' ? '—' : statWin + '%', tr('diario.ganadas'), 'var(--text)')}
+        {stat(statPl, tr('diario.pl'), plTot >= 0 ? 'var(--green)' : 'var(--red)')}
       </div>
 
       <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -97,15 +99,15 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
             ))}
           </select>
           <select className="field" style={{ minHeight: 46, fontSize: 14 }} value={dir} onChange={(e) => setDir(e.target.value)}>
-            <option>Compra</option>
-            <option>Venta</option>
+            <option value="Compra">{tr('direccion.Compra')}</option>
+            <option value="Venta">{tr('direccion.Venta')}</option>
           </select>
           <input
             className="field"
             style={{ minHeight: 46, fontSize: 14 }}
             type="number"
             step="0.01"
-            placeholder="Lote (ej. 0.10)"
+            placeholder={tr('diario.lote')}
             value={lote}
             onChange={(e) => setLote(e.target.value)}
           />
@@ -115,7 +117,7 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
               style={{ minHeight: 46, fontSize: 14 }}
               type="number"
               step="0.01"
-              placeholder="Resultado USD (±)"
+              placeholder={tr('diario.resultado')}
               value={pl}
               onChange={(e) => setPl(e.target.value)}
             />
@@ -123,30 +125,29 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
         </div>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-secondary)', minHeight: 30 }}>
           <input type="checkbox" checked={abierta} onChange={(e) => setAbierta(e.target.checked)} style={{ width: 18, height: 18 }} />
-          Sigue abierta (todavía sin resultado)
+          {tr('diario.sigueAbierta')}
         </label>
         <input
           className="field"
           style={{ minHeight: 46, fontSize: 14 }}
-          placeholder="Notas (setup, qué aprendiste…)"
+          placeholder={tr('diario.notas')}
           value={nota}
           onChange={(e) => setNota(e.target.value)}
         />
         <button className="btn btn-primary" onClick={guardar}>
-          Guardar operación
+          {tr('diario.guardar')}
         </button>
       </div>
 
       {avisoRiesgo.length > 0 && (
         <div style={{ padding: 12, border: '1px solid oklch(0.4 0.06 85)', borderRadius: 8, background: 'oklch(0.22 0.03 85)' }}>
           <div className="mono" style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--amber)', marginBottom: 4 }}>
-            ⚠ Riesgo concentrado
+            {tr('diario.riesgoConcentrado')}
           </div>
           <div style={{ fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
             {avisoRiesgo.map(({ moneda, pares }) => (
               <div key={moneda}>
-                Tienes {pares.length} operaciones abiertas con <strong style={{ color: 'var(--text)' }}>{moneda}</strong> ({pares.join(', ')}) —
-                no son apuestas independientes, es una sola apuesta más grande a esa divisa.
+                {tr('diario.avisoConcentrado', { n: pares.length, moneda, pares: pares.join(', ') })}
               </div>
             ))}
           </div>
@@ -155,7 +156,7 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
 
       {cargando && (
         <div className="mono" style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-          Cargando operaciones…
+          {tr('diario.cargando')}
         </div>
       )}
 
@@ -167,9 +168,9 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
                 <span style={{ fontWeight: 700 }}>{t.par}</span>
                 <span style={{ color: t.dir === 'Compra' ? 'var(--green)' : 'var(--red)', fontWeight: 600 }}>{t.dir}</span>
                 <span style={{ color: 'var(--text-muted)' }}>
-                  {t.lote} lote · {t.fecha}
+                  {t.lote} {tr('diario.loteSufijo')} · {t.fecha}
                 </span>
-                {esAbierta(t) && <span style={{ color: 'var(--amber)', fontWeight: 600 }}>Abierta</span>}
+                {esAbierta(t) && <span style={{ color: 'var(--amber)', fontWeight: 600 }}>{tr('diario.abierta')}</span>}
               </div>
               {t.nota && <div style={{ fontSize: 12.5, color: 'var(--text-secondary)', marginTop: 3 }}>{t.nota}</div>}
             </div>
@@ -179,7 +180,7 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
                 className="mono"
                 style={{ minHeight: 36, padding: '0 10px', borderRadius: 6, border: '1px solid var(--border-strong)', background: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 12, whiteSpace: 'nowrap' }}
               >
-                Cerrar
+                {tr('diario.cerrar')}
               </button>
             ) : (
               <span className="mono" style={{ fontWeight: 700, fontSize: 14, color: t.pl >= 0 ? 'var(--green)' : 'var(--red)' }}>
@@ -196,7 +197,7 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
         ))}
       </div>
 
-      {!cargando && trades.length === 0 && <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Aún no has registrado operaciones.</div>}
+      {!cargando && trades.length === 0 && <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{tr('diario.vacio')}</div>}
     </div>
   )
 }

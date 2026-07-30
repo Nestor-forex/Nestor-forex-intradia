@@ -1,14 +1,16 @@
 import { sesgoColor, tendColor } from '../lib/display'
 import { fmtFechaHora } from '../lib/format'
 import BarraFuerza from './BarraFuerza'
+import { useIdioma } from '../lib/i18n'
 
 export default function BarridoTab({ loading, error, sinConfigurar, stale, guardadoEl, monedas, pares, corte, onVerTablero }) {
+  const { t, locale } = useIdioma()
   const paresOrdenados = [...pares].sort((a, b) => Math.abs(b.dif) - Math.abs(a.dif))
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <h2 style={{ margin: 0, fontSize: 18 }}>Barrido intradía (H1)</h2>
+        <h2 style={{ margin: 0, fontSize: 18 }}>{t('barrido.titulo')}</h2>
         <span className="mono" style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>
           {corte}
         </span>
@@ -16,12 +18,12 @@ export default function BarridoTab({ loading, error, sinConfigurar, stale, guard
 
       {sinConfigurar && (
         <div style={{ padding: 12, border: '1px solid var(--amber)', borderRadius: 8, color: 'var(--amber)', fontSize: 12.5, lineHeight: 1.5 }}>
-          Esta copia todavía no tiene configurada la fuente de precios en vivo.
+          {t('barrido.sinConfigurar')}
         </div>
       )}
       {stale && (
         <div style={{ padding: 12, border: '1px solid var(--amber)', borderRadius: 8, color: 'var(--amber)', fontSize: 12.5, lineHeight: 1.5 }}>
-          ⚠ Sin conexión — mostrando el último precio guardado, del {fmtFechaHora(guardadoEl)}.
+          {t('barrido.sinConexion', { fecha: fmtFechaHora(guardadoEl, locale) })}
         </div>
       )}
       {error && (
@@ -29,7 +31,7 @@ export default function BarridoTab({ loading, error, sinConfigurar, stale, guard
       )}
       {loading && (
         <div className="mono" style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-          Descargando precios…
+          {t('barrido.descargando')}
         </div>
       )}
 
@@ -61,9 +63,9 @@ export default function BarridoTab({ loading, error, sinConfigurar, stale, guard
                   {p.name}
                 </span>
                 <span className="mono" style={{ fontWeight: 700, fontSize: 12, color: sesgoColor(p.sesgo) }}>
-                  {p.sesgo}
+                  {t(`sesgo.${p.sesgo}`)}
                 </span>
-                <span style={{ color: tendColor(p.tend) }}>{p.tend}</span>
+                <span style={{ color: tendColor(p.tend) }}>{t(`tend.${p.tend}`)}</span>
                 <span className="mono" style={{ color: 'var(--text-secondary)' }}>
                   RSI {p.rsi}
                 </span>
@@ -74,7 +76,7 @@ export default function BarridoTab({ loading, error, sinConfigurar, stale, guard
       )}
 
       <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-        Velas de 1 hora, precio en vivo (se actualiza cada 15 min). Análisis educativo, no asesoría financiera.{' '}
+        {t('barrido.pie')}{' '}
         <a
           href="#tablero"
           onClick={(e) => {
@@ -82,7 +84,7 @@ export default function BarridoTab({ loading, error, sinConfigurar, stale, guard
             onVerTablero()
           }}
         >
-          Ver tablero completo →
+          {t('barrido.verTablero')}
         </a>
       </p>
     </div>

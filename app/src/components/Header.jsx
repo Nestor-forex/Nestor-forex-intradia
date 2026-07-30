@@ -1,4 +1,9 @@
+import { useT } from '../lib/i18n'
+import SelectorIdioma from './SelectorIdioma'
+
 export default function Header({ nombreApp, saludo, onSalir }) {
+  const t = useT()
+
   return (
     <header
       style={{
@@ -20,9 +25,12 @@ export default function Header({ nombreApp, saludo, onSalir }) {
           {saludo}
         </div>
       </div>
-      <button className="btn-ghost" onClick={onSalir}>
-        Salir
-      </button>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+        <SelectorIdioma compacto />
+        <button className="btn-ghost" onClick={onSalir}>
+          {t('comun.salir')}
+        </button>
+      </div>
     </header>
   )
 }

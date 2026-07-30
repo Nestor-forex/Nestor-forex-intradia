@@ -1,16 +1,23 @@
-const MENSAJES = {
-  'auth/email-already-in-use': 'Ese correo ya tiene una cuenta. Prueba en "Ingresar".',
-  'auth/invalid-email': 'Ese correo no parece válido.',
-  'auth/weak-password': 'La clave debe tener al menos 6 caracteres.',
-  'auth/missing-password': 'Escribe una clave.',
-  'auth/user-not-found': 'Correo o clave incorrectos, o aún no estás inscrito.',
-  'auth/wrong-password': 'Correo o clave incorrectos, o aún no estás inscrito.',
-  'auth/invalid-credential': 'Correo o clave incorrectos, o aún no estás inscrito.',
-  'auth/invalid-login-credentials': 'Correo o clave incorrectos, o aún no estás inscrito.',
-  'auth/too-many-requests': 'Demasiados intentos. Espera un momento y vuelve a intentar.',
-  'auth/network-request-failed': 'No hay conexión a internet. Revisa tu señal y vuelve a intentar.',
-}
+// Traduce el código de error de Firebase a una frase que se entienda.
+//
+// Recibe la función `t` en vez de importarla: quien llama ya está dentro de
+// React y sabe el idioma actual, y así este archivo sigue sin depender de la
+// interfaz.
 
-export function mensajeError(error) {
-  return MENSAJES[error?.code] || 'Algo salió mal. Inténtalo de nuevo.'
+const CONOCIDOS = new Set([
+  'auth/email-already-in-use',
+  'auth/invalid-email',
+  'auth/weak-password',
+  'auth/missing-password',
+  'auth/user-not-found',
+  'auth/wrong-password',
+  'auth/invalid-credential',
+  'auth/invalid-login-credentials',
+  'auth/too-many-requests',
+  'auth/network-request-failed',
+])
+
+export function mensajeError(error, t) {
+  const codigo = error?.code
+  return CONOCIDOS.has(codigo) ? t(`errores.${codigo}`) : t('errores.generico')
 }

@@ -1,6 +1,9 @@
 import { useState } from 'react'
+import { useT } from '../lib/i18n'
+import SelectorIdioma from './SelectorIdioma'
 
 export default function Auth({ nombreApp, onRegistrar, onIngresar }) {
+  const t = useT()
   const [modo, setModo] = useState('login')
   const [logEmail, setLogEmail] = useState('')
   const [logClave, setLogClave] = useState('')
@@ -51,43 +54,46 @@ export default function Auth({ nombreApp, onRegistrar, onIngresar }) {
 
   return (
     <div style={{ flex: 1, padding: '48px 24px 40px', display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <div>
-        <div className="eyebrow" style={{ fontSize: 11 }}>
-          TRADING · FX
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+        <div style={{ minWidth: 0 }}>
+          <div className="eyebrow" style={{ fontSize: 11 }}>
+            {t('comun.eyebrow')}
+          </div>
+          <h1 style={{ margin: '6px 0 0', fontSize: 26, fontWeight: 700 }}>{nombreApp}</h1>
         </div>
-        <h1 style={{ margin: '6px 0 0', fontSize: 26, fontWeight: 700 }}>{nombreApp}</h1>
+        <div style={{ marginInlineStart: 'auto' }}>
+          <SelectorIdioma compacto />
+        </div>
       </div>
 
       <div style={{ display: 'flex', gap: 8 }}>
         <button style={tabStyle(modo === 'login')} onClick={() => cambiarModo('login')}>
-          Ingresar
+          {t('auth.ingresar')}
         </button>
         <button style={tabStyle(modo === 'registro')} onClick={() => cambiarModo('registro')}>
-          Inscribirse
+          {t('auth.inscribirse')}
         </button>
       </div>
 
       {modo === 'login' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <input className="field" type="email" placeholder="Correo" value={logEmail} onChange={(e) => setLogEmail(e.target.value)} />
-          <input className="field" type="password" placeholder="Clave" value={logClave} onChange={(e) => setLogClave(e.target.value)} />
+          <input className="field" type="email" placeholder={t('auth.correo')} value={logEmail} onChange={(e) => setLogEmail(e.target.value)} />
+          <input className="field" type="password" placeholder={t('auth.clave')} value={logClave} onChange={(e) => setLogClave(e.target.value)} />
           <button className="btn btn-primary" style={{ minHeight: 50, fontSize: 16, opacity: cargando ? 0.7 : 1 }} disabled={cargando} onClick={ingresar}>
-            {cargando ? 'Ingresando…' : 'Ingresar'}
+            {cargando ? t('auth.ingresando') : t('auth.ingresar')}
           </button>
         </div>
       )}
 
       {modo === 'registro' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <input className="field" placeholder="Nombre completo" value={regNombre} onChange={(e) => setRegNombre(e.target.value)} />
-          <input className="field" type="email" placeholder="Correo" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} />
-          <input className="field" type="password" placeholder="Crea una clave (mín. 6 caracteres)" value={regClave} onChange={(e) => setRegClave(e.target.value)} />
+          <input className="field" placeholder={t('auth.nombreCompleto')} value={regNombre} onChange={(e) => setRegNombre(e.target.value)} />
+          <input className="field" type="email" placeholder={t('auth.correo')} value={regEmail} onChange={(e) => setRegEmail(e.target.value)} />
+          <input className="field" type="password" placeholder={t('auth.creaClave')} value={regClave} onChange={(e) => setRegClave(e.target.value)} />
           <button className="btn btn-primary" style={{ minHeight: 50, fontSize: 16, opacity: cargando ? 0.7 : 1 }} disabled={cargando} onClick={registrar}>
-            {cargando ? 'Enviando…' : 'Enviar solicitud'}
+            {cargando ? t('auth.enviando') : t('auth.enviarSolicitud')}
           </button>
-          <p style={{ margin: 0, fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-            Tu solicitud queda pendiente hasta que Néstor la autorice.
-          </p>
+          <p style={{ margin: 0, fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>{t('auth.notaSolicitud')}</p>
         </div>
       )}
 
