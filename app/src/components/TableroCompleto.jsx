@@ -43,7 +43,7 @@ function RazonList({ items, emptyText }) {
   )
 }
 
-export default function TableroCompleto({ onVolver, loading, error, sinConfigurar, stale, guardadoEl, monedas, pares, compras, ventas, vigilancia, setups, corte }) {
+export default function TableroCompleto({ onVolver, onVerSetup, loading, error, sinConfigurar, stale, guardadoEl, monedas, pares, compras, ventas, vigilancia, setups, corte }) {
   const fecha = useMemo(fmtFechaHoy, [])
   const sesion = useMemo(sesionActiva, [])
 
@@ -223,6 +223,16 @@ export default function TableroCompleto({ onVolver, loading, error, sinConfigura
                   Pivotes de sesión — S2 {s.pivots.s2} · S1 {s.pivots.s1} · P {s.pivots.p} · R1 {s.pivots.r1} · R2 {s.pivots.r2}
                 </div>
                 <p style={{ margin: '12px 0 0', fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.5 }}>Invalida: {s.inval}</p>
+                {onVerSetup && (
+                  <button
+                    type="button"
+                    className="btn"
+                    style={{ marginTop: 12, width: '100%' }}
+                    onClick={() => onVerSetup(s)}
+                  >
+                    Ver la señal en detalle →
+                  </button>
+                )}
               </div>
             ))}
           </div>

@@ -168,7 +168,7 @@ const razon = (p, esc) => {
   return `${p.b} (${esc[p.b].toFixed(1)}) vs ${p.q} (${esc[p.q].toFixed(1)}), EMA9/21 alineadas, RSI ${p.rsiV.toFixed(0)}${ext}`
 }
 
-const mkSetup = (p, lado) => {
+const mkSetup = (p, lado, esc = {}) => {
   const d = p.dec
   const compra = lado === 'COMPRA'
   const sl = compra ? p.lo10 - 0.5 * p.atrAbs : p.hi10 + 0.5 * p.atrAbs
@@ -177,6 +177,33 @@ const mkSetup = (p, lado) => {
   return {
     name: p.name,
     lado,
+    // Los campos de abajo son texto ya armado, que es lo que consumen el
+    // tablero y el reporte .md. `crudo` lleva los mismos datos sin formatear,
+    // para la pantalla de detalle, que necesita dibujarlos y no solo leerlos.
+    crudo: {
+      b: p.b,
+      q: p.q,
+      dec: d,
+      compra,
+      precio: p.c,
+      sl,
+      tp,
+      ema: p.e9,
+      rr,
+      // Distancias al stop y al objetivo, en pips (JPY cotiza a 2 decimales,
+      // así que ahí un pip es 0.01 y no 0.0001).
+      pipRiesgo: Math.abs(p.c - sl) / (d === 2 ? 0.01 : 0.0001),
+      pipBeneficio: Math.abs(tp - p.c) / (d === 2 ? 0.01 : 0.0001),
+      sup: p.lo20,
+      res: p.hi20,
+      pivote: p.pivots.p,
+      serie20: p.serie20,
+      rsi: Math.round(p.rsiV),
+      atrPct: p.atrPctH,
+      tend: p.tend,
+      fuerzaB: esc[p.b],
+      fuerzaQ: esc[p.q],
+    },
     sup: p.lo20.toFixed(d),
     res: p.hi20.toFixed(d),
     entrada: `${p.c.toFixed(d)} actual · mejor en retroceso a EMA9 (${p.e9.toFixed(d)})`,
@@ -237,7 +264,7 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false } = {}) {
     razon: `Diferencial ${p.dif >= 0 ? '+' : ''}${p.dif.toFixed(1)} a favor de ${p.dif > 0 ? p.b : p.q}, pero el par sigue en ${p.tend.toLowerCase()} — fuerza sin confirmación técnica todavía.`,
   }))
 
-  const setups = [...comprasRaw.slice(0, topN).map((p) => mkSetup(p, 'COMPRA')), ...ventasRaw.slice(0, topN).map((p) => mkSetup(p, 'VENTA'))]
+  const setups = [...comprasRaw.slice(0, topN).map((p) => mkSetup(p, 'COMPRA', esc)), ...ventasRaw.slice(0, topN).map((p) => mkSetup(p, 'VENTA', esc))]
 
   const ultima = aFechaUTC(data.ultima)
   const enUTC = ultima.toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' })

@@ -17,6 +17,10 @@
   --amber: oklch(0.75 0.13 85);
   --gray-mid: oklch(0.6 0.04 255);
 
+  /* Dorado de la marca del intradía (el mismo de la portada). Es el acento que
+     distingue esta app de la de swing, que usa cian. */
+  --accent: #d4af37;
+
   --radius-control: 8px;
   --radius-card: 10px;
   --tap-min: 44px;
