@@ -8,6 +8,7 @@ import BottomNav from './components/BottomNav'
 import BarridoTab from './components/BarridoTab'
 import TableroCompleto from './components/TableroCompleto'
 import SetupDetalle from './components/SetupDetalle'
+import { useT } from './lib/i18n'
 import DiarioTab from './components/DiarioTab'
 import CalculadoraTab from './components/CalculadoraTab'
 import MiembrosTab from './components/MiembrosTab'
@@ -37,6 +38,7 @@ function SinConfigurar() {
 }
 
 export default function App() {
+  const t = useT()
   const { authUser, cargandoAuth, perfilEstado, esAdmin, registrar, ingresar, salir } = useAuthUser()
   const mercado = useMarketData()
   const miembros = useMembers(esAdmin)
@@ -59,7 +61,7 @@ export default function App() {
 
   useEffect(() => {
     if (perfilEstado === 'retirado') {
-      setMsgAuth('Tu acceso fue retirado. Escríbele a Néstor si crees que es un error.')
+      setMsgAuth(t('pendiente.retirado'))
       salir()
       setScreen('auth')
     }
@@ -103,7 +105,7 @@ export default function App() {
     setPrellenarDiario({
       par: s.name,
       dir: s.lado === 'COMPRA' ? 'Compra' : 'Venta',
-      nota: `Setup del barrido intradía${niveles}`,
+      nota: t('detalle.notaDiario', { niveles }),
       abierta: true,
     })
     setDetalleId(null)
@@ -142,12 +144,12 @@ export default function App() {
         {authUser && perfilEstado === 'cargando' && <CargandoApp nombreApp={NOMBRE_APP} />}
 
         {authUser && perfilEstado === 'pendiente' && (
-          <Pendiente nombreApp={NOMBRE_APP} mensaje="Tu solicitud queda pendiente hasta que Néstor la autorice." onSalir={salirYVolver} />
+          <Pendiente nombreApp={NOMBRE_APP} onSalir={salirYVolver} />
         )}
 
         {authUser && perfilEstado === 'aprobado' && !detalle && tab !== 'tablero' && (
           <>
-            <Header nombreApp={NOMBRE_APP} saludo={esAdmin ? 'Administrador' : authUser.email || ''} onSalir={salirYVolver} />
+            <Header nombreApp={NOMBRE_APP} saludo={esAdmin ? t('comun.administrador') : authUser.email || ''} onSalir={salirYVolver} />
             <main style={{ flex: 1, padding: '18px 18px 96px', display: 'flex', flexDirection: 'column', gap: 16 }}>
               {tab === 'barrido' && (
                 <BarridoTab
@@ -177,7 +179,7 @@ export default function App() {
                 <CalculadoraTab
                   ratesUSD={mercado.ratesUSD}
                   loadingTasas={mercado.loading}
-                  errorTasas={mercado.sinConfigurar ? 'Todavía no está configurada la fuente de precios en vivo.' : mercado.error}
+                  errorTasas={mercado.sinConfigurar ? t('barrido.sinConfigurar') : mercado.error}
                 />
               )}
               {tab === 'admin' && esAdmin && (

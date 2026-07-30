@@ -1,11 +1,16 @@
+import { useT } from '../lib/i18n'
+
+// La etiqueta se guarda como clave, no como texto: así se traduce al vuelo
+// cuando cambia el idioma, sin reconstruir la lista.
 const ITEMS = [
-  { tab: 'barrido', icon: '▦', label: 'Barrido' },
-  { tab: 'diario', icon: '≡', label: 'Diario' },
-  { tab: 'calc', icon: '%', label: 'Riesgo' },
+  { tab: 'barrido', icon: '▦', clave: 'nav.barrido' },
+  { tab: 'diario', icon: '≡', clave: 'nav.diario' },
+  { tab: 'calc', icon: '%', clave: 'nav.riesgo' },
 ]
 
 export default function BottomNav({ tab, onTab, esAdmin }) {
-  const items = esAdmin ? [...ITEMS, { tab: 'admin', icon: '⚙', label: 'Miembros' }] : ITEMS
+  const t = useT()
+  const items = esAdmin ? [...ITEMS, { tab: 'admin', icon: '⚙', clave: 'nav.miembros' }] : ITEMS
 
   return (
     <nav
@@ -46,7 +51,7 @@ export default function BottomNav({ tab, onTab, esAdmin }) {
           <span className="mono" style={{ fontSize: 17 }}>
             {it.icon}
           </span>
-          {it.label}
+          {t(it.clave)}
         </button>
       ))}
     </nav>

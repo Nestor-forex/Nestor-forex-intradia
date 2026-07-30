@@ -1,19 +1,22 @@
+import { useT } from '../lib/i18n'
+
 export default function MiembrosTab({ usuarios, cargando, onAprobar, onRetirar }) {
+  const t = useT()
+
   const retirar = (uid, nombre) => {
-    if (confirm(`¿Retirar a ${nombre}?`)) onRetirar(uid)
+    if (confirm(t('miembros.confirmarRetiro', { nombre }))) onRetirar(uid)
   }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <h2 style={{ margin: 0, fontSize: 18 }}>Miembros</h2>
+      <h2 style={{ margin: 0, fontSize: 18 }}>{t('miembros.titulo')}</h2>
       <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-        Aprueba las solicitudes para dar acceso, o retira a cualquiera cuando quieras. Los cambios se aplican al instante para
-        todos.
+        {t('miembros.intro')}
       </div>
 
       {cargando && (
         <div className="mono" style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-          Cargando miembros…
+          {t('miembros.cargando')}
         </div>
       )}
 
@@ -23,7 +26,7 @@ export default function MiembrosTab({ usuarios, cargando, onAprobar, onRetirar }
             <div style={{ flex: '1 1 160px', minWidth: 0 }}>
               <div style={{ fontWeight: 600, fontSize: 14 }}>{u.nombre}</div>
               <div className="mono" style={{ fontSize: 12, color: 'var(--text-muted)', overflowWrap: 'anywhere' }}>
-                {u.email} · <span style={{ color: u.estado === 'aprobado' ? 'var(--green)' : 'var(--amber)' }}>{u.estado}</span>
+                {u.email} · <span style={{ color: u.estado === 'aprobado' ? 'var(--green)' : 'var(--amber)' }}>{u.estado === 'aprobado' ? t('miembros.estadoAprobado') : t('miembros.estadoPendiente')}</span>
               </div>
             </div>
             <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
@@ -32,14 +35,14 @@ export default function MiembrosTab({ usuarios, cargando, onAprobar, onRetirar }
                   onClick={() => onAprobar(u.uid)}
                   style={{ minHeight: 44, padding: '0 14px', borderRadius: 8, border: 'none', background: 'var(--green)', color: 'oklch(0.15 0.01 255)', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}
                 >
-                  Aprobar
+                  {t('miembros.aprobar')}
                 </button>
               )}
               <button
                 onClick={() => retirar(u.uid, u.nombre)}
                 style={{ minHeight: 44, padding: '0 14px', borderRadius: 8, border: '1px solid oklch(0.45 0.08 25)', background: 'none', color: 'oklch(0.7 0.12 25)', fontSize: 13, cursor: 'pointer' }}
               >
-                Retirar
+                {t('miembros.retirar')}
               </button>
             </div>
           </div>
@@ -47,7 +50,7 @@ export default function MiembrosTab({ usuarios, cargando, onAprobar, onRetirar }
       </div>
 
       {!cargando && usuarios.length === 0 && (
-        <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Sin solicitudes todavía. Comparte la app para que se inscriban.</div>
+        <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{t('miembros.vacio')}</div>
       )}
     </div>
   )

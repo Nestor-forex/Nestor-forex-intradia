@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import { useT } from '../lib/i18n'
+import SelectorIdioma from './SelectorIdioma'
 
 const EXCHANGES = [
   ['NYSE', 13.5, 20], // horas UTC, lun-vie
@@ -28,6 +30,7 @@ const CONTAINER_ASPECT = `1440 / ${Math.round(1440 * IMG_ASPECT * CROP_HEIGHT_FR
 const IMG_TOP_PCT = -(CROP_TOP / CROP_HEIGHT_FRAC) * 100
 
 export default function Splash({ nombreApp, onEntrar }) {
+  const t = useT()
   const exchangeStatus = useMemo(() => {
     const now = new Date()
     const horaUTC = now.getUTCHours() + now.getUTCMinutes() / 60
@@ -114,11 +117,16 @@ export default function Splash({ nombreApp, onEntrar }) {
           {nombreApp}
         </h1>
         <div style={{ width: 120, height: 2, background: 'linear-gradient(90deg, transparent, #d4af37, transparent)' }} />
-        <p style={{ margin: 0, fontSize: 14.5, color: '#aab2c5' }}>Señales de alta precisión.</p>
+        <p style={{ margin: 0, fontSize: 14.5, color: '#aab2c5' }}>{t('splash.lema')}</p>
         <button className="btn btn-primary" style={{ marginTop: 8, minHeight: 52, fontSize: 16, width: '100%', maxWidth: 320 }} onClick={onEntrar}>
-          Entrar
+          {t('splash.entrar')}
         </button>
-        <p style={{ margin: 0, fontSize: 12.5, color: '#6b7488' }}>Inicia sesión para continuar</p>
+        <p style={{ margin: 0, fontSize: 12.5, color: '#6b7488' }}>{t('splash.iniciaSesion')}</p>
+        {/* El selector va también en la portada: es la primera pantalla que ve
+            alguien que no ha entrado, y desde aquí no hay otra forma de cambiarlo. */}
+        <div style={{ marginTop: 4 }}>
+          <SelectorIdioma />
+        </div>
       </div>
     </div>
   )

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { computarBarrido, derivarVista } from './marketCalc'
 import { useCapitalLive } from './useCapitalLive'
+import { useT } from './i18n'
 
 const CACHE_KEY = 'nfi_market_cache_v1'
 const REFRESH_MS = 15 * 60 * 1000 // refrescar cada 15 min mientras la app está abierta
@@ -77,9 +78,13 @@ async function obtenerRates() {
 // barrido intradía. thr = umbral de diferencial para clasificar sesgo,
 // topN = setups por lado.
 export function useMarketData({ thr = 0.5, topN = 3 } = {}) {
+  const t = useT()
   const sinConfigurar = !apiKey
   const [loading, setLoading] = useState(!sinConfigurar)
-  const [error, setError] = useState(null)
+  // Se guarda el error SIN traducir y se traduce al devolverlo: si se
+  // guardara ya traducido, al cambiar de idioma el mensaje se quedaría
+  // congelado en el idioma anterior hasta la siguiente descarga.
+  const [errorCrudo, setErrorCrudo] = useState(null)
   const [crudo, setCrudo] = useState(null) // { barras, rates } tal como llegan de Twelve Data
   const [stale, setStale] = useState(false)
   const [guardadoEl, setGuardadoEl] = useState(null)
@@ -98,11 +103,11 @@ export function useMarketData({ thr = 0.5, topN = 3 } = {}) {
           setCrudo({ barras, rates })
           setStale(stale)
           setGuardadoEl(fetchedAt)
-          setError(null)
+          setErrorCrudo(null)
         })
         .catch((e) => {
           if (cancelado) return
-          setError('No se pudieron obtener los precios en vivo (' + e.message + '). Revisa la conexión y recarga.')
+          setErrorCrudo(e.message)
         })
         .finally(() => {
           if (!cancelado) {
@@ -134,11 +139,11 @@ export function useMarketData({ thr = 0.5, topN = 3 } = {}) {
     return computarBarrido(crudo.barras, ratesConVivo)
   }, [crudo, filaViva])
 
-  const vista = data ? derivarVista(data, { thr, topN, vivo }) : null
+  const vista = data ? derivarVista(data, { thr, topN, vivo, t }) : null
 
   return {
     loading,
-    error,
+    error: errorCrudo ? t('barrido.errorPrecios', { detalle: errorCrudo }) : null,
     sinConfigurar,
     stale,
     guardadoEl,
