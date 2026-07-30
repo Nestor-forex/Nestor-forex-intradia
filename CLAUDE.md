@@ -98,3 +98,80 @@ antes de cada fase grande. Rama de trabajo: se commitea directo a `main`
 mientras el repo es nuevo (mismo patrón que el primer commit "Add files
 via upload" del repo original); una vez publicada la primera versión,
 usar ramas + PR como en Nestor Forex.
+
+## Precio en vivo con TrueFX (2026-07-27/28, en curso)
+
+El usuario pidió que la app diera "información real y precisa en tiempo
+real" a cada suscriptor que la abre. Twelve Data (refresco cada 15 min)
+se queda como la fuente del historial de 100 velas H1 — TrueFX no da
+historial gratis, solo el precio del momento, así que **complementa, no
+reemplaza**. Se evaluaron y descartaron antes de llegar aquí: subir de
+plan en Twelve Data ($99/mes Pro para WebSocket real), OANDA (la cuenta
+que abrió el usuario quedó en la división "OANDA Global Markets", que su
+propia documentación excluye de la API v20 — además esa cuenta resultó
+ser MT5, ni siquiera v20), AvaTrade (sin API pública para developers),
+MetaApi.cloud (no es gratis, $30/mes mínimo), Interactive Brokers (las
+cuentas demo no pueden recibir datos por API).
+
+- **PR #1 (fusionado):** agrega `app/src/lib/useTrueFXLive.js` —
+  mientras la app está abierta, abre sesión en TrueFX
+  (`webrates.truefx.com/rates/connect.html`) y consulta cada 10s el
+  precio de las 7 divisas. `useMarketData.js` reemplaza el cierre de la
+  vela más reciente con ese precio en vivo antes de recalcular (EMA,
+  RSI, fuerza relativa, pivotes) — si TrueFX falla, no pasa nada, la app
+  sigue solo con Twelve Data, nunca se rompe por esto.
+  `VITE_TRUEFX_USER`/`VITE_TRUEFX_PASS` en `.env.production`, mismo
+  criterio que la llave de Twelve Data (cuenta de solo datos, sin
+  fondos, bajo riesgo real de publicarla). Usuario: `NESTOR`.
+- ⚠️ **Probado en la app real y TrueFX respondió `"not authorized"`**
+  (confirmado con un script de diagnóstico corrido en GitHub Actions —
+  PR #2, ya revertido/eliminado tras el diagnóstico, el entorno de
+  desarrollo normal tiene bloqueado `webrates.truefx.com` igual que
+  `api.twelvedata.com`). La app no se rompió (cayó de vuelta a "fuente:
+  Twelve Data" sola, tal como se diseñó), pero el precio en vivo no
+  funcionaba con TrueFX.
+- ✅ **Causa real confirmada, y resuelta cambiando de proveedor:** no era
+  la suscripción (el panel "Suscripciones" de Néstor mostraba "Vida /
+  Gratis / Activo: Sí"). La verdadera razón: la página de precios
+  actual de TrueFX (truefx.com) muestra planes de pago institucionales
+  (uno visible en $7,450) — su API de streaming ya no es gratis para
+  cuentas nuevas, pese a que la documentación de 2009-2019 (la única
+  que se encontró al investigar) la describía como gratis con solo
+  registrarse. Se abandonó TrueFX por completo.
+- ✅ **PR #3 (fusionado):** se reemplazó por **Capital.com**
+  (`useCapitalLive.js`), bróker de CFDs con API REST/WebSocket gratis
+  confirmada en cuenta demo (sin fondos reales). Esta vez sí se probó
+  con datos reales antes de fusionar (script de diagnóstico temporal en
+  GitHub Actions): sesión exitosa, y los 7 precios de las divisas
+  contra USD confirmados en una sola consulta batch
+  (`GET /api/v1/markets?epics=...`). Credenciales en `.env.production`
+  como `VITE_CAPITAL_API_KEY`/`VITE_CAPITAL_IDENTIFIER`/
+  `VITE_CAPITAL_PASSWORD` (cuenta demo, mismo criterio de transparencia
+  que las demás credenciales del archivo). Pendiente de confirmar en la
+  app real: que el navegador no bloquee la llamada por CORS (no se pudo
+  probar esa parte desde Node/GitHub Actions).
+- **Aclaración importante sobre los 14 pares:** la app muestra 14 pares
+  (7 "mayores" contra USD + 7 cruces como EUR/CHF, GBP/JPY, etc.), pero
+  el motor (`computarBarrido` en `marketCalc.js`) calcula los cruces
+  matemáticamente a partir de las 7 divisas contra USD — no hace falta
+  pedirle datos en vivo de los 14 por separado a ningún proveedor. Con
+  los 7 precios en vivo de Capital.com, los 14 pares completos quedan
+  actualizados.
+
+## Reporte diario automático (2026-07-27, en curso)
+
+`reporte-diario.yml` corre cada día de semana a las 8:00 am hora de
+Colombia (13:00 UTC), calcula el barrido con Twelve Data (necesita
+internet real, por eso corre en GitHub Actions y no en el entorno de la
+sesión de Claude) y **solo imprime el resultado en los logs** — nunca
+lo envía a ningún lado por sí solo. Se creó una Routine (`trig_
+01Gse2QF87kvjwVQD2dUzU4f`, cuenta de Néstor) que se dispara cada día de
+semana a las 13:07 UTC, lee esos logs y le manda el reporte a Néstor por
+este mismo chat. Advertencia real: al crearla, el sistema avisó que las
+Routines no heredan automáticamente las herramientas de GitHub como un
+"conector" — quedó atada a esta sesión (self-bind) en vez de crear una
+sesión nueva en cada disparo, con la esperanza de que así sí mantenga
+acceso. **No confirmado todavía si el primer disparo automático (mañana)
+va a funcionar de punta a punta** — se hizo una prueba manual
+(`fire_trigger`) pero no se alcanzó a verificar el resultado en esta
+sesión antes de seguir con otras tareas.
