@@ -73,6 +73,18 @@ function calcularPivots(closes, L) {
   }
 }
 
+// Twelve Data devuelve la hora como "2026-07-30 02:00:00", sin zona. Se le
+// pide explícitamente timezone=UTC al API (su valor por omisión es la zona del
+// mercado, que venía adelantada varias horas y hacía que el reporte mostrara
+// velas "del futuro"). Aun así hay que convertirla a mano: `new Date('2026-07-30
+// 02:00:00')` la leería como hora *local* del dispositivo, o sea 5 horas
+// corridas en Colombia.
+function aFechaUTC(ts) {
+  const s = String(ts).trim().replace(' ', 'T')
+  if (/(Z|[+-]\d\d:?\d\d)$/.test(s)) return new Date(s)
+  return new Date(s.includes('T') ? s + 'Z' : s + 'T00:00:00Z')
+}
+
 // barras: array de timestamps ISO (UTC) ascendentes, uno por vela H1.
 // rates: { [timestamp]: { EUR, GBP, JPY, CHF, AUD, NZD, CAD } } — cuántas
 // unidades de esa divisa vale 1 USD en esa hora (mismo formato que el
@@ -227,9 +239,11 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false } = {}) {
 
   const setups = [...comprasRaw.slice(0, topN).map((p) => mkSetup(p, 'COMPRA')), ...ventasRaw.slice(0, topN).map((p) => mkSetup(p, 'VENTA'))]
 
-  const fechaHora = new Date(data.ultima).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' })
+  const ultima = aFechaUTC(data.ultima)
+  const enUTC = ultima.toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' })
+  const enCO = ultima.toLocaleString('es-CO', { timeStyle: 'short', timeZone: 'America/Bogota' })
   const fuente = vivo ? 'Twelve Data + Capital.com (precio en vivo)' : 'Twelve Data'
-  const corte = `Vela H1 más reciente: ${fechaHora} UTC · fuente: ${fuente}`
+  const corte = `Vela H1 más reciente: ${enUTC} UTC (${enCO} en Colombia) · fuente: ${fuente}`
 
   return { monedas, pares, compras, ventas, vigilancia, setups, corte }
 }
