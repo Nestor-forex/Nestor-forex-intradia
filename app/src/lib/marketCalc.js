@@ -267,10 +267,16 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false } = {}) {
   const setups = [...comprasRaw.slice(0, topN).map((p) => mkSetup(p, 'COMPRA', esc)), ...ventasRaw.slice(0, topN).map((p) => mkSetup(p, 'VENTA', esc))]
 
   const ultima = aFechaUTC(data.ultima)
+  // Ambas mitades llevan su propia fecha. Antes la de Colombia era solo la
+  // hora, así que entre las 00:00 y las 05:00 UTC (cuando en Colombia todavía
+  // es el día anterior) el texto quedaba con la fecha de UTC pegada a la hora
+  // local: "30/07/2026, 1:00 a. m. UTC (8:00 p. m. en Colombia)" cuando en
+  // Colombia eran las 8:00 p. m. del 29. Se pone Colombia primero por ser la
+  // hora de quien usa la app.
   const enUTC = ultima.toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' })
-  const enCO = ultima.toLocaleString('es-CO', { timeStyle: 'short', timeZone: 'America/Bogota' })
+  const enCO = ultima.toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Bogota' })
   const fuente = vivo ? 'Twelve Data + Capital.com (precio en vivo)' : 'Twelve Data'
-  const corte = `Vela H1 más reciente: ${enUTC} UTC (${enCO} en Colombia) · fuente: ${fuente}`
+  const corte = `Vela H1 más reciente: ${enCO} hora de Colombia (${enUTC} UTC) · fuente: ${fuente}`
 
   return { monedas, pares, compras, ventas, vigilancia, setups, corte }
 }
