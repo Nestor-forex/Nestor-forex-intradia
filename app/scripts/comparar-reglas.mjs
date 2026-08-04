@@ -53,9 +53,16 @@ async function obtenerVelas(apiKey) {
 
 // R/B con la regla vieja (stop al extremo de 10 velas ∓ ½ ATR) y con la
 // nueva (stop a 1.5 × ATR). El objetivo es el mismo en las dos.
+const objetivoNuevo = (p, compra) => {
+  const min = p.c + (compra ? 1 : -1) * p.atrAbs
+  const niveles = compra ? [p.hi20, p.pivots.r1, p.pivots.r2].filter((x) => x > min) : [p.lo20, p.pivots.s1, p.pivots.s2].filter((x) => x < min)
+  if (!niveles.length) return p.c + (compra ? 1 : -1) * 2.5 * p.atrAbs
+  return compra ? Math.min(...niveles) : Math.max(...niveles)
+}
+
 const rb = (p, compra, vieja) => {
   const sl = vieja ? (compra ? p.lo10 - 0.5 * p.atrAbs : p.hi10 + 0.5 * p.atrAbs) : compra ? p.c - 1.5 * p.atrAbs : p.c + 1.5 * p.atrAbs
-  const tp = compra ? Math.max(p.hi20, p.c + 2 * p.atrAbs) : Math.min(p.lo20, p.c - 2 * p.atrAbs)
+  const tp = vieja ? (compra ? Math.max(p.hi20, p.c + 2 * p.atrAbs) : Math.min(p.lo20, p.c - 2 * p.atrAbs)) : objetivoNuevo(p, compra)
   return Math.abs(tp - p.c) / Math.abs(p.c - sl)
 }
 

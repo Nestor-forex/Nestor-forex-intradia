@@ -230,11 +230,33 @@ const razon = (p, esc, t) => {
 // que es lo que el ATR mide.
 const ATR_STOP = 1.5
 
+// El objetivo es el primer obstáculo real que el precio se va a encontrar:
+// el extremo de las últimas 20 velas o los pivotes de sesión, el que quede
+// más cerca — siempre que esté al menos a 1 ATR, para no proponer objetivos
+// pegados a la entrada. Si no hay ninguno a esa distancia (precio en tierra
+// de nadie), se usan 2.5 ATR.
+//
+// Antes el objetivo era el extremo de 20 velas o 2 ATR, el que quedara más
+// lejos. Con el ATR real —tres veces mayor que el sustituto anterior— los
+// 2 ATR ganaban siempre, así que TODAS las señales salían con la misma
+// relación 1:1.3 y el aviso de "por debajo de 1:1.5" se disparaba en el
+// 100% de los casos: un número constante no informa nada. Tomando el nivel
+// más cercano, la relación vuelve a depender de cuánto recorrido real tiene
+// cada par, que es lo que hay que mirar antes de entrar.
+const objetivo = (p, compra) => {
+  const min = p.c + (compra ? 1 : -1) * p.atrAbs
+  const niveles = compra
+    ? [p.hi20, p.pivots.r1, p.pivots.r2].filter((x) => x > min)
+    : [p.lo20, p.pivots.s1, p.pivots.s2].filter((x) => x < min)
+  if (!niveles.length) return p.c + (compra ? 1 : -1) * 2.5 * p.atrAbs
+  return compra ? Math.min(...niveles) : Math.max(...niveles)
+}
+
 const mkSetup = (p, lado, esc = {}, t) => {
   const d = p.dec
   const compra = lado === 'COMPRA'
   const sl = compra ? p.c - ATR_STOP * p.atrAbs : p.c + ATR_STOP * p.atrAbs
-  const tp = compra ? Math.max(p.hi20, p.c + 2 * p.atrAbs) : Math.min(p.lo20, p.c - 2 * p.atrAbs)
+  const tp = objetivo(p, compra)
   const rr = Math.abs(tp - p.c) / Math.abs(p.c - sl)
   return {
     name: p.name,
