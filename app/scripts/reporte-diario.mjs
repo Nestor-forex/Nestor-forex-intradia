@@ -33,7 +33,7 @@ async function obtenerVelas(apiKey) {
       throw new Error(`sin datos de ${sym}${bloque?.message ? ' — ' + bloque.message : ''}`)
     }
     const mapa = new Map()
-    for (const v of bloque.values) mapa.set(v.datetime, parseFloat(v.close))
+    for (const v of bloque.values) mapa.set(v.datetime, { c: parseFloat(v.close), h: parseFloat(v.high), l: parseFloat(v.low) })
     porSimbolo[sym] = mapa
   }
 
@@ -42,12 +42,20 @@ async function obtenerVelas(apiKey) {
   if (barras.length < 60) throw new Error('no hay suficientes velas recientes para calcular los indicadores')
 
   const rates = {}
+  const rangos = {}
   for (const t of barras) {
     const fila = {}
-    for (const sym of SYMBOLS) fila[SYM_TO_CCY[sym]] = porSimbolo[sym].get(t)
+    const filaRangos = {}
+    for (const sym of SYMBOLS) {
+      const v = porSimbolo[sym].get(t)
+      const ccy = SYM_TO_CCY[sym]
+      fila[ccy] = v.c
+      filaRangos[ccy] = { h: Number.isFinite(v.h) ? v.h : v.c, l: Number.isFinite(v.l) ? v.l : v.c }
+    }
     rates[t] = fila
+    rangos[t] = filaRangos
   }
-  return { barras, rates }
+  return { barras, rates, rangos }
 }
 
 function formatoChat({ fecha, monedas, pares, compras, ventas, vigilancia, setups, corte }) {
@@ -84,8 +92,8 @@ _Riesgo: 1-2% del capital por operación. ${limitaciones}_`
 }
 
 const apiKey = leerLlave()
-const { barras, rates } = await obtenerVelas(apiKey)
-const data = computarBarrido(barras, rates)
+const { barras, rates, rangos } = await obtenerVelas(apiKey)
+const data = computarBarrido(barras, rates, rangos)
 const vista = derivarVista(data, { thr: 0.5, topN: 3 })
 const fecha = new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 

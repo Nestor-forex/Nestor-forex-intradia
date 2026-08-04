@@ -13,6 +13,10 @@ export const PAIR_NAMES = [
   'GBP/JPY',
   'NZD/CHF',
   'NZD/CAD',
+  'AUD/JPY',
+  'NZD/JPY',
+  'AUD/NZD',
+  'EUR/GBP',
 ]
 
 // ['EUR', 'USD'] a partir de 'EUR/USD'.
