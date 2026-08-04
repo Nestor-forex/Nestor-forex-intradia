@@ -3,7 +3,10 @@ import { computarBarrido, derivarVista } from './marketCalc'
 import { useCapitalLive } from './useCapitalLive'
 import { useT } from './i18n'
 
-const CACHE_KEY = 'nfi_market_cache_v1'
+// v2: la caché guardada ahora incluye el máximo y el mínimo de cada vela. Se
+// cambia la clave para que una caché vieja (solo cierres) no se lea como si
+// tuviera rangos.
+const CACHE_KEY = 'nfi_market_cache_v2'
 const REFRESH_MS = 15 * 60 * 1000 // refrescar cada 15 min mientras la app está abierta
 const SYMBOLS = ['USD/EUR', 'USD/GBP', 'USD/JPY', 'USD/CHF', 'USD/AUD', 'USD/NZD', 'USD/CAD']
 const SYM_TO_CCY = { 'USD/EUR': 'EUR', 'USD/GBP': 'GBP', 'USD/JPY': 'JPY', 'USD/CHF': 'CHF', 'USD/AUD': 'AUD', 'USD/NZD': 'NZD', 'USD/CAD': 'CAD' }
@@ -15,7 +18,7 @@ function leerCache() {
   if (!cacheRaw) return null
   try {
     const cache = JSON.parse(cacheRaw)
-    if (cache.barras && cache.rates && cache.fetchedAt) return cache
+    if (cache.barras && cache.rates && cache.rangos && cache.fetchedAt) return cache
   } catch {
     // caché corrupta, se ignora
   }
@@ -40,7 +43,11 @@ async function obtenerVelas() {
       throw new Error(`sin datos de ${sym}${bloque?.message ? ' — ' + bloque.message : ''}`)
     }
     const mapa = new Map()
-    for (const v of bloque.values) mapa.set(v.datetime, parseFloat(v.close))
+    // La misma respuesta trae apertura, máximo, mínimo y cierre; antes solo
+    // se guardaba el cierre y se descartaba el resto. Sin máximo y mínimo no
+    // hay ATR real ni pivotes reales, y ambos ya venían pagados en la
+    // consulta: aprovecharlos no cuesta ni una llamada más.
+    for (const v of bloque.values) mapa.set(v.datetime, { c: parseFloat(v.close), h: parseFloat(v.high), l: parseFloat(v.low) })
     porSimbolo[sym] = mapa
   }
 
@@ -50,13 +57,23 @@ async function obtenerVelas() {
   if (barras.length < 60) throw new Error('no hay suficientes velas recientes para calcular los indicadores')
 
   const rates = {}
+  const rangos = {}
   for (const t of barras) {
     const fila = {}
-    for (const sym of SYMBOLS) fila[SYM_TO_CCY[sym]] = porSimbolo[sym].get(t)
+    const filaRangos = {}
+    for (const sym of SYMBOLS) {
+      const v = porSimbolo[sym].get(t)
+      const ccy = SYM_TO_CCY[sym]
+      fila[ccy] = v.c
+      // Si alguna vela llegara sin máximo/mínimo, se usa el cierre para esa
+      // hora en vez de romper todo el barrido.
+      filaRangos[ccy] = { h: Number.isFinite(v.h) ? v.h : v.c, l: Number.isFinite(v.l) ? v.l : v.c }
+    }
     rates[t] = fila
+    rangos[t] = filaRangos
   }
 
-  return { barras, rates }
+  return { barras, rates, rangos }
 }
 
 // Descarga velas frescas, o si falla (sin conexión, cuota agotada) reutiliza
@@ -64,12 +81,12 @@ async function obtenerVelas() {
 async function obtenerRates() {
   const cache = leerCache()
   try {
-    const { barras, rates } = await obtenerVelas()
+    const { barras, rates, rangos } = await obtenerVelas()
     const fetchedAt = new Date().toISOString()
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ fetchedAt, barras, rates }))
-    return { barras, rates, fetchedAt, stale: false }
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ fetchedAt, barras, rates, rangos }))
+    return { barras, rates, rangos, fetchedAt, stale: false }
   } catch (e) {
-    if (cache) return { barras: cache.barras, rates: cache.rates, fetchedAt: cache.fetchedAt, stale: true }
+    if (cache) return { barras: cache.barras, rates: cache.rates, rangos: cache.rangos, fetchedAt: cache.fetchedAt, stale: true }
     throw e
   }
 }
@@ -98,9 +115,9 @@ export function useMarketData({ thr = 0.5, topN = 3 } = {}) {
     const cargar = () => {
       if (primeraCarga.current) setLoading(true)
       obtenerRates()
-        .then(({ barras, rates, stale, fetchedAt }) => {
+        .then(({ barras, rates, rangos, stale, fetchedAt }) => {
           if (cancelado) return
-          setCrudo({ barras, rates })
+          setCrudo({ barras, rates, rangos })
           setStale(stale)
           setGuardadoEl(fetchedAt)
           setErrorCrudo(null)
@@ -133,10 +150,19 @@ export function useMarketData({ thr = 0.5, topN = 3 } = {}) {
   const vivo = Boolean(filaViva)
   const data = useMemo(() => {
     if (!crudo) return null
-    if (!filaViva) return computarBarrido(crudo.barras, crudo.rates)
+    if (!filaViva) return computarBarrido(crudo.barras, crudo.rates, crudo.rangos)
     const ultimaHora = crudo.barras[crudo.barras.length - 1]
     const ratesConVivo = { ...crudo.rates, [ultimaHora]: filaViva }
-    return computarBarrido(crudo.barras, ratesConVivo)
+    // El precio en vivo puede haber superado el máximo (o perforado el
+    // mínimo) que traía la vela de la hora en curso, porque esa vela todavía
+    // se está formando. Si no se estira el rango, el cierre quedaría fuera de
+    // su propio máximo/mínimo y tanto el ATR como los soportes saldrían mal.
+    const rangoUltima = { ...(crudo.rangos?.[ultimaHora] || {}) }
+    for (const [ccy, precio] of Object.entries(filaViva)) {
+      const prev = rangoUltima[ccy] || { h: precio, l: precio }
+      rangoUltima[ccy] = { h: Math.max(prev.h, precio), l: Math.min(prev.l, precio) }
+    }
+    return computarBarrido(crudo.barras, ratesConVivo, { ...crudo.rangos, [ultimaHora]: rangoUltima })
   }, [crudo, filaViva])
 
   const vista = data ? derivarVista(data, { thr, topN, vivo, t }) : null

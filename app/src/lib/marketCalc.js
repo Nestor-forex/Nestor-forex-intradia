@@ -23,6 +23,13 @@ export const PAIRS = [
   ['GBP', 'JPY'],
   ['NZD', 'CHF'],
   ['NZD', 'CAD'],
+  // Pares de la sesión asiática y de Oceanía: sin ellos la app quedaba casi
+  // ciega entre las 00:00 y las 09:00 UTC, que es cuando manda Tokio. No
+  // cuestan datos extra — se derivan de los mismos 7 símbolos contra USD.
+  ['AUD', 'JPY'],
+  ['NZD', 'JPY'],
+  ['AUD', 'NZD'],
+  ['EUR', 'GBP'],
 ]
 
 // Velas H1 por "día de trading intradía": 24 horas.
@@ -53,18 +60,36 @@ const rsi = (c, p = 14) => {
   return l === 0 ? 100 : 100 - 100 / (1 + g / l)
 }
 
+// ATR real de Wilder sobre 14 velas. Antes se usaba un sustituto
+// (promedio de |cierre − cierre anterior|) porque solo se guardaba el cierre
+// de cada vela; ahora que llegan el máximo y el mínimo se calcula el rango
+// verdadero, que incluye el recorrido *dentro* de cada hora:
+//   TR = max(máximo − mínimo, |máximo − cierre previo|, |mínimo − cierre previo|)
+// El ATR real es bastante mayor que aquel sustituto, y de él dependen el
+// stop y el tamaño del objetivo.
+function atrWilder(highs, lows, closes, p = 14) {
+  const n = closes.length
+  const trs = []
+  for (let i = Math.max(1, n - 60); i < n; i++) {
+    const cp = closes[i - 1]
+    trs.push(Math.max(highs[i] - lows[i], Math.abs(highs[i] - cp), Math.abs(lows[i] - cp)))
+  }
+  if (trs.length < p) return trs.reduce((a, b) => a + b, 0) / Math.max(1, trs.length)
+  let atr = trs.slice(0, p).reduce((a, b) => a + b, 0) / p
+  for (let i = p; i < trs.length; i++) atr = (atr * (p - 1) + trs[i]) / p
+  return atr
+}
+
 // Puntos pivote clásicos (P, S1/S2, R1/R2) a partir de las 24 horas previas
-// a la vela actual, usadas como aproximación del "día anterior". Esta fuente
-// solo trae precio de cierre por hora (sin máximo/mínimo intrabar real), así
-// que el "máximo"/"mínimo" del día anterior es el máximo/mínimo de esos
-// cierres — una aproximación honesta, igual de transparente que las demás
-// limitaciones de datos ya documentadas en la app hermana.
-function calcularPivots(closes, L) {
+// a la vela actual, usadas como aproximación del "día anterior".
+// Ahora usan el máximo y el mínimo reales de esas 24 horas (antes eran el
+// mayor y el menor de los cierres, que dejaban por fuera las mechas y
+// achicaban el rango).
+function calcularPivots(highs, lows, closes, L) {
   const desde = Math.max(0, L - 2 * BARRAS_POR_DIA + 1)
   const hasta = Math.max(desde, L - BARRAS_POR_DIA)
-  const ventana = closes.slice(desde, hasta + 1)
-  const hi = Math.max(...ventana)
-  const lo = Math.min(...ventana)
+  const hi = Math.max(...highs.slice(desde, hasta + 1))
+  const lo = Math.min(...lows.slice(desde, hasta + 1))
   const cierre = closes[hasta]
   const p = (hi + lo + cierre) / 3
   return {
@@ -90,13 +115,29 @@ function aFechaUTC(ts) {
 
 // barras: array de timestamps ISO (UTC) ascendentes, uno por vela H1.
 // rates: { [timestamp]: { EUR, GBP, JPY, CHF, AUD, NZD, CAD } } — cuántas
-// unidades de esa divisa vale 1 USD en esa hora (mismo formato que el
-// barrido diario, solo que muestreado cada hora en vez de una vez al día).
-export function computarBarrido(barras, rates) {
+// unidades de esa divisa vale 1 USD en esa hora (cierre de la vela).
+// rangos (opcional): { [timestamp]: { EUR: { h, l }, ... } } — máximo y
+// mínimo de esa misma vela. Twelve Data ya los mandaba en la misma
+// respuesta y se estaban descartando. Si no llegan, todo cae de vuelta al
+// comportamiento anterior (máximo = mínimo = cierre).
+export function computarBarrido(barras, rates, rangos = null) {
   const serie = {}
-  CCY.forEach((c) => (serie[c] = barras.map((t) => (c === 'USD' ? 1 : rates[t][c]))))
+  const serieHi = {}
+  const serieLo = {}
+  CCY.forEach((c) => {
+    serie[c] = barras.map((t) => (c === 'USD' ? 1 : rates[t][c]))
+    serieHi[c] = barras.map((t, i) => (c === 'USD' ? 1 : (rangos?.[t]?.[c]?.h ?? serie[c][i])))
+    serieLo[c] = barras.map((t, i) => (c === 'USD' ? 1 : (rangos?.[t]?.[c]?.l ?? serie[c][i])))
+  })
   const L = barras.length - 1
   const px = (b, q, i) => serie[q][i] / serie[b][i]
+  // El precio del par es divisa cotizada / divisa base, así que su máximo se
+  // da con el máximo de la cotizada contra el mínimo de la base. En los 7
+  // pares contra el dólar una de las dos es constante (=1), así que el
+  // resultado es exacto; en los cruces (EUR/CHF, AUD/JPY…) es una cota
+  // superior del rango real, algo más amplia que la verdadera.
+  const pxHi = (b, q, i) => serieHi[q][i] / serieLo[b][i]
+  const pxLo = (b, q, i) => serieLo[q][i] / serieHi[b][i]
   const chg = (b, q, k) => (px(b, q, L) / px(b, q, Math.max(0, L - k)) - 1) * 100
 
   const raw = {}
@@ -116,16 +157,15 @@ export function computarBarrido(barras, rates) {
 
   const pares = PAIRS.map(([b, q]) => {
     const closes = barras.map((_, i) => px(b, q, i))
+    const highs = barras.map((_, i) => pxHi(b, q, i))
+    const lows = barras.map((_, i) => pxLo(b, q, i))
     const c = closes[L]
     const e9 = emaLast(closes, 9)
     const e21 = emaLast(closes, 21)
-    let sum = 0
-    for (let i = L - 13; i <= L; i++) sum += Math.abs(closes[i] - closes[i - 1]) / closes[i - 1]
-    const atrPctH = (sum / 14) * 100
-    const atrAbs = (c * atrPctH) / 100
+    const atrAbs = atrWilder(highs, lows, closes)
+    const atrPctH = (atrAbs / c) * 100
     const tend = c > e9 && e9 > e21 ? 'Alcista' : c < e9 && e9 < e21 ? 'Bajista' : 'Rango'
     const last20 = closes.slice(-20)
-    const last10 = closes.slice(-10)
     return {
       name: b + '/' + q,
       b,
@@ -138,13 +178,16 @@ export function computarBarrido(barras, rates) {
       atrAbs,
       tend,
       dif: raw[b] - raw[q],
-      hi20: Math.max(...last20),
-      lo20: Math.min(...last20),
-      hi10: Math.max(...last10),
-      lo10: Math.min(...last10),
+      // Soportes y resistencias con los extremos reales de las velas, no con
+      // el mayor y el menor de los cierres: es donde el precio realmente
+      // llegó y se devolvió.
+      hi20: Math.max(...highs.slice(-20)),
+      lo20: Math.min(...lows.slice(-20)),
+      hi10: Math.max(...highs.slice(-10)),
+      lo10: Math.min(...lows.slice(-10)),
       dec: b === 'JPY' || q === 'JPY' ? 2 : 4,
       serie20: last20,
-      pivots: calcularPivots(closes, L),
+      pivots: calcularPivots(highs, lows, closes, L),
     }
   })
 
@@ -178,10 +221,19 @@ const razon = (p, esc, t) => {
   })
 }
 
+// Cuántos ATR se pone el stop desde la entrada. Antes el stop iba al extremo
+// de las últimas 10 velas menos ½ ATR, y eso tenía un efecto perverso: en una
+// tendencia sana ese extremo queda lejísimos, así que el riesgo se disparaba
+// mientras el objetivo seguía a 2 ATR — de ahí que casi todos los setups
+// nacieran con relación 1:0.4 … 1:0.8, siempre marcados con aviso. Con el
+// stop a 1.5 ATR el riesgo queda proporcional a lo movido que esté el par,
+// que es lo que el ATR mide.
+const ATR_STOP = 1.5
+
 const mkSetup = (p, lado, esc = {}, t) => {
   const d = p.dec
   const compra = lado === 'COMPRA'
-  const sl = compra ? p.lo10 - 0.5 * p.atrAbs : p.hi10 + 0.5 * p.atrAbs
+  const sl = compra ? p.c - ATR_STOP * p.atrAbs : p.c + ATR_STOP * p.atrAbs
   const tp = compra ? Math.max(p.hi20, p.c + 2 * p.atrAbs) : Math.min(p.lo20, p.c - 2 * p.atrAbs)
   const rr = Math.abs(tp - p.c) / Math.abs(p.c - sl)
   return {
