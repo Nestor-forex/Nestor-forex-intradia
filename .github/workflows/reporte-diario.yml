@@ -13,9 +13,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Generar reporte
-        working-directory: app
-        run: node scripts/reporte-diario.mjs
+      # TEMPORAL: el reporte queda desactivado durante la medición para no
+      # gastar dos veces la cuota por minuto de Twelve Data (8 créditos/min).
       # Paso temporal de verificación: se quita antes de fusionar.
       - name: Comparar reglas de cálculo
         working-directory: app
