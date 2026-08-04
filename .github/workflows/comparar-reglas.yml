@@ -1,0 +1,20 @@
+name: Comparar reglas de cálculo
+
+# Solo a mano. Imprime, sobre las velas H1 reales del momento, el efecto de
+# un cambio en las reglas de cálculo (ATR, stop, objetivo) comparado con el
+# comportamiento anterior. Útil cada vez que se toque marketCalc.js: el
+# entorno de la sesión de Claude no puede consultar los precios, GitHub sí.
+on:
+  workflow_dispatch:
+
+jobs:
+  comparar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Comparar
+        working-directory: app
+        run: node scripts/comparar-reglas.mjs
