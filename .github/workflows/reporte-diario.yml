@@ -16,3 +16,7 @@ jobs:
       - name: Generar reporte
         working-directory: app
         run: node scripts/reporte-diario.mjs
+      # Paso temporal de verificación: se quita antes de fusionar.
+      - name: Comparar reglas de cálculo
+        working-directory: app
+        run: node scripts/comparar-reglas.mjs
