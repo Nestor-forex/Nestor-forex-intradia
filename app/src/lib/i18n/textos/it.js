@@ -228,6 +228,12 @@ export default {
   },
 
   calc_barrido: {
+
+    adxOk: ({ adx }) => ` · ADX ${adx}: la tendenza ha forza`,
+
+    vigilanciaAdx: ({ dif, favor, adx }) => `Differenziale ${dif} a favore di ${favor} con le EMA allineate, ma l’ADX è a ${adx}: sotto 20 non c’è una vera tendenza, solo oscillazione.`,
+
+    vigilanciaH4: ({ dif, favor }) => `Differenziale ${dif} a favore di ${favor} sull’ora, ma le 4 ore puntano dalla parte opposta — aspettare che siano d’accordo.`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) vs ${q} (${fq}), EMAs allineate, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI esteso, non inseguire, aspettare un ritracciamento',
     rsiContinuacion: ' — RSI in zona di continuazione',

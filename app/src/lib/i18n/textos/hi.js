@@ -227,6 +227,12 @@ export default {
   },
 
   calc_barrido: {
+
+    adxOk: ({ adx }) => ` · ADX ${adx}: रुझान में दम है`,
+
+    vigilanciaAdx: ({ dif, favor, adx }) => `${favor} के पक्ष में ${dif} का अंतर और EMA भी संरेखित, पर ADX ${adx} पर है: 20 से नीचे असली रुझान नहीं, बस उतार-चढ़ाव है।`,
+
+    vigilanciaH4: ({ dif, favor }) => `प्रति घंटा चार्ट पर ${favor} के पक्ष में ${dif} का अंतर, पर 4 घंटे का चार्ट उल्टी दिशा दिखा रहा है — सहमति का इंतज़ार करें।`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) बनाम ${q} (${fq}), EMA एक दिशा में, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI अति-विस्तारित, पीछे मत भागें, गिरावट का इंतज़ार करें',
     rsiContinuacion: ' — RSI निरंतरता के क्षेत्र में',

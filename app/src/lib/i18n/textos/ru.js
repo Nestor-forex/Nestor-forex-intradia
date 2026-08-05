@@ -228,6 +228,12 @@ export default {
   },
 
   calc_barrido: {
+
+    adxOk: ({ adx }) => ` · ADX ${adx}: у тренда есть сила`,
+
+    vigilanciaAdx: ({ dif, favor, adx }) => `Разница ${dif} в пользу ${favor}, EMA выстроены, но ADX равен ${adx}: ниже 20 настоящего тренда нет, только болтанка.`,
+
+    vigilanciaH4: ({ dif, favor }) => `Разница ${dif} в пользу ${favor} на часовом графике, но четырёхчасовой смотрит в другую сторону — ждём согласия.`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) против ${q} (${fq}), EMA выстроены, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI перегрет, не догонять, ждать отката',
     rsiContinuacion: ' — RSI в зоне продолжения',

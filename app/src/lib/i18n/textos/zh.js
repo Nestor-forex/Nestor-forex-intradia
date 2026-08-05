@@ -224,6 +224,12 @@ export default {
   },
 
   calc_barrido: {
+
+    adxOk: ({ adx }) => ` · ADX ${adx}：趋势有力度`,
+
+    vigilanciaAdx: ({ dif, favor, adx }) => `差值 ${dif} 有利于 ${favor}，均线也已排列，但 ADX 只有 ${adx}：低于 20 就不是真正的趋势，只是来回震荡。`,
+
+    vigilanciaH4: ({ dif, favor }) => `1 小时图上差值 ${dif} 有利于 ${favor}，但 4 小时图方向相反 — 等两者一致再说。`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b}（${fb}）对 ${q}（${fq}），EMA 已对齐，RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI 过度延伸，不要追，等回调',
     rsiContinuacion: ' — RSI 处于延续区间',

@@ -232,6 +232,12 @@ export default {
   },
 
   calc_barrido: {
+
+    adxOk: ({ adx }) => ` · ADX ${adx}: der Trend hat Kraft`,
+
+    vigilanciaAdx: ({ dif, favor, adx }) => `Differenz ${dif} zugunsten von ${favor} bei ausgerichteten EMAs, aber der ADX steht bei ${adx}: unter 20 gibt es keinen echten Trend, nur Hin und Her.`,
+
+    vigilanciaH4: ({ dif, favor }) => `Differenz ${dif} zugunsten von ${favor} im Stundenchart, aber der 4-Stunden-Chart zeigt in die andere Richtung — warten, bis beide übereinstimmen.`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) vs ${q} (${fq}), EMAs ausgerichtet, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI überdehnt, nicht hinterherlaufen, Rücksetzer abwarten',
     rsiContinuacion: ' — RSI in der Fortsetzungszone',

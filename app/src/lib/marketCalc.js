@@ -139,6 +139,69 @@ function atrWilder(highs, lows, closes, p = 14) {
   return atr
 }
 
+// ADX de Wilder: mide la FUERZA de la tendencia, no su dirección. Las EMAs
+// dicen hacia dónde va el precio; el ADX dice si de verdad va hacia alguna
+// parte o solo está chapoteando. Por convención: por debajo de 20 no hay
+// tendencia que valga, por encima de 25 la hay y es clara.
+function adxWilder(highs, lows, closes, p = 14) {
+  const n = closes.length
+  const desde = Math.max(1, n - 60)
+  const tr = []
+  const dmMas = []
+  const dmMenos = []
+  for (let i = desde; i < n; i++) {
+    const subeAlto = highs[i] - highs[i - 1]
+    const bajaBajo = lows[i - 1] - lows[i]
+    dmMas.push(subeAlto > bajaBajo && subeAlto > 0 ? subeAlto : 0)
+    dmMenos.push(bajaBajo > subeAlto && bajaBajo > 0 ? bajaBajo : 0)
+    const cp = closes[i - 1]
+    tr.push(Math.max(highs[i] - lows[i], Math.abs(highs[i] - cp), Math.abs(lows[i] - cp)))
+  }
+  if (tr.length < p * 2) return 0
+  const suavizar = (xs) => {
+    let s = xs.slice(0, p).reduce((a, b) => a + b, 0)
+    const out = [s]
+    for (let i = p; i < xs.length; i++) {
+      s = s - s / p + xs[i]
+      out.push(s)
+    }
+    return out
+  }
+  const trS = suavizar(tr)
+  const masS = suavizar(dmMas)
+  const menosS = suavizar(dmMenos)
+  const dx = []
+  for (let i = 0; i < trS.length; i++) {
+    if (!(trS[i] > 0)) continue
+    const di1 = (100 * masS[i]) / trS[i]
+    const di2 = (100 * menosS[i]) / trS[i]
+    const suma = di1 + di2
+    if (suma > 0) dx.push((100 * Math.abs(di1 - di2)) / suma)
+  }
+  if (dx.length < p) return dx.length ? dx.reduce((a, b) => a + b, 0) / dx.length : 0
+  let adx = dx.slice(0, p).reduce((a, b) => a + b, 0) / p
+  for (let i = p; i < dx.length; i++) adx = (adx * (p - 1) + dx[i]) / p
+  return adx
+}
+
+// Agrupa las velas de 1 hora en velas de 4 horas. No cuesta ni una consulta
+// más: son los mismos datos vistos con menos zoom. Sirve para confirmar que
+// la hora y las 4 horas apuntan al mismo lado, que es de lo que más sube el
+// porcentaje de acierto en la práctica.
+function aH4(highs, lows, closes) {
+  const H = []
+  const L = []
+  const C = []
+  // Se agrupa desde el final para que la última vela H4 termine en la vela
+  // H1 más reciente (la que se está mirando), no en un múltiplo arbitrario.
+  for (let fin = closes.length; fin - 4 >= 0; fin -= 4) {
+    H.unshift(Math.max(...highs.slice(fin - 4, fin)))
+    L.unshift(Math.min(...lows.slice(fin - 4, fin)))
+    C.unshift(closes[fin - 1])
+  }
+  return { highs: H, lows: L, closes: C }
+}
+
 // Puntos pivote clásicos (P, S1/S2, R1/R2) a partir de las 24 horas previas
 // a la vela actual, usadas como aproximación del "día anterior".
 // Ahora usan el máximo y el mínimo reales de esas 24 horas (antes eran el
@@ -225,6 +288,24 @@ export function computarBarrido(barras, rates, rangos = null) {
     const atrPctH = (atrAbs / c) * 100
     const tend = c > e9 && e9 > e21 ? 'Alcista' : c < e9 && e9 < e21 ? 'Bajista' : 'Rango'
     const last20 = closes.slice(-20)
+
+    // Fuerza de la tendencia (ADX) y confirmación en 4 horas.
+    const adx = adxWilder(highs, lows, closes)
+    const h4 = aH4(highs, lows, closes)
+    const tendH4 =
+      h4.closes.length >= 22
+        ? (() => {
+            const c4 = h4.closes.at(-1)
+            const e94 = emaLast(h4.closes, 9)
+            const e214 = emaLast(h4.closes, 21)
+            return c4 > e94 && e94 > e214 ? 'Alcista' : c4 < e94 && e94 < e214 ? 'Bajista' : 'Rango'
+          })()
+        : null
+    // Compresión: el ATR de ahora contra su propio promedio reciente. Muy por
+    // debajo de 1 significa que el mercado lleva rato quieto — suele ser la
+    // antesala de un estallido, no un lateral tranquilo para operar rebotes.
+    const atrMedio = atrWilder(highs.slice(0, -12), lows.slice(0, -12), closes.slice(0, -12))
+    const compresion = atrMedio > 0 ? atrAbs / atrMedio : 1
     return {
       name: b + '/' + q,
       b,
@@ -236,6 +317,9 @@ export function computarBarrido(barras, rates, rangos = null) {
       atrPctH,
       atrAbs,
       tend,
+      adx,
+      tendH4,
+      compresion,
       dif: raw[b] - raw[q],
       // Soportes y resistencias con los extremos reales de las velas, no con
       // el mayor y el menor de los cierres: es donde el precio realmente
@@ -270,11 +354,34 @@ export function computarBarrido(barras, rates, rangos = null) {
   }
 }
 
+// Debajo de 20 de ADX no hay tendencia de verdad, solo chapoteo con las EMAs
+// momentáneamente alineadas. Es el filtro que las EMAs solas no saben hacer.
+const ADX_MIN = 20
+
+// Una señal de tendencia ahora necesita tres cosas, no una:
+//   · diferencia de fuerza suficiente (lo de siempre),
+//   · EMAs alineadas Y ADX por encima de 20 — que la tendencia tenga fuerza,
+//   · que las 4 horas no apunten al lado contrario.
+// Si la fuerza está pero falta confirmación, no se descarta: baja a VIGILAR,
+// que es información útil ("está por darse, pero todavía no").
 const clasificar = (p, thr) => {
-  if (p.dif > thr && p.tend === 'Alcista') return 'COMPRA'
-  if (p.dif < -thr && p.tend === 'Bajista') return 'VENTA'
+  const fuerte = p.adx >= ADX_MIN
+  const h4Contra = (t) => p.tendH4 && p.tendH4 !== 'Rango' && p.tendH4 !== t
+  if (p.dif > thr && p.tend === 'Alcista' && fuerte && !h4Contra('Alcista')) return 'COMPRA'
+  if (p.dif < -thr && p.tend === 'Bajista' && fuerte && !h4Contra('Bajista')) return 'VENTA'
   if (Math.abs(p.dif) > thr) return 'VIGILAR'
   return '—'
+}
+
+// Por qué un par con fuerza se quedó en vigilancia. Sirve para que el texto
+// diga algo concreto en vez de repetir siempre lo mismo.
+const motivoVigilar = (p, thr) => {
+  if (Math.abs(p.dif) <= thr) return null
+  const lado = p.dif > 0 ? 'Alcista' : 'Bajista'
+  if (p.tend !== lado) return 'tend'
+  if (p.adx < ADX_MIN) return 'adx'
+  if (p.tendH4 && p.tendH4 !== 'Rango' && p.tendH4 !== lado) return 'h4'
+  return 'tend'
 }
 
 // ---------------------------------------------------------------- modo rango
@@ -297,9 +404,18 @@ const clasificar = (p, thr) => {
 //      alto ni se vende un techo con el RSI ya hundido.
 const RANGO_MIN_ATR = 3
 const RANGO_BORDE = 0.3
+// Por debajo de este cociente el mercado lleva rato apretándose: es la
+// antesala típica de una ruptura, no un lateral tranquilo donde operar
+// rebotes. Vender el techo justo antes de que estalle es la peor operación
+// posible, así que en compresión el modo rango se calla.
+const COMPRESION_MIN = 0.75
 
 const clasificarRango = (p) => {
   if (p.tend !== 'Rango') return null
+  // Un ADX alto con las EMAs sin alinear es una tendencia arrancando, no un
+  // rango: tampoco es sitio para operar rebotes.
+  if (p.adx >= ADX_MIN) return null
+  if (p.compresion < COMPRESION_MIN) return null
   const amplitud = p.rangoHi - p.rangoLo
   if (!(amplitud > 0) || amplitud < RANGO_MIN_ATR * p.atrAbs) return null
   const pos = (p.c - p.rangoLo) / amplitud
@@ -332,7 +448,7 @@ const razon = (p, esc, t) => {
     q: p.q,
     fq: esc[p.q].toFixed(1),
     rsi: p.rsiV.toFixed(0),
-    extra,
+    extra: t('calc_barrido.adxOk', { adx: p.adx.toFixed(0) }) + extra,
   })
 }
 
@@ -518,14 +634,18 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crea
 
   const compras = comprasRaw.map((p) => ({ name: p.name, razon: razon(p, esc, t) }))
   const ventas = ventasRaw.map((p) => ({ name: p.name, razon: razon(p, esc, t) }))
-  const vigilancia = vigilanciaRaw.map((p) => ({
-    name: p.name,
-    razon: t('calc_barrido.vigilancia', {
+  const vigilancia = vigilanciaRaw.map((p) => {
+    const motivo = motivoVigilar(p, thr)
+    const datos = {
       dif: (p.dif >= 0 ? '+' : '') + p.dif.toFixed(1),
       favor: p.dif > 0 ? p.b : p.q,
       tend: t(`tend.${p.tend}`).toLowerCase(),
-    }),
-  }))
+      adx: p.adx.toFixed(0),
+    }
+    const clave =
+      motivo === 'adx' ? 'calc_barrido.vigilanciaAdx' : motivo === 'h4' ? 'calc_barrido.vigilanciaH4' : 'calc_barrido.vigilancia'
+    return { name: p.name, razon: t(clave, datos) }
+  })
 
   // Rangos: se ordenan por qué tan pegado al borde está el precio (entre más
   // cerca del extremo, mejor la entrada) y se limitan a 4 para no llenar la
