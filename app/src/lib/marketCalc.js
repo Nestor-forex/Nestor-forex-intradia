@@ -35,6 +35,65 @@ export const PAIRS = [
 // Velas H1 por "día de trading intradía": 24 horas.
 const BARRAS_POR_DIA = 24
 
+// ------------------------------------------------------------------ sesiones
+//
+// El mercado de divisas no es uno solo: son cuatro plazas que se van pasando
+// el turno. Cada una mueve sobre todo sus propias divisas, y entre ellas hay
+// horas muertas y horas de máxima actividad. La app trataba las 3 de la
+// madrugada igual que la apertura de Londres, que es como medir a todo el
+// mundo con la misma vara.
+//
+// Horarios en UTC (Londres y Nueva York se corren una hora en su horario de
+// verano; se usan los de invierno, que es la referencia estándar).
+export const SESIONES = [
+  { clave: 'sesion.sidney', desde: 21, hasta: 6, ccy: ['AUD', 'NZD'] },
+  { clave: 'sesion.tokio', desde: 0, hasta: 9, ccy: ['JPY', 'AUD', 'NZD'] },
+  { clave: 'sesion.londres', desde: 7, hasta: 16, ccy: ['EUR', 'GBP', 'CHF'] },
+  { clave: 'sesion.nuevaYork', desde: 12, hasta: 21, ccy: ['USD', 'CAD'] },
+]
+
+// Las sesiones abiertas a una hora UTD dada. Sídney cruza la medianoche, de
+// ahí las dos formas de comparar.
+export function sesionesEnHora(h) {
+  return SESIONES.filter((s) => (s.desde <= s.hasta ? h >= s.desde && h < s.hasta : h >= s.desde || h < s.hasta))
+}
+
+// Perfil de actividad por hora del día: cuánto se mueve el mercado en cada
+// hora, comparado con su propio promedio. Sale de las velas que ya se
+// descargaron, así que no cuesta ni una consulta más.
+//
+// Sirve para que el umbral no sea el mismo a toda hora: a las 3 de la
+// madrugada los movimientos son naturalmente pequeños, así que exigir la
+// misma diferencia de fuerza que en la apertura de Londres es pedirle al
+// mercado algo que a esa hora no pasa casi nunca. Con el factor, el listón
+// baja en las horas quietas y sube en las agitadas.
+function perfilPorHora(barras, serieHi, serieLo, serie) {
+  const suma = Array(24).fill(0)
+  const cuenta = Array(24).fill(0)
+  for (let i = 0; i < barras.length; i++) {
+    const h = aFechaUTC(barras[i]).getUTCHours()
+    let rango = 0
+    let n = 0
+    for (const c of CCY) {
+      if (c === 'USD') continue
+      const med = serie[c][i]
+      if (!(med > 0)) continue
+      rango += (serieHi[c][i] - serieLo[c][i]) / med
+      n++
+    }
+    if (!n) continue
+    suma[h] += rango / n
+    cuenta[h]++
+  }
+  const medias = suma.map((s, h) => (cuenta[h] ? s / cuenta[h] : 0))
+  const validas = medias.filter((m) => m > 0)
+  if (!validas.length) return Array(24).fill(1)
+  const global = validas.reduce((a, b) => a + b, 0) / validas.length
+  // Se recorta entre 0.6 y 1.6 para que una hora rara (un feriado, un dato
+  // suelto) no deje el umbral en cualquier parte.
+  return medias.map((m) => (m > 0 ? Math.min(1.6, Math.max(0.6, m / global)) : 1))
+}
+
 const emaLast = (c, p) => {
   const k = 2 / (p + 1)
   let e = c.slice(0, p).reduce((a, b) => a + b) / p
@@ -185,6 +244,11 @@ export function computarBarrido(barras, rates, rangos = null) {
       lo20: Math.min(...lows.slice(-20)),
       hi10: Math.max(...highs.slice(-10)),
       lo10: Math.min(...lows.slice(-10)),
+      // Techo y piso del último día completo (24 velas H1). Es el rango con el
+      // que trabaja el modo rango: más largo que las 20 velas de los soportes
+      // para que un lateral de verdad se note, y no una pausa de dos horas.
+      rangoHi: Math.max(...highs.slice(-BARRAS_POR_DIA)),
+      rangoLo: Math.min(...lows.slice(-BARRAS_POR_DIA)),
       dec: b === 'JPY' || q === 'JPY' ? 2 : 4,
       serie20: last20,
       pivots: calcularPivots(highs, lows, closes, L),
@@ -194,7 +258,16 @@ export function computarBarrido(barras, rates, rangos = null) {
   const ratesUSD = { USD: 1 }
   CCY.slice(1).forEach((c) => (ratesUSD[c] = rates[barras[L]][c]))
 
-  return { barras, ultima: barras[L], raw, esc, pares, ratesUSD }
+  return {
+    barras,
+    ultima: barras[L],
+    raw,
+    esc,
+    pares,
+    ratesUSD,
+    horaUltima: aFechaUTC(barras[L]).getUTCHours(),
+    factorHora: perfilPorHora(barras, serieHi, serieLo, serie),
+  }
 }
 
 const clasificar = (p, thr) => {
@@ -202,6 +275,48 @@ const clasificar = (p, thr) => {
   if (p.dif < -thr && p.tend === 'Bajista') return 'VENTA'
   if (Math.abs(p.dif) > thr) return 'VIGILAR'
   return '—'
+}
+
+// ---------------------------------------------------------------- modo rango
+//
+// Hasta ahora la app solo sabía operar tendencia: si el par estaba lateral,
+// callaba. Y el mercado está lateral buena parte del tiempo — de ahí los
+// reportes intradía que salían completamente vacíos varios días seguidos.
+//
+// El modo rango opera lo contrario: dentro de un lateral con techo y piso
+// claros, se compra cerca del piso y se vende cerca del techo. Las
+// condiciones son deliberadamente estrictas, porque un rango mal identificado
+// es una tendencia a la que uno se le atraviesa:
+//
+//   1. El par NO puede estar en tendencia (precio y EMAs sin alinear).
+//   2. El rango del último día tiene que medir al menos 3 ATR: si es más
+//      angosto no hay recorrido que valga la pena y el stop no cabe.
+//   3. El precio tiene que estar en el 30% de abajo (compra) o de arriba
+//      (venta) del rango; en la mitad del medio no hay nada que hacer.
+//   4. El RSI tiene que acompañar: no se compra un piso con el RSI todavía
+//      alto ni se vende un techo con el RSI ya hundido.
+const RANGO_MIN_ATR = 3
+const RANGO_BORDE = 0.3
+
+const clasificarRango = (p) => {
+  if (p.tend !== 'Rango') return null
+  const amplitud = p.rangoHi - p.rangoLo
+  if (!(amplitud > 0) || amplitud < RANGO_MIN_ATR * p.atrAbs) return null
+  const pos = (p.c - p.rangoLo) / amplitud
+  if (pos <= RANGO_BORDE && p.rsiV <= 50) return 'COMPRA'
+  if (pos >= 1 - RANGO_BORDE && p.rsiV >= 50) return 'VENTA'
+  return null
+}
+
+const razonRango = (p, t) => {
+  const d = p.dec
+  const amplitud = p.rangoHi - p.rangoLo
+  return t(clasificarRango(p) === 'COMPRA' ? 'calc_barrido.rangoCompra' : 'calc_barrido.rangoVenta', {
+    lo: p.rangoLo.toFixed(d),
+    hi: p.rangoHi.toFixed(d),
+    atr: (amplitud / p.atrAbs).toFixed(1),
+    rsi: p.rsiV.toFixed(0),
+  })
 }
 
 const razon = (p, esc, t) => {
@@ -252,15 +367,30 @@ const objetivo = (p, compra) => {
   return compra ? Math.min(...niveles) : Math.max(...niveles)
 }
 
-const mkSetup = (p, lado, esc = {}, t) => {
+// En un rango el stop y el objetivo no salen del ATR sino del propio rango:
+// el stop va medio ATR por fuera del borde (si el precio lo rompe, ya no era
+// un rango y la idea murió) y el objetivo al otro lado, dejando un 20% de
+// margen porque el precio suele darse la vuelta antes de tocar el extremo
+// exacto.
+const nivelesRango = (p, compra) => {
+  const amplitud = p.rangoHi - p.rangoLo
+  return compra
+    ? { sl: p.rangoLo - 0.5 * p.atrAbs, tp: p.rangoHi - 0.2 * amplitud }
+    : { sl: p.rangoHi + 0.5 * p.atrAbs, tp: p.rangoLo + 0.2 * amplitud }
+}
+
+const mkSetup = (p, lado, esc = {}, t, tipo = 'tendencia') => {
   const d = p.dec
   const compra = lado === 'COMPRA'
-  const sl = compra ? p.c - ATR_STOP * p.atrAbs : p.c + ATR_STOP * p.atrAbs
-  const tp = objetivo(p, compra)
+  const esRango = tipo === 'rango'
+  const { sl, tp } = esRango
+    ? nivelesRango(p, compra)
+    : { sl: compra ? p.c - ATR_STOP * p.atrAbs : p.c + ATR_STOP * p.atrAbs, tp: objetivo(p, compra) }
   const rr = Math.abs(tp - p.c) / Math.abs(p.c - sl)
   return {
     name: p.name,
     lado,
+    tipo,
     // Los campos de abajo son texto ya armado, que es lo que consumen el
     // tablero y el reporte .md. `crudo` lleva los mismos datos sin formatear,
     // para la pantalla de detalle, que necesita dibujarlos y no solo leerlos.
@@ -287,11 +417,27 @@ const mkSetup = (p, lado, esc = {}, t) => {
       tend: p.tend,
       fuerzaB: esc[p.b],
       fuerzaQ: esc[p.q],
+      tipo,
+      rangoLo: p.rangoLo,
+      rangoHi: p.rangoHi,
     },
-    sup: p.lo20.toFixed(d),
-    res: p.hi20.toFixed(d),
-    entrada: t('calc_barrido.entrada', { precio: p.c.toFixed(d), ema: p.e9.toFixed(d) }),
-    sl: sl.toFixed(d) + (compra ? t('calc_barrido.slCompra') : t('calc_barrido.slVenta')),
+    sup: (esRango ? p.rangoLo : p.lo20).toFixed(d),
+    res: (esRango ? p.rangoHi : p.hi20).toFixed(d),
+    entrada: esRango
+      ? t('calc_barrido.entradaRango', {
+          precio: p.c.toFixed(d),
+          borde: (compra ? p.rangoLo : p.rangoHi).toFixed(d),
+        })
+      : t('calc_barrido.entrada', { precio: p.c.toFixed(d), ema: p.e9.toFixed(d) }),
+    sl:
+      sl.toFixed(d) +
+      (esRango
+        ? compra
+          ? t('calc_barrido.slRangoCompra')
+          : t('calc_barrido.slRangoVenta')
+        : compra
+          ? t('calc_barrido.slCompra')
+          : t('calc_barrido.slVenta')),
     tp: tp.toFixed(d),
     rr: '1:' + rr.toFixed(1) + (rr < 1.5 ? t('calc_barrido.rbBajo') : ''),
     rrOk: rr >= 1.5,
@@ -302,9 +448,13 @@ const mkSetup = (p, lado, esc = {}, t) => {
       r1: p.pivots.r1.toFixed(d),
       r2: p.pivots.r2.toFixed(d),
     },
-    inval: compra
-      ? t('calc_barrido.invalCompra', { sl: sl.toFixed(d), b: p.b })
-      : t('calc_barrido.invalVenta', { sl: sl.toFixed(d), q: p.q }),
+    inval: esRango
+      ? t(compra ? 'calc_barrido.invalRangoCompra' : 'calc_barrido.invalRangoVenta', {
+          borde: (compra ? p.rangoLo : p.rangoHi).toFixed(d),
+        })
+      : compra
+        ? t('calc_barrido.invalCompra', { sl: sl.toFixed(d), b: p.b })
+        : t('calc_barrido.invalVenta', { sl: sl.toFixed(d), q: p.q }),
   }
 }
 
@@ -315,6 +465,23 @@ const porDifAbs = (a, b) => Math.abs(b.dif) - Math.abs(a.dif)
 // solo el último cierre de Twelve Data) — únicamente cambia el texto de "corte".
 export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crearT(IDIOMA_BASE), locale } = {}) {
   const { esc, pares: paresRaw } = data
+
+  // Sesiones abiertas y umbral ajustado a la hora. Se usa la hora de la
+  // última vela, no la del reloj del teléfono: así el barrido y su etiqueta
+  // hablan del mismo momento aunque el dato venga con retraso.
+  const hora = data.horaUltima ?? new Date().getUTCHours()
+  const factor = data.factorHora?.[hora] ?? 1
+  const abiertas = sesionesEnHora(hora)
+  const ccyFoco = [...new Set(abiertas.flatMap((s) => s.ccy))]
+  const sesion = {
+    claves: abiertas.map((s) => s.clave),
+    ccyFoco,
+    factor,
+    // El solape de Londres con Nueva York es la franja de más movimiento del
+    // día, y vale la pena decirlo aparte.
+    solape: abiertas.some((s) => s.clave === 'sesion.londres') && abiertas.some((s) => s.clave === 'sesion.nuevaYork'),
+  }
+  thr = thr * factor
 
   const monedas = Object.keys(esc)
     .sort((a, b) => esc[b] - esc[a])
@@ -334,9 +501,17 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crea
     serie20: p.serie20,
     cambio20: ((p.serie20.at(-1) - p.serie20[0]) / p.serie20[0]) * 100,
     pivots: p.pivots,
+    // Oportunidad de rango, aparte del sesgo de tendencia: un par puede no
+    // tener sesgo (está lateral) y aun así ser operable dentro de su rango.
+    rango: clasificarRango(p),
+    // Si alguna de las dos divisas del par pertenece a una sesión abierta.
+    enSesion: ccyFoco.includes(p.b) || ccyFoco.includes(p.q),
   }))
 
-  const cands = [...paresRaw].sort(porDifAbs)
+  // Entre dos candidatos igual de buenos, primero el de la sesión abierta:
+  // es el que de verdad se está moviendo a esta hora.
+  const enFoco = (p) => (ccyFoco.includes(p.b) || ccyFoco.includes(p.q) ? 1 : 0)
+  const cands = [...paresRaw].sort((a, b) => enFoco(b) - enFoco(a) || porDifAbs(a, b))
   const comprasRaw = cands.filter((p) => clasificar(p, thr) === 'COMPRA').slice(0, 5)
   const ventasRaw = cands.filter((p) => clasificar(p, thr) === 'VENTA').slice(0, 5)
   const vigilanciaRaw = cands.filter((p) => clasificar(p, thr) === 'VIGILAR').slice(0, 4)
@@ -352,7 +527,27 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crea
     }),
   }))
 
-  const setups = [...comprasRaw.slice(0, topN).map((p) => mkSetup(p, 'COMPRA', esc, t)), ...ventasRaw.slice(0, topN).map((p) => mkSetup(p, 'VENTA', esc, t))]
+  // Rangos: se ordenan por qué tan pegado al borde está el precio (entre más
+  // cerca del extremo, mejor la entrada) y se limitan a 4 para no llenar la
+  // pantalla de oportunidades mediocres.
+  const rangosRaw = paresRaw
+    .filter((p) => clasificarRango(p))
+    .map((p) => {
+      const amplitud = p.rangoHi - p.rangoLo
+      const pos = (p.c - p.rangoLo) / amplitud
+      return { p, distanciaBorde: Math.min(pos, 1 - pos) }
+    })
+    .sort((a, b) => a.distanciaBorde - b.distanciaBorde)
+    .slice(0, 4)
+    .map((x) => x.p)
+
+  const rangos = rangosRaw.map((p) => ({ name: p.name, lado: clasificarRango(p), razon: razonRango(p, t) }))
+
+  const setups = [
+    ...comprasRaw.slice(0, topN).map((p) => mkSetup(p, 'COMPRA', esc, t)),
+    ...ventasRaw.slice(0, topN).map((p) => mkSetup(p, 'VENTA', esc, t)),
+    ...rangosRaw.map((p) => mkSetup(p, clasificarRango(p), esc, t, 'rango')),
+  ]
 
   const ultima = aFechaUTC(data.ultima)
   // Ambas mitades llevan su propia fecha. Antes la de Colombia era solo la
@@ -367,5 +562,5 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crea
   const fuente = vivo ? t('calc_barrido.fuenteVivo') : t('calc_barrido.fuenteCierre')
   const corte = t('calc_barrido.corte', { local: enCO, utc: enUTC, fuente })
 
-  return { monedas, pares, compras, ventas, vigilancia, setups, corte }
+  return { monedas, pares, compras, ventas, vigilancia, rangos, setups, corte, sesion }
 }

@@ -44,13 +44,17 @@ function RazonList({ items, emptyText }) {
   )
 }
 
-export default function TableroCompleto({ onVolver, onVerSetup, loading, error, sinConfigurar, stale, guardadoEl, monedas, pares, compras, ventas, vigilancia, setups, corte }) {
+export default function TableroCompleto({ onVolver, onVerSetup, loading, error, sinConfigurar, stale, guardadoEl, monedas, pares, compras, ventas, vigilancia, rangos = [], setups, corte, sesion: sesionDatos }) {
   const { t, locale } = useIdioma()
   const fecha = useMemo(() => fmtFechaHoy(locale), [locale])
-  const sesion = t(claveSesionActiva())
+  // La sesión sale de la hora de la última vela (la calcula el barrido); si
+  // todavía no hay datos, se cae al reloj del dispositivo.
+  const sesion = sesionDatos?.claves?.length
+    ? sesionDatos.claves.map((c) => t(c)).join(' + ') + (sesionDatos.solape ? ` — ${t('sesion.solape')}` : '')
+    : t(claveSesionActiva())
 
   const descargar = () => {
-    const md = generarReporteMd({ fecha, sesion, corte, monedas, pares, compras, ventas, vigilancia, setups, limitaciones })
+    const md = generarReporteMd({ fecha, sesion, corte, monedas, pares, compras, ventas, vigilancia, rangos, setups, limitaciones })
     descargarMd(md, `reporte-forex-${new Date().toISOString().slice(0, 10)}.md`)
   }
 
@@ -84,6 +88,9 @@ export default function TableroCompleto({ onVolver, onVerSetup, loading, error, 
             <div>
               {t('tablero.sesionActiva')} <span style={{ color: 'var(--text)' }}>{sesion}</span>
             </div>
+            {sesionDatos?.factor != null && Math.abs(sesionDatos.factor - 1) > 0.05 && (
+              <div style={{ color: 'var(--text-muted)' }}>{t('tablero.factorHora', { factor: sesionDatos.factor.toFixed(2) })}</div>
+            )}
             <div>{loading ? '…' : corte}</div>
           </div>
         </section>
@@ -194,14 +201,34 @@ export default function TableroCompleto({ onVolver, onVerSetup, loading, error, 
           </section>
         )}
 
+        {rangos.length > 0 && (
+          <section className="card" style={{ borderColor: 'oklch(0.36 0.06 255)' }}>
+            <h2 className="section-title" style={{ color: 'oklch(0.72 0.11 255)', marginBottom: 6 }}>
+              {t('tablero.rangoTitulo')}
+            </h2>
+            <p style={{ margin: '0 0 12px', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+              {t('tablero.rangoPie')}
+            </p>
+            <RazonList
+              items={rangos.map((r) => ({ name: `${r.name} · ${t(`lado.${r.lado}`)}`, razon: r.razon }))}
+              emptyText=""
+            />
+          </section>
+        )}
+
         <section>
           <h2 className="section-title">{t('tablero.setups')}</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {setups.map((s) => (
-              <div key={s.name + s.lado} className="card">
+              <div key={s.name + s.lado + s.tipo} className="card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                  <span className="mono" style={{ fontWeight: 600, fontSize: 16 }}>
+                  <span className="mono" style={{ fontWeight: 600, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
                     {s.name}
+                    {s.tipo === 'rango' && (
+                      <span style={{ fontSize: 10, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'oklch(0.72 0.11 255)', border: '1px solid oklch(0.36 0.06 255)', borderRadius: 5, padding: '1px 6px' }}>
+                        {t('setup.badgeRango')}
+                      </span>
+                    )}
                   </span>
                   <Chip color={s.lado === 'COMPRA' ? 'var(--green)' : 'var(--red)'}>{t(`lado.${s.lado}`)}</Chip>
                 </div>

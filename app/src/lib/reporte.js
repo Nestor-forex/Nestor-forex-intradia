@@ -1,4 +1,4 @@
-export function generarReporteMd({ fecha, sesion, corte, monedas, pares, compras, ventas, vigilancia, setups, limitaciones }) {
+export function generarReporteMd({ fecha, sesion, corte, monedas, pares, compras, ventas, vigilancia, rangos = [], setups, limitaciones }) {
   const li = (xs) => (xs.length ? xs.map((x) => `- **${x.name}** — ${x.razon}`).join('\n') : '_Ninguno hoy._')
 
   return `# Reporte Forex — ${fecha}
@@ -25,12 +25,15 @@ ${li(ventas)}
 ## En vigilancia
 ${li(vigilancia)}
 
+## Oportunidades de rango
+${rangos.length ? rangos.map((r) => `- **${r.name} — ${r.lado}** — ${r.razon}`).join('\n') : '_Ninguna ahora._'}
+
 ## Setups
 ${
   setups.length
     ? setups
         .map(
-          (s) => `### ${s.name} — ${s.lado}
+          (s) => `### ${s.name} — ${s.lado}${s.tipo === 'rango' ? ' (rango)' : ''}
 - Soporte: ${s.sup} · Resistencia: ${s.res}
 - Entrada: ${s.entrada}
 - Stop-loss: ${s.sl}

@@ -8,7 +8,7 @@
 // Sirve para volver a medir cada vez que se toque una regla de cálculo.
 
 import { readFileSync } from 'node:fs'
-import { computarBarrido } from '../src/lib/marketCalc.js'
+import { computarBarrido, derivarVista } from '../src/lib/marketCalc.js'
 
 function leerLlave() {
   const env = readFileSync(new URL('../.env.production', import.meta.url), 'utf8')
@@ -93,3 +93,36 @@ console.log(`\nATR% promedio: antes ${media(viejo.pares.map((p) => p.atrPctH)).t
 console.log(`R/B promedio:  antes 1:${media(rbV).toFixed(2)} → ahora 1:${media(rbN).toFixed(2)}`)
 console.log(`Pares con R/B bajo 1:1.5 — antes ${rbV.filter((r) => r < 1.5).length}/${rbV.length} · ahora ${rbN.filter((r) => r < 1.5).length}/${rbN.length}`)
 console.log('---COMPARACION-FIN---')
+
+// ---------------------------------------------------------------- señales por hora
+//
+// La pregunta que importa del modo rango no es "¿funciona la fórmula?" sino
+// "¿la app deja de quedarse muda?". Se recorre hacia atrás hora por hora,
+// recalculando el barrido como si ese hubiera sido el momento de mirar, y se
+// cuenta cuántas señales habría dado con tendencia sola y cuántas sumando
+// rango. Necesita 60 velas mínimo para el RSI, así que se recorre hasta
+// donde alcancen los datos.
+const HORAS = Math.min(40, barras.length - 60)
+let horasMudas = 0
+let horasMudasAntes = 0
+let totalTend = 0
+let totalRango = 0
+
+console.log('\n--- Señales hora por hora (hacia atrás desde la más reciente) ---')
+console.log('hora UTC            tendencia  rango   total')
+for (let k = 0; k < HORAS; k++) {
+  const hasta = barras.length - k
+  const sub = barras.slice(0, hasta)
+  const v = derivarVista(computarBarrido(sub, rates, rangos), { thr: 0.5, topN: 3 })
+  const tend = v.compras.length + v.ventas.length
+  const rango = v.rangos.length
+  totalTend += tend
+  totalRango += rango
+  if (tend + rango === 0) horasMudas++
+  if (tend === 0) horasMudasAntes++
+  if (k < 12) console.log(`${sub[sub.length - 1]}   ${String(tend).padStart(6)}  ${String(rango).padStart(6)}  ${String(tend + rango).padStart(6)}`)
+}
+console.log(`\nEn las últimas ${HORAS} horas:`)
+console.log(`  horas SIN ninguna señal — antes (solo tendencia): ${horasMudasAntes}/${HORAS} · ahora (con rango): ${horasMudas}/${HORAS}`)
+console.log(`  señales de tendencia acumuladas: ${totalTend} · de rango: ${totalRango}`)
+console.log('---SENALES-FIN---')
