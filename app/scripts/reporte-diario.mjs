@@ -58,7 +58,7 @@ async function obtenerVelas(apiKey) {
   return { barras, rates, rangos }
 }
 
-function formatoChat({ fecha, monedas, pares, compras, ventas, vigilancia, setups, corte }) {
+function formatoChat({ fecha, monedas, pares, compras, ventas, vigilancia, rangos, setups, corte }) {
   const li = (xs) => (xs.length ? xs.map((x) => `• *${x.name}* — ${x.razon}`).join('\n') : '_Ninguno ahora._')
   const fuerza = monedas.map((m) => `${m.cod} ${m.score.toFixed(1)}`).join(' · ')
 
@@ -76,13 +76,16 @@ ${li(ventas)}
 *En vigilancia:*
 ${li(vigilancia)}
 
+*Oportunidades de rango (mercado lateral):*
+${rangos.length ? rangos.map((r) => `• *${r.name} ${r.lado}* — ${r.razon}`).join('\n') : '_Ninguna ahora._'}
+
 *Setups del top (con pivotes de sesión):*
 ${
   setups.length
     ? setups
         .map(
           (s) =>
-            `• *${s.name} ${s.lado}* — entrada ${s.entrada.split(' · ')[0]}, SL ${s.sl.split(' (')[0]}, TP ${s.tp} (R/B ${s.rr}) · Pivotes S1 ${s.pivots.s1} / P ${s.pivots.p} / R1 ${s.pivots.r1}`
+            `• *${s.name} ${s.lado}${s.tipo === 'rango' ? ' [RANGO]' : ''}* — entrada ${s.entrada.split(' · ')[0]}, SL ${s.sl.split(' (')[0]}, TP ${s.tp} (R/B ${s.rr}) · Pivotes S1 ${s.pivots.s1} / P ${s.pivots.p} / R1 ${s.pivots.r1}`
         )
         .join('\n')
     : '_Sin setups limpios ahora._'

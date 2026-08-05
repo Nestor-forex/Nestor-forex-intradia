@@ -183,6 +183,7 @@ export function useMarketData({ thr = 0.5, topN = 3 } = {}) {
     compras: vista?.compras ?? [],
     ventas: vista?.ventas ?? [],
     vigilancia: vista?.vigilancia ?? [],
+    rangos: vista?.rangos ?? [],
     setups: vista?.setups ?? [],
     corte: vista?.corte ?? '…',
   }
