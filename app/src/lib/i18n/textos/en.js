@@ -232,6 +232,12 @@ export default {
   },
 
   calc_barrido: {
+
+    adxOk: ({ adx }) => ` · ADX ${adx}: the trend has strength`,
+
+    vigilanciaAdx: ({ dif, favor, adx }) => `Differential ${dif} favouring ${favor} with EMAs aligned, but ADX is at ${adx}: below 20 there is no real trend, just chop.`,
+
+    vigilanciaH4: ({ dif, favor }) => `Differential ${dif} favouring ${favor} on the hourly, but the 4-hour points the other way — wait until they agree.`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) vs ${q} (${fq}), EMAs aligned, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI extended, do not chase, wait for a pullback',
     rsiContinuacion: ' — RSI in the continuation zone',

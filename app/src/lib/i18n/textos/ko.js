@@ -227,6 +227,12 @@ export default {
   },
 
   calc_barrido: {
+
+    adxOk: ({ adx }) => ` · ADX ${adx}: 추세에 힘이 있음`,
+
+    vigilanciaAdx: ({ dif, favor, adx }) => `${favor} 쪽으로 ${dif}의 차이에 EMA도 정렬됐지만 ADX가 ${adx}입니다: 20 아래면 진짜 추세가 아니라 등락일 뿐입니다.`,
+
+    vigilanciaH4: ({ dif, favor }) => `1시간 기준으로는 ${favor} 쪽 ${dif} 차이지만 4시간은 반대를 가리킵니다 — 두 시간대가 일치할 때까지 기다립니다.`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b}(${fb}) 대 ${q}(${fq}), EMA 정렬됨, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI 과열, 추격하지 말고 되돌림을 기다릴 것',
     rsiContinuacion: ' — RSI가 지속 구간에 있음',

@@ -227,6 +227,12 @@ export default {
   },
 
   calc_barrido: {
+
+    adxOk: ({ adx }) => ` · ADX ${adx}: trendin gücü var`,
+
+    vigilanciaAdx: ({ dif, favor, adx }) => `${favor} lehine ${dif} fark ve EMA’lar hizalı, ama ADX ${adx}: 20’nin altında gerçek bir trend yok, sadece salınım var.`,
+
+    vigilanciaH4: ({ dif, favor }) => `Saatlikte ${favor} lehine ${dif} fark var, ama 4 saatlik ters yönü gösteriyor — uyuşmalarını beklemek gerek.`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) - ${q} (${fq}), EMA’lar hizalı, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI aşırı uzamış, peşinden koşma, geri çekilme bekle',
     rsiContinuacion: ' — RSI devam bölgesinde',

@@ -228,6 +228,12 @@ export default {
   },
 
   calc_barrido: {
+
+    adxOk: ({ adx }) => ` · ADX ${adx}: الاتجاه لديه قوة`,
+
+    vigilanciaAdx: ({ dif, favor, adx }) => `فارق ${dif} لصالح ${favor} مع اصطفاف المتوسطات، لكن ADX عند ${adx}: دون 20 لا يوجد اتجاه حقيقي، مجرد تذبذب.`,
+
+    vigilanciaH4: ({ dif, favor }) => `فارق ${dif} لصالح ${favor} على الساعة، لكن الأربع ساعات تشير إلى الجهة المعاكسة — ننتظر توافقهما.`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) مقابل ${q} (${fq})، EMA متوافقة، RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI ممتد، لا تلاحق السعر، انتظر ارتدادًا',
     rsiContinuacion: ' — RSI في منطقة الاستمرار',

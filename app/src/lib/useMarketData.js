@@ -31,7 +31,7 @@ function leerCache() {
 // las 7 divisas (evita huecos si alguna par cerró antes por feriado local).
 async function obtenerVelas() {
   const r = await fetch(
-    `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(SYMBOLS.join(','))}&interval=1h&outputsize=100&timezone=UTC&apikey=${apiKey}`
+    `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(SYMBOLS.join(','))}&interval=1h&outputsize=300&timezone=UTC&apikey=${apiKey}`
   )
   if (!r.ok) throw new Error('HTTP ' + r.status)
   const j = await r.json()

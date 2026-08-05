@@ -227,6 +227,12 @@ export default {
   },
 
   calc_barrido: {
+
+    adxOk: ({ adx }) => ` · ADX ${adx}：トレンドに勢いあり`,
+
+    vigilanciaAdx: ({ dif, favor, adx }) => `${favor} 有利の差 ${dif} で EMA も並んでいますが、ADX は ${adx}：20 未満は本物のトレンドではなく往復にすぎません。`,
+
+    vigilanciaH4: ({ dif, favor }) => `1 時間足では ${favor} 有利の差 ${dif} ですが、4 時間足は逆を向いています — 一致するまで待ちます。`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b}（${fb}）対 ${q}（${fq}）、EMA が同方向、RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI が行き過ぎ、追いかけずに押し目・戻りを待つ',
     rsiContinuacion: ' — RSI は継続の水準',

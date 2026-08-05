@@ -232,6 +232,12 @@ export default {
   },
 
   calc_barrido: {
+
+    adxOk: ({ adx }) => ` · ADX ${adx}: a tendência tem força`,
+
+    vigilanciaAdx: ({ dif, favor, adx }) => `Diferencial ${dif} a favor de ${favor} com as EMAs alinhadas, mas o ADX está em ${adx}: abaixo de 20 não há tendência de verdade, só vaivém.`,
+
+    vigilanciaH4: ({ dif, favor }) => `Diferencial ${dif} a favor de ${favor} na hora, mas as 4 horas apontam para o lado contrário — esperar que concordem.`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) vs ${q} (${fq}), EMAs alinhadas, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI esticado, não persiga, espere um recuo',
     rsiContinuacion: ' — RSI na zona de continuação',
