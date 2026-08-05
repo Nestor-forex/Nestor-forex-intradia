@@ -39,6 +39,8 @@ export default {
     solape: '런던-뉴욕 중첩 시간대 (유동성 최대)',
     londres: '런던',
     nuevaYork: '뉴욕',
+    sidney: '시드니',
+    tokio: '도쿄',
     asia: '아시아 / 시드니',
   },
 
@@ -66,6 +68,7 @@ export default {
     enVigilancia: '관찰 중',
     rangoTitulo: '박스권 기회',
     rangoPie: '추세는 없지만 상단과 하단이 뚜렷한 통화쌍: 하단 근처에서 매수하고 상단 근처에서 매도하며, 손절은 박스권 바로 바깥에 둡니다.',
+    factorHora: ({ factor }) => `이 시간대의 활발함에 맞춰 신호 기준 조정: ×${factor}`,
     setups: '상위 Setup',
     sinCompras: '오늘은 강도와 추세가 맞아떨어지는 매수가 없습니다 — 진입을 억지로 하지 마세요.',
     sinVentas: '오늘은 강도와 추세가 맞아떨어지는 매도가 없습니다 — 진입을 억지로 하지 마세요.',

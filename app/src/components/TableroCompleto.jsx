@@ -44,10 +44,14 @@ function RazonList({ items, emptyText }) {
   )
 }
 
-export default function TableroCompleto({ onVolver, onVerSetup, loading, error, sinConfigurar, stale, guardadoEl, monedas, pares, compras, ventas, vigilancia, rangos = [], setups, corte }) {
+export default function TableroCompleto({ onVolver, onVerSetup, loading, error, sinConfigurar, stale, guardadoEl, monedas, pares, compras, ventas, vigilancia, rangos = [], setups, corte, sesion: sesionDatos }) {
   const { t, locale } = useIdioma()
   const fecha = useMemo(() => fmtFechaHoy(locale), [locale])
-  const sesion = t(claveSesionActiva())
+  // La sesión sale de la hora de la última vela (la calcula el barrido); si
+  // todavía no hay datos, se cae al reloj del dispositivo.
+  const sesion = sesionDatos?.claves?.length
+    ? sesionDatos.claves.map((c) => t(c)).join(' + ') + (sesionDatos.solape ? ` — ${t('sesion.solape')}` : '')
+    : t(claveSesionActiva())
 
   const descargar = () => {
     const md = generarReporteMd({ fecha, sesion, corte, monedas, pares, compras, ventas, vigilancia, rangos, setups, limitaciones })
@@ -84,6 +88,9 @@ export default function TableroCompleto({ onVolver, onVerSetup, loading, error, 
             <div>
               {t('tablero.sesionActiva')} <span style={{ color: 'var(--text)' }}>{sesion}</span>
             </div>
+            {sesionDatos?.factor != null && Math.abs(sesionDatos.factor - 1) > 0.05 && (
+              <div style={{ color: 'var(--text-muted)' }}>{t('tablero.factorHora', { factor: sesionDatos.factor.toFixed(2) })}</div>
+            )}
             <div>{loading ? '…' : corte}</div>
           </div>
         </section>

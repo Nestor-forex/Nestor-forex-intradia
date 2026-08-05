@@ -39,6 +39,8 @@ export default {
     solape: '伦敦-纽约重叠时段（流动性最高）',
     londres: '伦敦',
     nuevaYork: '纽约',
+    sidney: '悉尼',
+    tokio: '东京',
     asia: '亚洲 / 悉尼',
   },
 
@@ -65,6 +67,7 @@ export default {
     enVigilancia: '观察中',
     rangoTitulo: '区间交易机会',
     rangoPie: '没有趋势但上下沿清晰的货币对：在下沿附近买入、上沿附近卖出，止损就放在区间之外。',
+    factorHora: ({ factor }) => `信号阈值已按本小时活跃度调整：×${factor}`,
     setups: '首选 Setup',
     sinCompras: '今天没有强度与趋势一致的买入机会 — 不要勉强入场。',
     sinVentas: '今天没有强度与趋势一致的卖出机会 — 不要勉强入场。',

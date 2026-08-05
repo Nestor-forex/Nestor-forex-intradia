@@ -43,6 +43,8 @@ export default {
     solape: 'Chevauchement Londres-New York (liquidité maximale)',
     londres: 'Londres',
     nuevaYork: 'New York',
+    sidney: 'Sydney',
+    tokio: 'Tokyo',
     asia: 'Asie / Sydney',
   },
 
@@ -70,6 +72,7 @@ export default {
     enVigilancia: 'Sous surveillance',
     rangoTitulo: 'Opportunités de range',
     rangoPie: 'Paires sans tendance mais avec un plafond et un plancher nets : on achète près du plancher, on vend près du plafond, le stop juste en dehors du range.',
+    factorHora: ({ factor }) => `Seuil de signal ajusté à l’activité de cette heure : ×${factor}`,
     setups: 'Meilleurs setups',
     sinCompras: "Aucun achat aujourd'hui avec force et tendance alignées — ne pas forcer les entrées.",
     sinVentas: "Aucune vente aujourd'hui avec force et tendance alignées — ne pas forcer les entrées.",

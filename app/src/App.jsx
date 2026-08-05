@@ -209,6 +209,7 @@ export default function App() {
             ventas={mercado.ventas}
             vigilancia={mercado.vigilancia}
             rangos={mercado.rangos}
+            sesion={mercado.sesion}
             setups={mercado.setups}
             corte={mercado.corte}
           />

@@ -43,6 +43,8 @@ export default {
     solape: 'London-New York overlap (peak liquidity)',
     londres: 'London',
     nuevaYork: 'New York',
+    sidney: 'Sydney',
+    tokio: 'Tokyo',
     asia: 'Asia / Sydney',
   },
 
@@ -70,6 +72,7 @@ export default {
     enVigilancia: 'On watch',
     rangoTitulo: 'Range opportunities',
     rangoPie: 'Pairs with no trend but a clear ceiling and floor: buy near the floor, sell near the ceiling, with the stop just outside the range.',
+    factorHora: ({ factor }) => `Signal threshold adjusted to this hour's activity: ×${factor}`,
     setups: 'Top setups',
     sinCompras: 'No buys today with strength and trend aligned — do not force entries.',
     sinVentas: 'No sells today with strength and trend aligned — do not force entries.',

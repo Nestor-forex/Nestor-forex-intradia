@@ -58,12 +58,21 @@ async function obtenerVelas(apiKey) {
   return { barras, rates, rangos }
 }
 
-function formatoChat({ fecha, monedas, pares, compras, ventas, vigilancia, rangos, setups, corte }) {
+const NOMBRE_SESION = {
+  'sesion.sidney': 'Sídney',
+  'sesion.tokio': 'Tokio',
+  'sesion.londres': 'Londres',
+  'sesion.nuevaYork': 'Nueva York',
+}
+
+function formatoChat({ fecha, monedas, pares, compras, ventas, vigilancia, rangos, setups, corte, sesion }) {
   const li = (xs) => (xs.length ? xs.map((x) => `• *${x.name}* — ${x.razon}`).join('\n') : '_Ninguno ahora._')
   const fuerza = monedas.map((m) => `${m.cod} ${m.score.toFixed(1)}`).join(' · ')
 
   return `⚡ *Nestor Forex Intradía* — ${fecha}
 ${corte}
+
+*Sesión abierta:* ${sesion.claves.map((c) => NOMBRE_SESION[c] || c).join(' + ')}${sesion.solape ? ' — solape de máxima liquidez' : ''}
 
 *Fuerza relativa (1h/4h/24h):* ${fuerza}
 

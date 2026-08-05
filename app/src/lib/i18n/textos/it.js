@@ -39,6 +39,8 @@ export default {
     solape: 'Sovrapposizione Londra-New York (liquidità massima)',
     londres: 'Londra',
     nuevaYork: 'New York',
+    sidney: 'Sydney',
+    tokio: 'Tokyo',
     asia: 'Asia / Sydney',
   },
 
@@ -66,6 +68,7 @@ export default {
     enVigilancia: 'Sotto osservazione',
     rangoTitulo: 'Opportunità di range',
     rangoPie: 'Coppie senza tendenza ma con tetto e pavimento chiari: si compra vicino al pavimento e si vende vicino al tetto, con lo stop appena fuori dal range.',
+    factorHora: ({ factor }) => `Soglia del segnale adattata all’attività di quest’ora: ×${factor}`,
     setups: 'Setup migliori',
     sinCompras: 'Oggi non ci sono acquisti con forza e trend allineati — non forzare gli ingressi.',
     sinVentas: 'Oggi non ci sono vendite con forza e trend allineati — non forzare gli ingressi.',

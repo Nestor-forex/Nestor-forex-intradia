@@ -43,6 +43,8 @@ export default {
     solape: 'Überschneidung London-New York (höchste Liquidität)',
     londres: 'London',
     nuevaYork: 'New York',
+    sidney: 'Sydney',
+    tokio: 'Tokio',
     asia: 'Asien / Sydney',
   },
 
@@ -70,6 +72,7 @@ export default {
     enVigilancia: 'Beobachtungsliste',
     rangoTitulo: 'Chancen in der Seitwärtsphase',
     rangoPie: 'Paare ohne Trend, aber mit klarer Decke und klarem Boden: nahe am Boden kaufen, nahe an der Decke verkaufen, mit dem Stop knapp außerhalb der Spanne.',
+    factorHora: ({ factor }) => `Signalschwelle an die Aktivität dieser Stunde angepasst: ×${factor}`,
     setups: 'Top-Setups',
     sinCompras: 'Heute keine Käufe mit übereinstimmender Stärke und Trend — keine Einstiege erzwingen.',
     sinVentas: 'Heute keine Verkäufe mit übereinstimmender Stärke und Trend — keine Einstiege erzwingen.',

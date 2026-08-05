@@ -80,6 +80,8 @@ export default {
     solape: 'Solape Londres-Nueva York (máxima liquidez)',
     londres: 'Londres',
     nuevaYork: 'Nueva York',
+    sidney: 'Sídney',
+    tokio: 'Tokio',
     asia: 'Asia / Sídney',
   },
 
@@ -107,6 +109,7 @@ export default {
     enVigilancia: 'En vigilancia',
     rangoTitulo: 'Oportunidades de rango',
     rangoPie: 'Pares sin tendencia pero con techo y piso claros: se compra cerca del piso y se vende cerca del techo, con el stop justo por fuera del rango.',
+    factorHora: ({ factor }) => `Umbral de señal ajustado a la actividad de esta hora: ×${factor}`,
     setups: 'Setups del top',
     sinCompras: 'Hoy no hay compras con fuerza y tendencia alineadas — no forzar entradas.',
     sinVentas: 'Hoy no hay ventas con fuerza y tendencia alineadas — no forzar entradas.',

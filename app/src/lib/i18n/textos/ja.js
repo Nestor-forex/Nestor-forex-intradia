@@ -39,6 +39,8 @@ export default {
     solape: 'ロンドン・ニューヨーク重複時間帯（流動性が最大）',
     londres: 'ロンドン',
     nuevaYork: 'ニューヨーク',
+    sidney: 'シドニー',
+    tokio: '東京',
     asia: 'アジア / シドニー',
   },
 
@@ -66,6 +68,7 @@ export default {
     enVigilancia: '監視中',
     rangoTitulo: 'レンジのチャンス',
     rangoPie: 'トレンドはないが上限と下限がはっきりしている通貨ペア：下限近くで買い、上限近くで売り、ストップはレンジのすぐ外に置きます。',
+    factorHora: ({ factor }) => `シグナルのしきい値をこの時間帯の活発さに合わせて調整：×${factor}`,
     setups: '上位 Setup',
     sinCompras: '本日は強さとトレンドがそろった買いはありません — 無理にエントリーしないこと。',
     sinVentas: '本日は強さとトレンドがそろった売りはありません — 無理にエントリーしないこと。',

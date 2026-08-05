@@ -35,6 +35,65 @@ export const PAIRS = [
 // Velas H1 por "día de trading intradía": 24 horas.
 const BARRAS_POR_DIA = 24
 
+// ------------------------------------------------------------------ sesiones
+//
+// El mercado de divisas no es uno solo: son cuatro plazas que se van pasando
+// el turno. Cada una mueve sobre todo sus propias divisas, y entre ellas hay
+// horas muertas y horas de máxima actividad. La app trataba las 3 de la
+// madrugada igual que la apertura de Londres, que es como medir a todo el
+// mundo con la misma vara.
+//
+// Horarios en UTC (Londres y Nueva York se corren una hora en su horario de
+// verano; se usan los de invierno, que es la referencia estándar).
+export const SESIONES = [
+  { clave: 'sesion.sidney', desde: 21, hasta: 6, ccy: ['AUD', 'NZD'] },
+  { clave: 'sesion.tokio', desde: 0, hasta: 9, ccy: ['JPY', 'AUD', 'NZD'] },
+  { clave: 'sesion.londres', desde: 7, hasta: 16, ccy: ['EUR', 'GBP', 'CHF'] },
+  { clave: 'sesion.nuevaYork', desde: 12, hasta: 21, ccy: ['USD', 'CAD'] },
+]
+
+// Las sesiones abiertas a una hora UTD dada. Sídney cruza la medianoche, de
+// ahí las dos formas de comparar.
+export function sesionesEnHora(h) {
+  return SESIONES.filter((s) => (s.desde <= s.hasta ? h >= s.desde && h < s.hasta : h >= s.desde || h < s.hasta))
+}
+
+// Perfil de actividad por hora del día: cuánto se mueve el mercado en cada
+// hora, comparado con su propio promedio. Sale de las velas que ya se
+// descargaron, así que no cuesta ni una consulta más.
+//
+// Sirve para que el umbral no sea el mismo a toda hora: a las 3 de la
+// madrugada los movimientos son naturalmente pequeños, así que exigir la
+// misma diferencia de fuerza que en la apertura de Londres es pedirle al
+// mercado algo que a esa hora no pasa casi nunca. Con el factor, el listón
+// baja en las horas quietas y sube en las agitadas.
+function perfilPorHora(barras, serieHi, serieLo, serie) {
+  const suma = Array(24).fill(0)
+  const cuenta = Array(24).fill(0)
+  for (let i = 0; i < barras.length; i++) {
+    const h = aFechaUTC(barras[i]).getUTCHours()
+    let rango = 0
+    let n = 0
+    for (const c of CCY) {
+      if (c === 'USD') continue
+      const med = serie[c][i]
+      if (!(med > 0)) continue
+      rango += (serieHi[c][i] - serieLo[c][i]) / med
+      n++
+    }
+    if (!n) continue
+    suma[h] += rango / n
+    cuenta[h]++
+  }
+  const medias = suma.map((s, h) => (cuenta[h] ? s / cuenta[h] : 0))
+  const validas = medias.filter((m) => m > 0)
+  if (!validas.length) return Array(24).fill(1)
+  const global = validas.reduce((a, b) => a + b, 0) / validas.length
+  // Se recorta entre 0.6 y 1.6 para que una hora rara (un feriado, un dato
+  // suelto) no deje el umbral en cualquier parte.
+  return medias.map((m) => (m > 0 ? Math.min(1.6, Math.max(0.6, m / global)) : 1))
+}
+
 const emaLast = (c, p) => {
   const k = 2 / (p + 1)
   let e = c.slice(0, p).reduce((a, b) => a + b) / p
@@ -199,7 +258,16 @@ export function computarBarrido(barras, rates, rangos = null) {
   const ratesUSD = { USD: 1 }
   CCY.slice(1).forEach((c) => (ratesUSD[c] = rates[barras[L]][c]))
 
-  return { barras, ultima: barras[L], raw, esc, pares, ratesUSD }
+  return {
+    barras,
+    ultima: barras[L],
+    raw,
+    esc,
+    pares,
+    ratesUSD,
+    horaUltima: aFechaUTC(barras[L]).getUTCHours(),
+    factorHora: perfilPorHora(barras, serieHi, serieLo, serie),
+  }
 }
 
 const clasificar = (p, thr) => {
@@ -398,6 +466,23 @@ const porDifAbs = (a, b) => Math.abs(b.dif) - Math.abs(a.dif)
 export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crearT(IDIOMA_BASE), locale } = {}) {
   const { esc, pares: paresRaw } = data
 
+  // Sesiones abiertas y umbral ajustado a la hora. Se usa la hora de la
+  // última vela, no la del reloj del teléfono: así el barrido y su etiqueta
+  // hablan del mismo momento aunque el dato venga con retraso.
+  const hora = data.horaUltima ?? new Date().getUTCHours()
+  const factor = data.factorHora?.[hora] ?? 1
+  const abiertas = sesionesEnHora(hora)
+  const ccyFoco = [...new Set(abiertas.flatMap((s) => s.ccy))]
+  const sesion = {
+    claves: abiertas.map((s) => s.clave),
+    ccyFoco,
+    factor,
+    // El solape de Londres con Nueva York es la franja de más movimiento del
+    // día, y vale la pena decirlo aparte.
+    solape: abiertas.some((s) => s.clave === 'sesion.londres') && abiertas.some((s) => s.clave === 'sesion.nuevaYork'),
+  }
+  thr = thr * factor
+
   const monedas = Object.keys(esc)
     .sort((a, b) => esc[b] - esc[a])
     .map((cod) => ({ cod, score: esc[cod] }))
@@ -419,9 +504,14 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crea
     // Oportunidad de rango, aparte del sesgo de tendencia: un par puede no
     // tener sesgo (está lateral) y aun así ser operable dentro de su rango.
     rango: clasificarRango(p),
+    // Si alguna de las dos divisas del par pertenece a una sesión abierta.
+    enSesion: ccyFoco.includes(p.b) || ccyFoco.includes(p.q),
   }))
 
-  const cands = [...paresRaw].sort(porDifAbs)
+  // Entre dos candidatos igual de buenos, primero el de la sesión abierta:
+  // es el que de verdad se está moviendo a esta hora.
+  const enFoco = (p) => (ccyFoco.includes(p.b) || ccyFoco.includes(p.q) ? 1 : 0)
+  const cands = [...paresRaw].sort((a, b) => enFoco(b) - enFoco(a) || porDifAbs(a, b))
   const comprasRaw = cands.filter((p) => clasificar(p, thr) === 'COMPRA').slice(0, 5)
   const ventasRaw = cands.filter((p) => clasificar(p, thr) === 'VENTA').slice(0, 5)
   const vigilanciaRaw = cands.filter((p) => clasificar(p, thr) === 'VIGILAR').slice(0, 4)
@@ -472,5 +562,5 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crea
   const fuente = vivo ? t('calc_barrido.fuenteVivo') : t('calc_barrido.fuenteCierre')
   const corte = t('calc_barrido.corte', { local: enCO, utc: enUTC, fuente })
 
-  return { monedas, pares, compras, ventas, vigilancia, rangos, setups, corte }
+  return { monedas, pares, compras, ventas, vigilancia, rangos, setups, corte, sesion }
 }

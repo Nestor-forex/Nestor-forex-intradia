@@ -43,6 +43,8 @@ export default {
     solape: 'Sobreposição Londres-Nova York (liquidez máxima)',
     londres: 'Londres',
     nuevaYork: 'Nova York',
+    sidney: 'Sydney',
+    tokio: 'Tóquio',
     asia: 'Ásia / Sydney',
   },
 
@@ -70,6 +72,7 @@ export default {
     enVigilancia: 'Em observação',
     rangoTitulo: 'Oportunidades de range',
     rangoPie: 'Pares sem tendência mas com teto e piso claros: compra-se perto do piso e vende-se perto do teto, com o stop logo fora do range.',
+    factorHora: ({ factor }) => `Limiar de sinal ajustado à atividade desta hora: ×${factor}`,
     setups: 'Setups do topo',
     sinCompras: 'Hoje não há compras com força e tendência alinhadas — não force entradas.',
     sinVentas: 'Hoje não há vendas com força e tendência alinhadas — não force entradas.',

@@ -39,6 +39,8 @@ export default {
     solape: 'Londra-New York kesişimi (en yüksek likidite)',
     londres: 'Londra',
     nuevaYork: 'New York',
+    sidney: 'Sidney',
+    tokio: 'Tokyo',
     asia: 'Asya / Sidney',
   },
 
@@ -66,6 +68,7 @@ export default {
     enVigilancia: 'İzlemede',
     rangoTitulo: 'Yatay bant fırsatları',
     rangoPie: 'Trendi olmayan ama tavanı ve tabanı belirgin pariteler: tabana yakın alınır, tavana yakın satılır, zarar durdur bandın hemen dışına konur.',
+    factorHora: ({ factor }) => `Sinyal eşiği bu saatin hareketliliğine göre ayarlandı: ×${factor}`,
     setups: 'En iyi Setup’lar',
     sinCompras: 'Bugün güç ve trendi uyuşan alım yok — girişleri zorlama.',
     sinVentas: 'Bugün güç ve trendi uyuşan satım yok — girişleri zorlama.',
