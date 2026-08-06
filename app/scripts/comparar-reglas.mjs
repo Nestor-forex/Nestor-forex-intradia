@@ -94,35 +94,63 @@ console.log(`R/B promedio:  antes 1:${media(rbV).toFixed(2)} → ahora 1:${media
 console.log(`Pares con R/B bajo 1:1.5 — antes ${rbV.filter((r) => r < 1.5).length}/${rbV.length} · ahora ${rbN.filter((r) => r < 1.5).length}/${rbN.length}`)
 console.log('---COMPARACION-FIN---')
 
-// ---------------------------------------------------------------- señales por hora
+// ------------------------------------------------------- señales por hora del día
 //
-// La pregunta que importa del modo rango no es "¿funciona la fórmula?" sino
-// "¿la app deja de quedarse muda?". Se recorre hacia atrás hora por hora,
+// Pregunta concreta: ¿el hueco de las 8:00 a. m. de Colombia (13:00 UTC) es
+// sistemático o fue mala suerte? Se recorre todo el historial disponible
 // recalculando el barrido como si ese hubiera sido el momento de mirar, y se
-// cuenta cuántas señales habría dado con tendencia sola y cuántas sumando
-// rango. Necesita 60 velas mínimo para el RSI, así que se recorre hasta
-// donde alcancen los datos.
-const HORAS = Math.min(40, barras.length - 60)
-let horasMudas = 0
-let horasMudasAntes = 0
-let totalTend = 0
-let totalRango = 0
+// agrupa por hora del día.
+//
+// De paso se mide el arreglo que se sospecha: hoy el umbral se multiplica por
+// la actividad de la hora, recortada entre 0.6 y 1.6, así que en las horas más
+// movidas se pone hasta 60% más exigente — justo cuando más pasa. La columna
+// "con tope 1.2" repite la cuenta como si ese recorte fuera más suave. No hace
+// falta tocar la app para simularlo: derivarVista multiplica el umbral que se
+// le pasa por el factor de la hora, así que basta pasarle un umbral corregido.
+const TOPE_PROPUESTO = 1.2
 
-console.log('\n--- Señales hora por hora (hacia atrás desde la más reciente) ---')
-console.log('hora UTC            tendencia  rango   total')
+const porHora = Array.from({ length: 24 }, () => ({ n: 0, conSenal: 0, senales: 0, conSenalCap: 0, senalesCap: 0, factor: 0 }))
+const HORAS = Math.max(0, barras.length - 60)
+
 for (let k = 0; k < HORAS; k++) {
-  const hasta = barras.length - k
-  const sub = barras.slice(0, hasta)
-  const v = derivarVista(computarBarrido(sub, rates, rangos), { thr: 0.5, topN: 3 })
-  const tend = v.compras.length + v.ventas.length
-  const rango = v.rangos.length
-  totalTend += tend
-  totalRango += rango
-  if (tend + rango === 0) horasMudas++
-  if (tend === 0) horasMudasAntes++
-  if (k < 12) console.log(`${sub[sub.length - 1]}   ${String(tend).padStart(6)}  ${String(rango).padStart(6)}  ${String(tend + rango).padStart(6)}`)
+  const sub = barras.slice(0, barras.length - k)
+  const d = computarBarrido(sub, rates, rangos)
+  const h = d.horaUltima
+  const f = d.factorHora?.[h] ?? 1
+
+  const v = derivarVista(d, { thr: 0.5, topN: 3 })
+  const total = v.compras.length + v.ventas.length + v.rangos.length
+
+  // Mismo cálculo pero con el factor recortado a TOPE_PROPUESTO.
+  const fCap = Math.min(TOPE_PROPUESTO, f)
+  const vCap = derivarVista(d, { thr: (0.5 * fCap) / f, topN: 3 })
+  const totalCap = vCap.compras.length + vCap.ventas.length + vCap.rangos.length
+
+  const b = porHora[h]
+  b.n++
+  b.factor += f
+  b.senales += total
+  b.senalesCap += totalCap
+  if (total > 0) b.conSenal++
+  if (totalCap > 0) b.conSenalCap++
 }
-console.log(`\nEn las últimas ${HORAS} horas:`)
-console.log(`  horas SIN ninguna señal — antes (solo tendencia): ${horasMudasAntes}/${HORAS} · ahora (con rango): ${horasMudas}/${HORAS}`)
-console.log(`  señales de tendencia acumuladas: ${totalTend} · de rango: ${totalRango}`)
+
+console.log(`\n--- Señales por hora del día (${HORAS} horas de historial) ---`)
+console.log('UTC   Col.  días  factor   con señal   señales | con tope ' + TOPE_PROPUESTO + ': con señal   señales')
+for (let h = 0; h < 24; h++) {
+  const b = porHora[h]
+  if (!b.n) continue
+  const col = (h + 19) % 24 // Colombia = UTC-5
+  const pct = (x) => `${Math.round((x / b.n) * 100)}%`.padStart(4)
+  const marca = h === 13 ? '  <- reporte de las 8:00' : ''
+  console.log(
+    `${String(h).padStart(2, '0')}:00 ${String(col).padStart(2, '0')}:00 ${String(b.n).padStart(5)}   ` +
+      `${(b.factor / b.n).toFixed(2)}    ${pct(b.conSenal)}   ${String(b.senales).padStart(7)} |` +
+      `${pct(b.conSenalCap)}   ${String(b.senalesCap).padStart(7)}${marca}`
+  )
+}
+
+const suma = (f) => porHora.reduce((a, b) => a + f(b), 0)
+console.log(`\nTotal: ${suma((b) => b.senales)} señales con el tope actual (1.6) · ${suma((b) => b.senalesCap)} con tope ${TOPE_PROPUESTO}`)
+console.log(`Horas con al menos una señal: ${suma((b) => b.conSenal)}/${HORAS} · con tope ${TOPE_PROPUESTO}: ${suma((b) => b.conSenalCap)}/${HORAS}`)
 console.log('---SENALES-FIN---')
