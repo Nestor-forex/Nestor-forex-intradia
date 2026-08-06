@@ -101,15 +101,17 @@ console.log('---COMPARACION-FIN---')
 // recalculando el barrido como si ese hubiera sido el momento de mirar, y se
 // agrupa por hora del día.
 //
-// De paso se mide el arreglo que se sospecha: hoy el umbral se multiplica por
-// la actividad de la hora, recortada entre 0.6 y 1.6, así que en las horas más
-// movidas se pone hasta 60% más exigente — justo cuando más pasa. La columna
-// "con tope 1.2" repite la cuenta como si ese recorte fuera más suave. No hace
-// falta tocar la app para simularlo: derivarVista multiplica el umbral que se
-// le pasa por el factor de la hora, así que basta pasarle un umbral corregido.
-const TOPE_PROPUESTO = 1.2
+// De paso se comparan los tres recortes del ajuste horario. El umbral se
+// multiplica por la actividad de la hora, y ese multiplicador va recortado:
+// hoy entre 0.6 y 1.2, antes entre 0.6 y 1.6 — con 1.6 las horas más movidas
+// ponían el listón hasta un 60% más alto justo cuando más pasa. No hace falta
+// tocar la app para simular otro recorte: computarBarrido devuelve también la
+// proporción sin recortar (factorHoraCrudo), y derivarVista multiplica por el
+// factor el umbral que se le pasa, así que basta pasarle uno pre-corregido.
+const PISO = 0.6
+const TOPE_VIEJO = 1.6
 
-const porHora = Array.from({ length: 24 }, () => ({ n: 0, conSenal: 0, senales: 0, conSenalCap: 0, senalesCap: 0, conSenalSin: 0, senalesSin: 0, factor: 0 }))
+const porHora = Array.from({ length: 24 }, () => ({ n: 0, conSenal: 0, senales: 0, conSenalV: 0, senalesV: 0, conSenalSin: 0, senalesSin: 0, factor: 0 }))
 const HORAS = Math.max(0, barras.length - 60)
 
 for (let k = 0; k < HORAS; k++) {
@@ -117,14 +119,15 @@ for (let k = 0; k < HORAS; k++) {
   const d = computarBarrido(sub, rates, rangos)
   const h = d.horaUltima
   const f = d.factorHora?.[h] ?? 1
+  const crudo = d.factorHoraCrudo?.[h] ?? f
 
   const v = derivarVista(d, { thr: 0.5, topN: 3 })
   const total = v.compras.length + v.ventas.length + v.rangos.length
 
-  // Mismo cálculo pero con el factor recortado a TOPE_PROPUESTO.
-  const fCap = Math.min(TOPE_PROPUESTO, f)
-  const vCap = derivarVista(d, { thr: (0.5 * fCap) / f, topN: 3 })
-  const totalCap = vCap.compras.length + vCap.ventas.length + vCap.rangos.length
+  // Mismo cálculo pero con el recorte de antes (hasta 1.6).
+  const fViejo = Math.min(TOPE_VIEJO, Math.max(PISO, crudo))
+  const vV = derivarVista(d, { thr: (0.5 * fViejo) / f, topN: 3 })
+  const totalV = vV.compras.length + vV.ventas.length + vV.rangos.length
 
   // Y sin ningún ajuste por hora (factor = 1 siempre), que es como estaba
   // antes del punto 4.
@@ -135,16 +138,16 @@ for (let k = 0; k < HORAS; k++) {
   b.n++
   b.factor += f
   b.senales += total
-  b.senalesCap += totalCap
+  b.senalesV += totalV
   b.senalesSin += totalSin
   if (total > 0) b.conSenal++
-  if (totalCap > 0) b.conSenalCap++
+  if (totalV > 0) b.conSenalV++
   if (totalSin > 0) b.conSenalSin++
 }
 
 console.log(`\n--- Señales por hora del día (${HORAS} horas de historial) ---`)
-console.log('UTC   Col.  factor |  AHORA (tope 1.6)  | CON TOPE 1.2  | SIN AJUSTE')
-console.log('                     |  con señal señales | con señal señ. | con señal señ.')
+console.log('UTC   Col.  factor |  AHORA (tope 1.2)  | TOPE 1.6 (antes) | SIN AJUSTE')
+console.log('                     |  con señal señales |  con señal señ.  | con señal señ.')
 for (let h = 0; h < 24; h++) {
   const b = porHora[h]
   if (!b.n) continue
@@ -154,12 +157,12 @@ for (let h = 0; h < 24; h++) {
   console.log(
     `${String(h).padStart(2, '0')}:00 ${String(col).padStart(2, '0')}:00  ${(b.factor / b.n).toFixed(2)} |` +
       `      ${pct(b.conSenal)} ${String(b.senales).padStart(7)} |` +
-      `     ${pct(b.conSenalCap)} ${String(b.senalesCap).padStart(4)} |` +
+      `      ${pct(b.conSenalV)} ${String(b.senalesV).padStart(4)}  |` +
       `     ${pct(b.conSenalSin)} ${String(b.senalesSin).padStart(4)}${marca}`
   )
 }
 
 const suma = (f) => porHora.reduce((a, b) => a + f(b), 0)
-console.log(`\nTotal de señales: ${suma((b) => b.senales)} ahora · ${suma((b) => b.senalesCap)} con tope ${TOPE_PROPUESTO} · ${suma((b) => b.senalesSin)} sin ajuste`)
-console.log(`Horas con al menos una señal: ${suma((b) => b.conSenal)}/${HORAS} ahora · ${suma((b) => b.conSenalCap)}/${HORAS} con tope · ${suma((b) => b.conSenalSin)}/${HORAS} sin ajuste`)
+console.log(`\nTotal de señales: ${suma((b) => b.senales)} ahora (tope 1.2) · ${suma((b) => b.senalesV)} con tope ${TOPE_VIEJO} · ${suma((b) => b.senalesSin)} sin ajuste`)
+console.log(`Horas con al menos una señal: ${suma((b) => b.conSenal)}/${HORAS} ahora · ${suma((b) => b.conSenalV)}/${HORAS} con tope ${TOPE_VIEJO} · ${suma((b) => b.conSenalSin)}/${HORAS} sin ajuste`)
 console.log('---SENALES-FIN---')
