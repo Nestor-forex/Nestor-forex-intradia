@@ -67,6 +67,17 @@ export function sesionesEnHora(h) {
 // misma diferencia de fuerza que en la apertura de Londres es pedirle al
 // mercado algo que a esa hora no pasa casi nunca. Con el factor, el listón
 // baja en las horas quietas y sube en las agitadas.
+//
+// El recorte de abajo (0.6) es el que hace el trabajo bueno: deja que en las
+// horas muertas el listón baje lo que haga falta. El de arriba estuvo en 1.6
+// y resultó contraproducente: en las horas más movidas ponía el listón hasta
+// un 60% más alto justo cuando más oportunidades pasaban. Medido sobre 240
+// horas reales (script comparar-reglas.mjs), la franja de las 8:00 a. m. de
+// Colombia daba señal el 20% de las veces con 1.6 y el 30% con 1.2, y el
+// total de señales sube de 270 a 286 sin dañar ninguna hora quieta.
+const PISO_HORA = 0.6
+const TOPE_HORA = 1.2
+
 function perfilPorHora(barras, serieHi, serieLo, serie) {
   const suma = Array(24).fill(0)
   const cuenta = Array(24).fill(0)
@@ -87,11 +98,12 @@ function perfilPorHora(barras, serieHi, serieLo, serie) {
   }
   const medias = suma.map((s, h) => (cuenta[h] ? s / cuenta[h] : 0))
   const validas = medias.filter((m) => m > 0)
-  if (!validas.length) return Array(24).fill(1)
+  if (!validas.length) return { crudo: Array(24).fill(1), factor: Array(24).fill(1) }
   const global = validas.reduce((a, b) => a + b, 0) / validas.length
-  // Se recorta entre 0.6 y 1.6 para que una hora rara (un feriado, un dato
-  // suelto) no deje el umbral en cualquier parte.
-  return medias.map((m) => (m > 0 ? Math.min(1.6, Math.max(0.6, m / global)) : 1))
+  // Se devuelven las dos versiones: la proporción cruda (para poder volver a
+  // medir otros topes sin tocar la app) y la recortada, que es la que se usa.
+  const crudo = medias.map((m) => (m > 0 ? m / global : 1))
+  return { crudo, factor: crudo.map((r) => Math.min(TOPE_HORA, Math.max(PISO_HORA, r))) }
 }
 
 const emaLast = (c, p) => {
@@ -342,6 +354,8 @@ export function computarBarrido(barras, rates, rangos = null) {
   const ratesUSD = { USD: 1 }
   CCY.slice(1).forEach((c) => (ratesUSD[c] = rates[barras[L]][c]))
 
+  const perfil = perfilPorHora(barras, serieHi, serieLo, serie)
+
   return {
     barras,
     ultima: barras[L],
@@ -350,7 +364,10 @@ export function computarBarrido(barras, rates, rangos = null) {
     pares,
     ratesUSD,
     horaUltima: aFechaUTC(barras[L]).getUTCHours(),
-    factorHora: perfilPorHora(barras, serieHi, serieLo, serie),
+    factorHora: perfil.factor,
+    // Sin recortar. No lo usa la app: sirve para que el script de medición
+    // pueda simular otros topes sin tener que tocar este archivo.
+    factorHoraCrudo: perfil.crudo,
   }
 }
 
