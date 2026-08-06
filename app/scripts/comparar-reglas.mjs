@@ -109,7 +109,7 @@ console.log('---COMPARACION-FIN---')
 // le pasa por el factor de la hora, así que basta pasarle un umbral corregido.
 const TOPE_PROPUESTO = 1.2
 
-const porHora = Array.from({ length: 24 }, () => ({ n: 0, conSenal: 0, senales: 0, conSenalCap: 0, senalesCap: 0, factor: 0 }))
+const porHora = Array.from({ length: 24 }, () => ({ n: 0, conSenal: 0, senales: 0, conSenalCap: 0, senalesCap: 0, conSenalSin: 0, senalesSin: 0, factor: 0 }))
 const HORAS = Math.max(0, barras.length - 60)
 
 for (let k = 0; k < HORAS; k++) {
@@ -126,17 +126,25 @@ for (let k = 0; k < HORAS; k++) {
   const vCap = derivarVista(d, { thr: (0.5 * fCap) / f, topN: 3 })
   const totalCap = vCap.compras.length + vCap.ventas.length + vCap.rangos.length
 
+  // Y sin ningún ajuste por hora (factor = 1 siempre), que es como estaba
+  // antes del punto 4.
+  const vSin = derivarVista(d, { thr: 0.5 / f, topN: 3 })
+  const totalSin = vSin.compras.length + vSin.ventas.length + vSin.rangos.length
+
   const b = porHora[h]
   b.n++
   b.factor += f
   b.senales += total
   b.senalesCap += totalCap
+  b.senalesSin += totalSin
   if (total > 0) b.conSenal++
   if (totalCap > 0) b.conSenalCap++
+  if (totalSin > 0) b.conSenalSin++
 }
 
 console.log(`\n--- Señales por hora del día (${HORAS} horas de historial) ---`)
-console.log('UTC   Col.  días  factor   con señal   señales | con tope ' + TOPE_PROPUESTO + ': con señal   señales')
+console.log('UTC   Col.  factor |  AHORA (tope 1.6)  | CON TOPE 1.2  | SIN AJUSTE')
+console.log('                     |  con señal señales | con señal señ. | con señal señ.')
 for (let h = 0; h < 24; h++) {
   const b = porHora[h]
   if (!b.n) continue
@@ -144,13 +152,14 @@ for (let h = 0; h < 24; h++) {
   const pct = (x) => `${Math.round((x / b.n) * 100)}%`.padStart(4)
   const marca = h === 13 ? '  <- reporte de las 8:00' : ''
   console.log(
-    `${String(h).padStart(2, '0')}:00 ${String(col).padStart(2, '0')}:00 ${String(b.n).padStart(5)}   ` +
-      `${(b.factor / b.n).toFixed(2)}    ${pct(b.conSenal)}   ${String(b.senales).padStart(7)} |` +
-      `${pct(b.conSenalCap)}   ${String(b.senalesCap).padStart(7)}${marca}`
+    `${String(h).padStart(2, '0')}:00 ${String(col).padStart(2, '0')}:00  ${(b.factor / b.n).toFixed(2)} |` +
+      `      ${pct(b.conSenal)} ${String(b.senales).padStart(7)} |` +
+      `     ${pct(b.conSenalCap)} ${String(b.senalesCap).padStart(4)} |` +
+      `     ${pct(b.conSenalSin)} ${String(b.senalesSin).padStart(4)}${marca}`
   )
 }
 
 const suma = (f) => porHora.reduce((a, b) => a + f(b), 0)
-console.log(`\nTotal: ${suma((b) => b.senales)} señales con el tope actual (1.6) · ${suma((b) => b.senalesCap)} con tope ${TOPE_PROPUESTO}`)
-console.log(`Horas con al menos una señal: ${suma((b) => b.conSenal)}/${HORAS} · con tope ${TOPE_PROPUESTO}: ${suma((b) => b.conSenalCap)}/${HORAS}`)
+console.log(`\nTotal de señales: ${suma((b) => b.senales)} ahora · ${suma((b) => b.senalesCap)} con tope ${TOPE_PROPUESTO} · ${suma((b) => b.senalesSin)} sin ajuste`)
+console.log(`Horas con al menos una señal: ${suma((b) => b.conSenal)}/${HORAS} ahora · ${suma((b) => b.conSenalCap)}/${HORAS} con tope · ${suma((b) => b.conSenalSin)}/${HORAS} sin ajuste`)
 console.log('---SENALES-FIN---')
