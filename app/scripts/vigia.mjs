@@ -64,9 +64,9 @@ for (const { id, s } of nuevas) {
 }
 
 // Una línea por corrida, haya o no señales. `minuto` es lo que mide la
-// puntualidad del reloj: si el cron dice "en punto" y esto sale 40, llegó 40
-// minutos tarde. Un atraso de más de una hora se nota como una hora sin
-// ninguna línea.
+// puntualidad del reloj: el cron pide el minuto 20, así que 20 es puntual y
+// 55 son 35 minutos de atraso. Un atraso de más de una hora se nota como una
+// hora entera sin ninguna línea.
 escribir(
   LOG_CORRIDAS,
   JSON.stringify({

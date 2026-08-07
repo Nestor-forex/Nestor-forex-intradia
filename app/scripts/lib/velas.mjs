@@ -20,11 +20,27 @@ export function leerLlave(base = import.meta.url) {
   return m[1].trim()
 }
 
+const esperar = (ms) => new Promise((res) => setTimeout(res, ms))
+
+// El plan gratuito de Twelve Data permite 8 créditos por minuto y cada
+// barrido gasta 7. Si dos cosas coinciden en el mismo minuto (el vigía en
+// punto y el reporte diario, por ejemplo), la segunda recibe un 429. No es un
+// error de verdad: es "espérate al minuto siguiente". Antes eso tumbaba el
+// reporte entero, así que ahora se reintenta en vez de rendirse.
+async function pedir(url, reintentos = 2) {
+  const r = await fetch(url)
+  if (r.status === 429 && reintentos > 0) {
+    await esperar(65_000)
+    return pedir(url, reintentos - 1)
+  }
+  if (!r.ok) throw new Error('HTTP ' + r.status + (r.status === 429 ? ' (límite de consultas por minuto)' : ''))
+  return r
+}
+
 export async function obtenerVelas(apiKey, { minBarras = 60 } = {}) {
-  const r = await fetch(
+  const r = await pedir(
     `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(SYMBOLS.join(','))}&interval=1h&outputsize=300&timezone=UTC&apikey=${apiKey}`
   )
-  if (!r.ok) throw new Error('HTTP ' + r.status)
   const j = await r.json()
 
   const porSimbolo = {}

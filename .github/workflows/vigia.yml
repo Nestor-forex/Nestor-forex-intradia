@@ -12,16 +12,16 @@ name: Vigía por hora
 
 on:
   schedule:
-    # En punto, de lunes a viernes (el mercado Forex está cerrado el fin de
-    # semana). Ojo: el reloj de GitHub es impuntual y a veces se atrasa; el
-    # propio vigía anota a qué minuto corrió de verdad para poder medirlo.
-    - cron: '0 * * * 1-5'
+    # Al minuto 20 de cada hora, de lunes a viernes (el mercado Forex está
+    # cerrado el fin de semana). NO en punto a propósito: el reporte diario
+    # sale a las 13:00 y cada barrido gasta 7 de los 8 créditos por minuto que
+    # da Twelve Data, así que si coincidieran uno de los dos se quedaría sin
+    # datos. (De todos modos velas.mjs reintenta si le toca un 429.)
+    #
+    # Ojo: el reloj de GitHub es impuntual y a veces se atrasa; el propio
+    # vigía anota a qué minuto corrió de verdad para poder medirlo.
+    - cron: '20 * * * 1-5'
   workflow_dispatch:
-  # TEMPORAL: para poder probarlo antes de fusionar. GitHub solo deja
-  # dispararlo a mano si el archivo ya está en main, así que mientras tanto
-  # se dispara al empujar la rama. Se quita antes de fusionar.
-  push:
-    branches: [claude/intradia-vigia]
 
 # El vigía escribe en la rama `datos`, así que necesita permiso de escritura:
 # por defecto el token de Actions es de solo lectura.
