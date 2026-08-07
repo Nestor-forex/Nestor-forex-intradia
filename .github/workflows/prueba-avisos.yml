@@ -1,0 +1,40 @@
+name: Probar los avisos al celular
+
+# Manda un aviso de prueba a todos los aparatos suscritos.
+#
+# Solo se lanza a mano (Actions → "Probar los avisos al celular" → Run
+# workflow). NO tiene `schedule` a propósito: esto le hace sonar el celular a
+# la gente, y no se le hace sonar el celular a nadie por horario.
+#
+# Existe porque el vigía no sirve para comprobar los avisos: solo manda algo
+# cuando aparece una señal nueva, y antes descarga los precios de Twelve Data,
+# cuyo límite por minuto es muy justo. Si el límite salta, el vigía se cae
+# antes de llegar a los avisos y no aprendemos nada sobre ellos. Esto no toca
+# la fuente de precios ni gasta un solo crédito.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Traer el código
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Instalar dependencias
+        working-directory: app
+        run: npm ci
+
+      - name: Mandar el aviso de prueba
+        working-directory: app
+        env:
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node scripts/prueba-aviso-real.mjs
