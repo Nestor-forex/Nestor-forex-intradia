@@ -33,6 +33,10 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == uid;
     }
 
+    function estaAprobado(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data.estado == 'aprobado';
+    }
+
     match /users/{uid} {
       allow get: if esPropio(uid) || esAdmin();
       allow list: if esAdmin();
@@ -57,6 +61,34 @@ service cloud.firestore {
         allow read, write: if esPropio(uid)
           && get(/databases/$(database)/documents/users/$(uid)).data.estado == 'aprobado';
       }
+    }
+
+    // Suscripciones a los avisos push (fase 3).
+    //
+    // Una por APARATO, no por persona: alguien puede tener los avisos activos
+    // en el celular y en el computador a la vez. Por eso es una colección
+    // plana y cada documento lleva el `uid` de su dueño, en vez de colgar de
+    // users/{uid} como el diario.
+    //
+    // Desde la app nadie las lista: quien las lee todas es el vigía, con una
+    // cuenta de servicio que no pasa por estas reglas. Por eso no hay `list`.
+    match /pushSubs/{subId} {
+      allow get: if esPropio(resource.data.uid);
+
+      allow create: if esPropio(request.resource.data.uid)
+        && estaAprobado(request.auth.uid);
+
+      // El identificador del documento sale de la dirección de envío, así que
+      // reactivar los avisos en el mismo aparato sobrescribe en vez de
+      // duplicar. Se exige ser dueño del documento que ya está Y del que
+      // queda, para que nadie pueda apropiarse de la suscripción de otro.
+      allow update: if esPropio(resource.data.uid)
+        && esPropio(request.resource.data.uid)
+        && estaAprobado(request.auth.uid);
+
+      // Apagar los avisos no pide estar aprobado: a quien le retiraron la
+      // cuenta hay que dejarlo dejar de recibirlos.
+      allow delete: if esPropio(resource.data.uid);
     }
   }
 }

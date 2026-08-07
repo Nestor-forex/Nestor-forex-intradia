@@ -261,6 +261,23 @@ export default {
     fuenteCierre: 'Twelve Data',
   },
 
+  avisos: {
+    titulo: 'Benachrichtigungen aufs Handy',
+    desc: 'Wir melden uns, sobald der Wächter ein neues Signal entdeckt – auch bei geschlossener App.',
+    activar: 'Benachrichtigungen aktivieren',
+    activando: 'Wird aktiviert…',
+    desactivar: 'Deaktivieren',
+    activados: 'Benachrichtigungen auf diesem Gerät aktiv',
+    probar: 'Testen',
+    pruebaTitulo: 'Testbenachrichtigung',
+    pruebaCuerpo: 'Wenn du das siehst, funktionieren die Benachrichtigungen auf diesem Gerät.',
+    noSoportado: 'Dieser Browser kann keine Benachrichtigungen empfangen. Versuche Chrome unter Android oder Safari auf dem iPhone.',
+    iosSinInstalar: 'Auf iPhone und iPad kommen Benachrichtigungen nur an, wenn die App auf dem Startbildschirm installiert ist. Tippe auf Teilen, dann «Zum Home-Bildschirm», und öffne die App über dieses Symbol neu.',
+    denegado: 'Benachrichtigungen sind für diese App blockiert. Du musst sie in den Browser- oder Handy-Einstellungen wieder erlauben.',
+    fallo: 'Die Benachrichtigungen konnten nicht aktiviert werden. Bitte versuche es erneut.',
+    soloEsteAparato: 'Benachrichtigungen gelten pro Gerät: Wenn du die App auf Handy und Computer nutzt, aktiviere sie auf beiden.',
+  },
+
   errores: {
     'auth/email-already-in-use': 'Diese E-Mail hat bereits ein Konto. Versuche es mit "Anmelden".',
     'auth/invalid-email': 'Diese E-Mail sieht nicht gültig aus.',

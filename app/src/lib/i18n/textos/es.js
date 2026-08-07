@@ -296,6 +296,23 @@ export default {
     fuenteCierre: 'Twelve Data',
   },
 
+  avisos: {
+    titulo: 'Avisos al celular',
+    desc: 'Te avisamos apenas el vigía detecte una señal nueva, aunque tengas la app cerrada.',
+    activar: 'Activar avisos',
+    activando: 'Activando…',
+    desactivar: 'Desactivar',
+    activados: 'Avisos activados en este aparato',
+    probar: 'Probar',
+    pruebaTitulo: 'Aviso de prueba',
+    pruebaCuerpo: 'Si ves esto, los avisos funcionan en este aparato.',
+    noSoportado: 'Este navegador no puede recibir avisos. Prueba con Chrome en Android o Safari en iPhone.',
+    iosSinInstalar: 'En iPhone y iPad los avisos solo llegan si la app está instalada en la pantalla de inicio. Toca Compartir y luego «Añadir a inicio», y vuelve a abrir la app desde ese ícono.',
+    denegado: 'Los avisos están bloqueados para esta app. Hay que volver a permitirlos desde los ajustes del navegador o del celular.',
+    fallo: 'No se pudieron activar los avisos. Inténtalo de nuevo.',
+    soloEsteAparato: 'Los avisos se activan por aparato: si usas la app en el celular y en el computador, actívalos en cada uno.',
+  },
+
   errores: {
     'auth/email-already-in-use': 'Ese correo ya tiene una cuenta. Prueba en "Ingresar".',
     'auth/invalid-email': 'Ese correo no parece válido.',

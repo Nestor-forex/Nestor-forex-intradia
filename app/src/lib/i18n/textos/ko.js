@@ -255,6 +255,23 @@ export default {
     fuenteCierre: 'Twelve Data',
   },
 
+  avisos: {
+    titulo: '휴대폰 알림',
+    desc: '감시자가 새 신호를 발견하는 즉시, 앱이 닫혀 있어도 알려드립니다.',
+    activar: '알림 켜기',
+    activando: '켜는 중…',
+    desactivar: '끄기',
+    activados: '이 기기에서 알림이 켜져 있습니다',
+    probar: '테스트',
+    pruebaTitulo: '테스트 알림',
+    pruebaCuerpo: '이 메시지가 보이면 이 기기에서 알림이 정상 작동합니다.',
+    noSoportado: '이 브라우저는 알림을 받을 수 없습니다. 안드로이드에서는 Chrome, iPhone에서는 Safari를 사용해 보세요.',
+    iosSinInstalar: 'iPhone과 iPad에서는 앱을 홈 화면에 설치해야 알림이 도착합니다. 공유를 누른 뒤 «홈 화면에 추가»를 선택하고, 그 아이콘으로 앱을 다시 열어 주세요.',
+    denegado: '이 앱의 알림이 차단되어 있습니다. 브라우저나 휴대폰 설정에서 다시 허용해야 합니다.',
+    fallo: '알림을 켜지 못했습니다. 다시 시도해 주세요.',
+    soloEsteAparato: '알림은 기기별로 설정됩니다. 휴대폰과 컴퓨터에서 모두 사용한다면 각각 켜 주세요.',
+  },
+
   errores: {
     'auth/email-already-in-use': '이 이메일은 이미 계정이 있습니다. 「로그인」을 시도하세요.',
     'auth/invalid-email': '이메일 형식이 올바르지 않은 것 같습니다.',

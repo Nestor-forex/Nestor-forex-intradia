@@ -6,6 +6,7 @@ import Pendiente from './components/Pendiente'
 import Header from './components/Header'
 import BottomNav from './components/BottomNav'
 import BarridoTab from './components/BarridoTab'
+import AvisosCard from './components/AvisosCard'
 import TableroCompleto from './components/TableroCompleto'
 import SetupDetalle from './components/SetupDetalle'
 import { useT } from './lib/i18n'
@@ -152,17 +153,23 @@ export default function App() {
             <Header nombreApp={NOMBRE_APP} saludo={esAdmin ? t('comun.administrador') : authUser.email || ''} onSalir={salirYVolver} />
             <main style={{ flex: 1, padding: '18px 18px 96px', display: 'flex', flexDirection: 'column', gap: 16 }}>
               {tab === 'barrido' && (
-                <BarridoTab
-                  loading={mercado.loading}
-                  error={mercado.error}
-                  sinConfigurar={mercado.sinConfigurar}
-                  stale={mercado.stale}
-                  guardadoEl={mercado.guardadoEl}
-                  monedas={mercado.monedas}
-                  pares={mercado.pares}
-                  corte={mercado.corte}
-                  onVerTablero={() => setTab('tablero')}
-                />
+                <>
+                  <BarridoTab
+                    loading={mercado.loading}
+                    error={mercado.error}
+                    sinConfigurar={mercado.sinConfigurar}
+                    stale={mercado.stale}
+                    guardadoEl={mercado.guardadoEl}
+                    monedas={mercado.monedas}
+                    pares={mercado.pares}
+                    corte={mercado.corte}
+                    onVerTablero={() => setTab('tablero')}
+                  />
+                  {/* Va aquí y no en una pestaña propia porque es donde
+                      aparecen las señales: el aviso es para no tener que
+                      volver a esta pantalla a mirar. */}
+                  <AvisosCard uid={authUser.uid} />
+                </>
               )}
               {tab === 'diario' && (
                 <DiarioTab
