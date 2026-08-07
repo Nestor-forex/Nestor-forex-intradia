@@ -17,6 +17,11 @@ on:
     # propio vigía anota a qué minuto corrió de verdad para poder medirlo.
     - cron: '0 * * * 1-5'
   workflow_dispatch:
+  # TEMPORAL: para poder probarlo antes de fusionar. GitHub solo deja
+  # dispararlo a mano si el archivo ya está en main, así que mientras tanto
+  # se dispara al empujar la rama. Se quita antes de fusionar.
+  push:
+    branches: [claude/intradia-vigia]
 
 concurrency:
   # Que no se pisen dos revisiones a la vez escribiendo los mismos archivos.
