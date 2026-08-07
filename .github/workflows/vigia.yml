@@ -1,0 +1,67 @@
+name: Vigía por hora
+
+# Revisa el barrido cada hora y anota las señales nuevas. Ver el comentario
+# de cabecera de app/scripts/vigia.mjs para el porqué.
+#
+# Cuota: cada revisión gasta 7 créditos de Twelve Data. 24 al día son 168 de
+# los 800 diarios del plan gratuito, así que cabe junto con el reporte diario
+# y alguna corrida a mano de comparar-reglas.
+#
+# Los datos NO se guardan en esta rama: van a la rama `datos`, para que el
+# historial del código no quede sepultado bajo 24 commits diarios.
+
+on:
+  schedule:
+    # En punto, de lunes a viernes (el mercado Forex está cerrado el fin de
+    # semana). Ojo: el reloj de GitHub es impuntual y a veces se atrasa; el
+    # propio vigía anota a qué minuto corrió de verdad para poder medirlo.
+    - cron: '0 * * * 1-5'
+  workflow_dispatch:
+
+concurrency:
+  # Que no se pisen dos revisiones a la vez escribiendo los mismos archivos.
+  group: vigia
+  cancel-in-progress: false
+
+jobs:
+  vigia:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Traer el código
+        uses: actions/checkout@v4
+
+      - name: Traer los datos
+        uses: actions/checkout@v4
+        with:
+          ref: datos
+          path: datos
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Revisar
+        working-directory: app
+        env:
+          VIGIA_DATOS: ${{ github.workspace }}/datos
+        run: node scripts/vigia.mjs
+
+      - name: Guardar lo que vio
+        working-directory: datos
+        run: |
+          git config user.name 'Vigía Nestor Forex'
+          git config user.email 'noreply@anthropic.com'
+          git add estado historial
+          if git diff --cached --quiet; then
+            echo 'Sin cambios que guardar.'
+            exit 0
+          fi
+          git commit -m "Vigía $(date -u +'%Y-%m-%d %H:%M UTC')"
+          # Si otra corrida escribió mientras tanto, se reintenta encima de lo
+          # suyo en vez de pisarlo.
+          for i in 1 2 3; do
+            git pull --rebase origin datos && git push origin HEAD:datos && exit 0
+            sleep $((i * 5))
+          done
+          echo 'No se pudo guardar tras 3 intentos.'
+          exit 1

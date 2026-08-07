@@ -7,49 +7,8 @@
 // bloqueado api.twelvedata.com. No manda nada ni cambia nada: solo imprime.
 // Sirve para volver a medir cada vez que se toque una regla de cálculo.
 
-import { readFileSync } from 'node:fs'
 import { computarBarrido, derivarVista } from '../src/lib/marketCalc.js'
-
-function leerLlave() {
-  const env = readFileSync(new URL('../.env.production', import.meta.url), 'utf8')
-  const m = env.match(/^VITE_TWELVEDATA_KEY=(.+)$/m)
-  if (!m || !m[1].trim()) throw new Error('VITE_TWELVEDATA_KEY no está configurada en .env.production')
-  return m[1].trim()
-}
-
-const SYMBOLS = ['USD/EUR', 'USD/GBP', 'USD/JPY', 'USD/CHF', 'USD/AUD', 'USD/NZD', 'USD/CAD']
-const SYM_TO_CCY = { 'USD/EUR': 'EUR', 'USD/GBP': 'GBP', 'USD/JPY': 'JPY', 'USD/CHF': 'CHF', 'USD/AUD': 'AUD', 'USD/NZD': 'NZD', 'USD/CAD': 'CAD' }
-
-async function obtenerVelas(apiKey) {
-  const r = await fetch(
-    `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(SYMBOLS.join(','))}&interval=1h&outputsize=300&timezone=UTC&apikey=${apiKey}`
-  )
-  if (!r.ok) throw new Error('HTTP ' + r.status)
-  const j = await r.json()
-  const porSimbolo = {}
-  for (const sym of SYMBOLS) {
-    const bloque = j[sym]
-    if (!bloque || bloque.status === 'error' || !Array.isArray(bloque.values)) throw new Error(`sin datos de ${sym}`)
-    const mapa = new Map()
-    for (const v of bloque.values) mapa.set(v.datetime, { c: parseFloat(v.close), h: parseFloat(v.high), l: parseFloat(v.low) })
-    porSimbolo[sym] = mapa
-  }
-  const barras = [...porSimbolo[SYMBOLS[0]].keys()].filter((t) => SYMBOLS.every((s) => porSimbolo[s].has(t))).sort()
-  const rates = {}
-  const rangos = {}
-  for (const t of barras) {
-    const fila = {}
-    const filaR = {}
-    for (const sym of SYMBOLS) {
-      const v = porSimbolo[sym].get(t)
-      fila[SYM_TO_CCY[sym]] = v.c
-      filaR[SYM_TO_CCY[sym]] = { h: v.h, l: v.l }
-    }
-    rates[t] = fila
-    rangos[t] = filaR
-  }
-  return { barras, rates, rangos }
-}
+import { leerLlave, obtenerVelas } from './lib/velas.mjs'
 
 // R/B con la regla vieja (stop al extremo de 10 velas ∓ ½ ATR) y con la
 // nueva (stop a 1.5 × ATR). El objetivo es el mismo en las dos.
