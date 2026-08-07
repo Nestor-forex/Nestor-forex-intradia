@@ -23,6 +23,11 @@ on:
   push:
     branches: [claude/intradia-vigia]
 
+# El vigía escribe en la rama `datos`, así que necesita permiso de escritura:
+# por defecto el token de Actions es de solo lectura.
+permissions:
+  contents: write
+
 concurrency:
   # Que no se pisen dos revisiones a la vez escribiendo los mismos archivos.
   group: vigia
