@@ -15,11 +15,10 @@
 //
 // No manda nada a ningún lado todavía: solo escribe archivos e imprime.
 
-import { mkdirSync, readFileSync, writeFileSync, appendFileSync } from 'node:fs'
-import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { computarBarrido, derivarVista } from '../src/lib/marketCalc.js'
 import { leerLlave, obtenerVelas } from './lib/velas.mjs'
+import { compararConAnterior, escribir, leerEstado } from './lib/vigia-nucleo.mjs'
 
 // Dónde se guardan los datos. En GitHub Actions apunta a la copia de la rama
 // `datos`, para no llenar de commits la rama del código. Sin la variable,
@@ -29,35 +28,12 @@ const ESTADO = `${DATOS}/estado/vigia.json`
 const LOG_SENALES = `${DATOS}/historial/senales.jsonl`
 const LOG_CORRIDAS = `${DATOS}/historial/corridas.jsonl`
 
-// Una señal es la misma señal si es el mismo par, el mismo lado y el mismo
-// tipo. Si desaparece y vuelve más tarde, cuenta como nueva a propósito: es
-// una oportunidad de entrada distinta.
-const idDe = (s) => `${s.name}|${s.lado}|${s.tipo}`
-
-function leerEstado() {
-  try {
-    return JSON.parse(readFileSync(ESTADO, 'utf8'))
-  } catch {
-    // Primera corrida, o archivo estropeado: se arranca de cero. Que no haya
-    // estado previo no puede tumbar el vigía.
-    return { senales: [] }
-  }
-}
-
-const escribir = (ruta, texto, anexar = false) => {
-  mkdirSync(dirname(ruta), { recursive: true })
-  if (anexar) appendFileSync(ruta, texto)
-  else writeFileSync(ruta, texto)
-}
-
 const ahora = new Date()
 const { barras, rates, rangos } = await obtenerVelas(leerLlave())
 const data = computarBarrido(barras, rates, rangos)
 const vista = derivarVista(data, { thr: 0.5, topN: 3 })
 
-const previas = new Set(leerEstado().senales || [])
-const actuales = vista.setups.map((s) => ({ id: idDe(s), s }))
-const nuevas = actuales.filter((x) => !previas.has(x.id))
+const { actuales, nuevas } = compararConAnterior(vista.setups, leerEstado(ESTADO))
 
 // Una línea por señal nueva, con los niveles tal como se los daríamos a
 // Néstor. Es lo que después se compara contra lo que hizo el precio.
