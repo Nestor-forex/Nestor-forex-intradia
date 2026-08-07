@@ -19,7 +19,7 @@
 import webpush from 'web-push'
 import { VAPID_PUBLICA } from '../src/lib/push/vapid.js'
 import { abrir, leerCuentaDeServicio } from './lib/firestore-rest.mjs'
-import { APP, COLECCION } from './lib/push-envio.mjs'
+import { APP, COLECCION, MS_POR_AVISO } from './lib/push-envio.mjs'
 
 const fallar = (mensaje) => {
   console.log(`\n❌ ${mensaje}\n`)
@@ -93,7 +93,8 @@ for (const sub of suscripciones) {
   try {
     await webpush.sendNotification(
       { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-      mensaje
+      mensaje,
+      { timeout: MS_POR_AVISO }
     )
     enviados++
   } catch (e) {

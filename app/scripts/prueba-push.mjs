@@ -98,6 +98,9 @@ const servidor = createServer({
   key: readFileSync(join(carpeta, 'llave.pem')),
   cert: readFileSync(join(carpeta, 'cert.pem')),
 }, (req, res) => {
+  // Un servicio de push que acepta la conexión y luego no contesta nunca. Es
+  // el caso peligroso: sin plazo, el envío se queda esperando para siempre.
+  if (req.url.includes('mudo')) return
   const trozos = []
   req.on('data', (c) => trozos.push(c))
   req.on('end', () => {
@@ -152,7 +155,39 @@ console.log('\n4. Las suscripciones muertas se borran')
   respuesta = 201
 }
 
-console.log('\n5. Sin configurar, no revienta')
+console.log('\n5. Un servicio que no contesta no cuelga el envío')
+{
+  const arranque = Date.now()
+  const r = await enviarAvisos(
+    [senal('EUR/USD', 'COMPRA', 2.5)],
+    { ...ENTORNO, PUSH_MS_POR_AVISO: 1200 },
+    bdFalsa([aparatoFalso(`${base}/mudo`)])
+  )
+  const tardo = Date.now() - arranque
+
+  comprobar(tardo < 5000, `se rindió solo (tardó ${tardo} ms, no se colgó)`)
+  comprobar(tardo >= 1000, 'esperó lo que se le dijo antes de rendirse')
+  comprobar(r.fallidos === 1, 'lo cuenta como no entregado')
+  comprobar(r.limpiadas === 0, 'NO lo da por muerto: callarse no es lo mismo que no existir')
+}
+
+console.log('\n6. El presupuesto total corta y lo dice')
+{
+  const r = await enviarAvisos(
+    [senal('EUR/USD', 'COMPRA', 2.5), senal('USD/JPY', 'VENTA', 3.0)],
+    { ...ENTORNO, PUSH_MS_POR_AVISO: 800, PUSH_MS_PRESUPUESTO: 1200 },
+    bdFalsa([aparatoFalso(`${base}/mudo`), aparatoFalso(`${base}/mudo-2`), aparatoFalso(`${base}/mudo-3`)])
+  )
+  // 3 aparatos × 2 señales = 6 avisos, a 800 ms cada uno son 4,8 s: no caben
+  // en 1,2 s de presupuesto, así que algunos tienen que quedar sin intentar.
+  comprobar(r.sinTiempo > 0, `avisa de los que no le dio tiempo (${r.sinTiempo})`)
+  comprobar(
+    r.enviados + r.fallidos + r.sinTiempo === 6,
+    'las cuentas cuadran: enviados + fallidos + sin tiempo = todos'
+  )
+}
+
+console.log('\n7. Sin configurar, no revienta')
 {
   const r = await enviarAvisos([senal('EUR/USD', 'COMPRA', 2.5)], {})
   comprobar(r.estado === 'sin-configurar', 'avisa que faltan las claves en vez de fallar')
