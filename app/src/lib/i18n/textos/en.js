@@ -261,6 +261,23 @@ export default {
     fuenteCierre: 'Twelve Data',
   },
 
+  avisos: {
+    titulo: 'Phone alerts',
+    desc: 'We alert you as soon as the watcher spots a new signal, even with the app closed.',
+    activar: 'Turn on alerts',
+    activando: 'Turning on…',
+    desactivar: 'Turn off',
+    activados: 'Alerts are on for this device',
+    probar: 'Test',
+    pruebaTitulo: 'Test alert',
+    pruebaCuerpo: 'If you can see this, alerts work on this device.',
+    noSoportado: 'This browser cannot receive alerts. Try Chrome on Android or Safari on iPhone.',
+    iosSinInstalar: 'On iPhone and iPad, alerts only arrive if the app is installed on the home screen. Tap Share, then «Add to Home Screen», and reopen the app from that icon.',
+    denegado: 'Alerts are blocked for this app. You need to allow them again in your browser or phone settings.',
+    fallo: 'Alerts could not be turned on. Please try again.',
+    soloEsteAparato: 'Alerts are set per device: if you use the app on your phone and your computer, turn them on in each one.',
+  },
+
   errores: {
     'auth/email-already-in-use': 'That email already has an account. Try "Sign in".',
     'auth/invalid-email': 'That email does not look valid.',

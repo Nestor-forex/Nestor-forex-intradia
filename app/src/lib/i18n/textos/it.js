@@ -257,6 +257,23 @@ export default {
     fuenteCierre: 'Twelve Data',
   },
 
+  avisos: {
+    titulo: 'Avvisi sul telefono',
+    desc: 'Ti avvisiamo appena la vedetta trova un segnale nuovo, anche con l’app chiusa.',
+    activar: 'Attiva gli avvisi',
+    activando: 'Attivazione…',
+    desactivar: 'Disattiva',
+    activados: 'Avvisi attivi su questo dispositivo',
+    probar: 'Prova',
+    pruebaTitulo: 'Avviso di prova',
+    pruebaCuerpo: 'Se vedi questo, gli avvisi funzionano su questo dispositivo.',
+    noSoportado: 'Questo browser non può ricevere avvisi. Prova con Chrome su Android o Safari su iPhone.',
+    iosSinInstalar: 'Su iPhone e iPad gli avvisi arrivano solo se l’app è installata nella schermata Home. Tocca Condividi, poi «Aggiungi a Home», e riapri l’app da quell’icona.',
+    denegado: 'Gli avvisi sono bloccati per questa app. Devi consentirli di nuovo dalle impostazioni del browser o del telefono.',
+    fallo: 'Non è stato possibile attivare gli avvisi. Riprova.',
+    soloEsteAparato: 'Gli avvisi si impostano per dispositivo: se usi l’app sul telefono e sul computer, attivali su entrambi.',
+  },
+
   errores: {
     'auth/email-already-in-use': 'Questa e-mail ha già un account. Prova con "Accedi".',
     'auth/invalid-email': 'Questa e-mail non sembra valida.',

@@ -8,6 +8,16 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
+      // Antes el service worker lo generaba el plugin solo. Ahora lo escribimos
+      // nosotros en src/sw.js, porque el generado no sabe recibir avisos push.
+      // El plugin sigue encargándose de la caché: reemplaza `self.__WB_MANIFEST`
+      // dentro de nuestro archivo por la lista real de archivos compilados.
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.js',
+      // Sin esto, en `npm run dev` no hay service worker, y los avisos no se
+      // pueden probar sin compilar y publicar cada vez.
+      devOptions: { enabled: true, type: 'module' },
       manifest: {
         name: 'Nestor Forex Intradía',
         short_name: 'NF Intradía',

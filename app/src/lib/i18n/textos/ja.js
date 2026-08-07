@@ -255,6 +255,23 @@ export default {
     fuenteCierre: 'Twelve Data',
   },
 
+  avisos: {
+    titulo: 'スマホ通知',
+    desc: '見張りが新しいシグナルを見つけ次第、アプリを閉じていてもお知らせします。',
+    activar: '通知をオンにする',
+    activando: 'オンにしています…',
+    desactivar: 'オフにする',
+    activados: 'この端末で通知がオンです',
+    probar: 'テスト',
+    pruebaTitulo: 'テスト通知',
+    pruebaCuerpo: 'これが表示されていれば、この端末で通知は正常に動いています。',
+    noSoportado: 'このブラウザは通知を受け取れません。Android では Chrome、iPhone では Safari をお試しください。',
+    iosSinInstalar: 'iPhone と iPad では、アプリをホーム画面に追加しないと通知が届きません。「共有」から「ホーム画面に追加」を選び、そのアイコンからアプリを開き直してください。',
+    denegado: 'このアプリの通知はブロックされています。ブラウザまたは端末の設定で、もう一度許可してください。',
+    fallo: '通知をオンにできませんでした。もう一度お試しください。',
+    soloEsteAparato: '通知は端末ごとの設定です。スマホとパソコンの両方で使う場合は、それぞれでオンにしてください。',
+  },
+
   errores: {
     'auth/email-already-in-use': 'このメールアドレスは既に登録されています。「ログイン」をお試しください。',
     'auth/invalid-email': 'このメールアドレスは正しくないようです。',

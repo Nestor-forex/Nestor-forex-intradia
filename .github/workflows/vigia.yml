@@ -49,11 +49,30 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          # Con la caché, instalar tarda segundos en vez de medio minuto. Es
+          # lo que hace que valga la pena instalar 24 veces al día.
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      # Hasta la fase 3 el vigía no instalaba nada: le bastaba Node pelado.
+      # Ahora necesita `web-push` para mandar los avisos al celular.
+      - name: Instalar dependencias
+        working-directory: app
+        run: npm ci
 
       - name: Revisar
         working-directory: app
         env:
           VIGIA_DATOS: ${{ github.workspace }}/datos
+          # Los avisos al celular. Si estos dos secretos no están puestos, el
+          # vigía sigue funcionando igual y solo anota que no pudo avisar: la
+          # parte que no se puede perder es el historial de señales.
+          #
+          # La clave PÚBLICA no va aquí: se lee de src/lib/push/vapid.js, para
+          # que la app y el vigía usen exactamente la misma y no puedan
+          # desincronizarse.
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: node scripts/vigia.mjs
 
       - name: Guardar lo que vio

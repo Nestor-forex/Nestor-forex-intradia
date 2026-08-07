@@ -256,6 +256,23 @@ export default {
     fuenteCierre: 'Twelve Data',
   },
 
+  avisos: {
+    titulo: 'Telefon bildirimleri',
+    desc: 'Gözcü yeni bir sinyal bulur bulmaz, uygulama kapalı olsa bile sana haber veririz.',
+    activar: 'Bildirimleri aç',
+    activando: 'Açılıyor…',
+    desactivar: 'Kapat',
+    activados: 'Bu cihazda bildirimler açık',
+    probar: 'Dene',
+    pruebaTitulo: 'Deneme bildirimi',
+    pruebaCuerpo: 'Bunu görüyorsan, bu cihazda bildirimler çalışıyor.',
+    noSoportado: 'Bu tarayıcı bildirim alamıyor. Android’de Chrome’u, iPhone’da Safari’yi dene.',
+    iosSinInstalar: 'iPhone ve iPad’de bildirimler yalnızca uygulama ana ekrana eklenmişse gelir. Paylaş’a dokun, sonra «Ana Ekrana Ekle» seç ve uygulamayı o simgeden yeniden aç.',
+    denegado: 'Bu uygulama için bildirimler engellenmiş. Tarayıcı veya telefon ayarlarından yeniden izin vermen gerekiyor.',
+    fallo: 'Bildirimler açılamadı. Lütfen tekrar dene.',
+    soloEsteAparato: 'Bildirimler cihaz başına ayarlanır: uygulamayı hem telefonda hem bilgisayarda kullanıyorsan, her birinde aç.',
+  },
+
   errores: {
     'auth/email-already-in-use': 'Bu e-postanın zaten bir hesabı var. «Giriş yap»ı dene.',
     'auth/invalid-email': 'Bu e-posta geçerli görünmüyor.',

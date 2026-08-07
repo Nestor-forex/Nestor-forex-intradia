@@ -252,6 +252,23 @@ export default {
     fuenteCierre: 'Twelve Data',
   },
 
+  avisos: {
+    titulo: '手机提醒',
+    desc: '哨兵一发现新信号就通知你，即使应用已关闭。',
+    activar: '开启提醒',
+    activando: '正在开启…',
+    desactivar: '关闭',
+    activados: '本设备已开启提醒',
+    probar: '测试',
+    pruebaTitulo: '测试提醒',
+    pruebaCuerpo: '如果你看到这条消息，说明本设备的提醒功能正常。',
+    noSoportado: '此浏览器无法接收提醒。请在安卓上使用 Chrome，或在 iPhone 上使用 Safari。',
+    iosSinInstalar: '在 iPhone 和 iPad 上，只有把应用安装到主屏幕才能收到提醒。请点击「分享」，然后选择「添加到主屏幕」，再从该图标重新打开应用。',
+    denegado: '本应用的提醒已被阻止。需要在浏览器或手机的设置中重新允许。',
+    fallo: '无法开启提醒，请重试。',
+    soloEsteAparato: '提醒按设备单独设置：如果你在手机和电脑上都使用本应用，请分别开启。',
+  },
+
   errores: {
     'auth/email-already-in-use': '该邮箱已注册。请尝试“登录”。',
     'auth/invalid-email': '该邮箱格式似乎不正确。',

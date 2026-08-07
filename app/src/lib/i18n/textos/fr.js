@@ -261,6 +261,23 @@ export default {
     fuenteCierre: 'Twelve Data',
   },
 
+  avisos: {
+    titulo: 'Alertes sur le téléphone',
+    desc: 'On te prévient dès que la vigie repère un nouveau signal, même si l’app est fermée.',
+    activar: 'Activer les alertes',
+    activando: 'Activation…',
+    desactivar: 'Désactiver',
+    activados: 'Alertes activées sur cet appareil',
+    probar: 'Tester',
+    pruebaTitulo: 'Alerte de test',
+    pruebaCuerpo: 'Si tu vois ceci, les alertes fonctionnent sur cet appareil.',
+    noSoportado: 'Ce navigateur ne peut pas recevoir d’alertes. Essaie Chrome sur Android ou Safari sur iPhone.',
+    iosSinInstalar: 'Sur iPhone et iPad, les alertes n’arrivent que si l’app est installée sur l’écran d’accueil. Touche Partager, puis «Sur l’écran d’accueil», et rouvre l’app depuis cette icône.',
+    denegado: 'Les alertes sont bloquées pour cette app. Il faut les autoriser à nouveau dans les réglages du navigateur ou du téléphone.',
+    fallo: 'Impossible d’activer les alertes. Réessaie.',
+    soloEsteAparato: 'Les alertes se règlent par appareil : si tu utilises l’app sur le téléphone et l’ordinateur, active-les sur chacun.',
+  },
+
   errores: {
     'auth/email-already-in-use': 'Cet e-mail a déjà un compte. Essaie « Se connecter ».',
     'auth/invalid-email': "Cet e-mail ne semble pas valide.",
