@@ -60,6 +60,26 @@ export default function App() {
     if (authUser) setScreen('app')
   }, [authUser])
 
+  // Al tocar un aviso del celular, el service worker abre la app con el par y
+  // el lado en la dirección. Aquí se recogen para ir directo a esa señal en
+  // vez de dejar a la persona buscándola en el tablero.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const par = params.get('par')
+    const lado = params.get('lado')
+    if (!par || !lado) return
+
+    // El detalle se resuelve contra `mercado.setups`, que puede no haber
+    // llegado todavía; guardar el identificador basta, la pantalla aparece
+    // sola en cuanto carguen los datos. Si para entonces la señal ya no
+    // existe, no pasa nada: se queda en la pestaña normal.
+    setDetalleId(par + lado)
+
+    // Se limpia la dirección para que recargar la página, o cerrarla y
+    // volver a abrirla desde el ícono, no reabra el mismo detalle.
+    window.history.replaceState({}, '', window.location.pathname)
+  }, [])
+
   useEffect(() => {
     if (perfilEstado === 'retirado') {
       setMsgAuth(t('pendiente.retirado'))

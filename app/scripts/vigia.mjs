@@ -95,6 +95,24 @@ escribir(
   ) + '\n'
 )
 
+// Avisos al celular. Va al FINAL y aislado a propósito: para cuando llegamos
+// aquí, el historial y el estado ya están escritos en disco, así que ni un
+// fallo de red ni una clave mal puesta pueden costarnos esos datos —que son
+// el trabajo principal del vigía y no se pueden recuperar después—.
+//
+// El `import` es dinámico por lo mismo: `push-envio.mjs` necesita el paquete
+// `web-push` instalado, y si algún día falla la instalación, el vigía tiene
+// que seguir anotando igual en vez de morirse antes de empezar.
+let avisos = { estado: 'sin-senales-nuevas' }
+if (nuevas.length) {
+  try {
+    const { enviarAvisos } = await import('./lib/push-envio.mjs')
+    avisos = await enviarAvisos(nuevas)
+  } catch (e) {
+    avisos = { estado: 'error', detalle: e.message }
+  }
+}
+
 console.log('---VIGIA-INICIO---')
 console.log(`Corrida: ${ahora.toISOString()} (minuto ${ahora.getUTCMinutes()} de la hora)`)
 console.log(`Vela más reciente: ${data.ultima} UTC`)
@@ -106,4 +124,5 @@ if (nuevas.length) {
 } else {
   console.log('  (nada nuevo respecto a la revisión anterior)')
 }
+console.log(`Avisos al celular: ${JSON.stringify(avisos)}`)
 console.log('---VIGIA-FIN---')

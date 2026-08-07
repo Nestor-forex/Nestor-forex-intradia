@@ -175,3 +175,92 @@ acceso. **No confirmado todavía si el primer disparo automático (mañana)
 va a funcionar de punta a punta** — se hizo una prueba manual
 (`fire_trigger`) pero no se alcanzó a verificar el resultado en esta
 sesión antes de seguir con otras tareas.
+
+## Avisos push al celular (fase 3, 2026-08-07)
+
+Néstor eligió avisos **de la propia app** (Web Push) en vez de Telegram o
+correo, sabiendo que tomaba más días, porque es lo único que permite que
+**cualquier miembro aprobado** active sus propios avisos — no solo él. Eso
+es lo que la vuelve vendible.
+
+Usa el celular **Android y iPhone**, así que el soporte cubre los dos.
+
+### Cómo funciona
+
+El vigía (que ya corría cada hora anotando señales nuevas) ahora, además,
+manda un aviso por cada señal nueva. El aviso **no pasa por ningún
+servidor nuestro**: va de GitHub Actions directo al servicio de push de
+Apple o de Google, cifrado con las claves que dio el navegador de cada
+persona.
+
+```
+app/src/sw.js                    # el service worker: recibe el aviso y lo muestra
+app/src/lib/push/vapid.js        # la clave pública, compartida por app y vigía
+app/src/lib/push/soporte.js      # ¿puede este aparato?, y si no, por qué
+app/src/lib/push/index.js        # activar/desactivar + guardar en Firestore
+app/src/components/AvisosCard.jsx # el interruptor, en la pestaña Barrido
+app/scripts/lib/firestore-rest.mjs # leer/borrar suscripciones desde Node
+app/scripts/lib/push-envio.mjs     # armar el mensaje y mandarlo
+app/scripts/prueba-push.mjs        # prueba completa, sin internet ni claves
+```
+
+### Decisiones que no hay que deshacer sin pensarlo
+
+- **El service worker pasó de `generateSW` a `injectManifest`.** Era la
+  única forma de manejar `push`. La caché sin internet sigue funcionando
+  igual — la hace Workbox, solo que ahora la llamamos nosotros. ⚠️ El
+  `sw.js` compilado tiene que quedar **autocontenido y parseable como
+  script clásico**: `vite-plugin-pwa` lo registra sin `type: 'module'`, así
+  que si alguien mete un `import` que no se pueda empaquetar, se rompe
+  también la caché sin internet, y en silencio.
+- **La clave VAPID pública vive en `vapid.js`, no en un `.env`.** No cambia
+  entre entornos, y en un `.env` un build sin ese archivo compilaría igual
+  y los avisos fallarían sin avisar. Vive sola en su archivo para que la
+  app y el vigía usen la misma y no puedan desincronizarse.
+- ⚠️ **Si se regenera el par de claves VAPID, todas las suscripciones
+  guardadas dejan de servir**: hay que vaciar `pushSubs` y cada aparato
+  tiene que volver a activar los avisos.
+- **Una suscripción por APARATO, no por persona.** El id del documento sale
+  de un hash del endpoint, así que reactivar en el mismo aparato sobrescribe
+  en vez de duplicar (y hacer sonar el celular dos veces).
+- **El idioma se guarda con la suscripción.** El vigía corre en un servidor
+  y no tiene otra forma de saber en qué idioma mandar el aviso. `crearT`
+  funciona en Node justamente para esto.
+- **El envío va al final de `vigia.mjs`, aislado y con `import` dinámico.**
+  Para cuando se llega ahí, el historial ya está escrito en disco. Ni un
+  fallo de red, ni una clave mal puesta, ni que falte `web-push` instalado
+  pueden costarnos esos datos, que son irrecuperables.
+- **Filtro de calidad: R/B ≥ 1.5** (`PUSH_RB_MINIMO`). No es que las demás
+  señales sean inválidas: es que no vale la pena que suene el celular por
+  ellas. Es el mismo umbral que la app ya marca en ámbar.
+- **En los logs nunca van las direcciones de envío** (son credenciales: con
+  una, cualquiera le manda avisos a ese celular). Solo números y códigos de
+  error. Los logs de Actions son públicos.
+- **El caso de iPhone sin instalar se explica, no se esconde.** Apple solo
+  entrega avisos a las apps instaladas en la pantalla de inicio. La tarjeta
+  dice qué tocar en vez de mostrar un "no disponible" sin salida.
+
+### Lo que Néstor tiene que hacer a mano (una sola vez)
+
+No se pueden crear secretos del repositorio desde el entorno de la sesión
+(el proxy de red bloquea esos endpoints de la API de Actions), así que:
+
+1. `VAPID_PRIVATE_KEY` — secreto del repo (la mitad privada del par).
+2. `FIREBASE_SERVICE_ACCOUNT` — secreto del repo, el JSON completo de una
+   cuenta de servicio de Firebase. Es lo que deja al vigía leer las
+   suscripciones de todos los usuarios saltándose las reglas.
+3. **Publicar las reglas de Firestore** con la colección `pushSubs` en la
+   consola de Firebase. Sin esto la app no puede guardar la suscripción.
+
+Sin los dos secretos el vigía sigue funcionando igual y solo anota
+`{"estado":"sin-configurar"}` — no falla.
+
+### Estado
+
+- Parte A (la app): PR #14.
+- Parte B (el envío): mismo PR.
+- ⚠️ **Sin verificar en un celular de verdad todavía.** Lo probado es el
+  camino completo del envío contra un servicio de push de mentira
+  (`prueba-push.mjs`: cifrado, firma VAPID, filtro, limpieza de
+  suscripciones muertas) y los estados de la tarjeta en Chromium. Falta
+  que llegue un aviso real a un celular real, que necesita los secretos.

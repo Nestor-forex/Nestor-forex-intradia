@@ -13,22 +13,9 @@
 import { deleteDoc, doc, serverTimestamp, setDoc } from 'firebase/firestore'
 import { db } from '../firebase.js'
 import { motivoNoDisponible } from './soporte.js'
+import { VAPID_PUBLICA } from './vapid.js'
 
-// La mitad pública del par de claves VAPID. Va a la vista a propósito: es
-// pública por diseño (el navegador la necesita para verificar que el aviso
-// viene de nosotros). La mitad PRIVADA vive solo como secreto de GitHub, en
-// el repositorio, y jamás debe aparecer aquí.
-//
-// Va escrita aquí y no en un archivo .env porque no es configuración que
-// cambie por entorno: es la identidad de esta app, la misma en desarrollo y
-// en producción. Si estuviera en .env, un build sin ese archivo compilaría
-// igual y los avisos fallarían en silencio.
-//
-// ⚠️ Si algún día se regenera el par de claves, TODAS las suscripciones ya
-// guardadas dejan de servir y hay que borrarlas: cada aparato tendría que
-// volver a activar los avisos.
-export const VAPID_PUBLICA =
-  'BMO5gjLRHw8CEc_tb9QUBows358lURnHLhwyixDTxkGOVUw1I3C1wLP21buXCf2Imqp7RavVVF9UrOo0AhOBReM'
+export { VAPID_PUBLICA }
 
 export const COLECCION = 'pushSubs'
 
@@ -83,7 +70,11 @@ export async function suscripcionActual() {
 //
 // ⚠️ Tiene que llamarse desde un clic de la persona: los navegadores rechazan
 // la petición de permiso si no viene de un gesto suyo.
-export async function activar(uid) {
+//
+// `idioma` se guarda con la suscripción porque el vigía corre en un servidor
+// y no tiene forma de saber en qué idioma tiene cada quien la app. Sin esto,
+// los avisos llegarían siempre en español.
+export async function activar(uid, idioma) {
   const motivo = motivoNoDisponible()
   if (motivo) return { ok: false, motivo }
   if (!db) return { ok: false, motivo: 'sin-firebase' }
@@ -111,7 +102,7 @@ export async function activar(uid) {
   }
 
   try {
-    await guardar(uid, suscripcion)
+    await guardar(uid, suscripcion, idioma)
   } catch (e) {
     // Si no se pudo guardar, deshacemos la suscripción: dejarla viva sin
     // registrar sería un aparato suscrito al que nadie puede escribirle.
@@ -141,12 +132,13 @@ export async function desactivar(uid) {
   return { ok: true }
 }
 
-async function guardar(uid, suscripcion) {
+async function guardar(uid, suscripcion, idioma) {
   const bruto = suscripcion.toJSON()
   const id = await idDeSuscripcion(suscripcion.endpoint)
 
   await setDoc(doc(db, COLECCION, id), {
     uid,
+    idioma: idioma || 'es',
     endpoint: suscripcion.endpoint,
     // Las dos claves con las que el vigía cifra el aviso. Sin ellas el
     // navegador descarta el mensaje.

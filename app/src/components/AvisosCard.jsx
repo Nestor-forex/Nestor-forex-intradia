@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useT } from '../lib/i18n'
+import { useIdioma } from '../lib/i18n'
 import { activar, desactivar, suscripcionActual } from '../lib/push'
 import { motivoNoDisponible, permisoActual } from '../lib/push/soporte'
 
@@ -12,7 +12,9 @@ import { motivoNoDisponible, permisoActual } from '../lib/push/soporte'
 // que hay que decirla en vez de esconderla.
 
 export default function AvisosCard({ uid }) {
-  const t = useT()
+  // El idioma se guarda junto a la suscripción: el vigía corre en un servidor
+  // y no tiene otra forma de saber en qué idioma mandar el aviso.
+  const { t, idioma } = useIdioma()
   const [suscrito, setSuscrito] = useState(null) // null = todavía averiguando
   const [ocupado, setOcupado] = useState(false)
   const [error, setError] = useState('')
@@ -33,7 +35,7 @@ export default function AvisosCard({ uid }) {
   const alActivar = async () => {
     setOcupado(true)
     setError('')
-    const r = await activar(uid)
+    const r = await activar(uid, idioma)
     setPermiso(permisoActual())
     if (r.ok) {
       setSuscrito(true)
