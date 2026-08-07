@@ -255,12 +255,45 @@ No se pueden crear secretos del repositorio desde el entorno de la sesión
 Sin los dos secretos el vigía sigue funcionando igual y solo anota
 `{"estado":"sin-configurar"}` — no falla.
 
-### Estado
+### Estado: ✅ funcionando de punta a punta (2026-08-07)
 
-- Parte A (la app): PR #14.
-- Parte B (el envío): mismo PR.
-- ⚠️ **Sin verificar en un celular de verdad todavía.** Lo probado es el
-  camino completo del envío contra un servicio de push de mentira
-  (`prueba-push.mjs`: cifrado, firma VAPID, filtro, limpieza de
-  suscripciones muertas) y los estados de la tarjeta en Chromium. Falta
-  que llegue un aviso real a un celular real, que necesita los secretos.
+PR #14 (la app y el envío) y #15 (la prueba a mano), los dos fusionados.
+Néstor ya publicó las reglas y pegó los dos secretos.
+
+**Verificado con un aviso real que le sonó en el celular**, no solo
+compilando: la prueba a mano encontró 6 suscripciones en Firestore y
+entregó 3 (las otras 3 dieron 410 — instalaciones viejas de cuando
+desinstaló y volvió a instalar; el vigía las borra solo en su próximo
+envío). Eso cubre la cadena entera: los dos secretos, el acceso a
+`pushSubs`, que las claves VAPID casen y la entrega al aparato.
+
+### Cómo probar los avisos (y por qué NO con el vigía)
+
+`prueba-avisos.yml` (Actions → "Probar los avisos al celular" → Run
+workflow) manda un aviso fijo a todos los aparatos suscritos. No toca la
+fuente de precios ni gasta créditos.
+
+⚠️ **No intentes probar los avisos lanzando el vigía a mano.** Ya se
+intentó y no sirve, por dos motivos independientes:
+
+1. Antes de llegar al código de los avisos descarga los precios, y el
+   barrido gasta 7 de los 8 créditos por minuto del plan gratuito de
+   Twelve Data. Va siempre al filo: el lanzamiento a mano del 7 de agosto
+   se cayó con `HTTP 429` en `velas.mjs` tras 2 minutos de reintentos, sin
+   ejecutar una sola línea de las notificaciones.
+2. Aunque los precios bajen bien, solo manda algo si aparece una **señal
+   nueva**, que puede tardar días.
+
+### Dos cosas pendientes de decidir
+
+- ⚠️ **El reloj de GitHub se salta horas.** El 7 de agosto, entre las 15:00
+  y las 22:30 UTC debería haber corrido el vigía ~7 veces y corrió **2**
+  (18:06 y 20:23, las dos bien). O sea que "cada hora" en la práctica es
+  "cuando GitHub se acuerda". El propio `vigia.mjs` ya anota el minuto real
+  de cada corrida justo para medir esto; con más días de datos habrá que
+  decidir si se muda a otro servicio o se acepta.
+- **El envío no tiene tiempos de espera.** Ni `firestore-rest.mjs` ni las
+  llamadas de `web-push` cortan si el otro lado se queda callado. Como
+  `vigia.yml` usa `concurrency` con `cancel-in-progress: false`, una corrida
+  colgada haría cola con las siguientes. No ha pasado, pero conviene
+  ponerles un límite antes de que pase.
