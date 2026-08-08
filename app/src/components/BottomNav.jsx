@@ -5,6 +5,7 @@ import { useT } from '../lib/i18n'
 const ITEMS = [
   { tab: 'barrido', icon: '▦', clave: 'nav.barrido' },
   { tab: 'diario', icon: '≡', clave: 'nav.diario' },
+  { tab: 'historial', icon: '◷', clave: 'nav.historial' },
   { tab: 'calc', icon: '%', clave: 'nav.riesgo' },
 ]
 

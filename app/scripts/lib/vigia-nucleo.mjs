@@ -30,6 +30,32 @@ export function compararConAnterior(setups, estadoPrevio) {
   return { actuales, nuevas: actuales.filter((x) => !previas.has(x.id)) }
 }
 
+// Lee un archivo de los que se escriben una línea de JSON por vez.
+//
+// Una línea rota se salta en vez de tumbar la lectura entera: estos archivos
+// se escriben añadiendo al final, así que un corte a mitad de escritura
+// dejaría la última línea incompleta, y perder el historial completo por eso
+// sería absurdo.
+export function leerJsonl(ruta) {
+  let bruto
+  try {
+    bruto = readFileSync(ruta, 'utf8')
+  } catch {
+    return [] // todavía no existe: primera vez
+  }
+
+  const salida = []
+  for (const linea of bruto.split('\n')) {
+    if (!linea.trim()) continue
+    try {
+      salida.push(JSON.parse(linea))
+    } catch {
+      // línea a medias, se ignora
+    }
+  }
+  return salida
+}
+
 export function escribir(ruta, texto, anexar = false) {
   mkdirSync(dirname(ruta), { recursive: true })
   if (anexar) appendFileSync(ruta, texto)

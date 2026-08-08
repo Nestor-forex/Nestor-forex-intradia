@@ -297,3 +297,52 @@ intentó y no sirve, por dos motivos independientes:
   `vigia.yml` usa `concurrency` con `cancel-in-progress: false`, una corrida
   colgada haría cola con las siguientes. No ha pasado, pero conviene
   ponerles un límite antes de que pase.
+
+## Historial de señales: ¿acierta la app? (2026-08-08)
+
+Néstor pidió poder ver lo que el vigía guarda. El vigía ya anotaba las
+señales, pero **no si acertaron**, que es la única pregunta que importa —
+y sin ese dato no hay nada que vender.
+
+```
+app/scripts/lib/resolver.mjs      # decide ganada/perdida mirando las velas siguientes
+app/src/lib/historialCalc.js      # las cuentas (compartido: lo usan Node y la app)
+app/src/lib/useHistorial.js       # baja los datos de la rama `datos`
+app/src/components/HistorialTab.jsx  # la pantalla (4ª pestaña)
+app/scripts/prueba-resolver.mjs   # 22 comprobaciones, sin internet
+```
+
+### Decisiones que NO hay que ablandar
+
+- **Si una vela toca el stop y el objetivo, cuenta como PERDIDA.** La vela
+  solo guarda máximo y mínimo, no el orden, así que no se puede saber cuál
+  llegó primero. Se elige el peor caso a propósito: un historial que se
+  equivoca a favor propio no sirve para decidir si arriesgar dinero.
+- **La vela en la que apareció la señal no cuenta**, solo las posteriores.
+  La entrada es al cierre de esa vela.
+- ⚠️ **En los 7 cruces (EUR/CHF, AUD/JPY…) el máximo y el mínimo son una
+  cota MÁS ANCHA que la real** — `computarBarrido` los deriva de las
+  divisas contra el dólar. Así que un nivel puede darse por tocado sin
+  haberlo sido. Cada resultado lleva `exacto: true/false` y la pantalla
+  enseña las dos cuentas por separado: el total y el de solo pares contra
+  el dólar, que sí es exacto. **No mezclarlas en un solo porcentaje.**
+- **Las señales se identifican por `id@vistoEl`**, no por `id`: la misma
+  combinación par/lado/tipo reaparece con el tiempo y cada aparición es una
+  operación distinta.
+- Una señal cuya vela ya no está entre las 300 descargadas (~12 días) se
+  marca `caducada` en vez de reintentarse cada hora para siempre.
+
+### De dónde saca los datos la app
+
+De la rama `datos` por https, con `raw.githubusercontent.com`. Sin base de
+datos, sin servidor y sin costo; el repositorio es público. Guardarlo en
+Firestore habrían sido miles de escrituras al mes para unos archivos que ya
+existen y que además conviene que sean públicos: son la prueba de si la app
+acierta.
+
+### Estado
+
+Verificado con `prueba-resolver.mjs` (22 comprobaciones) y en Chromium los
+tres estados de la pantalla. ⚠️ **Sin datos reales todavía**: a 8 de agosto
+el vigía no había encontrado ni una sola señal, así que la pantalla enseña
+su estado vacío. Lo probado con datos es con datos inventados.

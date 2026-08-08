@@ -32,7 +32,7 @@ export default {
     retirado: 'Dein Zugang wurde entzogen. Schreib Néstor, falls das ein Irrtum ist.',
   },
 
-  nav: { barrido: 'Scan', diario: 'Journal', riesgo: 'Risiko', miembros: 'Mitglieder' },
+  nav: { historial: 'Verlauf', barrido: 'Scan', diario: 'Journal', riesgo: 'Risiko', miembros: 'Mitglieder' },
 
   sesgo: { COMPRA: 'BUY', VENTA: 'SELL', VIGILAR: 'WATCH', '—': '—' },
   tend: { Alcista: 'Aufwärts', Bajista: 'Abwärts', Rango: 'Seitwärts' },
@@ -276,6 +276,25 @@ export default {
     denegado: 'Benachrichtigungen sind für diese App blockiert. Du musst sie in den Browser- oder Handy-Einstellungen wieder erlauben.',
     fallo: 'Die Benachrichtigungen konnten nicht aktiviert werden. Bitte versuche es erneut.',
     soloEsteAparato: 'Benachrichtigungen gelten pro Gerät: Wenn du die App auf Handy und Computer nutzt, aktiviere sie auf beiden.',
+  },
+
+  historial: {
+    titulo: 'Signalverlauf',
+    intro: 'Jedes Signal des Wächters und was danach passierte.',
+    cargando: 'Verlauf wird geladen…',
+    error: 'Verlauf konnte nicht geladen werden. Prüfe die Verbindung.',
+    vacio: 'Noch keine Signale.',
+    vacioLargo: 'Der Wächter prüft den Markt stündlich und trägt hier ein, was er findet. Sobald das erste Signal auftaucht, siehst du es.',
+    acierto: 'Trefferquote',
+    operaciones: 'Trades',
+    pips: 'Netto-Pips',
+    sinJuzgar: 'Noch nicht bewertet',
+    ganada: 'Getroffen',
+    perdida: 'Verfehlt',
+    abierta: 'Laufend',
+    caducada: 'Keine Daten',
+    avisoCruces: 'Bei Crosses (EUR/CHF, AUD/JPY…) werden Hoch und Tief geschätzt, ihr Ergebnis kann also etwas zu optimistisch wirken. Die exakten Zahlen der USD-Paare stehen unten getrennt.',
+    soloExactas: 'Nur USD-Paare',
   },
 
   errores: {

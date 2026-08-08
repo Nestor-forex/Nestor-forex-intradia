@@ -32,7 +32,7 @@ export default {
     retirado: 'Seu acesso foi removido. Escreva para Néstor se achar que é um erro.',
   },
 
-  nav: { barrido: 'Varredura', diario: 'Diário', riesgo: 'Risco', miembros: 'Membros' },
+  nav: { historial: 'Histórico', barrido: 'Varredura', diario: 'Diário', riesgo: 'Risco', miembros: 'Membros' },
 
   sesgo: { COMPRA: 'BUY', VENTA: 'SELL', VIGILAR: 'WATCH', '—': '—' },
   tend: { Alcista: 'Alta', Bajista: 'Baixa', Rango: 'Lateral' },
@@ -276,6 +276,25 @@ export default {
     denegado: 'Os avisos estão bloqueados para este app. É preciso permiti-los de novo nos ajustes do navegador ou do celular.',
     fallo: 'Não foi possível ativar os avisos. Tente de novo.',
     soloEsteAparato: 'Os avisos são por aparelho: se você usa o app no celular e no computador, ative em cada um.',
+  },
+
+  historial: {
+    titulo: 'Histórico de sinais',
+    intro: 'Cada sinal que o vigia encontrou e o que aconteceu depois.',
+    cargando: 'Carregando o histórico…',
+    error: 'Não foi possível carregar o histórico. Verifique a conexão.',
+    vacio: 'Ainda não há nenhum sinal.',
+    vacioLargo: 'O vigia revisa o mercado a cada hora e anota aqui o que encontra. Assim que aparecer o primeiro sinal, você vai vê-lo.',
+    acierto: 'Acerto',
+    operaciones: 'Operações',
+    pips: 'Pips líquidos',
+    sinJuzgar: 'Ainda não julgado',
+    ganada: 'Acertou',
+    perdida: 'Errou',
+    abierta: 'Em curso',
+    caducada: 'Sem dados',
+    avisoCruces: 'Nos cruzamentos (EUR/CHF, AUD/JPY…) a máxima e a mínima são estimadas, então o resultado pode parecer um pouco otimista. Abaixo vão à parte as contas dos pares contra o dólar, que são exatas.',
+    soloExactas: 'Só pares contra o dólar',
   },
 
   errores: {

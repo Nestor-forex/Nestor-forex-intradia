@@ -28,7 +28,7 @@ export default {
     retirado: 'アクセス権が取り消されました。間違いだと思う場合は Néstor に連絡してください。',
   },
 
-  nav: { barrido: 'スキャン', diario: '売買日誌', riesgo: 'リスク', miembros: 'メンバー' },
+  nav: { historial: '履歴', barrido: 'スキャン', diario: '売買日誌', riesgo: 'リスク', miembros: 'メンバー' },
 
   sesgo: { COMPRA: 'BUY', VENTA: 'SELL', VIGILAR: 'WATCH', '—': '—' },
   tend: { Alcista: '上昇', Bajista: '下降', Rango: 'レンジ' },
@@ -270,6 +270,25 @@ export default {
     denegado: 'このアプリの通知はブロックされています。ブラウザまたは端末の設定で、もう一度許可してください。',
     fallo: '通知をオンにできませんでした。もう一度お試しください。',
     soloEsteAparato: '通知は端末ごとの設定です。スマホとパソコンの両方で使う場合は、それぞれでオンにしてください。',
+  },
+
+  historial: {
+    titulo: 'シグナル履歴',
+    intro: '見張りが見つけた各シグナルと、その後どうなったか。',
+    cargando: '履歴を読み込み中…',
+    error: '履歴を読み込めませんでした。接続を確認してください。',
+    vacio: 'まだシグナルはありません。',
+    vacioLargo: '見張りは1時間ごとに市場を確認し、見つけたものをここに記録します。最初のシグナルが出れば表示されます。',
+    acierto: '勝率',
+    operaciones: '取引数',
+    pips: '純Pips',
+    sinJuzgar: '未判定',
+    ganada: '到達',
+    perdida: '未達',
+    abierta: '進行中',
+    caducada: 'データなし',
+    avisoCruces: 'クロス通貨（EUR/CHF、AUD/JPY など）の高値と安値は概算のため、結果がやや楽観的に見えることがあります。正確な米ドル絡みのペアの数字は下に分けて表示しています。',
+    soloExactas: '米ドルのペアのみ',
   },
 
   errores: {

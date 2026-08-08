@@ -32,7 +32,7 @@ export default {
     retirado: 'Your access was revoked. Write to Néstor if you think this is a mistake.',
   },
 
-  nav: { barrido: 'Scan', diario: 'Journal', riesgo: 'Risk', miembros: 'Members' },
+  nav: { historial: 'History', barrido: 'Scan', diario: 'Journal', riesgo: 'Risk', miembros: 'Members' },
 
   sesgo: { COMPRA: 'BUY', VENTA: 'SELL', VIGILAR: 'WATCH', '—': '—' },
   tend: { Alcista: 'Uptrend', Bajista: 'Downtrend', Rango: 'Range' },
@@ -276,6 +276,25 @@ export default {
     denegado: 'Alerts are blocked for this app. You need to allow them again in your browser or phone settings.',
     fallo: 'Alerts could not be turned on. Please try again.',
     soloEsteAparato: 'Alerts are set per device: if you use the app on your phone and your computer, turn them on in each one.',
+  },
+
+  historial: {
+    titulo: 'Signal history',
+    intro: 'Every signal the watcher found, and what happened next.',
+    cargando: 'Loading history…',
+    error: 'Could not load the history. Check your connection.',
+    vacio: 'No signals yet.',
+    vacioLargo: 'The watcher checks the market every hour and records what it finds here. As soon as the first signal shows up, you will see it.',
+    acierto: 'Win rate',
+    operaciones: 'Trades',
+    pips: 'Net pips',
+    sinJuzgar: 'Not judged yet',
+    ganada: 'Hit',
+    perdida: 'Missed',
+    abierta: 'Running',
+    caducada: 'No data',
+    avisoCruces: 'On crosses (EUR/CHF, AUD/JPY…) the high and low are estimated, so their outcome may look slightly optimistic. The figures for USD pairs, which are exact, are shown separately below.',
+    soloExactas: 'USD pairs only',
   },
 
   errores: {

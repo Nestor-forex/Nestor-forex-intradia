@@ -347,6 +347,19 @@ export function computarBarrido(barras, rates, rangos = null) {
       rangoLo: Math.min(...lows.slice(-BARRAS_POR_DIA)),
       dec: b === 'JPY' || q === 'JPY' ? 2 : 4,
       serie20: last20,
+      // Las series completas de máximos y mínimos, alineadas con `barras`.
+      // Las usa `scripts/lib/resolver.mjs` para saber si una señal llegó a su
+      // objetivo o a su stop: hace falta el recorrido entero, no solo el
+      // último valor. Se exponen desde aquí en vez de recalcularlas fuera
+      // para que no puedan quedar desalineadas con lo que ve el barrido.
+      //
+      // ⚠️ En los 7 pares contra el dólar son exactos (una de las dos divisas
+      // es constante). En los 7 cruces son una cota algo MÁS ANCHA que el
+      // rango real, así que un nivel puede darse por tocado sin haberlo sido.
+      // `esCruce` lo marca para que quien los use lo diga.
+      highs,
+      lows,
+      esCruce: b !== 'USD' && q !== 'USD',
       pivots: calcularPivots(highs, lows, closes, L),
     }
   })

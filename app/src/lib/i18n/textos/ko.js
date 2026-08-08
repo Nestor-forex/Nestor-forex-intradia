@@ -28,7 +28,7 @@ export default {
     retirado: '접근 권한이 해제되었습니다. 착오라고 생각되면 Néstor에게 연락하세요.',
   },
 
-  nav: { barrido: '스캔', diario: '매매일지', riesgo: '리스크', miembros: '멤버' },
+  nav: { historial: '기록', barrido: '스캔', diario: '매매일지', riesgo: '리스크', miembros: '멤버' },
 
   sesgo: { COMPRA: 'BUY', VENTA: 'SELL', VIGILAR: 'WATCH', '—': '—' },
   tend: { Alcista: '상승', Bajista: '하락', Rango: '횡보' },
@@ -270,6 +270,25 @@ export default {
     denegado: '이 앱의 알림이 차단되어 있습니다. 브라우저나 휴대폰 설정에서 다시 허용해야 합니다.',
     fallo: '알림을 켜지 못했습니다. 다시 시도해 주세요.',
     soloEsteAparato: '알림은 기기별로 설정됩니다. 휴대폰과 컴퓨터에서 모두 사용한다면 각각 켜 주세요.',
+  },
+
+  historial: {
+    titulo: '신호 기록',
+    intro: '감시자가 찾은 모든 신호와 그 이후에 일어난 일.',
+    cargando: '기록을 불러오는 중…',
+    error: '기록을 불러오지 못했습니다. 연결을 확인해 주세요.',
+    vacio: '아직 신호가 없습니다.',
+    vacioLargo: '감시자는 매시간 시장을 확인하고 찾은 것을 여기에 기록합니다. 첫 신호가 나오면 바로 보입니다.',
+    acierto: '적중률',
+    operaciones: '거래',
+    pips: '순 Pips',
+    sinJuzgar: '아직 판정 안 됨',
+    ganada: '도달',
+    perdida: '미달',
+    abierta: '진행 중',
+    caducada: '데이터 없음',
+    avisoCruces: '크로스 통화쌍(EUR/CHF, AUD/JPY 등)은 고가와 저가를 추정하므로 결과가 다소 낙관적으로 보일 수 있습니다. 정확한 달러 통화쌍의 수치는 아래에 따로 표시됩니다.',
+    soloExactas: '달러 통화쌍만',
   },
 
   errores: {
