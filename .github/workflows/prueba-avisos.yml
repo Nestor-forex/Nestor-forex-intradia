@@ -18,6 +18,8 @@ on:
 jobs:
   probar:
     runs-on: ubuntu-latest
+    # Lo normal son 20 segundos. Si pasa de cinco minutos es que algo se colgó.
+    timeout-minutes: 5
     steps:
       - name: Traer el código
         uses: actions/checkout@v4

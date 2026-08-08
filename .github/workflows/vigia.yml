@@ -36,6 +36,14 @@ concurrency:
 jobs:
   vigia:
     runs-on: ubuntu-latest
+    # La red de seguridad final. Los límites que hay dentro del código cubren
+    # cada llamada por separado, pero esto cubre CUALQUIER cuelgue, incluidos
+    # los que no hemos previsto. Sin él, GitHub deja correr un trabajo hasta
+    # 6 horas, y como aquí `concurrency` no cancela la corrida anterior, una
+    # sola atascada dejaría al vigía sin vigilar media jornada.
+    # Lo normal son 15 segundos; con reintentos por el límite de Twelve Data,
+    # unos 2 minutos y medio.
+    timeout-minutes: 10
     steps:
       - name: Traer el código
         uses: actions/checkout@v4

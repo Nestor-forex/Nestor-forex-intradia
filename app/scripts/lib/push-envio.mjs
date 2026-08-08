@@ -30,6 +30,28 @@ export const RB_MINIMO = Number(process.env.PUSH_RB_MINIMO || 1.5)
 // (la persona desinstaló la app, borró los datos del navegador, etc.).
 const MUERTA = new Set([404, 410])
 
+// Cuánto se espera como mucho a CADA aviso. Como el presupuesto de abajo, se
+// lee en cada llamada para que la prueba pueda bajarlo y no tardar diez
+// segundos en comprobar que el corte funciona.
+export const MS_POR_AVISO = 10_000
+
+// Y cuánto puede durar el envío ENTERO.
+//
+// El límite por aviso no basta: cada aparato y cada señal son una petición
+// aparte. Veinte aparatos con tres señales son sesenta peticiones, y si todas
+// se fueran al límite la corrida duraría diez minutos. Como `vigia.yml` usa
+// `concurrency` con `cancel-in-progress: false`, esa corrida haría cola con
+// las siguientes y el vigía dejaría de vigilar.
+//
+// Al agotarse el presupuesto se deja de mandar y se anota cuántos quedaron
+// sin avisar. Es la decisión correcta: perder unos avisos de esta hora es
+// mucho menos grave que atascar todas las horas siguientes, y el vigía vuelve
+// a intentarlo con las señales que sigan activas.
+//
+// Se lee en cada llamada, no al cargar el archivo, para que la prueba pueda
+// bajarlo y comprobar que el corte funciona de verdad.
+export const MS_PRESUPUESTO = 60_000
+
 // Arma el aviso en el idioma de quien lo va a recibir. Los términos de
 // trading (SL, TP, R/B) no se traducen, igual que en el resto de la app.
 export function armarMensaje(senal, idioma) {
@@ -90,19 +112,37 @@ export async function enviarAvisos(nuevas, entorno = process.env, bdInyectada = 
 
   let enviados = 0
   let fallidos = 0
+  let sinTiempo = 0
   const muertas = new Set()
+
+  // A partir de aquí se corta, mande lo que se haya mandado.
+  const seAcaba = Date.now() + Number(entorno.PUSH_MS_PRESUPUESTO || MS_PRESUPUESTO)
+  const msPorAviso = Number(entorno.PUSH_MS_POR_AVISO || MS_POR_AVISO)
 
   for (const sub of suscripciones) {
     // Si el aparato ya se dio por muerto en la primera señal, no insistimos
     // con las demás.
     if (muertas.has(sub.ruta)) continue
 
+    // Se sigue recorriendo (en vez de cortar) para poder contar exactamente
+    // cuántos avisos quedaron sin intentar.
+    if (Date.now() > seAcaba) {
+      sinTiempo += dignas.length
+      continue
+    }
+
     for (const { s } of dignas) {
+      if (Date.now() > seAcaba) {
+        sinTiempo++
+        continue
+      }
+
       const mensaje = armarMensaje(s, sub.idioma || 'es')
       try {
         await webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-          JSON.stringify(mensaje)
+          JSON.stringify(mensaje),
+          { timeout: msPorAviso }
         )
         enviados++
       } catch (e) {
@@ -133,5 +173,8 @@ export async function enviarAvisos(nuevas, entorno = process.env, bdInyectada = 
     enviados,
     fallidos,
     limpiadas,
+    // Solo aparece si se acabó el tiempo, para que no sea un fallo silencioso:
+    // si sale seguido, es que hay demasiados aparatos para el presupuesto.
+    ...(sinTiempo ? { sinTiempo } : {}),
   }
 }
