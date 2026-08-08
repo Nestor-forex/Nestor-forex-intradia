@@ -32,7 +32,7 @@ export default {
     retirado: "Ton accès a été retiré. Écris à Néstor si tu penses que c'est une erreur.",
   },
 
-  nav: { barrido: 'Scan', diario: 'Journal', riesgo: 'Risque', miembros: 'Membres' },
+  nav: { historial: 'Historique', barrido: 'Scan', diario: 'Journal', riesgo: 'Risque', miembros: 'Membres' },
 
   sesgo: { COMPRA: 'BUY', VENTA: 'SELL', VIGILAR: 'WATCH', '—': '—' },
   tend: { Alcista: 'Haussier', Bajista: 'Baissier', Rango: 'Range' },
@@ -276,6 +276,25 @@ export default {
     denegado: 'Les alertes sont bloquées pour cette app. Il faut les autoriser à nouveau dans les réglages du navigateur ou du téléphone.',
     fallo: 'Impossible d’activer les alertes. Réessaie.',
     soloEsteAparato: 'Les alertes se règlent par appareil : si tu utilises l’app sur le téléphone et l’ordinateur, active-les sur chacun.',
+  },
+
+  historial: {
+    titulo: 'Historique des signaux',
+    intro: 'Chaque signal trouvé par la vigie, et ce qui a suivi.',
+    cargando: 'Chargement de l’historique…',
+    error: 'Impossible de charger l’historique. Vérifie ta connexion.',
+    vacio: 'Aucun signal pour l’instant.',
+    vacioLargo: 'La vigie examine le marché chaque heure et note ici ce qu’elle trouve. Dès que le premier signal apparaîtra, tu le verras.',
+    acierto: 'Taux de réussite',
+    operaciones: 'Trades',
+    pips: 'Pips nets',
+    sinJuzgar: 'Pas encore jugé',
+    ganada: 'Atteint',
+    perdida: 'Manqué',
+    abierta: 'En cours',
+    caducada: 'Sans données',
+    avisoCruces: 'Sur les croisements (EUR/CHF, AUD/JPY…), le plus haut et le plus bas sont estimés : leur résultat peut sembler un peu optimiste. Les chiffres exacts des paires en USD sont indiqués à part ci-dessous.',
+    soloExactas: 'Paires en USD uniquement',
   },
 
   errores: {

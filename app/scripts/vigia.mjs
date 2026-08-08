@@ -18,7 +18,8 @@
 import { fileURLToPath } from 'node:url'
 import { computarBarrido, derivarVista } from '../src/lib/marketCalc.js'
 import { leerLlave, obtenerVelas } from './lib/velas.mjs'
-import { compararConAnterior, escribir, leerEstado } from './lib/vigia-nucleo.mjs'
+import { compararConAnterior, escribir, leerEstado, leerJsonl } from './lib/vigia-nucleo.mjs'
+import { resolver, resumir } from './lib/resolver.mjs'
 
 // Dónde se guardan los datos. En GitHub Actions apunta a la copia de la rama
 // `datos`, para no llenar de commits la rama del código. Sin la variable,
@@ -27,6 +28,7 @@ const DATOS = process.env.VIGIA_DATOS || fileURLToPath(new URL('../../datos-loca
 const ESTADO = `${DATOS}/estado/vigia.json`
 const LOG_SENALES = `${DATOS}/historial/senales.jsonl`
 const LOG_CORRIDAS = `${DATOS}/historial/corridas.jsonl`
+const LOG_RESULTADOS = `${DATOS}/historial/resultados.jsonl`
 
 const ahora = new Date()
 const { barras, rates, rangos } = await obtenerVelas(leerLlave())
@@ -95,6 +97,22 @@ escribir(
   ) + '\n'
 )
 
+// Juzgar las señales de días anteriores: ¿llegaron a su objetivo o a su stop?
+//
+// Va DESPUÉS de anotar las nuevas (así una señal recién vista ya entra en la
+// cuenta) y ANTES de los avisos, porque esto sí escribe en disco y los avisos
+// no. Se recorre todo el historial en cada corrida en vez de llevar una lista
+// de pendientes: son unos pocos cientos de líneas y no vale la pena la
+// complicación de mantener dos fuentes que puedan desincronizarse.
+const yaJuzgadas = new Set(leerJsonl(LOG_RESULTADOS).map((r) => r.clave))
+const { resultados, abiertas, caducadas } = resolver(
+  leerJsonl(LOG_SENALES),
+  data,
+  yaJuzgadas
+)
+
+for (const r of resultados) escribir(LOG_RESULTADOS, JSON.stringify(r) + '\n', true)
+
 // Avisos al celular. Va al FINAL y aislado a propósito: para cuando llegamos
 // aquí, el historial y el estado ya están escritos en disco, así que ni un
 // fallo de red ni una clave mal puesta pueden costarnos esos datos —que son
@@ -123,6 +141,18 @@ if (nuevas.length) {
   }
 } else {
   console.log('  (nada nuevo respecto a la revisión anterior)')
+}
+const resumen = resumir(leerJsonl(LOG_RESULTADOS))
+console.log(
+  `Señales juzgadas en esta revisión: ${resultados.length}` +
+    ` · siguen abiertas: ${abiertas}` +
+    (caducadas ? ` · caducadas: ${caducadas}` : '')
+)
+if (resumen.todas.total) {
+  console.log(
+    `Historial: ${resumen.todas.ganadas}/${resumen.todas.total} acertadas` +
+      ` (${resumen.todas.acierto}%), ${resumen.todas.pips >= 0 ? '+' : ''}${resumen.todas.pips} pips`
+  )
 }
 console.log(`Avisos al celular: ${JSON.stringify(avisos)}`)
 console.log('---VIGIA-FIN---')

@@ -28,7 +28,7 @@ export default {
     retirado: '你的访问权限已被取消。如果你认为是误操作，请联系 Néstor。',
   },
 
-  nav: { barrido: '扫描', diario: '交易日志', riesgo: '风险', miembros: '成员' },
+  nav: { historial: '历史', barrido: '扫描', diario: '交易日志', riesgo: '风险', miembros: '成员' },
 
   sesgo: { COMPRA: 'BUY', VENTA: 'SELL', VIGILAR: 'WATCH', '—': '—' },
   tend: { Alcista: '上升', Bajista: '下降', Rango: '横盘' },
@@ -267,6 +267,25 @@ export default {
     denegado: '本应用的提醒已被阻止。需要在浏览器或手机的设置中重新允许。',
     fallo: '无法开启提醒，请重试。',
     soloEsteAparato: '提醒按设备单独设置：如果你在手机和电脑上都使用本应用，请分别开启。',
+  },
+
+  historial: {
+    titulo: '信号历史',
+    intro: '哨兵发现的每个信号，以及之后发生了什么。',
+    cargando: '正在加载历史…',
+    error: '无法加载历史记录，请检查网络连接。',
+    vacio: '暂时还没有信号。',
+    vacioLargo: '哨兵每小时检查一次市场，并把发现的信号记录在这里。第一个信号出现后你就会看到。',
+    acierto: '胜率',
+    operaciones: '交易数',
+    pips: '净点数',
+    sinJuzgar: '尚未判定',
+    ganada: '命中',
+    perdida: '未中',
+    abierta: '进行中',
+    caducada: '无数据',
+    avisoCruces: '交叉盘（EUR/CHF、AUD/JPY 等）的最高价和最低价是估算的，因此结果可能略显乐观。下方单独列出了美元货币对的数据，那些是精确的。',
+    soloExactas: '仅美元货币对',
   },
 
   errores: {

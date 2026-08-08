@@ -48,6 +48,7 @@ export default {
   },
 
   nav: {
+    historial: 'Historial',
     barrido: 'Barrido',
     diario: 'Diario',
     riesgo: 'Riesgo',
@@ -311,6 +312,25 @@ export default {
     denegado: 'Los avisos están bloqueados para esta app. Hay que volver a permitirlos desde los ajustes del navegador o del celular.',
     fallo: 'No se pudieron activar los avisos. Inténtalo de nuevo.',
     soloEsteAparato: 'Los avisos se activan por aparato: si usas la app en el celular y en el computador, actívalos en cada uno.',
+  },
+
+  historial: {
+    titulo: 'Historial de señales',
+    intro: 'Cada señal que encontró el vigía y qué pasó después.',
+    cargando: 'Cargando el historial…',
+    error: 'No se pudo cargar el historial. Revisa la conexión.',
+    vacio: 'Todavía no hay ninguna señal.',
+    vacioLargo: 'El vigía revisa el mercado cada hora y anota aquí lo que encuentra. En cuanto aparezca la primera señal, la verás.',
+    acierto: 'Acierto',
+    operaciones: 'Operaciones',
+    pips: 'Pips netos',
+    sinJuzgar: 'Sin juzgar todavía',
+    ganada: 'Acertó',
+    perdida: 'Falló',
+    abierta: 'En curso',
+    caducada: 'Sin datos',
+    avisoCruces: 'En los cruces (EUR/CHF, AUD/JPY…) el máximo y el mínimo se calculan de forma aproximada, así que su resultado puede ser algo optimista. Abajo van aparte las cuentas de los pares contra el dólar, que sí son exactas.',
+    soloExactas: 'Solo pares contra el dólar',
   },
 
   errores: {
