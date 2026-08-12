@@ -75,6 +75,13 @@ function unir(senales, resultados) {
   const porClave = new Map(resultados.map((r) => [r.clave, r]))
 
   const filas = senales
+    // Las de sombra no se pintan. Son de un tipo que todavía está en pruebas:
+    // el vigía las anota para ir acumulando operaciones reales, pero la app no
+    // las da y nadie recibió aviso de ellas. Enseñarlas en el historial sería
+    // mostrar operaciones que nunca se le propusieron a nadie — y peor, se
+    // leerían como recomendaciones. `resumir` ya las deja fuera del
+    // porcentaje; esto las deja fuera de la lista.
+    .filter((s) => !s.sombra)
     .map((s) => {
       const r = porClave.get(`${s.id}@${s.vistoEl}`)
       return { ...s, resultado: r?.resultado || 'abierta', pips: r?.pips, exacto: r?.exacto }

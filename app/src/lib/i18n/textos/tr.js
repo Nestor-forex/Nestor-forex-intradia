@@ -230,9 +230,8 @@ export default {
 
     adxOk: ({ adx }) => ` · ADX ${adx}: trendin gücü var`,
 
-    vigilanciaAdx: ({ dif, favor, adx }) => `${favor} lehine ${dif} fark ve EMA’lar hizalı, ama ADX ${adx}: 20’nin altında gerçek bir trend yok, sadece salınım var.`,
+    vigilanciaAdx: ({ dif, favor, adx, min }) => `${favor} lehine ${dif} fark ve EMA’lar hizalı, ama ADX ${adx}: ${min}’nin altında gerçek bir trend yok, sadece salınım var.`,
 
-    vigilanciaH4: ({ dif, favor }) => `Saatlikte ${favor} lehine ${dif} fark var, ama 4 saatlik ters yönü gösteriyor — uyuşmalarını beklemek gerek.`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) - ${q} (${fq}), EMA’lar hizalı, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI aşırı uzamış, peşinden koşma, geri çekilme bekle',
     rsiContinuacion: ' — RSI devam bölgesinde',
@@ -243,6 +242,10 @@ export default {
     slVenta: ' (girişin 1,5 × ATR üstünde)',
     rangoCompra: ({ lo, hi, atr, rsi }) => `${lo} ile ${hi} arasında yatay (genişlik ${atr} ATR). Fiyat tabana yapışmış, RSI ${rsi}: aşağıdan alınır, tavana doğru tepki beklenir.`,
     rangoVenta: ({ lo, hi, atr, rsi }) => `${lo} ile ${hi} arasında yatay (genişlik ${atr} ATR). Fiyat tavana yapışmış, RSI ${rsi}: yukarıdan satılır, tabana doğru düşüş beklenir.`,
+    retrocesoCompra: ({ b, fb, q, fq, adx, rsi }) =>
+      `Güçlü yükseliş trendi (ADX ${adx}) ve ${b} (${fb}), ${q} (${fq}) karşısında önde, ama fiyat EMA9’a kadar geri çekildi, RSI ${rsi}: fiyatı kovalamadan geri çekilmede girilir.`,
+    retrocesoVenta: ({ b, fb, q, fq, adx, rsi }) =>
+      `Güçlü düşüş trendi (ADX ${adx}) ve ${q} (${fq}), ${b} (${fb}) karşısında önde, ama fiyat EMA9’a kadar yükseldi, RSI ${rsi}: fiyatı kovalamadan tepki yükselişinde girilir.`,
     entradaRango: ({ precio, borde }) => `${precio} şu an · bandın kenarı ${borde}`,
     slRangoCompra: ' (bandın tabanının ½ ATR altında)',
     slRangoVenta: ' (bandın tavanının ½ ATR üstünde)',
@@ -257,6 +260,9 @@ export default {
   },
 
   avisos: {
+    pausados: 'Sinyalleri gözden geçirirken bildirimler duraklatıldı',
+    pausadosPorque:
+      'Bu uygulamanın geçmiş tutmaya başladığından beri verdiği tüm sinyalleri inceledik ve hiçbiri tutmadı. Sana para kaybettirecek bir şey bildirmektense hiçbir şey bildirmemeyi tercih ederiz. Uygulama piyasa taramasını göstermeye ve doğruluğu ölçmek için her sinyali kaydetmeye devam ediyor; rakamlar destekleyince bildirimler geri gelecek.',
     titulo: 'Telefon bildirimleri',
     desc: 'Gözcü yeni bir sinyal bulur bulmaz, uygulama kapalı olsa bile sana haber veririz.',
     activar: 'Bildirimleri aç',

@@ -43,7 +43,17 @@ const completo = computarBarrido(barras, rates, rangos)
 
 // --------------------------------------------------------------------------
 
-function medir(senales, porClave) {
+// Cuánto cobra el bróker por abrir y cerrar, en pips. Es un coste FIJO por
+// operación, así que pesa mucho más cuanto más corto sea el objetivo — y en
+// intradía los objetivos son cortos. Un sistema que gana +0,14 por unidad de
+// riesgo con stops de 15 pips se lo come el spread entero.
+//
+// 1,5 pips es una estimación prudente para los pares mayores de una cuenta
+// normal; en los cruces suele ser más. Cuando el puente de MT5 dé el spread
+// real de AvaTrade se puede poner el de verdad.
+const SPREAD_PIPS = 1.5
+
+function medir(senales, porClave, { conSpread = false } = {}) {
   let ganadas = 0
   let perdidas = 0
   let pips = 0
@@ -56,14 +66,17 @@ function medir(senales, porClave) {
   for (const s of senales) {
     const r = porClave.get(`${s.id}@${s.vistoEl}`)
     if (!r || (r.resultado !== 'ganada' && r.resultado !== 'perdida')) continue
+    // El spread se paga SIEMPRE, se gane o se pierda, y en veces el riesgo
+    // cuesta más cuanto más estrecho sea el stop.
+    const coste = conSpread ? SPREAD_PIPS / s.pipRiesgo : 0
     if (r.resultado === 'ganada') {
       ganadas++
-      sumaR += s.pipBeneficio / s.pipRiesgo
+      sumaR += s.pipBeneficio / s.pipRiesgo - coste
     } else {
       perdidas++
-      sumaR -= 1
+      sumaR -= 1 + coste
     }
-    pips += r.pips
+    pips += r.pips - (conSpread ? SPREAD_PIPS : 0)
   }
 
   const total = ganadas + perdidas
@@ -192,22 +205,195 @@ for (const [nombre, f] of TRAMOS) fila(nombre, medir(neutra.senales.filter(f), n
 console.log(RAYA)
 
 // --------------------------------------------------------------------------
-// 5. El ADX. Intradía sí lo tiene (swing no) y exige ADX ≥ 20 para dar señal
-//    de tendencia. Aquí se ve si ese umbral está en el sitio correcto.
+// 5. El ADX. Intradía sí lo tiene (swing no). Aquí se ve si el umbral está en
+//    el sitio correcto: se trocean las señales de tendencia por tramo de ADX.
+//
+//    ⚠️ Se trocea `sinFiltroAdx`, NO `neutra`. Desde que la app exige ADX ≥ 35,
+//    `neutra` ya no contiene ni una sola señal por debajo de 35, así que los
+//    dos primeros tramos saldrían vacíos y parecería que ahí no hay nada que
+//    medir — cuando lo que pasa es que la app ya las descartó. Para juzgar un
+//    filtro hay que mirar lo que el filtro tira, no solo lo que deja pasar.
 // --------------------------------------------------------------------------
+
+const sinFiltroAdx = correr({ geometria: simetrica, vista: { adxMin: 0 } })
 
 console.log('')
 console.log('¿SIRVE EL ADX? (tendencia, con regla de medir neutra)')
+console.log('Sin el filtro puesto, para poder ver también lo que hoy se descarta.')
 console.log('')
 console.log(`tramo${CAB.slice(5)}`)
 console.log(RAYA)
-const soloTend = neutra.senales.filter((s) => s.tipo === 'tendencia')
+const soloTend = sinFiltroAdx.senales.filter((s) => s.tipo === 'tendencia')
 for (const [nombre, f] of [
+  ['ADX < 20 (sin tendencia)', (s) => s.adx < 20],
   ['ADX 20-25 (tendencia floja)', (s) => s.adx >= 20 && s.adx < 25],
   ['ADX 25-35', (s) => s.adx >= 25 && s.adx < 35],
-  ['ADX ≥ 35 (tendencia fuerte)', (s) => s.adx >= 35],
+  ['ADX ≥ 35 (tendencia fuerte) ← lo que da la app hoy', (s) => s.adx >= 35],
 ]) {
-  fila(nombre, medir(soloTend.filter(f), neutra.porClave))
+  fila(nombre, medir(soloTend.filter(f), sinFiltroAdx.porClave))
+}
+console.log(RAYA)
+
+// --------------------------------------------------------------------------
+// 6. LAS TRES COSAS JUNTAS.
+//
+//    Por separado apuntaron a lo mismo: entrar en retroceso y no estirado
+//    (y el patrón salió en los DOS lados por separado, que es lo que lo hace
+//    creíble), subir el ADX, y que las de rango son las únicas positivas.
+//    Aquí se ve si juntas suman o se estorban.
+//
+//    Todo con la regla de medir neutra, para que no lo tape la geometría.
+// --------------------------------------------------------------------------
+
+// Entrar cuando el precio ya se retrocedió, no cuando está estirado. Es la
+// idea que trajo Néstor en su propuesta (EMA200 + RSI bajo) y la única que
+// aparece sola en los dos lados.
+const enRetroceso = (s) => (s.lado === 'COMPRA' ? s.rsi <= 50 : s.rsi >= 50)
+
+console.log('')
+console.log('LAS TRES COSAS JUNTAS (con regla de medir neutra)')
+console.log('')
+console.log(`combinación${CAB.slice(11)}`)
+console.log(RAYA)
+
+// El ADX ≥ 35 ya ES la app desde el 2026-08-12, así que `neutra` lo trae
+// puesto. Lo que hace falta ahora para comparar es lo contrario: cómo era con
+// el umbral viejo. Solo se mueve el listón de TENDENCIA; el de rango se queda
+// donde está, o las filas mezclarían dos cambios distintos.
+const conAdx20 = correr({ geometria: simetrica, vista: { adxMin: 20 } })
+const COMBIS = [
+  ['C0. La app de hoy (ADX ≥ 35)', neutra, () => true],
+  ['C1. + entrar solo en retroceso', neutra, enRetroceso],
+  ['C2. Solo las de rango', neutra, (s) => s.tipo === 'rango'],
+  ['C3. Solo las de tendencia', neutra, (s) => s.tipo === 'tendencia'],
+  ['C4. Como estaba antes (ADX ≥ 20)', conAdx20, () => true],
+  ['C5. Antes + retroceso', conAdx20, enRetroceso],
+]
+for (const [nombre, fuente, f] of COMBIS) fila(nombre, medir(fuente.senales.filter(f), fuente.porClave))
+console.log(RAYA)
+
+console.log('')
+console.log('LO MISMO, DESCONTANDO EL SPREAD DEL BRÓKER')
+console.log(`(${SPREAD_PIPS} pips por operación, se gane o se pierda)`)
+console.log('')
+console.log(`combinación${CAB.slice(11)}`)
+console.log(RAYA)
+for (const [nombre, fuente, f] of COMBIS) {
+  fila(nombre, medir(fuente.senales.filter(f), fuente.porClave, { conSpread: true }))
+}
+console.log(RAYA)
+console.log('Esta es la tabla que decide. Lo de arriba es teoría; esto es lo que')
+console.log('quedaría en la cuenta.')
+
+// --------------------------------------------------------------------------
+// 7. ¿ERA MEJOR LA APP ANTES DEL ADX?
+//
+//    Lo preguntó Néstor por su recuerdo de cómo iba antes. El ADX, la
+//    confirmación de 4 horas y el filtro de compresión entraron todos en el
+//    mismo commit (b36abf1), así que "antes" significa sin los tres. Se miden
+//    por separado para saber cuál aportó qué, en vez de quedarnos con la
+//    impresión.
+//
+//    Ya no aparece la fila "sin la confirmación de 4 horas": esa medición dio
+//    resultados IDÉNTICOS a la app entera (el veto no descartó ni una señal en
+//    7 meses), así que la confirmación se quitó del código el 2026-08-12 y ya
+//    no queda nada que apagar. La fila diría siempre lo mismo que la primera.
+// --------------------------------------------------------------------------
+
+console.log('')
+console.log('¿ERA MEJOR ANTES DEL ADX? (con regla de medir neutra)')
+console.log('El ADX y la compresión entraron juntos (con la confirmación de 4')
+console.log('horas, que resultó no hacer nada y ya se quitó de la app).')
+console.log('')
+console.log(`versión${CAB.slice(7)}`)
+console.log(RAYA)
+// Cada fila cambia UNA cosa. `adxMin: 0` quita el filtro a las de tendencia
+// y deja las de rango como están: antes, al compartir umbral, ponerlo en 0
+// borraba TODAS las de rango y el resultado no medía lo que decía medir.
+const ANTES = [
+  ['Como está hoy (ADX ≥ 35)', {}],
+  ['Con el ADX viejo (≥ 20)', { adxMin: 20 }],
+  ['Sin el filtro de ADX en tendencia', { adxMin: 0 }],
+  ['Sin el filtro de compresión', { compresionMin: 0 }],
+  ['Sin ninguno de los dos (como antes de aquel cambio)', { adxMin: 0, compresionMin: 0 }],
+  ['  …y de esas, solo las de tendencia', { adxMin: 0, compresionMin: 0, soloTipo: 'tendencia' }],
+]
+for (const [nombre, opciones] of ANTES) {
+  const { soloTipo, ...vista } = opciones
+  const r = Object.keys(vista).length ? correr({ geometria: simetrica, vista }) : neutra
+  const lista = soloTipo ? r.senales.filter((s) => s.tipo === soloTipo) : r.senales
+  fila(nombre, medir(lista, r.porClave))
+}
+
+// La comparación limpia de la pregunta de Néstor: SOLO las de tendencia, con
+// y sin el filtro de ADX. Es lo único que responde "¿ayudó el ADX?" sin que se
+// cuele el efecto de las de rango.
+console.log('')
+console.log('  Y la comparación limpia, solo señales de TENDENCIA:')
+for (const [nombre, vista] of [
+  ['sin filtro de ADX', { adxMin: 0 }],
+  ['con ADX ≥ 20 (el de antes)', { adxMin: 20 }],
+  ['con ADX ≥ 35 (hoy)', {}],
+]) {
+  const r = Object.keys(vista).length ? correr({ geometria: simetrica, vista }) : neutra
+  const m = medir(r.senales.filter((s) => s.tipo === 'tendencia'), r.porClave)
+  const ac = m.acierto === null ? '  — ' : (m.acierto.toFixed(0) + '%').padStart(4)
+  const pr = m.porRiesgo === null ? '—' : (m.porRiesgo >= 0 ? '+' : '') + m.porRiesgo.toFixed(2)
+  console.log(`  ${nombre.padEnd(26)} ${String(m.total).padStart(5)} ops   acierto ${ac}   por 1R ${pr.padStart(6)}`)
+}
+console.log(RAYA)
+console.log('Ojo: quitar un filtro AÑADE operaciones, así que aquí el número de')
+console.log('operaciones sí cambia y hay que mirarlo junto con el acierto.')
+
+// --------------------------------------------------------------------------
+// 8. LA SEÑAL NUEVA: ENTRAR EN RETROCESO.
+//
+//    Tendencia fuerte (ADX ≥ 35, medias ordenadas) pero el precio se devolvió
+//    hasta la EMA9 sin romper la EMA21. La app NO la da todavía: está apagada
+//    tras `incluirRetrocesos` justamente para poder medirla antes de que
+//    llegue a nadie.
+//
+//    Por qué merecía probarse: troceando por RSI, entrar retrocedido salía
+//    mejor que entrar estirado, y salía en los DOS lados por separado. Pero
+//    ese troceo era sobre las señales que la app YA daba; esto de aquí es la
+//    regla escrita de frente, que es distinto y puede salir peor.
+//
+//    Se mide con la geometría neutra (el veredicto de si acierta) y también
+//    con la de la app (lo que quedaría en la cuenta), y descontando spread.
+// --------------------------------------------------------------------------
+
+const conRetro = correr({ geometria: simetrica, vista: { incluirRetrocesos: true } })
+const retro = conRetro.senales.filter((s) => s.tipo === 'retroceso')
+
+console.log('')
+console.log('LA SEÑAL NUEVA: ENTRAR EN RETROCESO (con regla de medir neutra)')
+console.log('Hoy la app NO la da. Esto es para decidir si debería.')
+console.log('')
+console.log(`qué se midió${CAB.slice(12)}`)
+console.log(RAYA)
+fila('Retrocesos: todos', medir(retro, conRetro.porClave))
+fila('  solo COMPRA', medir(retro.filter((s) => s.lado === 'COMPRA'), conRetro.porClave))
+fila('  solo VENTA', medir(retro.filter((s) => s.lado === 'VENTA'), conRetro.porClave))
+fila('Retrocesos, descontando el spread', medir(retro, conRetro.porClave, { conSpread: true }))
+console.log(RAYA)
+console.log('Para comparar, con las mismas velas:')
+fila('  las de TENDENCIA de la app', medir(neutra.senales.filter((s) => s.tipo === 'tendencia'), neutra.porClave))
+fila('  las de RANGO de la app', medir(neutra.senales.filter((s) => s.tipo === 'rango'), neutra.porClave))
+console.log(RAYA)
+
+// Y con la geometría de verdad, que es lo que se apuntaría en el diario.
+const conRetroApp = correr({ vista: { incluirRetrocesos: true } })
+const retroApp = conRetroApp.senales.filter((s) => s.tipo === 'retroceso')
+console.log('Con la geometría de la app (stop al otro lado de la EMA21):')
+fila('  retrocesos', medir(retroApp, conRetroApp.porClave))
+fila('  retrocesos con spread', medir(retroApp, conRetroApp.porClave, { conSpread: true }))
+console.log(RAYA)
+console.log('Y la comprobación de que no se pisan con las que ya existen:')
+{
+  const sin = new Set(neutra.senales.map((s) => `${s.id}@${s.vistoEl}`))
+  const repetidas = retro.filter((s) => sin.has(`${s.id}@${s.vistoEl}`)).length
+  const pares = new Set(retro.map((s) => s.par))
+  console.log(`  ${retro.length} retrocesos, ${repetidas} repetidos de otra lista, en ${pares.size} pares distintos`)
 }
 console.log(RAYA)
 

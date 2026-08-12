@@ -196,23 +196,23 @@ function adxWilder(highs, lows, closes, p = 14) {
   return adx
 }
 
-// Agrupa las velas de 1 hora en velas de 4 horas. No cuesta ni una consulta
-// más: son los mismos datos vistos con menos zoom. Sirve para confirmar que
-// la hora y las 4 horas apuntan al mismo lado, que es de lo que más sube el
-// porcentaje de acierto en la práctica.
-function aH4(highs, lows, closes) {
-  const H = []
-  const L = []
-  const C = []
-  // Se agrupa desde el final para que la última vela H4 termine en la vela
-  // H1 más reciente (la que se está mirando), no en un múltiplo arbitrario.
-  for (let fin = closes.length; fin - 4 >= 0; fin -= 4) {
-    H.unshift(Math.max(...highs.slice(fin - 4, fin)))
-    L.unshift(Math.min(...lows.slice(fin - 4, fin)))
-    C.unshift(closes[fin - 1])
-  }
-  return { highs: H, lows: L, closes: C }
-}
+// AQUÍ ESTABA LA CONFIRMACIÓN DE 4 HORAS, y se quitó el 2026-08-12.
+//
+// La idea era razonable: agrupar las velas de 1 hora de cuatro en cuatro y
+// exigir que las 4 horas apuntaran al mismo lado que la hora. El problema no
+// fue que estuviera mal, sino que NO HACÍA NADA: el banco de pruebas la midió
+// sobre 7 meses de velas reales y el veto no descartó ni una sola señal. Con
+// la confirmación y sin ella, la app daba exactamente las mismas operaciones,
+// una por una.
+//
+// La razón es que la condición de tendencia de 1 hora (precio > EMA9 > EMA21)
+// y la de 4 horas casi nunca se contradicen: las velas H4 se construyen con
+// las mismas velas H1, así que cuando la hora está claramente alineada, las
+// 4 horas ya lo están o están en "Rango" — y "Rango" nunca vetaba.
+//
+// Un filtro que nunca filtra no es prudencia, es código que hay que leer y
+// mantener cada vez que alguien toca esta parte, y que hace creer que la app
+// tiene una protección que en realidad no tiene. Por eso se fue entero.
 
 // Puntos pivote clásicos (P, S1/S2, R1/R2) a partir de las 24 horas previas
 // a la vela actual, usadas como aproximación del "día anterior".
@@ -301,18 +301,8 @@ export function computarBarrido(barras, rates, rangos = null) {
     const tend = c > e9 && e9 > e21 ? 'Alcista' : c < e9 && e9 < e21 ? 'Bajista' : 'Rango'
     const last20 = closes.slice(-20)
 
-    // Fuerza de la tendencia (ADX) y confirmación en 4 horas.
+    // Fuerza de la tendencia (ADX).
     const adx = adxWilder(highs, lows, closes)
-    const h4 = aH4(highs, lows, closes)
-    const tendH4 =
-      h4.closes.length >= 22
-        ? (() => {
-            const c4 = h4.closes.at(-1)
-            const e94 = emaLast(h4.closes, 9)
-            const e214 = emaLast(h4.closes, 21)
-            return c4 > e94 && e94 > e214 ? 'Alcista' : c4 < e94 && e94 < e214 ? 'Bajista' : 'Rango'
-          })()
-        : null
     // Compresión: el ATR de ahora contra su propio promedio reciente. Muy por
     // debajo de 1 significa que el mercado lleva rato quieto — suele ser la
     // antesala de un estallido, no un lateral tranquilo para operar rebotes.
@@ -330,7 +320,6 @@ export function computarBarrido(barras, rates, rangos = null) {
       atrAbs,
       tend,
       adx,
-      tendH4,
       compresion,
       dif: raw[b] - raw[q],
       // Soportes y resistencias con los extremos reales de las velas, no con
@@ -384,21 +373,51 @@ export function computarBarrido(barras, rates, rangos = null) {
   }
 }
 
-// Debajo de 20 de ADX no hay tendencia de verdad, solo chapoteo con las EMAs
-// momentáneamente alineadas. Es el filtro que las EMAs solas no saben hacer.
-const ADX_MIN = 20
+// ADX mínimo para dar una señal de TENDENCIA. Subió de 20 a 35 el 2026-08-12.
+//
+// El 20 es el número de manual: por debajo de 20 no hay tendencia, solo
+// chapoteo con las EMAs momentáneamente alineadas. Pero el banco de pruebas
+// midió los tres valores sobre 7 meses de velas reales, con la regla de medir
+// neutra (1:1, donde el resultado solo depende de acertar la dirección) y
+// mirando SOLO las señales de tendencia:
+//
+//     sin filtro de ADX  → por 1R −0.14
+//     con ADX ≥ 20       → por 1R −0.12   ← lo que había: no aportaba casi nada
+//     con ADX ≥ 35       → por 1R −0.06   ← la mitad del daño
+//
+// O sea: el 20 de manual estaba dejando pasar casi todo. Con 35 salen menos
+// señales, pero las que salen aciertan más. Sigue siendo negativo —esto NO
+// convierte la app en ganadora, y no hay que contarlo como si lo hiciera—,
+// pero entre dos números medidos se elige el mejor.
+const ADX_MIN = 35
 
-// Una señal de tendencia ahora necesita tres cosas, no una:
+// ⚠️ EL DE RANGO ES OTRO NÚMERO, Y ES A PROPÓSITO.
+//
+// El ADX se usa para dos cosas opuestas: una señal de tendencia lo quiere
+// ALTO (que la tendencia empuje) y una de rango lo quiere BAJO (que no haya
+// tendencia que se le atraviese). Antes los dos salían de la misma constante,
+// y eso hacía que subir el listón de tendencia AFLOJARA sin querer el de
+// rango: pasar de 20 a 35 habría dejado entrar como "rango" todo lo que
+// tuviera ADX entre 20 y 35, que es justamente una tendencia arrancando.
+//
+// Habría sido un cambio silencioso, en la dirección contraria a la que se
+// pretendía, y en la parte de la app que nadie estaba tocando. Por eso el de
+// rango se queda en 20, que es donde estaba y donde se midió.
+const ADX_MAX_RANGO = 20
+
+// Una señal de tendencia necesita dos cosas:
 //   · diferencia de fuerza suficiente (lo de siempre),
-//   · EMAs alineadas Y ADX por encima de 20 — que la tendencia tenga fuerza,
-//   · que las 4 horas no apunten al lado contrario.
-// Si la fuerza está pero falta confirmación, no se descarta: baja a VIGILAR,
+//   · EMAs alineadas Y ADX por encima de ADX_MIN — que la tendencia empuje.
+// Si la fuerza está pero falta lo segundo, no se descarta: baja a VIGILAR,
 // que es información útil ("está por darse, pero todavía no").
-const clasificar = (p, thr) => {
-  const fuerte = p.adx >= ADX_MIN
-  const h4Contra = (t) => p.tendH4 && p.tendH4 !== 'Rango' && p.tendH4 !== t
-  if (p.dif > thr && p.tend === 'Alcista' && fuerte && !h4Contra('Alcista')) return 'COMPRA'
-  if (p.dif < -thr && p.tend === 'Bajista' && fuerte && !h4Contra('Bajista')) return 'VENTA'
+// El umbral es un parámetro y no una constante fija para que el banco de
+// pruebas pueda medir otros valores SIN duplicar aquí la lógica de selección.
+// Si la copiara, un día las dos versiones dirían cosas distintas y no
+// sabríamos cuál creer. El valor por defecto es el que usa la app.
+const clasificar = (p, thr, { adxMin = ADX_MIN } = {}) => {
+  const fuerte = p.adx >= adxMin
+  if (p.dif > thr && p.tend === 'Alcista' && fuerte) return 'COMPRA'
+  if (p.dif < -thr && p.tend === 'Bajista' && fuerte) return 'VENTA'
   if (Math.abs(p.dif) > thr) return 'VIGILAR'
   return '—'
 }
@@ -410,7 +429,6 @@ const motivoVigilar = (p, thr) => {
   const lado = p.dif > 0 ? 'Alcista' : 'Bajista'
   if (p.tend !== lado) return 'tend'
   if (p.adx < ADX_MIN) return 'adx'
-  if (p.tendH4 && p.tendH4 !== 'Rango' && p.tendH4 !== lado) return 'h4'
   return 'tend'
 }
 
@@ -440,12 +458,22 @@ const RANGO_BORDE = 0.3
 // posible, así que en compresión el modo rango se calla.
 const COMPRESION_MIN = 0.75
 
-const clasificarRango = (p) => {
+// ⚠️ `adxMax` es SUYO y no el de las señales de tendencia. Desde que el de
+// tendencia subió a 35, ya ni siquiera valen lo mismo: este se quedó en 20
+// (ver `ADX_MAX_RANGO`). Aparte de eso, al MEDIR hay que poder moverlos por
+// separado. Si no, subir el listón a las de tendencia le abre la puerta a
+// muchas más de rango sin querer, y el resultado mezcla dos cambios.
+//
+// Eso pasó de verdad: la primera medición del ADX daba "sin filtro salen
+// MENOS operaciones", que no tiene sentido para un filtro. El motivo era que
+// poner el umbral en 0 dejaba a las de rango exigiendo un ADX menor que cero,
+// o sea borrándolas todas.
+const clasificarRango = (p, { adxMax = ADX_MAX_RANGO, compresionMin = COMPRESION_MIN } = {}) => {
   if (p.tend !== 'Rango') return null
   // Un ADX alto con las EMAs sin alinear es una tendencia arrancando, no un
   // rango: tampoco es sitio para operar rebotes.
-  if (p.adx >= ADX_MIN) return null
-  if (p.compresion < COMPRESION_MIN) return null
+  if (p.adx >= adxMax) return null
+  if (p.compresion < compresionMin) return null
   const amplitud = p.rangoHi - p.rangoLo
   if (!(amplitud > 0) || amplitud < RANGO_MIN_ATR * p.atrAbs) return null
   const pos = (p.c - p.rangoLo) / amplitud
@@ -463,6 +491,71 @@ const razonRango = (p, t) => {
     atr: (amplitud / p.atrAbs).toFixed(1),
     rsi: p.rsiV.toFixed(0),
   })
+}
+
+// ------------------------------------------------------- entrar en retroceso
+//
+// EL HUECO QUE LA APP NUNCA HA PODIDO OPERAR.
+//
+// Hasta hoy la app solo sabía dos cosas: hay tendencia (y entonces entra) o no
+// la hay (y entonces mira si es un rango). Entre las dos no queda sitio para
+// lo más clásico del oficio: hay tendencia fuerte, el precio se devolvió un
+// poco, y se entra AHÍ en vez de perseguirlo estirado.
+//
+// No es que se midiera y saliera mal: es que no se podía dar. Para llamar
+// "Alcista" a un par, `tend` exige precio > EMA9 > EMA21, o sea que el precio
+// ya se fue arriba. En cuanto el precio se devuelve a la EMA9, el par pasa a
+// "Rango" — y el modo rango exige ADX bajo, así que también lo rechaza. El
+// resultado medido: CERO operaciones de este tipo en 7 meses. Un hueco, no un
+// veredicto.
+//
+// Importa porque lo medido apunta justo ahí: troceando por RSI, entrar cuando
+// el precio ya se retrocedió salía mejor que entrar estirado, y salía en los
+// DOS lados por separado (comprando y vendiendo), que es lo que lo hace
+// creíble y no una casualidad de un lado.
+//
+// Las condiciones, y por qué cada una:
+//   1. Las medias siguen ordenadas (EMA9 > EMA21 al comprar). Es la tendencia,
+//      y a diferencia de `tend` NO mira dónde está el precio ahora mismo.
+//   2. ADX por encima del umbral: la tendencia empuja de verdad.
+//   3. El precio se devolvió hasta la EMA9 o más abajo. Esto es el retroceso.
+//   4. Pero NO ha roto la EMA21. Si la rompe ya no es un retroceso, es una
+//      vuelta, y entrar ahí es ponerse delante del cambio de tendencia.
+//   5. La fuerza relativa acompaña, igual que en el resto de la app.
+//
+// ⚠️ ARRANCA APAGADO (`incluirRetrocesos`). Está sin medir, y la regla de esta
+// casa es que ninguna señal llega a Néstor antes de tener su número. El banco
+// de pruebas lo enciende; la app no. Si mide bien, se enciende aquí en una
+// línea; si mide mal, se borra y quedó el porqué escrito.
+const clasificarRetroceso = (p, thr, { adxMin = ADX_MIN } = {}) => {
+  if (p.adx < adxMin) return null
+  if (p.e9 > p.e21 && p.dif > thr && p.c <= p.e9 && p.c > p.e21) return 'COMPRA'
+  if (p.e9 < p.e21 && p.dif < -thr && p.c >= p.e9 && p.c < p.e21) return 'VENTA'
+  return null
+}
+
+const razonRetroceso = (p, esc, t) => {
+  const compra = p.e9 > p.e21
+  return t(compra ? 'calc_barrido.retrocesoCompra' : 'calc_barrido.retrocesoVenta', {
+    b: p.b,
+    fb: esc[p.b].toFixed(1),
+    q: p.q,
+    fq: esc[p.q].toFixed(1),
+    adx: p.adx.toFixed(0),
+    rsi: p.rsiV.toFixed(0),
+  })
+}
+
+// El stop va al otro lado de la EMA21, que es lo que define que el retroceso
+// siga siendo un retroceso. Con un mínimo de 1 ATR de distancia: si el precio
+// está pegadito a la EMA21, un stop a dos pips sería ruido puro y además
+// inflaría la relación riesgo/beneficio con un denominador falso — el mismo
+// error que ya nos costó caro en la app de swing.
+const nivelesRetroceso = (p, compra) => {
+  const sl = compra
+    ? Math.min(p.e21 - 0.5 * p.atrAbs, p.c - p.atrAbs)
+    : Math.max(p.e21 + 0.5 * p.atrAbs, p.c + p.atrAbs)
+  return { sl, tp: objetivo(p, compra) }
 }
 
 const razon = (p, esc, t) => {
@@ -531,7 +624,9 @@ const mkSetup = (p, lado, esc = {}, t, tipo = 'tendencia') => {
   const esRango = tipo === 'rango'
   const { sl, tp } = esRango
     ? nivelesRango(p, compra)
-    : { sl: compra ? p.c - ATR_STOP * p.atrAbs : p.c + ATR_STOP * p.atrAbs, tp: objetivo(p, compra) }
+    : tipo === 'retroceso'
+      ? nivelesRetroceso(p, compra)
+      : { sl: compra ? p.c - ATR_STOP * p.atrAbs : p.c + ATR_STOP * p.atrAbs, tp: objetivo(p, compra) }
   const rr = Math.abs(tp - p.c) / Math.abs(p.c - sl)
   return {
     name: p.name,
@@ -616,7 +711,38 @@ const porDifAbs = (a, b) => Math.abs(b.dif) - Math.abs(a.dif)
 // data: salida de computarBarrido(). Devuelve todo ya formateado para las pantallas.
 // vivo: si la vela más reciente trae el precio en vivo de TrueFX (en vez de
 // solo el último cierre de Twelve Data) — únicamente cambia el texto de "corte".
-export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crearT(IDIOMA_BASE), locale } = {}) {
+/**
+ * @param adxMin       ADX mínimo para dar señal de TENDENCIA (la app: 35).
+ * @param adxMaxRango  ADX máximo para dar señal de RANGO (la app: 20). Va
+ *                     aparte del anterior: moverlos juntos mezcla dos cambios
+ *                     y el resultado no dice nada (ver `clasificarRango`).
+ * @param compresionMin compresión mínima para las señales de rango.
+ * @param incluirRetrocesos enciende el tipo de señal "entrar en retroceso"
+ *                     (ver `clasificarRetroceso`). APAGADO por defecto: está
+ *                     sin medir, y aquí no sale nada a la calle sin su número.
+ *                     Lo enciende el banco de pruebas, no la app.
+ *
+ * Los primeros existen para poder MEDIR la app con otros valores sin copiar
+ * aquí la lógica de selección. Sin tocarlos, se comporta exactamente igual.
+ */
+export function derivarVista(
+  data,
+  {
+    thr = 0.5,
+    topN = 3,
+    vivo = false,
+    t = crearT(IDIOMA_BASE),
+    locale,
+    adxMin,
+    adxMaxRango,
+    compresionMin,
+    incluirRetrocesos = false,
+  } = {}
+) {
+  const cls = (p) => clasificar(p, thr, { adxMin })
+  // Ojo: `adxMaxRango`, no `adxMin`. Son dos umbrales distintos y con valores
+  // distintos — ver el comentario de `clasificarRango`.
+  const clsRango = (p) => clasificarRango(p, { adxMax: adxMaxRango, compresionMin })
   const { esc, pares: paresRaw } = data
 
   // Sesiones abiertas y umbral ajustado a la hora. Se usa la hora de la
@@ -645,7 +771,7 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crea
     b: p.b,
     q: p.q,
     dif: p.dif,
-    sesgo: clasificar(p, thr),
+    sesgo: cls(p),
     tend: p.tend,
     rsi: Math.round(p.rsiV),
     atr: p.atrPctH,
@@ -656,7 +782,7 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crea
     pivots: p.pivots,
     // Oportunidad de rango, aparte del sesgo de tendencia: un par puede no
     // tener sesgo (está lateral) y aun así ser operable dentro de su rango.
-    rango: clasificarRango(p),
+    rango: clsRango(p),
     // Si alguna de las dos divisas del par pertenece a una sesión abierta.
     enSesion: ccyFoco.includes(p.b) || ccyFoco.includes(p.q),
   }))
@@ -665,9 +791,9 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crea
   // es el que de verdad se está moviendo a esta hora.
   const enFoco = (p) => (ccyFoco.includes(p.b) || ccyFoco.includes(p.q) ? 1 : 0)
   const cands = [...paresRaw].sort((a, b) => enFoco(b) - enFoco(a) || porDifAbs(a, b))
-  const comprasRaw = cands.filter((p) => clasificar(p, thr) === 'COMPRA').slice(0, 5)
-  const ventasRaw = cands.filter((p) => clasificar(p, thr) === 'VENTA').slice(0, 5)
-  const vigilanciaRaw = cands.filter((p) => clasificar(p, thr) === 'VIGILAR').slice(0, 4)
+  const comprasRaw = cands.filter((p) => cls(p) === 'COMPRA').slice(0, 5)
+  const ventasRaw = cands.filter((p) => cls(p) === 'VENTA').slice(0, 5)
+  const vigilanciaRaw = cands.filter((p) => cls(p) === 'VIGILAR').slice(0, 4)
 
   const compras = comprasRaw.map((p) => ({ name: p.name, razon: razon(p, esc, t) }))
   const ventas = ventasRaw.map((p) => ({ name: p.name, razon: razon(p, esc, t) }))
@@ -678,9 +804,12 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crea
       favor: p.dif > 0 ? p.b : p.q,
       tend: t(`tend.${p.tend}`).toLowerCase(),
       adx: p.adx.toFixed(0),
+      // El umbral viaja al texto en vez de estar escrito dentro de cada
+      // idioma: si algún día vuelve a moverse, no hay que acordarse de
+      // corregir 13 archivos (y de que uno se quede con el número viejo).
+      min: ADX_MIN,
     }
-    const clave =
-      motivo === 'adx' ? 'calc_barrido.vigilanciaAdx' : motivo === 'h4' ? 'calc_barrido.vigilanciaH4' : 'calc_barrido.vigilancia'
+    const clave = motivo === 'adx' ? 'calc_barrido.vigilanciaAdx' : 'calc_barrido.vigilancia'
     return { name: p.name, razon: t(clave, datos) }
   })
 
@@ -688,7 +817,7 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crea
   // cerca del extremo, mejor la entrada) y se limitan a 4 para no llenar la
   // pantalla de oportunidades mediocres.
   const rangosRaw = paresRaw
-    .filter((p) => clasificarRango(p))
+    .filter((p) => clsRango(p))
     .map((p) => {
       const amplitud = p.rangoHi - p.rangoLo
       const pos = (p.c - p.rangoLo) / amplitud
@@ -698,12 +827,29 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crea
     .slice(0, 4)
     .map((x) => x.p)
 
-  const rangos = rangosRaw.map((p) => ({ name: p.name, lado: clasificarRango(p), razon: razonRango(p, t) }))
+  const rangos = rangosRaw.map((p) => ({ name: p.name, lado: clsRango(p), razon: razonRango(p, t) }))
+
+  // Retrocesos. Apagado por defecto: sin `incluirRetrocesos` esta lista queda
+  // vacía y la app se comporta exactamente como antes de que existiera.
+  //
+  // No hace falta comprobar que no se pisen con las otras dos listas: un
+  // retroceso exige ADX ≥ 35 y un rango exige ADX < 20, así que no pueden ser
+  // el mismo par a la vez; y una señal de tendencia exige que el precio esté
+  // por fuera de la EMA9, que es justo lo contrario de lo que pide esta. Se
+  // ordenan por diferencia de fuerza, igual que las compras y las ventas.
+  const clsRetroceso = (p) => (incluirRetrocesos ? clasificarRetroceso(p, thr, { adxMin }) : null)
+  const retrocesosRaw = incluirRetrocesos ? cands.filter((p) => clsRetroceso(p)).slice(0, topN) : []
+  const retrocesos = retrocesosRaw.map((p) => ({
+    name: p.name,
+    lado: clsRetroceso(p),
+    razon: razonRetroceso(p, esc, t),
+  }))
 
   const setups = [
     ...comprasRaw.slice(0, topN).map((p) => mkSetup(p, 'COMPRA', esc, t)),
     ...ventasRaw.slice(0, topN).map((p) => mkSetup(p, 'VENTA', esc, t)),
-    ...rangosRaw.map((p) => mkSetup(p, clasificarRango(p), esc, t, 'rango')),
+    ...rangosRaw.map((p) => mkSetup(p, clsRango(p), esc, t, 'rango')),
+    ...retrocesosRaw.map((p) => mkSetup(p, clsRetroceso(p), esc, t, 'retroceso')),
   ]
 
   const ultima = aFechaUTC(data.ultima)
@@ -719,5 +865,5 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crea
   const fuente = vivo ? t('calc_barrido.fuenteVivo') : t('calc_barrido.fuenteCierre')
   const corte = t('calc_barrido.corte', { local: enCO, utc: enUTC, fuente })
 
-  return { monedas, pares, compras, ventas, vigilancia, rangos, setups, corte, sesion }
+  return { monedas, pares, compras, ventas, vigilancia, rangos, retrocesos, setups, corte, sesion }
 }

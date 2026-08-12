@@ -18,7 +18,7 @@
 import { fileURLToPath } from 'node:url'
 import { computarBarrido, derivarVista } from '../src/lib/marketCalc.js'
 import { leerLlave, obtenerVelas } from './lib/velas.mjs'
-import { compararConAnterior, escribir, leerEstado, leerJsonl } from './lib/vigia-nucleo.mjs'
+import { compararConAnterior, escribir, esSombra, leerEstado, leerJsonl, separarSombra } from './lib/vigia-nucleo.mjs'
 import { resolver, resumir } from './lib/resolver.mjs'
 
 // Dónde se guardan los datos. En GitHub Actions apunta a la copia de la rama
@@ -33,9 +33,29 @@ const LOG_RESULTADOS = `${DATOS}/historial/resultados.jsonl`
 const ahora = new Date()
 const { barras, rates, rangos } = await obtenerVelas(leerLlave())
 const data = computarBarrido(barras, rates, rangos)
-const vista = derivarVista(data, { thr: 0.5, topN: 3 })
+// ⚠️ `incluirRetrocesos` va encendido AQUÍ y solo aquí.
+//
+// La señal de retroceso midió 54% de acierto y +0,03 por unidad de riesgo
+// descontando el spread —lo primero que sale positivo después de costes—
+// pero sobre 50 operaciones, donde el margen de error es de ±14 puntos. Ese
+// 54% podría ser un 40%. No alcanza para ponérsela delante a nadie.
+//
+// Así que el vigía la ANOTA pero no la enseña ni la avisa: se marcan con
+// `sombra: true` y a partir de ahí quedan fuera de los avisos al celular, del
+// resumen de aciertos y de la pantalla de Historial. Lo único que hacen es
+// acumular operaciones reales, hacia adelante, hasta que haya suficientes
+// para decidir con fundamento en vez de con una corazonada bonita.
+//
+// La app (`derivarVista` sin este parámetro) sigue sin darlas.
+const vista = derivarVista(data, { thr: 0.5, topN: 3, incluirRetrocesos: true })
 
 const { actuales, nuevas } = compararConAnterior(vista.setups, leerEstado(ESTADO))
+
+// Cuáles pueden llegar a un celular y cuáles solo se anotan. La regla está en
+// `vigia-nucleo.mjs`, con su prueba: es la promesa de que una señal sin
+// aprobar no le llega a nadie, y eso no puede depender de que este archivo
+// esté bien escrito hoy.
+const { visibles: nuevasVisibles, sombra: nuevasSombra } = separarSombra(nuevas)
 
 // Una línea por señal nueva, con los niveles tal como se los daríamos a
 // Néstor. Es lo que después se compara contra lo que hizo el precio.
@@ -50,6 +70,10 @@ for (const { id, s } of nuevas) {
       par: s.name,
       lado: s.lado,
       tipo: s.tipo,
+      // Solo va cuando es verdad: así las líneas ya escritas del historial
+      // viejo siguen leyéndose igual (sin el campo = no es de sombra) y no
+      // hay que reescribir nada.
+      ...(esSombra(s) ? { sombra: true } : {}),
       precio: c.precio,
       sl: c.sl,
       tp: c.tp,
@@ -121,11 +145,16 @@ for (const r of resultados) escribir(LOG_RESULTADOS, JSON.stringify(r) + '\n', t
 // El `import` es dinámico por lo mismo: `push-envio.mjs` necesita el paquete
 // `web-push` instalado, y si algún día falla la instalación, el vigía tiene
 // que seguir anotando igual en vez de morirse antes de empezar.
+//
+// Va `nuevasVisibles` y no `nuevas`: las de sombra ya quedaron anotadas
+// arriba y de aquí en adelante no existen. Se filtra en el sitio de la
+// llamada, no dentro de `enviarAvisos`, para que quien lea esta línea vea
+// que lo que sale hacia los celulares no es lo mismo que lo que se guarda.
 let avisos = { estado: 'sin-senales-nuevas' }
-if (nuevas.length) {
+if (nuevasVisibles.length) {
   try {
     const { enviarAvisos } = await import('./lib/push-envio.mjs')
-    avisos = await enviarAvisos(nuevas)
+    avisos = await enviarAvisos(nuevasVisibles)
   } catch (e) {
     avisos = { estado: 'error', detalle: e.message }
   }
@@ -134,10 +163,14 @@ if (nuevas.length) {
 console.log('---VIGIA-INICIO---')
 console.log(`Corrida: ${ahora.toISOString()} (minuto ${ahora.getUTCMinutes()} de la hora)`)
 console.log(`Vela más reciente: ${data.ultima} UTC`)
-console.log(`Señales activas: ${actuales.length} · nuevas en esta revisión: ${nuevas.length}`)
+console.log(
+  `Señales activas: ${actuales.length} · nuevas en esta revisión: ${nuevas.length}` +
+    (nuevasSombra.length ? ` (${nuevasSombra.length} en sombra, no se avisan)` : '')
+)
 if (nuevas.length) {
   for (const { s } of nuevas) {
-    console.log(`  • ${s.name} ${s.lado}${s.tipo === 'rango' ? ' [RANGO]' : ''} — entrada ${s.crudo.precio.toFixed(s.crudo.dec)}, SL ${s.sl.split(' (')[0]}, TP ${s.tp} (R/B ${s.rr})`)
+    const marca = esSombra(s) ? ' [SOMBRA]' : s.tipo === 'rango' ? ' [RANGO]' : ''
+    console.log(`  • ${s.name} ${s.lado}${marca} — entrada ${s.crudo.precio.toFixed(s.crudo.dec)}, SL ${s.sl.split(' (')[0]}, TP ${s.tp} (R/B ${s.rr})`)
   }
 } else {
   console.log('  (nada nuevo respecto a la revisión anterior)')
@@ -152,6 +185,16 @@ if (resumen.todas.total) {
   console.log(
     `Historial: ${resumen.todas.ganadas}/${resumen.todas.total} acertadas` +
       ` (${resumen.todas.acierto}%), ${resumen.todas.pips >= 0 ? '+' : ''}${resumen.todas.pips} pips`
+  )
+}
+// Las de sombra van en su propia línea y nunca sumadas a las de arriba: si se
+// mezclaran, el porcentaje que mira Néstor incluiría un tipo de señal que la
+// app ni siquiera le muestra. Esta línea es el contador de la espera: cuando
+// llegue a 150-200 operaciones, el número ya significará algo.
+if (resumen.sombra.total) {
+  console.log(
+    `En sombra (sin avisar, en pruebas): ${resumen.sombra.ganadas}/${resumen.sombra.total}` +
+      ` (${resumen.sombra.acierto}%), ${resumen.sombra.pips >= 0 ? '+' : ''}${resumen.sombra.pips} pips`
   )
 }
 console.log(`Avisos al celular: ${JSON.stringify(avisos)}`)

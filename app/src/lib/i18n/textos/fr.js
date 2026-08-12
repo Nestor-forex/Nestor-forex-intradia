@@ -235,9 +235,8 @@ export default {
 
     adxOk: ({ adx }) => ` · ADX ${adx} : la tendance a de la force`,
 
-    vigilanciaAdx: ({ dif, favor, adx }) => `Différentiel ${dif} en faveur de ${favor} avec les EMA alignées, mais l’ADX est à ${adx} : sous 20 il n’y a pas de vraie tendance, juste du bruit.`,
+    vigilanciaAdx: ({ dif, favor, adx, min }) => `Différentiel ${dif} en faveur de ${favor} avec les EMA alignées, mais l’ADX est à ${adx} : sous ${min} il n’y a pas de vraie tendance, juste du bruit.`,
 
-    vigilanciaH4: ({ dif, favor }) => `Différentiel ${dif} en faveur de ${favor} en horaire, mais le 4 heures pointe dans l’autre sens — attendre qu’ils s’accordent.`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) vs ${q} (${fq}), EMAs alignées, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI étendu, ne pas courir après, attendre un repli',
     rsiContinuacion: ' — RSI en zone de continuation',
@@ -248,6 +247,10 @@ export default {
     slVenta: ' (1,5 × ATR au-dessus du prix d\u2019entrée)',
     rangoCompra: ({ lo, hi, atr, rsi }) => `Latéral entre ${lo} et ${hi} (largeur ${atr} ATR). Le prix colle au plancher avec un RSI de ${rsi} : on achète en bas en visant le rebond vers le plafond.`,
     rangoVenta: ({ lo, hi, atr, rsi }) => `Latéral entre ${lo} et ${hi} (largeur ${atr} ATR). Le prix colle au plafond avec un RSI de ${rsi} : on vend en haut en visant la baisse vers le plancher.`,
+    retrocesoCompra: ({ b, fb, q, fq, adx, rsi }) =>
+      `Tendance haussière forte (ADX ${adx}) avec ${b} (${fb}) au-dessus de ${q} (${fq}), mais le prix est revenu jusqu’à l’EMA9 avec un RSI de ${rsi} : on entre sur le repli, sans courir après.`,
+    retrocesoVenta: ({ b, fb, q, fq, adx, rsi }) =>
+      `Tendance baissière forte (ADX ${adx}) avec ${q} (${fq}) au-dessus de ${b} (${fb}), mais le prix est remonté jusqu’à l’EMA9 avec un RSI de ${rsi} : on entre sur le rebond, sans courir après.`,
     entradaRango: ({ precio, borde }) => `${precio} actuel · bord du range à ${borde}`,
     slRangoCompra: ' (½ ATR sous le plancher du range)',
     slRangoVenta: ' (½ ATR au-dessus du plafond du range)',
@@ -262,6 +265,9 @@ export default {
   },
 
   avisos: {
+    pausados: 'Alertes en pause pendant que nous vérifions les signaux',
+    pausadosPorque:
+      'Nous avons examiné tous les signaux donnés par cette application depuis qu’elle tient un historique, et aucun n’a été juste. Nous préférons ne rien vous annoncer plutôt que de vous annoncer quelque chose qui vous ferait perdre de l’argent. L’application continue d’afficher le balayage et d’enregistrer chaque signal pour en mesurer la justesse ; les alertes reviendront quand les chiffres le permettront.',
     titulo: 'Alertes sur le téléphone',
     desc: 'On te prévient dès que la vigie repère un nouveau signal, même si l’app est fermée.',
     activar: 'Activer les alertes',

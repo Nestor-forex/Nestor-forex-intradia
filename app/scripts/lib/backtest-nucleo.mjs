@@ -44,7 +44,7 @@ export function generarSenales(
   barras,
   rates,
   rangos,
-  { calentamiento = VENTANA, thr = 0.5, topN = 3, geometria = actual, invertirVentas = false } = {}
+  { calentamiento = VENTANA, thr = 0.5, topN = 3, geometria = actual, invertirVentas = false, vista = {} } = {}
 ) {
   const senales = []
   let previas = new Set()
@@ -54,7 +54,10 @@ export function generarSenales(
     const desde = Math.max(0, i + 1 - VENTANA)
     const hasta = barras.slice(desde, i + 1)
     const data = computarBarrido(hasta, rates, rangos)
-    const { setups } = derivarVista(data, { thr, topN })
+    // `vista` deja mover los umbrales de la app (ADX, confirmación de 4 horas,
+    // compresión) SIN duplicar aquí su lógica de selección. Vacío = la app tal
+    // cual.
+    const { setups } = derivarVista(data, { thr, topN, ...vista })
 
     const ahora = new Set()
     for (const s of setups) {

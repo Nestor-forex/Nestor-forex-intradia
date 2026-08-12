@@ -235,9 +235,8 @@ export default {
 
     adxOk: ({ adx }) => ` · ADX ${adx}: der Trend hat Kraft`,
 
-    vigilanciaAdx: ({ dif, favor, adx }) => `Differenz ${dif} zugunsten von ${favor} bei ausgerichteten EMAs, aber der ADX steht bei ${adx}: unter 20 gibt es keinen echten Trend, nur Hin und Her.`,
+    vigilanciaAdx: ({ dif, favor, adx, min }) => `Differenz ${dif} zugunsten von ${favor} bei ausgerichteten EMAs, aber der ADX steht bei ${adx}: unter ${min} gibt es keinen echten Trend, nur Hin und Her.`,
 
-    vigilanciaH4: ({ dif, favor }) => `Differenz ${dif} zugunsten von ${favor} im Stundenchart, aber der 4-Stunden-Chart zeigt in die andere Richtung — warten, bis beide übereinstimmen.`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) vs ${q} (${fq}), EMAs ausgerichtet, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI überdehnt, nicht hinterherlaufen, Rücksetzer abwarten',
     rsiContinuacion: ' — RSI in der Fortsetzungszone',
@@ -248,6 +247,10 @@ export default {
     slVenta: ' (1,5 × ATR über dem Einstieg)',
     rangoCompra: ({ lo, hi, atr, rsi }) => `Seitwärts zwischen ${lo} und ${hi} (${atr} ATR breit). Der Kurs klebt am Boden, RSI ${rsi}: unten kaufen und den Rücklauf zur Decke erwarten.`,
     rangoVenta: ({ lo, hi, atr, rsi }) => `Seitwärts zwischen ${lo} und ${hi} (${atr} ATR breit). Der Kurs klebt an der Decke, RSI ${rsi}: oben verkaufen und den Rücklauf zum Boden erwarten.`,
+    retrocesoCompra: ({ b, fb, q, fq, adx, rsi }) =>
+      `Starker Aufwärtstrend (ADX ${adx}) mit ${b} (${fb}) über ${q} (${fq}), aber der Kurs ist bis zur EMA9 zurückgekommen, RSI ${rsi}: Einstieg im Rücksetzer, nicht hinterherlaufen.`,
+    retrocesoVenta: ({ b, fb, q, fq, adx, rsi }) =>
+      `Starker Abwärtstrend (ADX ${adx}) mit ${q} (${fq}) über ${b} (${fb}), aber der Kurs ist bis zur EMA9 zurückgeprallt, RSI ${rsi}: Einstieg im Rücklauf, nicht hinterherlaufen.`,
     entradaRango: ({ precio, borde }) => `${precio} aktuell · Rand der Spanne bei ${borde}`,
     slRangoCompra: ' (½ ATR unter dem Boden der Spanne)',
     slRangoVenta: ' (½ ATR über der Decke der Spanne)',
@@ -262,6 +265,9 @@ export default {
   },
 
   avisos: {
+    pausados: 'Hinweise pausiert, während wir die Signale überprüfen',
+    pausadosPorque:
+      'Wir haben alle Signale überprüft, die diese App seit Beginn der Aufzeichnung gegeben hat, und kein einziges lag richtig. Uns ist lieber, dir gar nichts zu melden, als etwas, das dich Geld kostet. Die App zeigt weiterhin den Marktüberblick und zeichnet jedes Signal auf, um die Trefferquote zu prüfen; die Hinweise kommen zurück, wenn die Zahlen es hergeben.',
     titulo: 'Benachrichtigungen aufs Handy',
     desc: 'Wir melden uns, sobald der Wächter ein neues Signal entdeckt – auch bei geschlossener App.',
     activar: 'Benachrichtigungen aktivieren',

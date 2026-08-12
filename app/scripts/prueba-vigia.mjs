@@ -11,7 +11,7 @@
 import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { compararConAnterior, escribir, idDe, leerEstado } from './lib/vigia-nucleo.mjs'
+import { compararConAnterior, escribir, esSombra, idDe, leerEstado, separarSombra } from './lib/vigia-nucleo.mjs'
 
 const dir = mkdtempSync(join(tmpdir(), 'vigia-'))
 const ESTADO = join(dir, 'estado/vigia.json')
@@ -70,6 +70,32 @@ console.log('\n8. Lo que se guarda se vuelve a leer igual')
 const guardado = JSON.parse(readFileSync(ESTADO, 'utf8'))
 comprobar('el estado en disco tiene los ids esperados', guardado.senales.every((x) => typeof x === 'string'))
 comprobar('el id se arma como par|lado|tipo', idDe(setup('EUR/USD', 'COMPRA')) === 'EUR/USD|COMPRA|tendencia')
+
+console.log('\n9. Las señales en sombra se anotan pero NUNCA salen hacia un celular')
+{
+  // Esta es la promesa de fondo: la señal de retroceso está en pruebas (54%
+  // de acierto sobre 50 operaciones, con un margen de ±14 puntos), así que se
+  // anota para ir acumulando datos reales pero no se le propone a nadie. Si
+  // esto se rompiera no habría ningún síntoma visible: simplemente empezarían
+  // a salir avisos de una regla que todavía no sabemos si sirve.
+  const nuevas = [
+    { id: 'a', s: setup('EUR/USD', 'COMPRA', 'tendencia') },
+    { id: 'b', s: setup('GBP/USD', 'VENTA', 'rango') },
+    { id: 'c', s: setup('AUD/USD', 'COMPRA', 'retroceso') },
+  ]
+  const { visibles, sombra } = separarSombra(nuevas)
+
+  comprobar('la de retroceso queda apartada', sombra.length === 1 && sombra[0].id === 'c')
+  comprobar('y no aparece entre las que se avisan', visibles.length === 2 && !visibles.some((x) => x.id === 'c'))
+  comprobar('tendencia y rango sí se avisan', visibles.map((x) => x.id).join() === 'a,b')
+  comprobar('ninguna se pierde por el camino', visibles.length + sombra.length === nuevas.length)
+
+  // Y la marca es por TIPO, no por nombre del par ni por lado: si mañana un
+  // retroceso sale en EUR/USD comprando, sigue siendo sombra.
+  comprobar('es el tipo lo que manda', esSombra(setup('EUR/USD', 'COMPRA', 'retroceso')) === true)
+  comprobar('y un tipo normal no se marca', esSombra(setup('EUR/USD', 'COMPRA', 'tendencia')) === false)
+  comprobar('un setup sin tipo no revienta', esSombra({}) === false)
+}
 
 console.log(fallos === 0 ? '\nTodas las comprobaciones pasaron.\n' : `\n${fallos} comprobación(es) fallaron.\n`)
 process.exit(fallos === 0 ? 0 : 1)

@@ -227,9 +227,8 @@ export default {
 
     adxOk: ({ adx }) => ` · ADX ${adx}：趋势有力度`,
 
-    vigilanciaAdx: ({ dif, favor, adx }) => `差值 ${dif} 有利于 ${favor}，均线也已排列，但 ADX 只有 ${adx}：低于 20 就不是真正的趋势，只是来回震荡。`,
+    vigilanciaAdx: ({ dif, favor, adx, min }) => `差值 ${dif} 有利于 ${favor}，均线也已排列，但 ADX 只有 ${adx}：低于 ${min} 就不是真正的趋势，只是来回震荡。`,
 
-    vigilanciaH4: ({ dif, favor }) => `1 小时图上差值 ${dif} 有利于 ${favor}，但 4 小时图方向相反 — 等两者一致再说。`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b}（${fb}）对 ${q}（${fq}），EMA 已对齐，RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI 过度延伸，不要追，等回调',
     rsiContinuacion: ' — RSI 处于延续区间',
@@ -239,6 +238,10 @@ export default {
     slVenta: '（入场价上方 1.5 × ATR）',
     rangoCompra: ({ lo, hi, atr, rsi }) => `在 ${lo} 与 ${hi} 之间横盘（宽度 ${atr} 个 ATR）。价格贴近下沿，RSI ${rsi}：在低位买入，等待反弹回上沿。`,
     rangoVenta: ({ lo, hi, atr, rsi }) => `在 ${lo} 与 ${hi} 之间横盘（宽度 ${atr} 个 ATR）。价格贴近上沿，RSI ${rsi}：在高位卖出，等待回落至下沿。`,
+    retrocesoCompra: ({ b, fb, q, fq, adx, rsi }) =>
+      `上升趋势强劲（ADX ${adx}），${b}（${fb}）强于 ${q}（${fq}），但价格已回落到 EMA9，RSI ${rsi}：在回调处入场，而不是追价。`,
+    retrocesoVenta: ({ b, fb, q, fq, adx, rsi }) =>
+      `下降趋势强劲（ADX ${adx}），${q}（${fq}）强于 ${b}（${fb}），但价格已反弹到 EMA9，RSI ${rsi}：在反弹处入场，而不是追价。`,
     entradaRango: ({ precio, borde }) => `当前 ${precio} · 区间边缘在 ${borde}`,
     slRangoCompra: '（区间下沿下方 ½ ATR）',
     slRangoVenta: '（区间上沿上方 ½ ATR）',
@@ -253,6 +256,9 @@ export default {
   },
 
   avisos: {
+    pausados: '提醒已暂停，我们正在复核信号',
+    pausadosPorque:
+      '我们复核了这款应用自开始记录以来给出的所有信号，没有一个是对的。与其提醒你一个会让你亏钱的信号，我们宁愿什么都不提醒。应用仍会显示市场扫描，也仍会记录每一个信号以核对准确率；等数据站得住脚时，提醒就会回来。',
     titulo: '手机提醒',
     desc: '哨兵一发现新信号就通知你，即使应用已关闭。',
     activar: '开启提醒',
