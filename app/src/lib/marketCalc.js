@@ -394,9 +394,13 @@ const ADX_MIN = 20
 //   · que las 4 horas no apunten al lado contrario.
 // Si la fuerza está pero falta confirmación, no se descarta: baja a VIGILAR,
 // que es información útil ("está por darse, pero todavía no").
-const clasificar = (p, thr) => {
-  const fuerte = p.adx >= ADX_MIN
-  const h4Contra = (t) => p.tendH4 && p.tendH4 !== 'Rango' && p.tendH4 !== t
+// Los umbrales son parámetros y no constantes fijas para que el banco de
+// pruebas pueda medir otros valores SIN duplicar aquí la lógica de selección.
+// Si la copiara, un día las dos versiones dirían cosas distintas y no
+// sabríamos cuál creer. Los valores por defecto son los que usa la app.
+const clasificar = (p, thr, { adxMin = ADX_MIN, exigirH4 = true } = {}) => {
+  const fuerte = p.adx >= adxMin
+  const h4Contra = (t) => exigirH4 && p.tendH4 && p.tendH4 !== 'Rango' && p.tendH4 !== t
   if (p.dif > thr && p.tend === 'Alcista' && fuerte && !h4Contra('Alcista')) return 'COMPRA'
   if (p.dif < -thr && p.tend === 'Bajista' && fuerte && !h4Contra('Bajista')) return 'VENTA'
   if (Math.abs(p.dif) > thr) return 'VIGILAR'
@@ -440,12 +444,12 @@ const RANGO_BORDE = 0.3
 // posible, así que en compresión el modo rango se calla.
 const COMPRESION_MIN = 0.75
 
-const clasificarRango = (p) => {
+const clasificarRango = (p, { adxMin = ADX_MIN, compresionMin = COMPRESION_MIN } = {}) => {
   if (p.tend !== 'Rango') return null
   // Un ADX alto con las EMAs sin alinear es una tendencia arrancando, no un
   // rango: tampoco es sitio para operar rebotes.
-  if (p.adx >= ADX_MIN) return null
-  if (p.compresion < COMPRESION_MIN) return null
+  if (p.adx >= adxMin) return null
+  if (p.compresion < compresionMin) return null
   const amplitud = p.rangoHi - p.rangoLo
   if (!(amplitud > 0) || amplitud < RANGO_MIN_ATR * p.atrAbs) return null
   const pos = (p.c - p.rangoLo) / amplitud
@@ -616,7 +620,22 @@ const porDifAbs = (a, b) => Math.abs(b.dif) - Math.abs(a.dif)
 // data: salida de computarBarrido(). Devuelve todo ya formateado para las pantallas.
 // vivo: si la vela más reciente trae el precio en vivo de TrueFX (en vez de
 // solo el último cierre de Twelve Data) — únicamente cambia el texto de "corte".
-export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crearT(IDIOMA_BASE), locale } = {}) {
+/**
+ * @param adxMin       ADX mínimo para dar señal de tendencia. Por defecto el
+ *                     de la app. El banco de pruebas lo mueve para medir si
+ *                     está en el sitio correcto.
+ * @param exigirH4     si la tendencia de 4 horas puede vetar la señal.
+ * @param compresionMin compresión mínima para las señales de rango.
+ *
+ * Los tres existen para poder MEDIR la app con otros valores sin copiar aquí
+ * la lógica de selección. Sin tocarlos, se comporta exactamente igual.
+ */
+export function derivarVista(
+  data,
+  { thr = 0.5, topN = 3, vivo = false, t = crearT(IDIOMA_BASE), locale, adxMin, exigirH4, compresionMin } = {}
+) {
+  const cls = (p) => clasificar(p, thr, { adxMin, exigirH4 })
+  const clsRango = (p) => clasificarRango(p, { adxMin, compresionMin })
   const { esc, pares: paresRaw } = data
 
   // Sesiones abiertas y umbral ajustado a la hora. Se usa la hora de la
@@ -645,7 +664,7 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crea
     b: p.b,
     q: p.q,
     dif: p.dif,
-    sesgo: clasificar(p, thr),
+    sesgo: cls(p),
     tend: p.tend,
     rsi: Math.round(p.rsiV),
     atr: p.atrPctH,
@@ -656,7 +675,7 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crea
     pivots: p.pivots,
     // Oportunidad de rango, aparte del sesgo de tendencia: un par puede no
     // tener sesgo (está lateral) y aun así ser operable dentro de su rango.
-    rango: clasificarRango(p),
+    rango: clsRango(p),
     // Si alguna de las dos divisas del par pertenece a una sesión abierta.
     enSesion: ccyFoco.includes(p.b) || ccyFoco.includes(p.q),
   }))
@@ -665,9 +684,9 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crea
   // es el que de verdad se está moviendo a esta hora.
   const enFoco = (p) => (ccyFoco.includes(p.b) || ccyFoco.includes(p.q) ? 1 : 0)
   const cands = [...paresRaw].sort((a, b) => enFoco(b) - enFoco(a) || porDifAbs(a, b))
-  const comprasRaw = cands.filter((p) => clasificar(p, thr) === 'COMPRA').slice(0, 5)
-  const ventasRaw = cands.filter((p) => clasificar(p, thr) === 'VENTA').slice(0, 5)
-  const vigilanciaRaw = cands.filter((p) => clasificar(p, thr) === 'VIGILAR').slice(0, 4)
+  const comprasRaw = cands.filter((p) => cls(p) === 'COMPRA').slice(0, 5)
+  const ventasRaw = cands.filter((p) => cls(p) === 'VENTA').slice(0, 5)
+  const vigilanciaRaw = cands.filter((p) => cls(p) === 'VIGILAR').slice(0, 4)
 
   const compras = comprasRaw.map((p) => ({ name: p.name, razon: razon(p, esc, t) }))
   const ventas = ventasRaw.map((p) => ({ name: p.name, razon: razon(p, esc, t) }))
@@ -688,7 +707,7 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crea
   // cerca del extremo, mejor la entrada) y se limitan a 4 para no llenar la
   // pantalla de oportunidades mediocres.
   const rangosRaw = paresRaw
-    .filter((p) => clasificarRango(p))
+    .filter((p) => clsRango(p))
     .map((p) => {
       const amplitud = p.rangoHi - p.rangoLo
       const pos = (p.c - p.rangoLo) / amplitud
@@ -698,12 +717,12 @@ export function derivarVista(data, { thr = 0.5, topN = 3, vivo = false, t = crea
     .slice(0, 4)
     .map((x) => x.p)
 
-  const rangos = rangosRaw.map((p) => ({ name: p.name, lado: clasificarRango(p), razon: razonRango(p, t) }))
+  const rangos = rangosRaw.map((p) => ({ name: p.name, lado: clsRango(p), razon: razonRango(p, t) }))
 
   const setups = [
     ...comprasRaw.slice(0, topN).map((p) => mkSetup(p, 'COMPRA', esc, t)),
     ...ventasRaw.slice(0, topN).map((p) => mkSetup(p, 'VENTA', esc, t)),
-    ...rangosRaw.map((p) => mkSetup(p, clasificarRango(p), esc, t, 'rango')),
+    ...rangosRaw.map((p) => mkSetup(p, clsRango(p), esc, t, 'rango')),
   ]
 
   const ultima = aFechaUTC(data.ultima)

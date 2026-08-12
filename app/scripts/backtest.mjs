@@ -43,7 +43,17 @@ const completo = computarBarrido(barras, rates, rangos)
 
 // --------------------------------------------------------------------------
 
-function medir(senales, porClave) {
+// Cuánto cobra el bróker por abrir y cerrar, en pips. Es un coste FIJO por
+// operación, así que pesa mucho más cuanto más corto sea el objetivo — y en
+// intradía los objetivos son cortos. Un sistema que gana +0,14 por unidad de
+// riesgo con stops de 15 pips se lo come el spread entero.
+//
+// 1,5 pips es una estimación prudente para los pares mayores de una cuenta
+// normal; en los cruces suele ser más. Cuando el puente de MT5 dé el spread
+// real de AvaTrade se puede poner el de verdad.
+const SPREAD_PIPS = 1.5
+
+function medir(senales, porClave, { conSpread = false } = {}) {
   let ganadas = 0
   let perdidas = 0
   let pips = 0
@@ -56,14 +66,17 @@ function medir(senales, porClave) {
   for (const s of senales) {
     const r = porClave.get(`${s.id}@${s.vistoEl}`)
     if (!r || (r.resultado !== 'ganada' && r.resultado !== 'perdida')) continue
+    // El spread se paga SIEMPRE, se gane o se pierda, y en veces el riesgo
+    // cuesta más cuanto más estrecho sea el stop.
+    const coste = conSpread ? SPREAD_PIPS / s.pipRiesgo : 0
     if (r.resultado === 'ganada') {
       ganadas++
-      sumaR += s.pipBeneficio / s.pipRiesgo
+      sumaR += s.pipBeneficio / s.pipRiesgo - coste
     } else {
       perdidas++
-      sumaR -= 1
+      sumaR -= 1 + coste
     }
-    pips += r.pips
+    pips += r.pips - (conSpread ? SPREAD_PIPS : 0)
   }
 
   const total = ganadas + perdidas
@@ -210,6 +223,84 @@ for (const [nombre, f] of [
   fila(nombre, medir(soloTend.filter(f), neutra.porClave))
 }
 console.log(RAYA)
+
+// --------------------------------------------------------------------------
+// 6. LAS TRES COSAS JUNTAS.
+//
+//    Por separado apuntaron a lo mismo: entrar en retroceso y no estirado
+//    (y el patrón salió en los DOS lados por separado, que es lo que lo hace
+//    creíble), subir el ADX, y que las de rango son las únicas positivas.
+//    Aquí se ve si juntas suman o se estorban.
+//
+//    Todo con la regla de medir neutra, para que no lo tape la geometría.
+// --------------------------------------------------------------------------
+
+// Entrar cuando el precio ya se retrocedió, no cuando está estirado. Es la
+// idea que trajo Néstor en su propuesta (EMA200 + RSI bajo) y la única que
+// aparece sola en los dos lados.
+const enRetroceso = (s) => (s.lado === 'COMPRA' ? s.rsi <= 50 : s.rsi >= 50)
+
+console.log('')
+console.log('LAS TRES COSAS JUNTAS (con regla de medir neutra)')
+console.log('')
+console.log(`combinación${CAB.slice(11)}`)
+console.log(RAYA)
+
+const conAdx35 = correr({ geometria: simetrica, vista: { adxMin: 35 } })
+const COMBIS = [
+  ['C0. La app de hoy', neutra, () => true],
+  ['C1. + entrar solo en retroceso', neutra, enRetroceso],
+  ['C2. + ADX ≥ 35', conAdx35, () => true],
+  ['C3. Retroceso Y ADX ≥ 35', conAdx35, enRetroceso],
+  ['C4. Retroceso Y ADX ≥ 35, solo rango', conAdx35, (s) => enRetroceso(s) && s.tipo === 'rango'],
+  ['C5. Retroceso Y ADX ≥ 35, solo tendencia', conAdx35, (s) => enRetroceso(s) && s.tipo === 'tendencia'],
+]
+for (const [nombre, fuente, f] of COMBIS) fila(nombre, medir(fuente.senales.filter(f), fuente.porClave))
+console.log(RAYA)
+
+console.log('')
+console.log('LO MISMO, DESCONTANDO EL SPREAD DEL BRÓKER')
+console.log(`(${SPREAD_PIPS} pips por operación, se gane o se pierda)`)
+console.log('')
+console.log(`combinación${CAB.slice(11)}`)
+console.log(RAYA)
+for (const [nombre, fuente, f] of COMBIS) {
+  fila(nombre, medir(fuente.senales.filter(f), fuente.porClave, { conSpread: true }))
+}
+console.log(RAYA)
+console.log('Esta es la tabla que decide. Lo de arriba es teoría; esto es lo que')
+console.log('quedaría en la cuenta.')
+
+// --------------------------------------------------------------------------
+// 7. ¿ERA MEJOR LA APP ANTES DEL ADX?
+//
+//    Lo preguntó Néstor por su recuerdo de cómo iba antes. El ADX, la
+//    confirmación de 4 horas y el filtro de compresión entraron todos en el
+//    mismo commit (b36abf1), así que "antes" significa sin los tres. Se miden
+//    por separado para saber cuál aportó qué, en vez de quedarnos con la
+//    impresión.
+// --------------------------------------------------------------------------
+
+console.log('')
+console.log('¿ERA MEJOR ANTES DEL ADX? (con regla de medir neutra)')
+console.log('El ADX, la confirmación de 4 horas y la compresión entraron juntos.')
+console.log('')
+console.log(`versión${CAB.slice(7)}`)
+console.log(RAYA)
+const ANTES = [
+  ['Como está hoy', {}],
+  ['Sin el filtro de ADX (adxMin 0)', { adxMin: 0 }],
+  ['Sin la confirmación de 4 horas', { exigirH4: false }],
+  ['Sin el filtro de compresión', { compresionMin: 0 }],
+  ['Sin los tres (como antes de aquel cambio)', { adxMin: 0, exigirH4: false, compresionMin: 0 }],
+]
+for (const [nombre, vista] of ANTES) {
+  const r = Object.keys(vista).length ? correr({ geometria: simetrica, vista }) : neutra
+  fila(nombre, medir(r.senales, r.porClave))
+}
+console.log(RAYA)
+console.log('Ojo: quitar un filtro AÑADE operaciones, así que aquí el número de')
+console.log('operaciones sí cambia y hay que mirarlo junto con el acierto.')
 
 console.log('')
 console.log('Cómo leerlo, y con qué desconfianza:')

@@ -231,5 +231,36 @@ console.log('\n8. Cada señal trae lo que hace falta para desglosarla')
   comprobar(senales.every((s) => s.vela === s.vistoEl), 'el campo `vela` va puesto: es el que lee el resolver aquí')
 }
 
+// --- 9. Los umbrales inyectables --------------------------------------------
+//
+// Para medir "¿era mejor antes del ADX?" hubo que hacer que los umbrales de la
+// app se puedan mover desde fuera. El riesgo de eso es cambiar sin querer lo
+// que hace la app de verdad, así que lo primero es comprobar que sin pedir
+// nada se comporta EXACTAMENTE igual que antes.
+
+console.log('\n9. Mover los umbrales no cambia la app por defecto')
+{
+  const porDefecto = generarSenales(barras, rates, rangos)
+  const vaciaExplicita = generarSenales(barras, rates, rangos, { vista: {} })
+  comprobar(
+    porDefecto.length === vaciaExplicita.length &&
+      porDefecto.every((a, i) => a.id === vaciaExplicita[i].id && a.sl === vaciaExplicita[i].sl),
+    'pedir la vista vacía es idéntico a no pedir nada'
+  )
+
+  // Bajar el ADX a 0 tiene que AÑADIR señales de tendencia (deja pasar las que
+  // hoy se descartan) y subirlo mucho tiene que quitarlas. Si no cambiara
+  // nada, el umbral no estaría llegando a la app y la medición del ADX sería
+  // un número inventado.
+  const sinAdx = generarSenales(barras, rates, rangos, { vista: { adxMin: 0 } })
+  const conAdxAlto = generarSenales(barras, rates, rangos, { vista: { adxMin: 60 } })
+  const tend = (l) => l.filter((s) => s.tipo === 'tendencia').length
+  comprobar(tend(sinAdx) > tend(porDefecto), `sin ADX salen más señales de tendencia (${tend(sinAdx)} vs ${tend(porDefecto)})`)
+  comprobar(tend(conAdxAlto) < tend(porDefecto), `con ADX 60 salen menos (${tend(conAdxAlto)})`)
+
+  const sinH4 = generarSenales(barras, rates, rangos, { vista: { exigirH4: false } })
+  comprobar(tend(sinH4) >= tend(porDefecto), 'quitar la confirmación de 4 horas no quita señales')
+}
+
 console.log(fallos ? `\n✗ ${fallos} comprobaciones fallaron\n` : '\n✓ todo bien\n')
 process.exit(fallos ? 1 : 0)
