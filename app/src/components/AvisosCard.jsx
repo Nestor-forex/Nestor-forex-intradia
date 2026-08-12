@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useIdioma } from '../lib/i18n'
 import { activar, desactivar, suscripcionActual } from '../lib/push'
 import { motivoNoDisponible, permisoActual } from '../lib/push/soporte'
+import { AVISOS_PAUSADOS } from '../lib/push/pausa'
 
 // Interruptor de los avisos al celular.
 //
@@ -67,7 +68,22 @@ export default function AvisosCard({ uid }) {
     })
   }
 
-  const conAviso = Boolean(motivo) || permiso === 'denied'
+  const conAviso = Boolean(motivo) || permiso === 'denied' || AVISOS_PAUSADOS
+
+  // En pausa se muestra el motivo y NADA más: ni el botón de activar, ni el de
+  // probar. Dejar el interruptor puesto sería prometer algo que no va a pasar,
+  // y quien lo activara se quedaría esperando un aviso que nadie va a mandar.
+  if (AVISOS_PAUSADOS) {
+    return (
+      <div className="card" style={{ borderColor: 'var(--amber)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ fontSize: 13.5, fontWeight: 600 }}>{t('avisos.titulo')}</div>
+          <div style={{ ...TEXTO, color: 'var(--amber)', fontWeight: 600 }}>{t('avisos.pausados')}</div>
+          <p style={TEXTO}>{t('avisos.pausadosPorque')}</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="card" style={conAviso ? { borderColor: 'var(--amber)' } : undefined}>

@@ -298,6 +298,12 @@ export default {
   },
 
   avisos: {
+    // Se le dice al miembro por qué están apagados, en vez de dejar el
+    // interruptor puesto y que se quede esperando un aviso que no va a llegar.
+    // Sin tecnicismos y sin excusas: se midieron las señales, no funcionaron.
+    pausados: 'Avisos en pausa mientras revisamos las señales',
+    pausadosPorque:
+      'Revisamos todas las señales que esta app ha dado desde que lleva historial y ninguna acertó. Preferimos no avisarte de nada antes que avisarte de algo que te haga perder dinero. La app sigue mostrando el barrido y sigue anotando cada señal para comprobar la corrección; los avisos vuelven cuando los números lo respalden.',
     titulo: 'Avisos al celular',
     desc: 'Te avisamos apenas el vigía detecte una señal nueva, aunque tengas la app cerrada.',
     activar: 'Activar avisos',
