@@ -11,6 +11,10 @@
 import webpush from 'web-push'
 import { crearT } from '../../src/lib/i18n/crearT.js'
 import { VAPID_PUBLICA } from '../../src/lib/push/vapid.js'
+// Los avisos están apagados a propósito; el porqué, con los números que lo
+// justifican, está en ese archivo. Se comparte con la pantalla del interruptor
+// para que la app no prometa avisos que no van a llegar.
+import { AVISOS_PAUSADOS } from '../../src/lib/push/pausa.js'
 import { abrir, leerCuentaDeServicio } from './firestore-rest.mjs'
 
 export const COLECCION = 'pushSubs'
@@ -85,6 +89,20 @@ export function armarMensaje(senal, idioma) {
  * Firestore de verdad. En producción va siempre en null.
  */
 export async function enviarAvisos(nuevas, entorno = process.env, bdInyectada = null) {
+  // Lo PRIMERO, antes de leer credenciales o tocar Firestore: en pausa no se
+  // manda nada y no hace falta nada. Se devuelve un estado con nombre propio
+  // para que en el registro del vigía se vea que fue una decisión y no un
+  // fallo silencioso. Ver el comentario de AVISOS_PAUSADOS en push/pausa.js.
+  //
+  // `PUSH_SIN_PAUSA` lo usa solo `prueba-push.mjs`, para poder seguir
+  // comprobando el camino real de envío (cifrado, idiomas, cortes por tiempo,
+  // limpieza de suscripciones muertas) mientras dura la pausa. Si esas
+  // comprobaciones se apagaran ahora, al reactivar los avisos estaríamos
+  // encendiendo código que lleva semanas sin probarse.
+  if (AVISOS_PAUSADOS && entorno.PUSH_SIN_PAUSA !== '1') {
+    return { estado: 'en-pausa', candidatas: nuevas.length, motivo: 'reglas en revisión tras medir las señales' }
+  }
+
   const dignas = nuevas.filter(({ s }) => s.crudo && s.crudo.rr >= RB_MINIMO)
   if (!dignas.length) {
     return { estado: 'nada-que-enviar', candidatas: nuevas.length, filtradas: nuevas.length }

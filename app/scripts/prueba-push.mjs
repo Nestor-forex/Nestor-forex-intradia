@@ -112,7 +112,12 @@ const servidor = createServer({
 await new Promise((listo) => servidor.listen(0, '127.0.0.1', listo))
 const base = `https://127.0.0.1:${servidor.address().port}`
 
-const ENTORNO = { VAPID_PRIVATE_KEY: '9Ah-93imAiVXw1xoJnC-cuiA14U0JjwVxHuC7lHhKOc' }
+// `PUSH_SIN_PAUSA` salta la pausa de los avisos (ver AVISOS_PAUSADOS en
+// src/lib/push/pausa.js). Va en TODAS las pruebas del camino de envío a
+// propósito: mientras los avisos estén apagados hay que seguir comprobando que
+// el código funciona, o el día que se reactiven estaríamos encendiendo algo que
+// lleva semanas sin probarse. La pausa en sí se comprueba aparte, en el punto 8.
+const ENTORNO = { VAPID_PRIVATE_KEY: '9Ah-93imAiVXw1xoJnC-cuiA14U0JjwVxHuC7lHhKOc', PUSH_SIN_PAUSA: '1' }
 const borrados = []
 const bdFalsa = (aparatos) => ({
   listar: async () => aparatos,
@@ -189,11 +194,29 @@ console.log('\n6. El presupuesto total corta y lo dice')
 
 console.log('\n7. Sin configurar, no revienta')
 {
-  const r = await enviarAvisos([senal('EUR/USD', 'COMPRA', 2.5)], {})
+  const r = await enviarAvisos([senal('EUR/USD', 'COMPRA', 2.5)], { PUSH_SIN_PAUSA: '1' })
   comprobar(r.estado === 'sin-configurar', 'avisa que faltan las claves en vez de fallar')
 
   const vacio = await enviarAvisos([], ENTORNO, bdFalsa([]))
   comprobar(vacio.estado === 'nada-que-enviar', 'sin señales nuevas no hace nada')
+}
+
+// La pausa es lo único que hoy separa a un miembro de recibir un aviso que
+// —medido— le haría perder dinero: las 6 señales que esta app ha dado en su
+// historial salieron todas perdedoras. Si alguien rompiera la pausa sin querer
+// al tocar esta función, esto salta.
+console.log('\n8. Los avisos están en pausa y no se escapa ninguno')
+{
+  const conTodo = await enviarAvisos(
+    [senal('EUR/USD', 'COMPRA', 2.5)],
+    { VAPID_PRIVATE_KEY: '9Ah-93imAiVXw1xoJnC-cuiA14U0JjwVxHuC7lHhKOc' },
+    bdFalsa([aparatoFalso(`${base}/aparato-en-pausa`)])
+  )
+  comprobar(conTodo.estado === 'en-pausa', 'con claves, suscriptor y señal buena, NO manda: dice "en-pausa"')
+  comprobar(conTodo.candidatas === 1, 'y deja constancia de cuántas se habrían mandado')
+
+  const antes = borrados.length
+  comprobar(antes === borrados.length, 'en pausa no toca Firestore para nada')
 }
 
 servidor.close()
