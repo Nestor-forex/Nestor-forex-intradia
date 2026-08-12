@@ -346,3 +346,113 @@ Verificado con `prueba-resolver.mjs` (22 comprobaciones) y en Chromium los
 tres estados de la pantalla. ⚠️ **Sin datos reales todavía**: a 8 de agosto
 el vigía no había encontrado ni una sola señal, así que la pantalla enseña
 su estado vacío. Lo probado con datos es con datos inventados.
+
+---
+
+# Medir antes de creer (2026-08-12)
+
+El día que la app pasó de "nos parece" a "lo medimos". Néstor lo pidió con
+todas las letras: *"siento como que nos estancamos o volvemos a reversa,
+necesito que seas sincero"*. Lo que sigue son números, no impresiones.
+
+## El banco de pruebas y su vara de medir
+
+`app/scripts/backtest.mjs` reconstruye, hora por hora, qué señales habría
+dado la app sobre 7 meses de velas H1 reales, y las resuelve con el mismo
+`resolver.mjs` del vigía. La regla de oro: para decidir la vela `i` solo se
+le entregan velas hasta la `i`, y siempre las últimas 300 —exactamente lo
+que ve el vigía en producción—. Hay prueba de que no mira el futuro.
+
+Dos ideas que hay que conservar, porque son las que hacen que los números
+signifiquen algo:
+
+- **"por 1R"** (resultado por unidad de riesgo) es LA columna. Los pips
+  engañan: una operación que gana 200 pips arriesgando 400 pierde dinero.
+- **La geometría neutra (1:1)** es la vara de medir. Con stop y objetivo a
+  la misma distancia, el resultado depende SOLO de acertar la dirección: por
+  encima del 50% hay señal, por debajo hay señal con el signo cambiado, y en
+  el 50% no hay nada. Sin esto, una geometría generosa disfraza de acierto
+  lo que solo es un objetivo cercano.
+
+## Lo que salió, sin adornos
+
+Con la vara neutra y descontando 1,5 pips de spread por operación:
+
+| | Ops | Acierto | por 1R |
+|---|---:|---:|---:|
+| Señales de **tendencia** (fuerza relativa) | 670 | 47% | −0,11 |
+| Señales de **rango** | 409 | 54% | −0,01 |
+| Señales de **retroceso** (nuevas) | 50 | 54% | +0,03 |
+
+Con 670 operaciones ese 47% no es casualidad: **seguir la fuerza relativa en
+velas de 1 hora pierde.** El rango llega a empate. El retroceso es lo único
+positivo después de costes, y tiene demasiado pocas operaciones.
+
+## Los tres cambios del día
+
+1. **ADX de tendencia: 20 → 35.** El 20 de manual no hacía nada (quitaba 67
+   operaciones de 1.210 y dejaba el resultado en el mismo −0,12). El tramo
+   **20–25 resultó ser el peor de todos** (−0,25), peor que no tener
+   tendencia. Con 35: −0,06. Sigue perdiendo, pero la mitad.
+
+2. **Fuera la confirmación de 4 horas.** En 7 meses no vetó ni una señal:
+   las velas H4 se arman con las mismas H1, así que casi nunca contradicen a
+   la hora. Un filtro que nunca filtra hace creer que hay una protección que
+   no existe. Se fueron `aH4`, `tendH4`, `exigirH4` y `vigilanciaH4`.
+
+3. **Señal nueva de retroceso, EN LA SOMBRA.** Ver abajo.
+
+## ⚠️ Dos trampas que casi cuelan un número falso
+
+- **Un solo umbral para dos cosas opuestas.** El ADX lo quieren ALTO las de
+  tendencia y BAJO las de rango, y salían de la misma constante. Subirlo a
+  35 habría aflojado el modo rango sin querer. Ahora son `ADX_MIN = 35` y
+  `ADX_MAX_RANGO = 20`, con prueba que falla si alguien vuelve a atarlas.
+  El síntoma que lo delató: *"sin el filtro salen MENOS operaciones"*, que
+  es imposible para un filtro.
+- **`node --check` dice que la sintaxis está bien aunque falte un import.**
+  Costó una corrida de CI entera. Por eso `.oxlintrc.json` tiene `no-undef`
+  con `env: node` para `scripts/**/*.mjs`, y el lint va ANTES de descargar
+  precios en el workflow.
+
+## La sombra: cómo se prueba una regla sin arriesgar a nadie
+
+La señal de retroceso (tendencia fuerte + el precio se devolvió a la EMA9
+sin romper la EMA21) midió 54% y +0,03 con spread, **pero sobre 50
+operaciones**, donde el margen de error es de ±14 puntos: ese 54% podría ser
+un 40%. No alcanza para enseñarla, y no alcanza para tirarla.
+
+Así que corre en la sombra: **el vigía la anota, todo lo demás la ignora.**
+
+| | Qué ve |
+|---|---|
+| La app | nada — `derivarVista` sin `incluirRetrocesos` no las da |
+| Los celulares | nada — los avisos salen de `nuevasVisibles` |
+| Pantalla de Historial | nada — ni en la lista ni en el porcentaje |
+| Registros del vigía | una línea aparte: *"En sombra (sin avisar)"* |
+
+- `TIPOS_EN_SOMBRA` vive en `vigia-nucleo.mjs`, no suelto en `vigia.mjs`:
+  es la promesa de que una regla sin aprobar no le llega a nadie, y eso
+  tiene que poder comprobarse sin internet. Meter el siguiente experimento
+  es añadir una palabra a ese Set.
+- `sombra: true` **solo aparece cuando es verdad**, así que el historial ya
+  escrito se sigue leyendo igual, sin migración.
+- **NO pueden entrar en el porcentaje del Historial.** Ese es el número con
+  el que Néstor decide si confiarle dinero a la app; contarían operaciones
+  que nunca se le propusieron a nadie. Y no daría ningún síntoma: el número
+  seguiría saliendo, solo que significando otra cosa.
+
+**Cuándo volver a mirarlo:** cuando la línea "En sombra" del vigía llegue a
+150–200 operaciones. Ahí el número ya significará algo. Antes, no.
+
+## Lo que queda abierto
+
+- **La geometría del retroceso desperdicia la señal.** Con la vara neutra da
+  54%, pero con el stop al otro lado de la EMA21 cae al 38% y a −0,01. La
+  dirección tiene algo; dónde poner los niveles, no está resuelto. **No
+  ajustarlo sobre 50 operaciones**: sería inventar un número que funciona en
+  estos 7 meses y en ningún otro sitio.
+- **Los avisos al celular siguen pausados** en las dos apps
+  (`src/lib/push/pausa.js`), porque el historial real iba 0 de 6.
+- **MT5 importa por los DATOS** (spread real, tick volume, velas más finas),
+  no por la velocidad. No arregla una regla que pierde: primero la regla.
