@@ -11,6 +11,30 @@ import { dirname } from 'node:path'
 // oportunidad de entrada distinta, no la misma repetida.
 export const idDe = (s) => `${s.name}|${s.lado}|${s.tipo}`
 
+// Tipos de señal que se ANOTAN pero no se enseñan ni se avisan: están en
+// pruebas, acumulando operaciones reales hasta tener un número que signifique
+// algo. Hoy, las de retroceso (54% de acierto, pero sobre 50 operaciones, con
+// un margen de error de ±14 puntos).
+//
+// Viven aquí y no sueltas en `vigia.mjs` por una razón concreta: son la
+// promesa de que una regla sin aprobar no le llega a nadie, y una promesa así
+// tiene que poder comprobarse sin internet. Meter el siguiente experimento es
+// añadir una palabra a este Set.
+export const TIPOS_EN_SOMBRA = new Set(['retroceso'])
+
+export const esSombra = (s) => TIPOS_EN_SOMBRA.has(s?.tipo)
+
+// Parte las señales nuevas en las que pueden salir hacia un celular y las que
+// solo se anotan. Devuelve las dos listas en vez de filtrar por dentro para
+// que en el vigía se vea, en una línea, que lo que se envía no es lo mismo
+// que lo que se guarda.
+export function separarSombra(nuevas) {
+  return {
+    visibles: nuevas.filter(({ s }) => !esSombra(s)),
+    sombra: nuevas.filter(({ s }) => esSombra(s)),
+  }
+}
+
 export function leerEstado(ruta) {
   try {
     const e = JSON.parse(readFileSync(ruta, 'utf8'))

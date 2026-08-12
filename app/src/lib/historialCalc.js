@@ -18,6 +18,13 @@
  *
  * Mezclarlo todo en un solo porcentaje daría un número que nadie sabe cuánto
  * vale. Separarlo deja ver el dato fiable al lado del aproximado.
+ *
+ * ⚠️ Y aparte va `sombra`: las señales de un tipo que todavía está en pruebas
+ * (hoy, las de retroceso). El vigía las anota para ir acumulando operaciones
+ * reales, pero la app no las da y nadie recibe aviso de ellas. Por eso NO
+ * pueden entrar en `todas`: el porcentaje que mira Néstor estaría contando un
+ * tipo de señal que la app ni siquiera le muestra, y dejaría de responder la
+ * pregunta que la pantalla dice responder.
  */
 export function resumir(resultados) {
   const cuenta = (lista) => {
@@ -35,9 +42,12 @@ export function resumir(resultados) {
     }
   }
 
-  const juzgadas = (resultados || []).filter(
+  const todasJuzgadas = (resultados || []).filter(
     (r) => r.resultado === 'ganada' || r.resultado === 'perdida'
   )
+  // Las de sombra salen de aquí y no vuelven a entrar en ninguna de las
+  // cuentas de abajo. Su sitio es `sombra`, y solo lo lee el vigía.
+  const juzgadas = todasJuzgadas.filter((r) => !r.sombra)
 
   return {
     todas: cuenta(juzgadas),
@@ -45,5 +55,6 @@ export function resumir(resultados) {
     // Cuántas de las juzgadas son aproximadas, para poder avisar solo cuando
     // de verdad hay alguna.
     aproximadas: juzgadas.filter((r) => !r.exacto).length,
+    sombra: cuenta(todasJuzgadas.filter((r) => r.sombra)),
   }
 }

@@ -152,5 +152,43 @@ console.log('\n10. Sin nada que juzgar no revienta')
   comprobar(resumir([]).todas.acierto === null, 'sin operaciones el acierto es null, no 0%')
 }
 
+// Las señales "en sombra" son de un tipo que todavía está en pruebas: el
+// vigía las anota, pero la app no las da y nadie recibe aviso de ellas. Si se
+// colaran en el porcentaje, el número que mira Néstor estaría contando
+// operaciones que nunca se le propusieron, y encima mezclando una regla sin
+// aprobar con la que sí. Es de los errores que no dan ningún síntoma: el
+// número sigue saliendo, solo que significa otra cosa.
+console.log('\n11. Las señales en sombra no contaminan el porcentaje')
+{
+  const d = mundo([1.085, 1.09, 1.101, 1.10], [1.079, 1.085, 1.095, 1.099])
+  const dosPares = { ...d, pares: [d.pares[0], { ...d.pares[0], name: 'GBP/USD' }] }
+
+  const normal = senal()
+  const sombra = { ...senal(), id: 'GBP/USD|COMPRA|retroceso', par: 'GBP/USD', tipo: 'retroceso', sombra: true }
+  const { resultados } = resolver([normal, sombra], dosPares)
+
+  comprobar(resultados.length === 2, 'el resolver juzga las dos por igual: la de sombra también se mide')
+  comprobar(
+    resultados.find((r) => r.par === 'GBP/USD')?.sombra === true,
+    'y su resultado se queda marcado como sombra'
+  )
+  comprobar(
+    resultados.find((r) => r.par === 'EUR/USD')?.sombra === undefined,
+    'la normal NO queda marcada: el campo solo aparece cuando es verdad'
+  )
+
+  const r = resumir(resultados)
+  comprobar(r.todas.total === 1, `el porcentaje visible cuenta solo la normal (${r.todas.total} de 2)`)
+  comprobar(r.todas.pips === 200, 'los pips visibles tampoco incluyen los de la sombra')
+  comprobar(r.sombra.total === 1 && r.sombra.acierto === 100, 'y la de sombra va en su propia casilla')
+
+  // Y el historial ya escrito, de antes de que el campo existiera, tiene que
+  // seguir contando igual que siempre.
+  comprobar(
+    resumir([{ resultado: 'ganada', pips: 10, exacto: true }]).todas.total === 1,
+    'una línea vieja, sin el campo, sigue contando'
+  )
+}
+
 console.log(fallos ? `\n✗ ${fallos} comprobaciones fallaron\n` : '\n✓ todo bien\n')
 process.exit(fallos ? 1 : 0)
