@@ -260,6 +260,39 @@ console.log('\n9. Mover los umbrales no cambia la app por defecto')
 
   const sinH4 = generarSenales(barras, rates, rangos, { vista: { exigirH4: false } })
   comprobar(tend(sinH4) >= tend(porDefecto), 'quitar la confirmación de 4 horas no quita señales')
+
+  // ⚠️ LO IMPORTANTE. El ADX se usa para dos cosas opuestas: las de tendencia
+  // lo quieren ALTO y las de rango lo quieren BAJO. Si un solo número mandara
+  // en las dos, mover el de tendencia cambiaría también las de rango y la
+  // medición estaría midiendo dos cosas a la vez.
+  //
+  // Eso ya pasó: la primera medición dijo "sin filtro de ADX salen MENOS
+  // operaciones", que es imposible para un filtro. Lo que ocurría es que
+  // poner el umbral en 0 dejaba a las de rango exigiendo un ADX menor que
+  // cero, o sea borrándolas todas. El número parecía una respuesta y era un
+  // efecto secundario.
+  const rango = (l) => l.filter((s) => s.tipo === 'rango').length
+  const soloTendMasDuro = generarSenales(barras, rates, rangos, { vista: { adxMin: 45 } })
+  comprobar(
+    rango(soloTendMasDuro) === rango(porDefecto),
+    `subir el ADX de tendencia NO toca las de rango (${rango(soloTendMasDuro)} = ${rango(porDefecto)})`
+  )
+  comprobar(tend(soloTendMasDuro) < tend(porDefecto), 'pero sí quita señales de tendencia, que es lo que se pedía')
+
+  const soloRangoMasAncho = generarSenales(barras, rates, rangos, { vista: { adxMaxRango: 45 } })
+  comprobar(
+    tend(soloRangoMasAncho) === tend(porDefecto),
+    `y al revés: ampliar el de rango NO toca las de tendencia (${tend(soloRangoMasAncho)} = ${tend(porDefecto)})`
+  )
+  comprobar(rango(soloRangoMasAncho) > rango(porDefecto), 'pero sí añade señales de rango')
+
+  // Y quitar de verdad el filtro de tendencia tiene que ANADIR operaciones.
+  // Si saliera al reves, es que se estaria colando otro cambio.
+  const sinAdxLimpio = generarSenales(barras, rates, rangos, { vista: { adxMin: 0 } })
+  comprobar(
+    sinAdxLimpio.length > porDefecto.length,
+    `quitar el filtro de ADX AÑADE operaciones (${sinAdxLimpio.length} vs ${porDefecto.length}), como debe hacer un filtro`
+  )
 }
 
 console.log(fallos ? `\n✗ ${fallos} comprobaciones fallaron\n` : '\n✓ todo bien\n')

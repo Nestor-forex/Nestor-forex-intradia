@@ -246,6 +246,8 @@ console.log('')
 console.log(`combinación${CAB.slice(11)}`)
 console.log(RAYA)
 
+// Solo sube el listón a las de TENDENCIA. Antes esto movía también el de
+// rango sin querer, y las filas de abajo mezclaban dos cambios distintos.
 const conAdx35 = correr({ geometria: simetrica, vista: { adxMin: 35 } })
 const COMBIS = [
   ['C0. La app de hoy', neutra, () => true],
@@ -287,16 +289,39 @@ console.log('El ADX, la confirmación de 4 horas y la compresión entraron junto
 console.log('')
 console.log(`versión${CAB.slice(7)}`)
 console.log(RAYA)
+// Cada fila cambia UNA cosa. `adxMin: 0` quita el filtro a las de tendencia
+// y deja las de rango como están: antes, al compartir umbral, ponerlo en 0
+// borraba TODAS las de rango y el resultado no medía lo que decía medir.
 const ANTES = [
   ['Como está hoy', {}],
-  ['Sin el filtro de ADX (adxMin 0)', { adxMin: 0 }],
+  ['Sin el filtro de ADX en tendencia', { adxMin: 0 }],
   ['Sin la confirmación de 4 horas', { exigirH4: false }],
   ['Sin el filtro de compresión', { compresionMin: 0 }],
   ['Sin los tres (como antes de aquel cambio)', { adxMin: 0, exigirH4: false, compresionMin: 0 }],
+  ['  …y de esas, solo las de tendencia', { adxMin: 0, exigirH4: false, compresionMin: 0, soloTipo: 'tendencia' }],
 ]
-for (const [nombre, vista] of ANTES) {
+for (const [nombre, opciones] of ANTES) {
+  const { soloTipo, ...vista } = opciones
   const r = Object.keys(vista).length ? correr({ geometria: simetrica, vista }) : neutra
-  fila(nombre, medir(r.senales, r.porClave))
+  const lista = soloTipo ? r.senales.filter((s) => s.tipo === soloTipo) : r.senales
+  fila(nombre, medir(lista, r.porClave))
+}
+
+// La comparación limpia de la pregunta de Néstor: SOLO las de tendencia, con
+// y sin el filtro de ADX. Es lo único que responde "¿ayudó el ADX?" sin que se
+// cuele el efecto de las de rango.
+console.log('')
+console.log('  Y la comparación limpia, solo señales de TENDENCIA:')
+for (const [nombre, vista] of [
+  ['con ADX ≥ 20 (hoy)', {}],
+  ['sin filtro de ADX', { adxMin: 0 }],
+  ['con ADX ≥ 35', { adxMin: 35 }],
+]) {
+  const r = Object.keys(vista).length ? correr({ geometria: simetrica, vista }) : neutra
+  const m = medir(r.senales.filter((s) => s.tipo === 'tendencia'), r.porClave)
+  const ac = m.acierto === null ? '  — ' : (m.acierto.toFixed(0) + '%').padStart(4)
+  const pr = m.porRiesgo === null ? '—' : (m.porRiesgo >= 0 ? '+' : '') + m.porRiesgo.toFixed(2)
+  console.log(`  ${nombre.padEnd(26)} ${String(m.total).padStart(5)} ops   acierto ${ac}   por 1R ${pr.padStart(6)}`)
 }
 console.log(RAYA)
 console.log('Ojo: quitar un filtro AÑADE operaciones, así que aquí el número de')

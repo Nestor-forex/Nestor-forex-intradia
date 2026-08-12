@@ -444,11 +444,21 @@ const RANGO_BORDE = 0.3
 // posible, así que en compresión el modo rango se calla.
 const COMPRESION_MIN = 0.75
 
-const clasificarRango = (p, { adxMin = ADX_MIN, compresionMin = COMPRESION_MIN } = {}) => {
+// ⚠️ `adxMax` es SUYO y no el de las señales de tendencia, aunque en la app
+// valgan lo mismo. El mismo número separa "hay tendencia" de "no la hay", así
+// que por defecto es el mismo; pero al MEDIR hay que poder moverlos por
+// separado. Si no, subir el listón a las de tendencia le abre la puerta a
+// muchas más de rango sin querer, y el resultado mezcla dos cambios.
+//
+// Eso pasó de verdad: la primera medición del ADX daba "sin filtro salen
+// MENOS operaciones", que no tiene sentido para un filtro. El motivo era que
+// poner el umbral en 0 dejaba a las de rango exigiendo un ADX menor que cero,
+// o sea borrándolas todas.
+const clasificarRango = (p, { adxMax = ADX_MIN, compresionMin = COMPRESION_MIN } = {}) => {
   if (p.tend !== 'Rango') return null
   // Un ADX alto con las EMAs sin alinear es una tendencia arrancando, no un
   // rango: tampoco es sitio para operar rebotes.
-  if (p.adx >= adxMin) return null
+  if (p.adx >= adxMax) return null
   if (p.compresion < compresionMin) return null
   const amplitud = p.rangoHi - p.rangoLo
   if (!(amplitud > 0) || amplitud < RANGO_MIN_ATR * p.atrAbs) return null
@@ -621,9 +631,11 @@ const porDifAbs = (a, b) => Math.abs(b.dif) - Math.abs(a.dif)
 // vivo: si la vela más reciente trae el precio en vivo de TrueFX (en vez de
 // solo el último cierre de Twelve Data) — únicamente cambia el texto de "corte".
 /**
- * @param adxMin       ADX mínimo para dar señal de tendencia. Por defecto el
- *                     de la app. El banco de pruebas lo mueve para medir si
- *                     está en el sitio correcto.
+ * @param adxMin       ADX mínimo para dar señal de TENDENCIA.
+ * @param adxMaxRango  ADX máximo para dar señal de RANGO. Va aparte del
+ *                     anterior aunque la app use el mismo valor en los dos:
+ *                     moverlos juntos mezcla dos cambios y el resultado no
+ *                     dice nada (ver `clasificarRango`).
  * @param exigirH4     si la tendencia de 4 horas puede vetar la señal.
  * @param compresionMin compresión mínima para las señales de rango.
  *
@@ -632,10 +644,12 @@ const porDifAbs = (a, b) => Math.abs(b.dif) - Math.abs(a.dif)
  */
 export function derivarVista(
   data,
-  { thr = 0.5, topN = 3, vivo = false, t = crearT(IDIOMA_BASE), locale, adxMin, exigirH4, compresionMin } = {}
+  { thr = 0.5, topN = 3, vivo = false, t = crearT(IDIOMA_BASE), locale, adxMin, adxMaxRango, exigirH4, compresionMin } = {}
 ) {
   const cls = (p) => clasificar(p, thr, { adxMin, exigirH4 })
-  const clsRango = (p) => clasificarRango(p, { adxMin, compresionMin })
+  // Ojo: `adxMaxRango`, no `adxMin`. Son dos umbrales distintos aunque la app
+  // los use con el mismo valor — ver el comentario de `clasificarRango`.
+  const clsRango = (p) => clasificarRango(p, { adxMax: adxMaxRango, compresionMin })
   const { esc, pares: paresRaw } = data
 
   // Sesiones abiertas y umbral ajustado a la hora. Se usa la hora de la
