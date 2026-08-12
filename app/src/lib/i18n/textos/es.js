@@ -272,8 +272,7 @@ export default {
   // Textos que arma marketCalc con los números del barrido metidos dentro.
   calc_barrido: {
     adxOk: ({ adx }) => ` · ADX ${adx}: la tendencia tiene fuerza`,
-    vigilanciaAdx: ({ dif, favor, adx }) => `Diferencial ${dif} a favor de ${favor} y EMAs alineadas, pero el ADX está en ${adx}: por debajo de 20 no hay tendencia de verdad, solo chapoteo.`,
-    vigilanciaH4: ({ dif, favor }) => `Diferencial ${dif} a favor de ${favor} en la hora, pero las 4 horas apuntan al lado contrario — esperar a que se pongan de acuerdo.`,
+    vigilanciaAdx: ({ dif, favor, adx, min }) => `Diferencial ${dif} a favor de ${favor} y EMAs alineadas, pero el ADX está en ${adx}: por debajo de ${min} no hay tendencia de verdad, solo chapoteo.`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) vs ${q} (${fq}), EMAs alineadas, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI extendido, no perseguir, esperar retroceso',
     rsiContinuacion: ' — RSI en zona de continuación',

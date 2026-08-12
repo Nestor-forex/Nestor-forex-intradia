@@ -196,23 +196,23 @@ function adxWilder(highs, lows, closes, p = 14) {
   return adx
 }
 
-// Agrupa las velas de 1 hora en velas de 4 horas. No cuesta ni una consulta
-// más: son los mismos datos vistos con menos zoom. Sirve para confirmar que
-// la hora y las 4 horas apuntan al mismo lado, que es de lo que más sube el
-// porcentaje de acierto en la práctica.
-function aH4(highs, lows, closes) {
-  const H = []
-  const L = []
-  const C = []
-  // Se agrupa desde el final para que la última vela H4 termine en la vela
-  // H1 más reciente (la que se está mirando), no en un múltiplo arbitrario.
-  for (let fin = closes.length; fin - 4 >= 0; fin -= 4) {
-    H.unshift(Math.max(...highs.slice(fin - 4, fin)))
-    L.unshift(Math.min(...lows.slice(fin - 4, fin)))
-    C.unshift(closes[fin - 1])
-  }
-  return { highs: H, lows: L, closes: C }
-}
+// AQUÍ ESTABA LA CONFIRMACIÓN DE 4 HORAS, y se quitó el 2026-08-12.
+//
+// La idea era razonable: agrupar las velas de 1 hora de cuatro en cuatro y
+// exigir que las 4 horas apuntaran al mismo lado que la hora. El problema no
+// fue que estuviera mal, sino que NO HACÍA NADA: el banco de pruebas la midió
+// sobre 7 meses de velas reales y el veto no descartó ni una sola señal. Con
+// la confirmación y sin ella, la app daba exactamente las mismas operaciones,
+// una por una.
+//
+// La razón es que la condición de tendencia de 1 hora (precio > EMA9 > EMA21)
+// y la de 4 horas casi nunca se contradicen: las velas H4 se construyen con
+// las mismas velas H1, así que cuando la hora está claramente alineada, las
+// 4 horas ya lo están o están en "Rango" — y "Rango" nunca vetaba.
+//
+// Un filtro que nunca filtra no es prudencia, es código que hay que leer y
+// mantener cada vez que alguien toca esta parte, y que hace creer que la app
+// tiene una protección que en realidad no tiene. Por eso se fue entero.
 
 // Puntos pivote clásicos (P, S1/S2, R1/R2) a partir de las 24 horas previas
 // a la vela actual, usadas como aproximación del "día anterior".
@@ -301,18 +301,8 @@ export function computarBarrido(barras, rates, rangos = null) {
     const tend = c > e9 && e9 > e21 ? 'Alcista' : c < e9 && e9 < e21 ? 'Bajista' : 'Rango'
     const last20 = closes.slice(-20)
 
-    // Fuerza de la tendencia (ADX) y confirmación en 4 horas.
+    // Fuerza de la tendencia (ADX).
     const adx = adxWilder(highs, lows, closes)
-    const h4 = aH4(highs, lows, closes)
-    const tendH4 =
-      h4.closes.length >= 22
-        ? (() => {
-            const c4 = h4.closes.at(-1)
-            const e94 = emaLast(h4.closes, 9)
-            const e214 = emaLast(h4.closes, 21)
-            return c4 > e94 && e94 > e214 ? 'Alcista' : c4 < e94 && e94 < e214 ? 'Bajista' : 'Rango'
-          })()
-        : null
     // Compresión: el ATR de ahora contra su propio promedio reciente. Muy por
     // debajo de 1 significa que el mercado lleva rato quieto — suele ser la
     // antesala de un estallido, no un lateral tranquilo para operar rebotes.
@@ -330,7 +320,6 @@ export function computarBarrido(barras, rates, rangos = null) {
       atrAbs,
       tend,
       adx,
-      tendH4,
       compresion,
       dif: raw[b] - raw[q],
       // Soportes y resistencias con los extremos reales de las velas, no con
@@ -384,25 +373,51 @@ export function computarBarrido(barras, rates, rangos = null) {
   }
 }
 
-// Debajo de 20 de ADX no hay tendencia de verdad, solo chapoteo con las EMAs
-// momentáneamente alineadas. Es el filtro que las EMAs solas no saben hacer.
-const ADX_MIN = 20
+// ADX mínimo para dar una señal de TENDENCIA. Subió de 20 a 35 el 2026-08-12.
+//
+// El 20 es el número de manual: por debajo de 20 no hay tendencia, solo
+// chapoteo con las EMAs momentáneamente alineadas. Pero el banco de pruebas
+// midió los tres valores sobre 7 meses de velas reales, con la regla de medir
+// neutra (1:1, donde el resultado solo depende de acertar la dirección) y
+// mirando SOLO las señales de tendencia:
+//
+//     sin filtro de ADX  → por 1R −0.14
+//     con ADX ≥ 20       → por 1R −0.12   ← lo que había: no aportaba casi nada
+//     con ADX ≥ 35       → por 1R −0.06   ← la mitad del daño
+//
+// O sea: el 20 de manual estaba dejando pasar casi todo. Con 35 salen menos
+// señales, pero las que salen aciertan más. Sigue siendo negativo —esto NO
+// convierte la app en ganadora, y no hay que contarlo como si lo hiciera—,
+// pero entre dos números medidos se elige el mejor.
+const ADX_MIN = 35
 
-// Una señal de tendencia ahora necesita tres cosas, no una:
+// ⚠️ EL DE RANGO ES OTRO NÚMERO, Y ES A PROPÓSITO.
+//
+// El ADX se usa para dos cosas opuestas: una señal de tendencia lo quiere
+// ALTO (que la tendencia empuje) y una de rango lo quiere BAJO (que no haya
+// tendencia que se le atraviese). Antes los dos salían de la misma constante,
+// y eso hacía que subir el listón de tendencia AFLOJARA sin querer el de
+// rango: pasar de 20 a 35 habría dejado entrar como "rango" todo lo que
+// tuviera ADX entre 20 y 35, que es justamente una tendencia arrancando.
+//
+// Habría sido un cambio silencioso, en la dirección contraria a la que se
+// pretendía, y en la parte de la app que nadie estaba tocando. Por eso el de
+// rango se queda en 20, que es donde estaba y donde se midió.
+const ADX_MAX_RANGO = 20
+
+// Una señal de tendencia necesita dos cosas:
 //   · diferencia de fuerza suficiente (lo de siempre),
-//   · EMAs alineadas Y ADX por encima de 20 — que la tendencia tenga fuerza,
-//   · que las 4 horas no apunten al lado contrario.
-// Si la fuerza está pero falta confirmación, no se descarta: baja a VIGILAR,
+//   · EMAs alineadas Y ADX por encima de ADX_MIN — que la tendencia empuje.
+// Si la fuerza está pero falta lo segundo, no se descarta: baja a VIGILAR,
 // que es información útil ("está por darse, pero todavía no").
-// Los umbrales son parámetros y no constantes fijas para que el banco de
+// El umbral es un parámetro y no una constante fija para que el banco de
 // pruebas pueda medir otros valores SIN duplicar aquí la lógica de selección.
 // Si la copiara, un día las dos versiones dirían cosas distintas y no
-// sabríamos cuál creer. Los valores por defecto son los que usa la app.
-const clasificar = (p, thr, { adxMin = ADX_MIN, exigirH4 = true } = {}) => {
+// sabríamos cuál creer. El valor por defecto es el que usa la app.
+const clasificar = (p, thr, { adxMin = ADX_MIN } = {}) => {
   const fuerte = p.adx >= adxMin
-  const h4Contra = (t) => exigirH4 && p.tendH4 && p.tendH4 !== 'Rango' && p.tendH4 !== t
-  if (p.dif > thr && p.tend === 'Alcista' && fuerte && !h4Contra('Alcista')) return 'COMPRA'
-  if (p.dif < -thr && p.tend === 'Bajista' && fuerte && !h4Contra('Bajista')) return 'VENTA'
+  if (p.dif > thr && p.tend === 'Alcista' && fuerte) return 'COMPRA'
+  if (p.dif < -thr && p.tend === 'Bajista' && fuerte) return 'VENTA'
   if (Math.abs(p.dif) > thr) return 'VIGILAR'
   return '—'
 }
@@ -414,7 +429,6 @@ const motivoVigilar = (p, thr) => {
   const lado = p.dif > 0 ? 'Alcista' : 'Bajista'
   if (p.tend !== lado) return 'tend'
   if (p.adx < ADX_MIN) return 'adx'
-  if (p.tendH4 && p.tendH4 !== 'Rango' && p.tendH4 !== lado) return 'h4'
   return 'tend'
 }
 
@@ -444,9 +458,9 @@ const RANGO_BORDE = 0.3
 // posible, así que en compresión el modo rango se calla.
 const COMPRESION_MIN = 0.75
 
-// ⚠️ `adxMax` es SUYO y no el de las señales de tendencia, aunque en la app
-// valgan lo mismo. El mismo número separa "hay tendencia" de "no la hay", así
-// que por defecto es el mismo; pero al MEDIR hay que poder moverlos por
+// ⚠️ `adxMax` es SUYO y no el de las señales de tendencia. Desde que el de
+// tendencia subió a 35, ya ni siquiera valen lo mismo: este se quedó en 20
+// (ver `ADX_MAX_RANGO`). Aparte de eso, al MEDIR hay que poder moverlos por
 // separado. Si no, subir el listón a las de tendencia le abre la puerta a
 // muchas más de rango sin querer, y el resultado mezcla dos cambios.
 //
@@ -454,7 +468,7 @@ const COMPRESION_MIN = 0.75
 // MENOS operaciones", que no tiene sentido para un filtro. El motivo era que
 // poner el umbral en 0 dejaba a las de rango exigiendo un ADX menor que cero,
 // o sea borrándolas todas.
-const clasificarRango = (p, { adxMax = ADX_MIN, compresionMin = COMPRESION_MIN } = {}) => {
+const clasificarRango = (p, { adxMax = ADX_MAX_RANGO, compresionMin = COMPRESION_MIN } = {}) => {
   if (p.tend !== 'Rango') return null
   // Un ADX alto con las EMAs sin alinear es una tendencia arrancando, no un
   // rango: tampoco es sitio para operar rebotes.
@@ -631,12 +645,10 @@ const porDifAbs = (a, b) => Math.abs(b.dif) - Math.abs(a.dif)
 // vivo: si la vela más reciente trae el precio en vivo de TrueFX (en vez de
 // solo el último cierre de Twelve Data) — únicamente cambia el texto de "corte".
 /**
- * @param adxMin       ADX mínimo para dar señal de TENDENCIA.
- * @param adxMaxRango  ADX máximo para dar señal de RANGO. Va aparte del
- *                     anterior aunque la app use el mismo valor en los dos:
- *                     moverlos juntos mezcla dos cambios y el resultado no
- *                     dice nada (ver `clasificarRango`).
- * @param exigirH4     si la tendencia de 4 horas puede vetar la señal.
+ * @param adxMin       ADX mínimo para dar señal de TENDENCIA (la app: 35).
+ * @param adxMaxRango  ADX máximo para dar señal de RANGO (la app: 20). Va
+ *                     aparte del anterior: moverlos juntos mezcla dos cambios
+ *                     y el resultado no dice nada (ver `clasificarRango`).
  * @param compresionMin compresión mínima para las señales de rango.
  *
  * Los tres existen para poder MEDIR la app con otros valores sin copiar aquí
@@ -644,11 +656,11 @@ const porDifAbs = (a, b) => Math.abs(b.dif) - Math.abs(a.dif)
  */
 export function derivarVista(
   data,
-  { thr = 0.5, topN = 3, vivo = false, t = crearT(IDIOMA_BASE), locale, adxMin, adxMaxRango, exigirH4, compresionMin } = {}
+  { thr = 0.5, topN = 3, vivo = false, t = crearT(IDIOMA_BASE), locale, adxMin, adxMaxRango, compresionMin } = {}
 ) {
-  const cls = (p) => clasificar(p, thr, { adxMin, exigirH4 })
-  // Ojo: `adxMaxRango`, no `adxMin`. Son dos umbrales distintos aunque la app
-  // los use con el mismo valor — ver el comentario de `clasificarRango`.
+  const cls = (p) => clasificar(p, thr, { adxMin })
+  // Ojo: `adxMaxRango`, no `adxMin`. Son dos umbrales distintos y con valores
+  // distintos — ver el comentario de `clasificarRango`.
   const clsRango = (p) => clasificarRango(p, { adxMax: adxMaxRango, compresionMin })
   const { esc, pares: paresRaw } = data
 
@@ -711,9 +723,12 @@ export function derivarVista(
       favor: p.dif > 0 ? p.b : p.q,
       tend: t(`tend.${p.tend}`).toLowerCase(),
       adx: p.adx.toFixed(0),
+      // El umbral viaja al texto en vez de estar escrito dentro de cada
+      // idioma: si algún día vuelve a moverse, no hay que acordarse de
+      // corregir 13 archivos (y de que uno se quede con el número viejo).
+      min: ADX_MIN,
     }
-    const clave =
-      motivo === 'adx' ? 'calc_barrido.vigilanciaAdx' : motivo === 'h4' ? 'calc_barrido.vigilanciaH4' : 'calc_barrido.vigilancia'
+    const clave = motivo === 'adx' ? 'calc_barrido.vigilanciaAdx' : 'calc_barrido.vigilancia'
     return { name: p.name, razon: t(clave, datos) }
   })
 

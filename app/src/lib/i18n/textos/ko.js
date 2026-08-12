@@ -230,9 +230,8 @@ export default {
 
     adxOk: ({ adx }) => ` · ADX ${adx}: 추세에 힘이 있음`,
 
-    vigilanciaAdx: ({ dif, favor, adx }) => `${favor} 쪽으로 ${dif}의 차이에 EMA도 정렬됐지만 ADX가 ${adx}입니다: 20 아래면 진짜 추세가 아니라 등락일 뿐입니다.`,
+    vigilanciaAdx: ({ dif, favor, adx, min }) => `${favor} 쪽으로 ${dif}의 차이에 EMA도 정렬됐지만 ADX가 ${adx}입니다: ${min} 아래면 진짜 추세가 아니라 등락일 뿐입니다.`,
 
-    vigilanciaH4: ({ dif, favor }) => `1시간 기준으로는 ${favor} 쪽 ${dif} 차이지만 4시간은 반대를 가리킵니다 — 두 시간대가 일치할 때까지 기다립니다.`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b}(${fb}) 대 ${q}(${fq}), EMA 정렬됨, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI 과열, 추격하지 말고 되돌림을 기다릴 것',
     rsiContinuacion: ' — RSI가 지속 구간에 있음',
@@ -256,6 +255,9 @@ export default {
   },
 
   avisos: {
+    pausados: '신호를 점검하는 동안 알림을 잠시 멈췄습니다',
+    pausadosPorque:
+      '이 앱이 기록을 남기기 시작한 뒤 내놓은 신호를 모두 점검했는데 맞은 것이 하나도 없었습니다. 돈을 잃게 만드는 알림을 보내느니 아무것도 보내지 않는 편이 낫다고 봅니다. 앱은 지금처럼 시장 스캔을 보여 주고, 정확도를 확인하려고 모든 신호를 계속 기록합니다. 숫자가 뒷받침되면 알림은 다시 켜집니다.',
     titulo: '휴대폰 알림',
     desc: '감시자가 새 신호를 발견하는 즉시, 앱이 닫혀 있어도 알려드립니다.',
     activar: '알림 켜기',

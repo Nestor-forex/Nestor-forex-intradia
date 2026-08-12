@@ -235,9 +235,8 @@ export default {
 
     adxOk: ({ adx }) => ` · ADX ${adx}: a tendência tem força`,
 
-    vigilanciaAdx: ({ dif, favor, adx }) => `Diferencial ${dif} a favor de ${favor} com as EMAs alinhadas, mas o ADX está em ${adx}: abaixo de 20 não há tendência de verdade, só vaivém.`,
+    vigilanciaAdx: ({ dif, favor, adx, min }) => `Diferencial ${dif} a favor de ${favor} com as EMAs alinhadas, mas o ADX está em ${adx}: abaixo de ${min} não há tendência de verdade, só vaivém.`,
 
-    vigilanciaH4: ({ dif, favor }) => `Diferencial ${dif} a favor de ${favor} na hora, mas as 4 horas apontam para o lado contrário — esperar que concordem.`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) vs ${q} (${fq}), EMAs alinhadas, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI esticado, não persiga, espere um recuo',
     rsiContinuacion: ' — RSI na zona de continuação',
@@ -262,6 +261,9 @@ export default {
   },
 
   avisos: {
+    pausados: 'Avisos em pausa enquanto revisamos os sinais',
+    pausadosPorque:
+      'Revisamos todos os sinais que este app deu desde que mantém histórico e nenhum acertou. Preferimos não avisar nada a avisar algo que faça você perder dinheiro. O app continua mostrando a varredura e continua registrando cada sinal para conferir o acerto; os avisos voltam quando os números apoiarem.',
     titulo: 'Avisos no celular',
     desc: 'Avisamos assim que o vigia detectar um sinal novo, mesmo com o app fechado.',
     activar: 'Ativar avisos',

@@ -231,9 +231,8 @@ export default {
 
     adxOk: ({ adx }) => ` · ADX ${adx}: la tendenza ha forza`,
 
-    vigilanciaAdx: ({ dif, favor, adx }) => `Differenziale ${dif} a favore di ${favor} con le EMA allineate, ma l’ADX è a ${adx}: sotto 20 non c’è una vera tendenza, solo oscillazione.`,
+    vigilanciaAdx: ({ dif, favor, adx, min }) => `Differenziale ${dif} a favore di ${favor} con le EMA allineate, ma l’ADX è a ${adx}: sotto ${min} non c’è una vera tendenza, solo oscillazione.`,
 
-    vigilanciaH4: ({ dif, favor }) => `Differenziale ${dif} a favore di ${favor} sull’ora, ma le 4 ore puntano dalla parte opposta — aspettare che siano d’accordo.`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) vs ${q} (${fq}), EMAs allineate, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI esteso, non inseguire, aspettare un ritracciamento',
     rsiContinuacion: ' — RSI in zona di continuazione',
@@ -258,6 +257,9 @@ export default {
   },
 
   avisos: {
+    pausados: 'Avvisi in pausa mentre controlliamo i segnali',
+    pausadosPorque:
+      'Abbiamo controllato tutti i segnali che questa app ha dato da quando tiene uno storico e nessuno è andato a segno. Preferiamo non avvisarti di nulla piuttosto che avvisarti di qualcosa che ti faccia perdere denaro. L’app continua a mostrare la panoramica e a registrare ogni segnale per verificarne la precisione; gli avvisi torneranno quando i numeri lo giustificheranno.',
     titulo: 'Avvisi sul telefono',
     desc: 'Ti avvisiamo appena la vedetta trova un segnale nuovo, anche con l’app chiusa.',
     activar: 'Attiva gli avvisi',

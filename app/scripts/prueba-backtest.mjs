@@ -258,8 +258,15 @@ console.log('\n9. Mover los umbrales no cambia la app por defecto')
   comprobar(tend(sinAdx) > tend(porDefecto), `sin ADX salen más señales de tendencia (${tend(sinAdx)} vs ${tend(porDefecto)})`)
   comprobar(tend(conAdxAlto) < tend(porDefecto), `con ADX 60 salen menos (${tend(conAdxAlto)})`)
 
-  const sinH4 = generarSenales(barras, rates, rangos, { vista: { exigirH4: false } })
-  comprobar(tend(sinH4) >= tend(porDefecto), 'quitar la confirmación de 4 horas no quita señales')
+  // El umbral de la app subió de 20 a 35 el 2026-08-12. Aquí se comprueba que
+  // el que está puesto es el nuevo y no el viejo: pedir 20 a mano tiene que
+  // AÑADIR señales de tendencia respecto a lo que da la app por defecto. Si
+  // algún día alguien devuelve la constante a 20 sin querer, esto lo canta.
+  const conAdx20 = generarSenales(barras, rates, rangos, { vista: { adxMin: 20 } })
+  comprobar(
+    tend(conAdx20) > tend(porDefecto),
+    `la app exige el ADX nuevo, no el viejo: con 20 salen más (${tend(conAdx20)} vs ${tend(porDefecto)})`
+  )
 
   // ⚠️ LO IMPORTANTE. El ADX se usa para dos cosas opuestas: las de tendencia
   // lo quieren ALTO y las de rango lo quieren BAJO. Si un solo número mandara
@@ -285,6 +292,18 @@ console.log('\n9. Mover los umbrales no cambia la app por defecto')
     `y al revés: ampliar el de rango NO toca las de tendencia (${tend(soloRangoMasAncho)} = ${tend(porDefecto)})`
   )
   comprobar(rango(soloRangoMasAncho) > rango(porDefecto), 'pero sí añade señales de rango')
+
+  // Y el guardián del cambio del 2026-08-12: el umbral de rango se quedó en
+  // 20 cuando el de tendencia subió a 35. Si alguien volviera a atarlos (por
+  // ejemplo dejando `adxMax = ADX_MIN`), el de rango pasaría a 35 y la app
+  // empezaría a llamar "rango" a tendencias arrancando, en silencio y en la
+  // dirección contraria a la que se buscaba. Pedir 20 a mano tiene que dar
+  // exactamente lo mismo que no pedir nada.
+  const rangoEn20 = generarSenales(barras, rates, rangos, { vista: { adxMaxRango: 20 } })
+  comprobar(
+    rango(rangoEn20) === rango(porDefecto),
+    `el umbral de rango sigue en 20, no siguió al de tendencia (${rango(rangoEn20)} = ${rango(porDefecto)})`
+  )
 
   // Y quitar de verdad el filtro de tendencia tiene que ANADIR operaciones.
   // Si saliera al reves, es que se estaria colando otro cambio.

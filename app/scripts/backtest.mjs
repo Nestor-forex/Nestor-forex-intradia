@@ -205,22 +205,32 @@ for (const [nombre, f] of TRAMOS) fila(nombre, medir(neutra.senales.filter(f), n
 console.log(RAYA)
 
 // --------------------------------------------------------------------------
-// 5. El ADX. Intradía sí lo tiene (swing no) y exige ADX ≥ 20 para dar señal
-//    de tendencia. Aquí se ve si ese umbral está en el sitio correcto.
+// 5. El ADX. Intradía sí lo tiene (swing no). Aquí se ve si el umbral está en
+//    el sitio correcto: se trocean las señales de tendencia por tramo de ADX.
+//
+//    ⚠️ Se trocea `sinFiltroAdx`, NO `neutra`. Desde que la app exige ADX ≥ 35,
+//    `neutra` ya no contiene ni una sola señal por debajo de 35, así que los
+//    dos primeros tramos saldrían vacíos y parecería que ahí no hay nada que
+//    medir — cuando lo que pasa es que la app ya las descartó. Para juzgar un
+//    filtro hay que mirar lo que el filtro tira, no solo lo que deja pasar.
 // --------------------------------------------------------------------------
+
+const sinFiltroAdx = correr({ geometria: simetrica, vista: { adxMin: 0 } })
 
 console.log('')
 console.log('¿SIRVE EL ADX? (tendencia, con regla de medir neutra)')
+console.log('Sin el filtro puesto, para poder ver también lo que hoy se descarta.')
 console.log('')
 console.log(`tramo${CAB.slice(5)}`)
 console.log(RAYA)
-const soloTend = neutra.senales.filter((s) => s.tipo === 'tendencia')
+const soloTend = sinFiltroAdx.senales.filter((s) => s.tipo === 'tendencia')
 for (const [nombre, f] of [
+  ['ADX < 20 (sin tendencia)', (s) => s.adx < 20],
   ['ADX 20-25 (tendencia floja)', (s) => s.adx >= 20 && s.adx < 25],
   ['ADX 25-35', (s) => s.adx >= 25 && s.adx < 35],
-  ['ADX ≥ 35 (tendencia fuerte)', (s) => s.adx >= 35],
+  ['ADX ≥ 35 (tendencia fuerte) ← lo que da la app hoy', (s) => s.adx >= 35],
 ]) {
-  fila(nombre, medir(soloTend.filter(f), neutra.porClave))
+  fila(nombre, medir(soloTend.filter(f), sinFiltroAdx.porClave))
 }
 console.log(RAYA)
 
@@ -246,16 +256,18 @@ console.log('')
 console.log(`combinación${CAB.slice(11)}`)
 console.log(RAYA)
 
-// Solo sube el listón a las de TENDENCIA. Antes esto movía también el de
-// rango sin querer, y las filas de abajo mezclaban dos cambios distintos.
-const conAdx35 = correr({ geometria: simetrica, vista: { adxMin: 35 } })
+// El ADX ≥ 35 ya ES la app desde el 2026-08-12, así que `neutra` lo trae
+// puesto. Lo que hace falta ahora para comparar es lo contrario: cómo era con
+// el umbral viejo. Solo se mueve el listón de TENDENCIA; el de rango se queda
+// donde está, o las filas mezclarían dos cambios distintos.
+const conAdx20 = correr({ geometria: simetrica, vista: { adxMin: 20 } })
 const COMBIS = [
-  ['C0. La app de hoy', neutra, () => true],
+  ['C0. La app de hoy (ADX ≥ 35)', neutra, () => true],
   ['C1. + entrar solo en retroceso', neutra, enRetroceso],
-  ['C2. + ADX ≥ 35', conAdx35, () => true],
-  ['C3. Retroceso Y ADX ≥ 35', conAdx35, enRetroceso],
-  ['C4. Retroceso Y ADX ≥ 35, solo rango', conAdx35, (s) => enRetroceso(s) && s.tipo === 'rango'],
-  ['C5. Retroceso Y ADX ≥ 35, solo tendencia', conAdx35, (s) => enRetroceso(s) && s.tipo === 'tendencia'],
+  ['C2. Solo las de rango', neutra, (s) => s.tipo === 'rango'],
+  ['C3. Solo las de tendencia', neutra, (s) => s.tipo === 'tendencia'],
+  ['C4. Como estaba antes (ADX ≥ 20)', conAdx20, () => true],
+  ['C5. Antes + retroceso', conAdx20, enRetroceso],
 ]
 for (const [nombre, fuente, f] of COMBIS) fila(nombre, medir(fuente.senales.filter(f), fuente.porClave))
 console.log(RAYA)
@@ -281,11 +293,17 @@ console.log('quedaría en la cuenta.')
 //    mismo commit (b36abf1), así que "antes" significa sin los tres. Se miden
 //    por separado para saber cuál aportó qué, en vez de quedarnos con la
 //    impresión.
+//
+//    Ya no aparece la fila "sin la confirmación de 4 horas": esa medición dio
+//    resultados IDÉNTICOS a la app entera (el veto no descartó ni una señal en
+//    7 meses), así que la confirmación se quitó del código el 2026-08-12 y ya
+//    no queda nada que apagar. La fila diría siempre lo mismo que la primera.
 // --------------------------------------------------------------------------
 
 console.log('')
 console.log('¿ERA MEJOR ANTES DEL ADX? (con regla de medir neutra)')
-console.log('El ADX, la confirmación de 4 horas y la compresión entraron juntos.')
+console.log('El ADX y la compresión entraron juntos (con la confirmación de 4')
+console.log('horas, que resultó no hacer nada y ya se quitó de la app).')
 console.log('')
 console.log(`versión${CAB.slice(7)}`)
 console.log(RAYA)
@@ -293,12 +311,12 @@ console.log(RAYA)
 // y deja las de rango como están: antes, al compartir umbral, ponerlo en 0
 // borraba TODAS las de rango y el resultado no medía lo que decía medir.
 const ANTES = [
-  ['Como está hoy', {}],
+  ['Como está hoy (ADX ≥ 35)', {}],
+  ['Con el ADX viejo (≥ 20)', { adxMin: 20 }],
   ['Sin el filtro de ADX en tendencia', { adxMin: 0 }],
-  ['Sin la confirmación de 4 horas', { exigirH4: false }],
   ['Sin el filtro de compresión', { compresionMin: 0 }],
-  ['Sin los tres (como antes de aquel cambio)', { adxMin: 0, exigirH4: false, compresionMin: 0 }],
-  ['  …y de esas, solo las de tendencia', { adxMin: 0, exigirH4: false, compresionMin: 0, soloTipo: 'tendencia' }],
+  ['Sin ninguno de los dos (como antes de aquel cambio)', { adxMin: 0, compresionMin: 0 }],
+  ['  …y de esas, solo las de tendencia', { adxMin: 0, compresionMin: 0, soloTipo: 'tendencia' }],
 ]
 for (const [nombre, opciones] of ANTES) {
   const { soloTipo, ...vista } = opciones
@@ -313,9 +331,9 @@ for (const [nombre, opciones] of ANTES) {
 console.log('')
 console.log('  Y la comparación limpia, solo señales de TENDENCIA:')
 for (const [nombre, vista] of [
-  ['con ADX ≥ 20 (hoy)', {}],
   ['sin filtro de ADX', { adxMin: 0 }],
-  ['con ADX ≥ 35', { adxMin: 35 }],
+  ['con ADX ≥ 20 (el de antes)', { adxMin: 20 }],
+  ['con ADX ≥ 35 (hoy)', {}],
 ]) {
   const r = Object.keys(vista).length ? correr({ geometria: simetrica, vista }) : neutra
   const m = medir(r.senales.filter((s) => s.tipo === 'tendencia'), r.porClave)

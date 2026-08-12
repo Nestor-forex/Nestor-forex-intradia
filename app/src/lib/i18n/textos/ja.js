@@ -230,9 +230,8 @@ export default {
 
     adxOk: ({ adx }) => ` · ADX ${adx}：トレンドに勢いあり`,
 
-    vigilanciaAdx: ({ dif, favor, adx }) => `${favor} 有利の差 ${dif} で EMA も並んでいますが、ADX は ${adx}：20 未満は本物のトレンドではなく往復にすぎません。`,
+    vigilanciaAdx: ({ dif, favor, adx, min }) => `${favor} 有利の差 ${dif} で EMA も並んでいますが、ADX は ${adx}：${min} 未満は本物のトレンドではなく往復にすぎません。`,
 
-    vigilanciaH4: ({ dif, favor }) => `1 時間足では ${favor} 有利の差 ${dif} ですが、4 時間足は逆を向いています — 一致するまで待ちます。`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b}（${fb}）対 ${q}（${fq}）、EMA が同方向、RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI が行き過ぎ、追いかけずに押し目・戻りを待つ',
     rsiContinuacion: ' — RSI は継続の水準',
@@ -256,6 +255,9 @@ export default {
   },
 
   avisos: {
+    pausados: '通知は一時停止中です（シグナルを検証しています）',
+    pausadosPorque:
+      '履歴を取り始めてからこのアプリが出したシグナルをすべて検証しましたが、当たったものは一つもありませんでした。損につながる知らせを送るくらいなら、何も送らないほうがよいと考えています。相場のスキャンは今までどおり表示し、精度を確かめるためにシグナルの記録も続けます。数字が裏づけたら通知は再開します。',
     titulo: 'スマホ通知',
     desc: '見張りが新しいシグナルを見つけ次第、アプリを閉じていてもお知らせします。',
     activar: '通知をオンにする',

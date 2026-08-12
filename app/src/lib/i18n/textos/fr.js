@@ -235,9 +235,8 @@ export default {
 
     adxOk: ({ adx }) => ` · ADX ${adx} : la tendance a de la force`,
 
-    vigilanciaAdx: ({ dif, favor, adx }) => `Différentiel ${dif} en faveur de ${favor} avec les EMA alignées, mais l’ADX est à ${adx} : sous 20 il n’y a pas de vraie tendance, juste du bruit.`,
+    vigilanciaAdx: ({ dif, favor, adx, min }) => `Différentiel ${dif} en faveur de ${favor} avec les EMA alignées, mais l’ADX est à ${adx} : sous ${min} il n’y a pas de vraie tendance, juste du bruit.`,
 
-    vigilanciaH4: ({ dif, favor }) => `Différentiel ${dif} en faveur de ${favor} en horaire, mais le 4 heures pointe dans l’autre sens — attendre qu’ils s’accordent.`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) vs ${q} (${fq}), EMAs alignées, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI étendu, ne pas courir après, attendre un repli',
     rsiContinuacion: ' — RSI en zone de continuation',
@@ -262,6 +261,9 @@ export default {
   },
 
   avisos: {
+    pausados: 'Alertes en pause pendant que nous vérifions les signaux',
+    pausadosPorque:
+      'Nous avons examiné tous les signaux donnés par cette application depuis qu’elle tient un historique, et aucun n’a été juste. Nous préférons ne rien vous annoncer plutôt que de vous annoncer quelque chose qui vous ferait perdre de l’argent. L’application continue d’afficher le balayage et d’enregistrer chaque signal pour en mesurer la justesse ; les alertes reviendront quand les chiffres le permettront.',
     titulo: 'Alertes sur le téléphone',
     desc: 'On te prévient dès que la vigie repère un nouveau signal, même si l’app est fermée.',
     activar: 'Activer les alertes',

@@ -235,9 +235,8 @@ export default {
 
     adxOk: ({ adx }) => ` · ADX ${adx}: der Trend hat Kraft`,
 
-    vigilanciaAdx: ({ dif, favor, adx }) => `Differenz ${dif} zugunsten von ${favor} bei ausgerichteten EMAs, aber der ADX steht bei ${adx}: unter 20 gibt es keinen echten Trend, nur Hin und Her.`,
+    vigilanciaAdx: ({ dif, favor, adx, min }) => `Differenz ${dif} zugunsten von ${favor} bei ausgerichteten EMAs, aber der ADX steht bei ${adx}: unter ${min} gibt es keinen echten Trend, nur Hin und Her.`,
 
-    vigilanciaH4: ({ dif, favor }) => `Differenz ${dif} zugunsten von ${favor} im Stundenchart, aber der 4-Stunden-Chart zeigt in die andere Richtung — warten, bis beide übereinstimmen.`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) vs ${q} (${fq}), EMAs ausgerichtet, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI überdehnt, nicht hinterherlaufen, Rücksetzer abwarten',
     rsiContinuacion: ' — RSI in der Fortsetzungszone',
@@ -262,6 +261,9 @@ export default {
   },
 
   avisos: {
+    pausados: 'Hinweise pausiert, während wir die Signale überprüfen',
+    pausadosPorque:
+      'Wir haben alle Signale überprüft, die diese App seit Beginn der Aufzeichnung gegeben hat, und kein einziges lag richtig. Uns ist lieber, dir gar nichts zu melden, als etwas, das dich Geld kostet. Die App zeigt weiterhin den Marktüberblick und zeichnet jedes Signal auf, um die Trefferquote zu prüfen; die Hinweise kommen zurück, wenn die Zahlen es hergeben.',
     titulo: 'Benachrichtigungen aufs Handy',
     desc: 'Wir melden uns, sobald der Wächter ein neues Signal entdeckt – auch bei geschlossener App.',
     activar: 'Benachrichtigungen aktivieren',

@@ -235,9 +235,8 @@ export default {
 
     adxOk: ({ adx }) => ` · ADX ${adx}: the trend has strength`,
 
-    vigilanciaAdx: ({ dif, favor, adx }) => `Differential ${dif} favouring ${favor} with EMAs aligned, but ADX is at ${adx}: below 20 there is no real trend, just chop.`,
+    vigilanciaAdx: ({ dif, favor, adx, min }) => `Differential ${dif} favouring ${favor} with EMAs aligned, but ADX is at ${adx}: below ${min} there is no real trend, just chop.`,
 
-    vigilanciaH4: ({ dif, favor }) => `Differential ${dif} favouring ${favor} on the hourly, but the 4-hour points the other way — wait until they agree.`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) vs ${q} (${fq}), EMAs aligned, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI extended, do not chase, wait for a pullback',
     rsiContinuacion: ' — RSI in the continuation zone',
@@ -262,6 +261,9 @@ export default {
   },
 
   avisos: {
+    pausados: 'Alerts paused while we review the signals',
+    pausadosPorque:
+      'We reviewed every signal this app has given since it started keeping a history, and not one of them was right. We would rather tell you nothing than tell you something that makes you lose money. The app still shows the scan and still records every signal to check how accurate it is; alerts come back when the numbers support it.',
     titulo: 'Phone alerts',
     desc: 'We alert you as soon as the watcher spots a new signal, even with the app closed.',
     activar: 'Turn on alerts',
