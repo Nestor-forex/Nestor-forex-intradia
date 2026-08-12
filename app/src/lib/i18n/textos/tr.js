@@ -242,6 +242,10 @@ export default {
     slVenta: ' (girişin 1,5 × ATR üstünde)',
     rangoCompra: ({ lo, hi, atr, rsi }) => `${lo} ile ${hi} arasında yatay (genişlik ${atr} ATR). Fiyat tabana yapışmış, RSI ${rsi}: aşağıdan alınır, tavana doğru tepki beklenir.`,
     rangoVenta: ({ lo, hi, atr, rsi }) => `${lo} ile ${hi} arasında yatay (genişlik ${atr} ATR). Fiyat tavana yapışmış, RSI ${rsi}: yukarıdan satılır, tabana doğru düşüş beklenir.`,
+    retrocesoCompra: ({ b, fb, q, fq, adx, rsi }) =>
+      `Güçlü yükseliş trendi (ADX ${adx}) ve ${b} (${fb}), ${q} (${fq}) karşısında önde, ama fiyat EMA9’a kadar geri çekildi, RSI ${rsi}: fiyatı kovalamadan geri çekilmede girilir.`,
+    retrocesoVenta: ({ b, fb, q, fq, adx, rsi }) =>
+      `Güçlü düşüş trendi (ADX ${adx}) ve ${q} (${fq}), ${b} (${fb}) karşısında önde, ama fiyat EMA9’a kadar yükseldi, RSI ${rsi}: fiyatı kovalamadan tepki yükselişinde girilir.`,
     entradaRango: ({ precio, borde }) => `${precio} şu an · bandın kenarı ${borde}`,
     slRangoCompra: ' (bandın tabanının ½ ATR altında)',
     slRangoVenta: ' (bandın tavanının ½ ATR üstünde)',

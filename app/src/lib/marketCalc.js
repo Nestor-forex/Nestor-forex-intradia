@@ -493,6 +493,71 @@ const razonRango = (p, t) => {
   })
 }
 
+// ------------------------------------------------------- entrar en retroceso
+//
+// EL HUECO QUE LA APP NUNCA HA PODIDO OPERAR.
+//
+// Hasta hoy la app solo sabía dos cosas: hay tendencia (y entonces entra) o no
+// la hay (y entonces mira si es un rango). Entre las dos no queda sitio para
+// lo más clásico del oficio: hay tendencia fuerte, el precio se devolvió un
+// poco, y se entra AHÍ en vez de perseguirlo estirado.
+//
+// No es que se midiera y saliera mal: es que no se podía dar. Para llamar
+// "Alcista" a un par, `tend` exige precio > EMA9 > EMA21, o sea que el precio
+// ya se fue arriba. En cuanto el precio se devuelve a la EMA9, el par pasa a
+// "Rango" — y el modo rango exige ADX bajo, así que también lo rechaza. El
+// resultado medido: CERO operaciones de este tipo en 7 meses. Un hueco, no un
+// veredicto.
+//
+// Importa porque lo medido apunta justo ahí: troceando por RSI, entrar cuando
+// el precio ya se retrocedió salía mejor que entrar estirado, y salía en los
+// DOS lados por separado (comprando y vendiendo), que es lo que lo hace
+// creíble y no una casualidad de un lado.
+//
+// Las condiciones, y por qué cada una:
+//   1. Las medias siguen ordenadas (EMA9 > EMA21 al comprar). Es la tendencia,
+//      y a diferencia de `tend` NO mira dónde está el precio ahora mismo.
+//   2. ADX por encima del umbral: la tendencia empuja de verdad.
+//   3. El precio se devolvió hasta la EMA9 o más abajo. Esto es el retroceso.
+//   4. Pero NO ha roto la EMA21. Si la rompe ya no es un retroceso, es una
+//      vuelta, y entrar ahí es ponerse delante del cambio de tendencia.
+//   5. La fuerza relativa acompaña, igual que en el resto de la app.
+//
+// ⚠️ ARRANCA APAGADO (`incluirRetrocesos`). Está sin medir, y la regla de esta
+// casa es que ninguna señal llega a Néstor antes de tener su número. El banco
+// de pruebas lo enciende; la app no. Si mide bien, se enciende aquí en una
+// línea; si mide mal, se borra y quedó el porqué escrito.
+const clasificarRetroceso = (p, thr, { adxMin = ADX_MIN } = {}) => {
+  if (p.adx < adxMin) return null
+  if (p.e9 > p.e21 && p.dif > thr && p.c <= p.e9 && p.c > p.e21) return 'COMPRA'
+  if (p.e9 < p.e21 && p.dif < -thr && p.c >= p.e9 && p.c < p.e21) return 'VENTA'
+  return null
+}
+
+const razonRetroceso = (p, esc, t) => {
+  const compra = p.e9 > p.e21
+  return t(compra ? 'calc_barrido.retrocesoCompra' : 'calc_barrido.retrocesoVenta', {
+    b: p.b,
+    fb: esc[p.b].toFixed(1),
+    q: p.q,
+    fq: esc[p.q].toFixed(1),
+    adx: p.adx.toFixed(0),
+    rsi: p.rsiV.toFixed(0),
+  })
+}
+
+// El stop va al otro lado de la EMA21, que es lo que define que el retroceso
+// siga siendo un retroceso. Con un mínimo de 1 ATR de distancia: si el precio
+// está pegadito a la EMA21, un stop a dos pips sería ruido puro y además
+// inflaría la relación riesgo/beneficio con un denominador falso — el mismo
+// error que ya nos costó caro en la app de swing.
+const nivelesRetroceso = (p, compra) => {
+  const sl = compra
+    ? Math.min(p.e21 - 0.5 * p.atrAbs, p.c - p.atrAbs)
+    : Math.max(p.e21 + 0.5 * p.atrAbs, p.c + p.atrAbs)
+  return { sl, tp: objetivo(p, compra) }
+}
+
 const razon = (p, esc, t) => {
   const extra =
     p.rsiV > 70 || p.rsiV < 30
@@ -559,7 +624,9 @@ const mkSetup = (p, lado, esc = {}, t, tipo = 'tendencia') => {
   const esRango = tipo === 'rango'
   const { sl, tp } = esRango
     ? nivelesRango(p, compra)
-    : { sl: compra ? p.c - ATR_STOP * p.atrAbs : p.c + ATR_STOP * p.atrAbs, tp: objetivo(p, compra) }
+    : tipo === 'retroceso'
+      ? nivelesRetroceso(p, compra)
+      : { sl: compra ? p.c - ATR_STOP * p.atrAbs : p.c + ATR_STOP * p.atrAbs, tp: objetivo(p, compra) }
   const rr = Math.abs(tp - p.c) / Math.abs(p.c - sl)
   return {
     name: p.name,
@@ -650,13 +717,27 @@ const porDifAbs = (a, b) => Math.abs(b.dif) - Math.abs(a.dif)
  *                     aparte del anterior: moverlos juntos mezcla dos cambios
  *                     y el resultado no dice nada (ver `clasificarRango`).
  * @param compresionMin compresión mínima para las señales de rango.
+ * @param incluirRetrocesos enciende el tipo de señal "entrar en retroceso"
+ *                     (ver `clasificarRetroceso`). APAGADO por defecto: está
+ *                     sin medir, y aquí no sale nada a la calle sin su número.
+ *                     Lo enciende el banco de pruebas, no la app.
  *
- * Los tres existen para poder MEDIR la app con otros valores sin copiar aquí
- * la lógica de selección. Sin tocarlos, se comporta exactamente igual.
+ * Los primeros existen para poder MEDIR la app con otros valores sin copiar
+ * aquí la lógica de selección. Sin tocarlos, se comporta exactamente igual.
  */
 export function derivarVista(
   data,
-  { thr = 0.5, topN = 3, vivo = false, t = crearT(IDIOMA_BASE), locale, adxMin, adxMaxRango, compresionMin } = {}
+  {
+    thr = 0.5,
+    topN = 3,
+    vivo = false,
+    t = crearT(IDIOMA_BASE),
+    locale,
+    adxMin,
+    adxMaxRango,
+    compresionMin,
+    incluirRetrocesos = false,
+  } = {}
 ) {
   const cls = (p) => clasificar(p, thr, { adxMin })
   // Ojo: `adxMaxRango`, no `adxMin`. Son dos umbrales distintos y con valores
@@ -748,10 +829,27 @@ export function derivarVista(
 
   const rangos = rangosRaw.map((p) => ({ name: p.name, lado: clsRango(p), razon: razonRango(p, t) }))
 
+  // Retrocesos. Apagado por defecto: sin `incluirRetrocesos` esta lista queda
+  // vacía y la app se comporta exactamente como antes de que existiera.
+  //
+  // No hace falta comprobar que no se pisen con las otras dos listas: un
+  // retroceso exige ADX ≥ 35 y un rango exige ADX < 20, así que no pueden ser
+  // el mismo par a la vez; y una señal de tendencia exige que el precio esté
+  // por fuera de la EMA9, que es justo lo contrario de lo que pide esta. Se
+  // ordenan por diferencia de fuerza, igual que las compras y las ventas.
+  const clsRetroceso = (p) => (incluirRetrocesos ? clasificarRetroceso(p, thr, { adxMin }) : null)
+  const retrocesosRaw = incluirRetrocesos ? cands.filter((p) => clsRetroceso(p)).slice(0, topN) : []
+  const retrocesos = retrocesosRaw.map((p) => ({
+    name: p.name,
+    lado: clsRetroceso(p),
+    razon: razonRetroceso(p, esc, t),
+  }))
+
   const setups = [
     ...comprasRaw.slice(0, topN).map((p) => mkSetup(p, 'COMPRA', esc, t)),
     ...ventasRaw.slice(0, topN).map((p) => mkSetup(p, 'VENTA', esc, t)),
     ...rangosRaw.map((p) => mkSetup(p, clsRango(p), esc, t, 'rango')),
+    ...retrocesosRaw.map((p) => mkSetup(p, clsRetroceso(p), esc, t, 'retroceso')),
   ]
 
   const ultima = aFechaUTC(data.ultima)
@@ -767,5 +865,5 @@ export function derivarVista(
   const fuente = vivo ? t('calc_barrido.fuenteVivo') : t('calc_barrido.fuenteCierre')
   const corte = t('calc_barrido.corte', { local: enCO, utc: enUTC, fuente })
 
-  return { monedas, pares, compras, ventas, vigilancia, rangos, setups, corte, sesion }
+  return { monedas, pares, compras, ventas, vigilancia, rangos, retrocesos, setups, corte, sesion }
 }

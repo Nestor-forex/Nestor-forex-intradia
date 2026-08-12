@@ -314,5 +314,58 @@ console.log('\n9. Mover los umbrales no cambia la app por defecto')
   )
 }
 
+// La señal nueva. Lo que se comprueba aquí no es que acierte —eso lo dice el
+// banco de pruebas con velas reales— sino que esté APAGADA y que, al
+// encenderla, no se pise con las que ya existen. Si se pisara, los números de
+// las tres listas estarían contándose unos a otros.
+console.log('\n10. La señal de retroceso está apagada y no se pisa con nada')
+{
+  // ⚠️ Estas dos corridas van con `thr: 0`, no con el umbral de la app.
+  //
+  // El motivo, medido: en este mercado de mentira el precio solo está en la
+  // franja entre las dos medias el 2,8% de las velas, y la diferencia de
+  // fuerza pasa de 0,5 en el 4,4%. Las dos cosas a la vez, con ADX ≥ 35
+  // encima, no ocurren ni una vez en 700 horas inventadas — así que la
+  // comprobación de abajo saldría en cero por falta de material, no por un
+  // fallo. Bajando el umbral de fuerza hay señales que examinar.
+  //
+  // Lo que se comprueba aquí es el MECANISMO (que esté apagada, que no toque
+  // a las demás, que no se pise con ellas, que el stop sea sano); si acierta
+  // o no, y cada cuánto aparece en el mercado de verdad, lo dice el banco de
+  // pruebas con velas reales. Una prueba sin internet no puede responder eso.
+  const SIN_UMBRAL = { thr: 0 }
+  const apagada = generarSenales(barras, rates, rangos, SIN_UMBRAL)
+  const encendida = generarSenales(barras, rates, rangos, { ...SIN_UMBRAL, vista: { incluirRetrocesos: true } })
+  const retro = (l) => l.filter((s) => s.tipo === 'retroceso')
+
+  comprobar(retro(apagada).length === 0, 'apagada por defecto: la app no da ni una')
+  comprobar(retro(encendida).length > 0, `encendida sí aparecen (${retro(encendida).length})`)
+
+  // Encenderla no puede cambiar las demás: solo AÑADE una lista.
+  const otras = (l) => l.filter((s) => s.tipo !== 'retroceso')
+  comprobar(
+    otras(encendida).length === apagada.length &&
+      otras(encendida).every((s, i) => s.id === apagada[i].id && s.vistoEl === apagada[i].vistoEl),
+    'encenderla no toca ni una sola de las señales que ya daba'
+  )
+
+  // Y ninguna puede ser a la vez retroceso y otra cosa en el mismo momento:
+  // un retroceso exige ADX ≥ 35 y un rango exige ADX < 20; y una de tendencia
+  // exige que el precio esté por fuera de la EMA9, que es lo contrario.
+  const yaEstaban = new Set(apagada.map((s) => `${s.par}|${s.lado}@${s.vistoEl}`))
+  const pisadas = retro(encendida).filter((s) => yaEstaban.has(`${s.par}|${s.lado}@${s.vistoEl}`))
+  comprobar(pisadas.length === 0, `ningún retroceso repite par, lado y hora de otra señal (${pisadas.length} choques)`)
+
+  // El stop tiene que quedar al menos a 1 ATR, o la relación riesgo/beneficio
+  // saldría inflada por un denominador de mentira — el error que ya nos costó
+  // caro en swing.
+  const estrechos = retro(encendida).filter((s) => s.pipRiesgo < 1)
+  comprobar(estrechos.length === 0, 'ningún retroceso nace con un stop de cero pips')
+  comprobar(
+    retro(encendida).every((s) => (s.lado === 'COMPRA' ? s.sl < s.precio && s.tp > s.precio : s.sl > s.precio && s.tp < s.precio)),
+    'stop y objetivo en el lado que les toca'
+  )
+}
+
 console.log(fallos ? `\n✗ ${fallos} comprobaciones fallaron\n` : '\n✓ todo bien\n')
 process.exit(fallos ? 1 : 0)

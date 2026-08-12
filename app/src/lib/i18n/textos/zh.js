@@ -238,6 +238,10 @@ export default {
     slVenta: '（入场价上方 1.5 × ATR）',
     rangoCompra: ({ lo, hi, atr, rsi }) => `在 ${lo} 与 ${hi} 之间横盘（宽度 ${atr} 个 ATR）。价格贴近下沿，RSI ${rsi}：在低位买入，等待反弹回上沿。`,
     rangoVenta: ({ lo, hi, atr, rsi }) => `在 ${lo} 与 ${hi} 之间横盘（宽度 ${atr} 个 ATR）。价格贴近上沿，RSI ${rsi}：在高位卖出，等待回落至下沿。`,
+    retrocesoCompra: ({ b, fb, q, fq, adx, rsi }) =>
+      `上升趋势强劲（ADX ${adx}），${b}（${fb}）强于 ${q}（${fq}），但价格已回落到 EMA9，RSI ${rsi}：在回调处入场，而不是追价。`,
+    retrocesoVenta: ({ b, fb, q, fq, adx, rsi }) =>
+      `下降趋势强劲（ADX ${adx}），${q}（${fq}）强于 ${b}（${fb}），但价格已反弹到 EMA9，RSI ${rsi}：在反弹处入场，而不是追价。`,
     entradaRango: ({ precio, borde }) => `当前 ${precio} · 区间边缘在 ${borde}`,
     slRangoCompra: '（区间下沿下方 ½ ATR）',
     slRangoVenta: '（区间上沿上方 ½ ATR）',

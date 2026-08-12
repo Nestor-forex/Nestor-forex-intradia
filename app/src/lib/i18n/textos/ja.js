@@ -241,6 +241,10 @@ export default {
     slVenta: '（エントリーの 1.5 × ATR 上）',
     rangoCompra: ({ lo, hi, atr, rsi }) => `${lo} と ${hi} の間でレンジ（幅 ${atr} ATR）。価格は下限付近、RSI ${rsi}：下で買って上限までの反発を狙います。`,
     rangoVenta: ({ lo, hi, atr, rsi }) => `${lo} と ${hi} の間でレンジ（幅 ${atr} ATR）。価格は上限付近、RSI ${rsi}：上で売って下限までの下落を狙います。`,
+    retrocesoCompra: ({ b, fb, q, fq, adx, rsi }) =>
+      `上昇トレンドに勢いがあり（ADX ${adx}）、${b}（${fb}）が ${q}（${fq}）を上回っていますが、価格は EMA9 まで押しています。RSI ${rsi}：追いかけずに押し目で入ります。`,
+    retrocesoVenta: ({ b, fb, q, fq, adx, rsi }) =>
+      `下降トレンドに勢いがあり（ADX ${adx}）、${q}（${fq}）が ${b}（${fb}）を上回っていますが、価格は EMA9 まで戻しています。RSI ${rsi}：追いかけずに戻りで入ります。`,
     entradaRango: ({ precio, borde }) => `現在 ${precio} · レンジの端は ${borde}`,
     slRangoCompra: '（レンジ下限の ½ ATR 下）',
     slRangoVenta: '（レンジ上限の ½ ATR 上）',

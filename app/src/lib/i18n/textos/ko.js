@@ -241,6 +241,10 @@ export default {
     slVenta: ' (진입가보다 1.5 × ATR 위)',
     rangoCompra: ({ lo, hi, atr, rsi }) => `${lo}과 ${hi} 사이 횡보(폭 ${atr} ATR). 가격이 하단에 붙어 있고 RSI ${rsi}: 아래에서 매수해 상단까지의 반등을 노립니다.`,
     rangoVenta: ({ lo, hi, atr, rsi }) => `${lo}과 ${hi} 사이 횡보(폭 ${atr} ATR). 가격이 상단에 붙어 있고 RSI ${rsi}: 위에서 매도해 하단까지의 하락을 노립니다.`,
+    retrocesoCompra: ({ b, fb, q, fq, adx, rsi }) =>
+      `상승 추세가 강하고(ADX ${adx}) ${b}(${fb})가 ${q}(${fq})보다 앞서지만, 가격은 EMA9까지 되돌아왔고 RSI는 ${rsi}입니다: 쫓아가지 않고 눌림목에서 들어갑니다.`,
+    retrocesoVenta: ({ b, fb, q, fq, adx, rsi }) =>
+      `하락 추세가 강하고(ADX ${adx}) ${q}(${fq})가 ${b}(${fb})보다 앞서지만, 가격은 EMA9까지 되돌아왔고 RSI는 ${rsi}입니다: 쫓아가지 않고 반등에서 들어갑니다.`,
     entradaRango: ({ precio, borde }) => `현재 ${precio} · 박스권 경계는 ${borde}`,
     slRangoCompra: ' (박스권 하단보다 ½ ATR 아래)',
     slRangoVenta: ' (박스권 상단보다 ½ ATR 위)',

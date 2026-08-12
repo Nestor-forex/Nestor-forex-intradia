@@ -345,6 +345,58 @@ console.log(RAYA)
 console.log('Ojo: quitar un filtro AÑADE operaciones, así que aquí el número de')
 console.log('operaciones sí cambia y hay que mirarlo junto con el acierto.')
 
+// --------------------------------------------------------------------------
+// 8. LA SEÑAL NUEVA: ENTRAR EN RETROCESO.
+//
+//    Tendencia fuerte (ADX ≥ 35, medias ordenadas) pero el precio se devolvió
+//    hasta la EMA9 sin romper la EMA21. La app NO la da todavía: está apagada
+//    tras `incluirRetrocesos` justamente para poder medirla antes de que
+//    llegue a nadie.
+//
+//    Por qué merecía probarse: troceando por RSI, entrar retrocedido salía
+//    mejor que entrar estirado, y salía en los DOS lados por separado. Pero
+//    ese troceo era sobre las señales que la app YA daba; esto de aquí es la
+//    regla escrita de frente, que es distinto y puede salir peor.
+//
+//    Se mide con la geometría neutra (el veredicto de si acierta) y también
+//    con la de la app (lo que quedaría en la cuenta), y descontando spread.
+// --------------------------------------------------------------------------
+
+const conRetro = correr({ geometria: simetrica, vista: { incluirRetrocesos: true } })
+const retro = conRetro.senales.filter((s) => s.tipo === 'retroceso')
+
+console.log('')
+console.log('LA SEÑAL NUEVA: ENTRAR EN RETROCESO (con regla de medir neutra)')
+console.log('Hoy la app NO la da. Esto es para decidir si debería.')
+console.log('')
+console.log(`qué se midió${CAB.slice(12)}`)
+console.log(RAYA)
+fila('Retrocesos: todos', medir(retro, conRetro.porClave))
+fila('  solo COMPRA', medir(retro.filter((s) => s.lado === 'COMPRA'), conRetro.porClave))
+fila('  solo VENTA', medir(retro.filter((s) => s.lado === 'VENTA'), conRetro.porClave))
+fila('Retrocesos, descontando el spread', medir(retro, conRetro.porClave, { conSpread: true }))
+console.log(RAYA)
+console.log('Para comparar, con las mismas velas:')
+fila('  las de TENDENCIA de la app', medir(neutra.senales.filter((s) => s.tipo === 'tendencia'), neutra.porClave))
+fila('  las de RANGO de la app', medir(neutra.senales.filter((s) => s.tipo === 'rango'), neutra.porClave))
+console.log(RAYA)
+
+// Y con la geometría de verdad, que es lo que se apuntaría en el diario.
+const conRetroApp = correr({ vista: { incluirRetrocesos: true } })
+const retroApp = conRetroApp.senales.filter((s) => s.tipo === 'retroceso')
+console.log('Con la geometría de la app (stop al otro lado de la EMA21):')
+fila('  retrocesos', medir(retroApp, conRetroApp.porClave))
+fila('  retrocesos con spread', medir(retroApp, conRetroApp.porClave, { conSpread: true }))
+console.log(RAYA)
+console.log('Y la comprobación de que no se pisan con las que ya existen:')
+{
+  const sin = new Set(neutra.senales.map((s) => `${s.id}@${s.vistoEl}`))
+  const repetidas = retro.filter((s) => sin.has(`${s.id}@${s.vistoEl}`)).length
+  const pares = new Set(retro.map((s) => s.par))
+  console.log(`  ${retro.length} retrocesos, ${repetidas} repetidos de otra lista, en ${pares.size} pares distintos`)
+}
+console.log(RAYA)
+
 console.log('')
 console.log('Cómo leerlo, y con qué desconfianza:')
 console.log(' · Con menos de ~30 operaciones el porcentaje puede ser suerte.')

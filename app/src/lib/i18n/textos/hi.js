@@ -242,6 +242,10 @@ export default {
     slVenta: ' (एंट्री से 1.5 × ATR ऊपर)',
     rangoCompra: ({ lo, hi, atr, rsi }) => `${lo} और ${hi} के बीच दायरा (चौड़ाई ${atr} ATR)। कीमत निचली सीमा से चिपकी है, RSI ${rsi}: नीचे से खरीदकर ऊपरी सीमा तक की वापसी का इंतज़ार।`,
     rangoVenta: ({ lo, hi, atr, rsi }) => `${lo} और ${hi} के बीच दायरा (चौड़ाई ${atr} ATR)। कीमत ऊपरी सीमा से चिपकी है, RSI ${rsi}: ऊपर से बेचकर निचली सीमा तक की गिरावट का इंतज़ार।`,
+    retrocesoCompra: ({ b, fb, q, fq, adx, rsi }) =>
+      `मज़बूत तेजी का रुझान (ADX ${adx}) और ${b} (${fb}) ${q} (${fq}) से आगे, पर भाव EMA9 तक लौट आया है, RSI ${rsi}: भाव के पीछे भागने के बजाय गिरावट पर प्रवेश।`,
+    retrocesoVenta: ({ b, fb, q, fq, adx, rsi }) =>
+      `मज़बूत मंदी का रुझान (ADX ${adx}) और ${q} (${fq}) ${b} (${fb}) से आगे, पर भाव EMA9 तक चढ़ आया है, RSI ${rsi}: भाव के पीछे भागने के बजाय उछाल पर प्रवेश।`,
     entradaRango: ({ precio, borde }) => `अभी ${precio} · दायरे का किनारा ${borde} पर`,
     slRangoCompra: ' (दायरे की निचली सीमा से ½ ATR नीचे)',
     slRangoVenta: ' (दायरे की ऊपरी सीमा से ½ ATR ऊपर)',

@@ -247,6 +247,10 @@ export default {
     slVenta: ' (1,5 × ATR au-dessus du prix d\u2019entrée)',
     rangoCompra: ({ lo, hi, atr, rsi }) => `Latéral entre ${lo} et ${hi} (largeur ${atr} ATR). Le prix colle au plancher avec un RSI de ${rsi} : on achète en bas en visant le rebond vers le plafond.`,
     rangoVenta: ({ lo, hi, atr, rsi }) => `Latéral entre ${lo} et ${hi} (largeur ${atr} ATR). Le prix colle au plafond avec un RSI de ${rsi} : on vend en haut en visant la baisse vers le plancher.`,
+    retrocesoCompra: ({ b, fb, q, fq, adx, rsi }) =>
+      `Tendance haussière forte (ADX ${adx}) avec ${b} (${fb}) au-dessus de ${q} (${fq}), mais le prix est revenu jusqu’à l’EMA9 avec un RSI de ${rsi} : on entre sur le repli, sans courir après.`,
+    retrocesoVenta: ({ b, fb, q, fq, adx, rsi }) =>
+      `Tendance baissière forte (ADX ${adx}) avec ${q} (${fq}) au-dessus de ${b} (${fb}), mais le prix est remonté jusqu’à l’EMA9 avec un RSI de ${rsi} : on entre sur le rebond, sans courir après.`,
     entradaRango: ({ precio, borde }) => `${precio} actuel · bord du range à ${borde}`,
     slRangoCompra: ' (½ ATR sous le plancher du range)',
     slRangoVenta: ' (½ ATR au-dessus du plafond du range)',

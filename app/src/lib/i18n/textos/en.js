@@ -247,6 +247,10 @@ export default {
     slVenta: ' (1.5 × ATR above entry)',
     rangoCompra: ({ lo, hi, atr, rsi }) => `Sideways between ${lo} and ${hi} (${atr} ATR wide). Price is hugging the floor with RSI ${rsi}: buy low, expecting the bounce back to the ceiling.`,
     rangoVenta: ({ lo, hi, atr, rsi }) => `Sideways between ${lo} and ${hi} (${atr} ATR wide). Price is hugging the ceiling with RSI ${rsi}: sell high, expecting the drop back to the floor.`,
+    retrocesoCompra: ({ b, fb, q, fq, adx, rsi }) =>
+      `Strong uptrend (ADX ${adx}) with ${b} (${fb}) above ${q} (${fq}), but price has pulled back to the EMA9 with RSI ${rsi}: enter on the pullback, not chasing.`,
+    retrocesoVenta: ({ b, fb, q, fq, adx, rsi }) =>
+      `Strong downtrend (ADX ${adx}) with ${q} (${fq}) above ${b} (${fb}), but price has bounced back to the EMA9 with RSI ${rsi}: enter on the bounce, not chasing.`,
     entradaRango: ({ precio, borde }) => `${precio} now · range edge at ${borde}`,
     slRangoCompra: ' (½ ATR below the range floor)',
     slRangoVenta: ' (½ ATR above the range ceiling)',

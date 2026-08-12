@@ -283,6 +283,10 @@ export default {
     slVenta: ' (1.5 × ATR sobre la entrada)',
     rangoCompra: ({ lo, hi, atr, rsi }) => `Lateral entre ${lo} y ${hi} (${atr} ATR de ancho). El precio está pegado al piso con RSI ${rsi}: se compra abajo esperando el rebote hacia el techo.`,
     rangoVenta: ({ lo, hi, atr, rsi }) => `Lateral entre ${lo} y ${hi} (${atr} ATR de ancho). El precio está pegado al techo con RSI ${rsi}: se vende arriba esperando la caída hacia el piso.`,
+    retrocesoCompra: ({ b, fb, q, fq, adx, rsi }) =>
+      `Tendencia alcista con fuerza (ADX ${adx}) y ${b} (${fb}) por encima de ${q} (${fq}), pero el precio se devolvió hasta la EMA9 con RSI ${rsi}: se entra en el retroceso, no persiguiendo.`,
+    retrocesoVenta: ({ b, fb, q, fq, adx, rsi }) =>
+      `Tendencia bajista con fuerza (ADX ${adx}) y ${q} (${fq}) por encima de ${b} (${fb}), pero el precio rebotó hasta la EMA9 con RSI ${rsi}: se entra en el rebote, no persiguiendo.`,
     entradaRango: ({ precio, borde }) => `${precio} actual · borde del rango en ${borde}`,
     slRangoCompra: ' (½ ATR bajo el piso del rango)',
     slRangoVenta: ' (½ ATR sobre el techo del rango)',

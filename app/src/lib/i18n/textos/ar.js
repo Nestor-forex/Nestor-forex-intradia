@@ -243,6 +243,10 @@ export default {
     slVenta: ' (1.5 × ATR فوق سعر الدخول)',
     rangoCompra: ({ lo, hi, atr, rsi }) => `نطاق عرضي بين ${lo} و ${hi} (باتساع ${atr} ATR). السعر ملتصق بالقاع مع RSI ${rsi}: نشتري من الأسفل بانتظار الارتداد نحو القمة.`,
     rangoVenta: ({ lo, hi, atr, rsi }) => `نطاق عرضي بين ${lo} و ${hi} (باتساع ${atr} ATR). السعر ملتصق بالقمة مع RSI ${rsi}: نبيع من الأعلى بانتظار الهبوط نحو القاع.`,
+    retrocesoCompra: ({ b, fb, q, fq, adx, rsi }) =>
+      `اتجاه صاعد قوي (ADX ${adx}) مع تفوق ${b} (${fb}) على ${q} (${fq})، لكن السعر ارتد إلى EMA9 وRSI عند ${rsi}: ندخل عند التصحيح لا مطاردةً للسعر.`,
+    retrocesoVenta: ({ b, fb, q, fq, adx, rsi }) =>
+      `اتجاه هابط قوي (ADX ${adx}) مع تفوق ${q} (${fq}) على ${b} (${fb})، لكن السعر ارتفع إلى EMA9 وRSI عند ${rsi}: ندخل عند الارتداد لا مطاردةً للسعر.`,
     entradaRango: ({ precio, borde }) => `${precio} حالياً · حافة النطاق عند ${borde}`,
     slRangoCompra: ' (½ ATR دون قاع النطاق)',
     slRangoVenta: ' (½ ATR فوق قمة النطاق)',

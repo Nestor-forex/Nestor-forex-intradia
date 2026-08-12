@@ -247,6 +247,10 @@ export default {
     slVenta: ' (1,5 × ATR über dem Einstieg)',
     rangoCompra: ({ lo, hi, atr, rsi }) => `Seitwärts zwischen ${lo} und ${hi} (${atr} ATR breit). Der Kurs klebt am Boden, RSI ${rsi}: unten kaufen und den Rücklauf zur Decke erwarten.`,
     rangoVenta: ({ lo, hi, atr, rsi }) => `Seitwärts zwischen ${lo} und ${hi} (${atr} ATR breit). Der Kurs klebt an der Decke, RSI ${rsi}: oben verkaufen und den Rücklauf zum Boden erwarten.`,
+    retrocesoCompra: ({ b, fb, q, fq, adx, rsi }) =>
+      `Starker Aufwärtstrend (ADX ${adx}) mit ${b} (${fb}) über ${q} (${fq}), aber der Kurs ist bis zur EMA9 zurückgekommen, RSI ${rsi}: Einstieg im Rücksetzer, nicht hinterherlaufen.`,
+    retrocesoVenta: ({ b, fb, q, fq, adx, rsi }) =>
+      `Starker Abwärtstrend (ADX ${adx}) mit ${q} (${fq}) über ${b} (${fb}), aber der Kurs ist bis zur EMA9 zurückgeprallt, RSI ${rsi}: Einstieg im Rücklauf, nicht hinterherlaufen.`,
     entradaRango: ({ precio, borde }) => `${precio} aktuell · Rand der Spanne bei ${borde}`,
     slRangoCompra: ' (½ ATR unter dem Boden der Spanne)',
     slRangoVenta: ' (½ ATR über der Decke der Spanne)',
