@@ -1,0 +1,41 @@
+name: Banco de pruebas de las reglas
+
+# Corre las reglas del barrido sobre miles de velas H1 reales y dice cuánto
+# habrían acertado. NO cambia nada ni publica nada: solo imprime números.
+#
+# Está para decidir con medidas en vez de con intuición. En la app hermana de
+# swing este mismo banco descartó cinco ideas en una tarde, incluidas cuatro
+# propuestas por Claude. Ninguna regla debería entrar a la app sin pasar por
+# aquí.
+#
+# Corre en Actions y no en el entorno de la sesión de Claude porque ese tiene
+# bloqueado api.twelvedata.com. Solo a mano.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # El lint va primero y no es un adorno. Los scripts corren sin
+      # compilador, así que un import que falta no se nota hasta que el script
+      # ya va por la mitad. En swing pasó de verdad: el fallo apareció DESPUÉS
+      # de descargar los precios, con la cuota gastada y sin resultados.
+      # `no-undef` lo caza en un segundo.
+      - name: Comprobar que no falta ningún import
+        working-directory: app
+        run: npm install --silent && npm run lint
+      # Y después el motor, que tampoco necesita internet: si está roto, mejor
+      # saberlo antes de gastar créditos de la cuota diaria.
+      - name: Comprobar el motor del banco de pruebas
+        working-directory: app
+        run: node scripts/prueba-backtest.mjs
+      - name: Medir
+        working-directory: app
+        run: node scripts/backtest.mjs

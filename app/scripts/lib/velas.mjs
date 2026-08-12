@@ -37,9 +37,15 @@ async function pedir(url, reintentos = 2) {
   return r
 }
 
-export async function obtenerVelas(apiKey, { minBarras = 60 } = {}) {
+// `velas` es cuántas horas se piden. 300 es lo que usan el vigía y el reporte,
+// y es lo que ve la app en producción: unos 12 días de mercado.
+//
+// El banco de pruebas pide muchas más (Twelve Data admite hasta 5000, y cuesta
+// los mismos 7 créditos porque se cobra por consulta, no por vela). Con 300
+// horas no se puede medir nada: son doce días.
+export async function obtenerVelas(apiKey, { minBarras = 60, velas = 300 } = {}) {
   const r = await pedir(
-    `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(SYMBOLS.join(','))}&interval=1h&outputsize=300&timezone=UTC&apikey=${apiKey}`
+    `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(SYMBOLS.join(','))}&interval=1h&outputsize=${velas}&timezone=UTC&apikey=${apiKey}`
   )
   const j = await r.json()
 
