@@ -556,6 +556,13 @@ const mkSetup = (p, lado, esc = {}, t, tipo = 'tendencia') => {
       pipBeneficio: Math.abs(tp - p.c) / (d === 2 ? 0.01 : 0.0001),
       sup: p.lo20,
       res: p.hi20,
+      // No los usa ninguna pantalla: los necesita
+      // `scripts/lib/backtest-nucleo.mjs` para poder calcular geometrías de
+      // stop y objetivo distintas a la de aquí y compararlas con datos reales.
+      // Exponerlos evita que el banco de pruebas los recalcule por su cuenta y
+      // acabe midiendo números que no son los que ve la app.
+      atrAbs: p.atrAbs,
+      adx: p.adx,
       pivote: p.pivots.p,
       serie20: p.serie20,
       rsi: Math.round(p.rsiV),
