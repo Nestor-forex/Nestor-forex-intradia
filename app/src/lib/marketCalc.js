@@ -373,23 +373,31 @@ export function computarBarrido(barras, rates, rangos = null) {
   }
 }
 
-// ADX mínimo para dar una señal de TENDENCIA. Subió de 20 a 35 el 2026-08-12.
+// ADX mínimo para dar una señal de TENDENCIA.
 //
-// El 20 es el número de manual: por debajo de 20 no hay tendencia, solo
-// chapoteo con las EMAs momentáneamente alineadas. Pero el banco de pruebas
-// midió los tres valores sobre 7 meses de velas reales, con la regla de medir
-// neutra (1:1, donde el resultado solo depende de acertar la dirección) y
-// mirando SOLO las señales de tendencia:
+// HISTORIA DE ESTE NÚMERO, PORQUE ES UNA LECCIÓN CARA
 //
-//     sin filtro de ADX  → por 1R −0.14
-//     con ADX ≥ 20       → por 1R −0.12   ← lo que había: no aportaba casi nada
-//     con ADX ≥ 35       → por 1R −0.06   ← la mitad del daño
+// Nació en 20, el valor de manual. El 2026-08-12 lo subí a 35 porque el banco
+// de pruebas, sobre 7 meses, decía que pasaba de −0,12 a −0,06 por unidad de
+// riesgo. El 2026-08-17 se volvió a medir sobre 35 MESES y el resultado fue:
 //
-// O sea: el 20 de manual estaba dejando pasar casi todo. Con 35 salen menos
-// señales, pero las que salen aciertan más. Sigue siendo negativo —esto NO
-// convierte la app en ganadora, y no hay que contarlo como si lo hiciera—,
-// pero entre dos números medidos se elige el mejor.
-const ADX_MIN = 35
+//     sin filtro   47% de acierto   −0,12        ADX ≥ 30   46%   −0,14
+//     ADX ≥ 20     46%              −0,12        ADX ≥ 35   46%   −0,13
+//     ADX ≥ 25     46%              −0,13        ADX ≥ 40   46%   −0,14
+//
+// El ADX NO HACE NADA. Ni en 20, ni en 35, ni en 40: el acierto es 46-47% en
+// todos y el resultado es el mismo. Aquella mejora de 7 meses era ruido de una
+// ventana corta, y yo la presenté como un hallazgo.
+//
+// Se vuelve a 20 —no porque 20 sea bueno, sino porque 35 recortaba la MITAD de
+// las señales a cambio de nada—. Con todos los números iguales, gana el umbral
+// que deja más información a la vista: 103 señales al mes contra 207.
+//
+// LA LECCIÓN, que vale más que el número: una mejora medida sobre una ventana
+// corta no es una mejora. Antes de mover una constante por un resultado, hay
+// que verla aguantar en dos mitades del tiempo o en varios años. Esto costó
+// cinco días de señales recortadas a la mitad para nada.
+const ADX_MIN = 20
 
 // ⚠️ EL DE RANGO ES OTRO NÚMERO, Y ES A PROPÓSITO.
 //
