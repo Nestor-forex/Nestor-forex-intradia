@@ -17,7 +17,12 @@ on:
 jobs:
   backtest:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # 35 y no 20 desde que se mide sobre años: bajar 28 meses de velas H1 son
+    # 4 tandas con pausa de 65 s entre ellas (unos 4 minutos), y después hay
+    # que recalcular el barrido entero en cada una de ~19.000 velas, varias
+    # veces. Quedarse corto aquí significa gastar los créditos y no ver ni un
+    # número.
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
