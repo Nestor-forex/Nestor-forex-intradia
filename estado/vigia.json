@@ -1,8 +1,9 @@
 {
-  "actualizadoEl": "2026-08-19T19:42:02.527Z",
-  "vela": "2026-08-19 19:00:00",
+  "actualizadoEl": "2026-08-19T21:43:51.257Z",
+  "vela": "2026-08-19 21:00:00",
   "senales": [
     "USD/CHF|VENTA|tendencia",
-    "EUR/CHF|VENTA|tendencia"
+    "EUR/CHF|VENTA|tendencia",
+    "USD/JPY|VENTA|tendencia"
   ]
 }
