@@ -1,11 +1,8 @@
 {
-  "actualizadoEl": "2026-08-20T10:01:50.031Z",
-  "vela": "2026-08-20 09:00:00",
+  "actualizadoEl": "2026-08-20T11:47:07.090Z",
+  "vela": "2026-08-20 11:00:00",
   "senales": [
-    "EUR/USD|COMPRA|tendencia",
-    "NZD/USD|COMPRA|tendencia",
     "USD/CHF|VENTA|tendencia",
-    "EUR/GBP|VENTA|rango",
-    "GBP/CAD|COMPRA|rango"
+    "NZD/USD|COMPRA|retroceso"
   ]
 }
