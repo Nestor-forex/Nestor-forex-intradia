@@ -1,7 +1,8 @@
 {
-  "actualizadoEl": "2026-08-21T22:45:36.961Z",
-  "vela": "2026-08-21 22:00:00",
+  "actualizadoEl": "2026-08-21T23:43:27.960Z",
+  "vela": "2026-08-21 23:00:00",
   "senales": [
+    "AUD/JPY|COMPRA|tendencia",
     "NZD/JPY|VENTA|rango"
   ]
 }
