@@ -258,14 +258,22 @@ console.log('\n9. Mover los umbrales no cambia la app por defecto')
   comprobar(tend(sinAdx) > tend(porDefecto), `sin ADX salen más señales de tendencia (${tend(sinAdx)} vs ${tend(porDefecto)})`)
   comprobar(tend(conAdxAlto) < tend(porDefecto), `con ADX 60 salen menos (${tend(conAdxAlto)})`)
 
-  // El umbral de la app subió de 20 a 35 el 2026-08-12. Aquí se comprueba que
-  // el que está puesto es el nuevo y no el viejo: pedir 20 a mano tiene que
-  // AÑADIR señales de tendencia respecto a lo que da la app por defecto. Si
-  // algún día alguien devuelve la constante a 20 sin querer, esto lo canta.
+  // El umbral de la app está en 20. Estuvo en 35 entre el 2026-08-12 y el
+  // 2026-08-17, hasta que medirlo sobre 35 meses mostró que el ADX no cambia
+  // nada en ningún valor (46-47% de acierto en todos) y que 35 solo recortaba
+  // la mitad de las señales a cambio de nada.
+  //
+  // Se fija aquí para que nadie lo mueva sin querer: pedir 20 a mano tiene que
+  // dar EXACTAMENTE lo mismo que no pedir nada, y pedir 35 tiene que dar menos.
   const conAdx20 = generarSenales(barras, rates, rangos, { vista: { adxMin: 20 } })
+  const conAdx35 = generarSenales(barras, rates, rangos, { vista: { adxMin: 35 } })
   comprobar(
-    tend(conAdx20) > tend(porDefecto),
-    `la app exige el ADX nuevo, no el viejo: con 20 salen más (${tend(conAdx20)} vs ${tend(porDefecto)})`
+    tend(conAdx20) === tend(porDefecto),
+    `la app usa 20, no otro valor (${tend(conAdx20)} = ${tend(porDefecto)})`
+  )
+  comprobar(
+    tend(conAdx35) < tend(porDefecto),
+    `y con 35 —el que estuvo puesto cinco días— salían menos (${tend(conAdx35)} vs ${tend(porDefecto)})`
   )
 
   // ⚠️ LO IMPORTANTE. El ADX se usa para dos cosas opuestas: las de tendencia

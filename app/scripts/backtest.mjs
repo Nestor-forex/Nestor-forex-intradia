@@ -30,15 +30,25 @@ import { generarSenales, VENTANA } from './lib/backtest-nucleo.mjs'
 import { GEOMETRIAS, simetrica } from './lib/geometrias.mjs'
 import { resolver } from './lib/resolver.mjs'
 
-// Cuántas horas se piden. Twelve Data admite hasta 5000 y cuesta lo mismo que
-// pedir 300: se cobra por consulta, no por vela. Con 5000 horas son unos 7
-// meses de mercado, de los que las primeras 300 se van en la ventana.
+// Cuántas horas se piden POR TANDA. 5000 es el tope de Twelve Data y cuesta lo
+// mismo que pedir 300: se cobra por consulta, no por vela.
 const VELAS = 5000
+
+// Cuántas tandas encadenadas hacia atrás. Aquí está el cambio de fondo.
+//
+// Con una sola tanda son 5000 horas ≈ 7 meses, y 7 meses son UN SOLO humor de
+// mercado. Una regla puede parecer buena solo porque el dólar cayó durante ese
+// tramo. Con 4 tandas son unos 28 meses: entran dólar subiendo, cayendo y
+// quieto, que es lo único que distingue una estrategia de una apuesta.
+//
+// Cuesta 7 créditos por tanda de los 800 diarios, y una pausa de 65 s entre
+// tandas porque el plan gratuito da 8 créditos por minuto. Unos 4 minutos.
+const PAGINAS = Number(process.env.PAGINAS || 4)
 
 const THR = 0.5
 const TOP_N = 3
 
-const { barras, rates, rangos } = await obtenerVelas(leerLlave(), { velas: VELAS })
+const { barras, rates, rangos } = await obtenerVelas(leerLlave(), { velas: VELAS, paginas: PAGINAS })
 const completo = computarBarrido(barras, rates, rangos)
 
 // --------------------------------------------------------------------------
@@ -342,6 +352,56 @@ for (const [nombre, vista] of [
   console.log(`  ${nombre.padEnd(26)} ${String(m.total).padStart(5)} ops   acierto ${ac}   por 1R ${pr.padStart(6)}`)
 }
 console.log(RAYA)
+
+// --------------------------------------------------------------------------
+// 9. EL BARRIDO DEL ADX, CON LA COLUMNA QUE ME FALTÓ.
+//
+// El 2026-08-12 subí el ADX de 20 a 35 porque medí que acertaba más. Y era
+// verdad. Pero medí SOLO cuánto acierta, no cuántas señales deja vivas — y el
+// resultado fue una app que en una semana no dio ni una sola señal. Elegí bien
+// según lo que medí, y medí lo que no era.
+//
+// Un filtro tiene DOS efectos y hay que mirar los dos a la vez:
+//   · sube el acierto (para eso está),
+//   · y baja cuántas veces la app habla (ese es su precio).
+//
+// Una app que acierta el 60% y habla una vez al mes no le sirve a nadie: no
+// hay con qué componer un resultado, y el usuario deja de abrirla. Por eso
+// aquí va "señales/mes" al lado del acierto, y la decisión se toma mirando
+// las dos columnas juntas.
+//
+// El "por 1R" va CON SPREAD, porque es lo que quedaría en la cuenta.
+// --------------------------------------------------------------------------
+
+const MESES = (() => {
+  const ms = new Date(barras.at(-1) + 'Z') - new Date(barras[VENTANA] + 'Z')
+  return Math.max(1, ms / (1000 * 60 * 60 * 24 * 30.44))
+})()
+
+console.log('')
+console.log('EL BARRIDO DEL ADX: ACIERTO **Y** CUÁNTAS SEÑALES DEJA')
+console.log(`Sobre ${MESES.toFixed(1)} meses medidos. "por 1R" con spread descontado.`)
+console.log('Un umbral que acierta mucho pero no habla nunca no sirve.')
+console.log('')
+console.log('umbral            tendencia: ops  señales/mes  acierto   por 1R     TODAS: ops  señales/mes')
+console.log(RAYA)
+for (const u of [0, 15, 20, 25, 28, 30, 32, 35, 40]) {
+  const r = correr({ geometria: simetrica, vista: { adxMin: u } })
+  const tend = r.senales.filter((s) => s.tipo === 'tendencia')
+  const m = medir(tend, r.porClave, { conSpread: true })
+  const mt = medir(r.senales, r.porClave, { conSpread: true })
+  const ac = m.acierto === null ? '  — ' : (m.acierto.toFixed(0) + '%').padStart(4)
+  const pr = (m.porRiesgo === null ? '—' : (m.porRiesgo >= 0 ? '+' : '') + m.porRiesgo.toFixed(2)).padStart(6)
+  const marca = u === 35 ? '  ← hoy' : u === 20 ? '  ← antes' : ''
+  console.log(
+    `ADX >= ${String(u).padStart(2)}${' '.repeat(10)} ${String(tend.length).padStart(5)}   ` +
+      `${(tend.length / MESES).toFixed(1).padStart(6)}      ${ac}   ${pr}   ` +
+      `${String(r.senales.length).padStart(6)}   ${(r.senales.length / MESES).toFixed(1).padStart(6)}${marca}`
+  )
+}
+console.log(RAYA)
+console.log('Lo que hay que buscar: el umbral más alto que TODAVÍA deje suficientes')
+console.log('señales para que la app sirva. No el que más acierte.')
 console.log('Ojo: quitar un filtro AÑADE operaciones, así que aquí el número de')
 console.log('operaciones sí cambia y hay que mirarlo junto con el acierto.')
 
