@@ -41,6 +41,9 @@ jobs:
       - name: Comprobar el motor del banco de pruebas
         working-directory: app
         run: node scripts/prueba-backtest.mjs
+      - name: Comprobar el rompimiento de apertura
+        working-directory: app
+        run: node scripts/prueba-apertura.mjs
       - name: Medir
         working-directory: app
         run: node scripts/backtest.mjs
