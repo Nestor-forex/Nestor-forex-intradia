@@ -456,3 +456,82 @@ Así que corre en la sombra: **el vigía la anota, todo lo demás la ignora.**
   (`src/lib/push/pausa.js`), porque el historial real iba 0 de 6.
 - **MT5 importa por los DATOS** (spread real, tick volume, velas más finas),
   no por la velocidad. No arregla una regla que pierde: primero la regla.
+
+---
+
+# El rompimiento del rango de apertura (2026-08-25): tampoco
+
+Medido sobre los mismos ~35 meses de velas H1 reales, con la vara neutra 1:1
+y spread descontado. **No funciona.**
+
+| Cómo se define "rompió" | Ops | Acierto | Por 1R |
+|---|---:|---:|---:|
+| Cierra fuera, rango de 1h | 19.571 | 44% | −0,26 |
+| Cierra fuera, rango de 2h | 15.509 | 45% | −0,20 |
+| **Cierra fuera, rango de 3h** *(el mejor)* | **13.484** | **46%** | **−0,17** |
+| Toca el borde, rango de 1h | 21.372 | 42% | −0,26 |
+| Toca el borde, rango de 2h | 23.665 | 40% | −0,28 |
+| Toca el borde, rango de 3h | 22.435 | 40% | −0,27 |
+
+Y el mejor, troceado por todos lados: Londres 46%, Nueva York 45%, compras
+46%, ventas 45%, pares con dólar 47%, cruces 43%. **Ningún corte llega a 50.**
+
+Objetivos más lejos empeora (−0,13 → −0,21 al pasar de 1× a 3× el ancho).
+Exigir rangos anchos mejora un poco pero no salva (−0,17 → −0,09 al exigir
+2× la anchura media del día previo), y a costa de dejar solo un tercio de las
+operaciones.
+
+## Por qué este resultado pesa más que los anteriores
+
+**Trece mil operaciones.** Con esa cantidad, el margen de error del 46% es de
+menos de un punto: no es ruido, no es mala suerte, no es "una ventana corta".
+Es un no.
+
+Y `toque` va peor que `cierre` en todos los rangos, que es exactamente lo que
+predice un mercado sin memoria más un coste fijo: tocar el borde dispara
+muchas más veces, y cada disparo paga spread.
+
+## Lo que esto cierra
+
+Con esto van **tres familias de reglas distintas** medidas sobre años en esta
+app, y las tres pierden después de costes:
+
+| Familia | La idea | Resultado |
+|---|---|---|
+| Tendencia / fuerza relativa | perseguir a la divisa fuerte | 46%, −0,12 a −0,14 |
+| Retroceso | esperar a que se devuelva | 45%, −0,14 |
+| Rompimiento de apertura | seguir al volumen de la sesión | 46%, −0,17 |
+| Rango | operar el lateral | 51%, +0,03 **antes** de spread |
+
+El rango es lo único que roza el 50, y descontando spread se va a negativo.
+
+⚠️ **No proponer una cuarta variante de lo mismo sin decir antes qué la hace
+distinta de estas tres.** Las tres se probaron creyendo que eran distintas.
+Si la siguiente idea también entra "cuando el precio hace X en velas de una
+hora", ya está medida.
+
+## Lo único que ha salido positivo, tres veces seguidas
+
+Trocear por el RSI de entrada:
+
+| Fuente | Extendido (RSI ≥70 o ≤30) | Zona sana (30–70) |
+|---|---|---|
+| Historial real, 37 ops (2026-08-24) | 12% · −0,74 | 50% · +0,22 |
+| Medición 3 años | peor | mejor |
+| Historial viejo, 11 ops | 0 de 6 | 2 de 5 |
+
+Tres caminos independientes apuntando al mismo sitio: **lo que pierde dinero
+es entrar cuando el movimiento ya se hizo.** Eso no es una regla nueva — es
+un filtro sobre las que ya existen, y es lo siguiente que hay que medir de
+frente en vez de trocear a posteriori.
+
+## Detalle técnico que no hay que romper
+
+`apertura.mjs` **no usa `par.atrAbs`** para filtrar rangos estrechos, aunque
+sería lo cómodo. Ese ATR es el del final de toda la serie: usarlo para juzgar
+una sesión de hace dos años es mirar el futuro. Usa la anchura media de las
+24 velas anteriores al arranque de la sesión.
+
+La comprobación 3 de `prueba-apertura.mjs` lo caza —corre sobre media serie y
+sobre la serie entera y exige que el tramo común salga idéntico, también CON
+el filtro puesto—. Si alguien "simplifica" eso a `par.atrAbs`, la prueba falla.

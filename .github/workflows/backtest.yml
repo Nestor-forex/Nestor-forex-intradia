@@ -22,7 +22,11 @@ jobs:
     # que recalcular el barrido entero en cada una de ~19.000 velas, varias
     # veces. Quedarse corto aquí significa gastar los créditos y no ver ni un
     # número.
-    timeout-minutes: 35
+    # 45 desde que además se mide el rompimiento de apertura: son ~20 pasadas
+    # más del resolver sobre las ~19.000 velas. Quedarse corto aquí significa
+    # gastar los créditos del día y no ver ni un número, así que se prefiere
+    # sobrar tiempo — el job termina cuando termina, no consume los 45.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -41,6 +45,9 @@ jobs:
       - name: Comprobar el motor del banco de pruebas
         working-directory: app
         run: node scripts/prueba-backtest.mjs
+      - name: Comprobar el rompimiento de apertura
+        working-directory: app
+        run: node scripts/prueba-apertura.mjs
       - name: Medir
         working-directory: app
         run: node scripts/backtest.mjs

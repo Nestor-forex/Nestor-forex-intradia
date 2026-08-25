@@ -348,6 +348,12 @@ export function computarBarrido(barras, rates, rangos = null) {
       // `esCruce` lo marca para que quien los use lo diga.
       highs,
       lows,
+      // Los cierres, por el mismo motivo y con la misma advertencia: quien
+      // necesite el recorrido entero —el rompimiento de apertura entra al
+      // cierre de la vela que rompe— tiene que leerlo de aquí y no
+      // recalcularlo por su cuenta, o acabaría desalineado con lo que ve el
+      // barrido.
+      closes,
       esCruce: b !== 'USD' && q !== 'USD',
       pivots: calcularPivots(highs, lows, closes, L),
     }

@@ -29,6 +29,7 @@ import { leerLlave, obtenerVelas } from './lib/velas.mjs'
 import { generarSenales, VENTANA } from './lib/backtest-nucleo.mjs'
 import { GEOMETRIAS, simetrica } from './lib/geometrias.mjs'
 import { resolver } from './lib/resolver.mjs'
+import { senalesApertura } from './lib/apertura.mjs'
 
 // Cuántas horas se piden POR TANDA. 5000 es el tope de Twelve Data y cuesta lo
 // mismo que pedir 300: se cobra por consulta, no por vela.
@@ -454,6 +455,117 @@ console.log('Y la comprobación de que no se pisan con las que ya existen:')
   const repetidas = retro.filter((s) => sin.has(`${s.id}@${s.vistoEl}`)).length
   const pares = new Set(retro.map((s) => s.par))
   console.log(`  ${retro.length} retrocesos, ${repetidas} repetidos de otra lista, en ${pares.size} pares distintos`)
+}
+console.log(RAYA)
+
+// --------------------------------------------------------------------------
+// 10. EL ROMPIMIENTO DEL RANGO DE APERTURA.
+//
+// La única regla de aquí que NO es la app. Todo lo demás que se mide en este
+// archivo son variantes de la misma idea —mirar qué divisa está fuerte y
+// perseguirla—, y sobre 35 meses esa idea da 46% en todos sus umbrales. Medir
+// una variante más no iba a cambiar eso.
+//
+// El rompimiento pregunta otra cosa: por dónde sale el precio cuando entra el
+// volumen de la apertura de Londres o de Nueva York. Es la herramienta estándar
+// del intradía y la app nunca la ha tenido.
+//
+// Casi todo con la geometría NEUTRA (1:1) a propósito. Con el objetivo cerca
+// del stop el acierto sube solo, y en swing eso ya escondió una vez un 50%
+// pelado detrás de un 58% aparente. Con 1 a 1, lo único que puede subir el
+// número es acertar la dirección.
+//
+// El "por 1R" va CON SPREAD, porque es lo que quedaría en la cuenta.
+// --------------------------------------------------------------------------
+
+console.log('')
+console.log('EL ROMPIMIENTO DEL RANGO DE APERTURA (no es la app: regla nueva)')
+console.log('Geometría neutra 1:1 y spread descontado. 50% es la moneda al aire.')
+console.log('')
+console.log(CAB)
+console.log(RAYA)
+
+const aperturas = []
+for (const modo of ['cierre', 'toque']) {
+  for (const horasRango of [1, 2, 3]) {
+    const ss = senalesApertura(completo, { modo, horasRango, horasVentana: 4, neutra: true })
+    const { resultados } = resolver(ss, completo)
+    const porClave = new Map(resultados.map((r) => [r.clave, r]))
+    aperturas.push({ modo, horasRango, ss, porClave })
+    fila(
+      `${modo === 'cierre' ? 'cierra fuera' : 'toca el borde'}, rango de ${horasRango}h`,
+      medir(ss, porClave, { conSpread: true })
+    )
+  }
+}
+console.log(RAYA)
+
+// El mejor de los seis, desglosado. Se elige por resultado por unidad de riesgo
+// y no por acierto: un 52% con pocas operaciones vale menos que un 50% con
+// muchas.
+const mejor = aperturas.reduce((a, b) =>
+  (medir(b.ss, b.porClave, { conSpread: true }).porRiesgo ?? -9) >
+  (medir(a.ss, a.porClave, { conSpread: true }).porRiesgo ?? -9)
+    ? b
+    : a
+)
+
+console.log('')
+console.log(`DESGLOSE DEL MEJOR: ${mejor.modo}, rango de ${mejor.horasRango}h`)
+console.log(CAB)
+console.log(RAYA)
+for (const [nombre, filtro] of [
+  ['Londres', (s) => s.sesion === 'sesion.londres'],
+  ['Nueva York', (s) => s.sesion === 'sesion.nuevaYork'],
+  ['solo compras', (s) => s.lado === 'COMPRA'],
+  ['solo ventas', (s) => s.lado === 'VENTA'],
+  ['solo pares con dólar (exactos)', (s) => s.par.includes('USD')],
+  ['solo cruces (aproximados)', (s) => !s.par.includes('USD')],
+]) {
+  fila(nombre, medir(mejor.ss.filter(filtro), mejor.porClave, { conSpread: true }))
+}
+console.log(RAYA)
+
+// ¿Y si el objetivo fuera más ambicioso? Aquí ya NO es 1:1, así que el acierto
+// baja por construcción y lo único comparable entre filas es el "por 1R".
+console.log('')
+console.log('EL MISMO, CON OBJETIVOS MÁS LEJOS (ya no es 1:1 — mirar solo "por 1R")')
+console.log(CAB)
+console.log(RAYA)
+for (const objetivoX of [1, 1.5, 2, 3]) {
+  const ss = senalesApertura(completo, {
+    modo: mejor.modo,
+    horasRango: mejor.horasRango,
+    horasVentana: 4,
+    objetivoX,
+  })
+  const { resultados } = resolver(ss, completo)
+  fila(
+    `objetivo ${objetivoX}× el ancho, stop al otro borde`,
+    medir(ss, new Map(resultados.map((r) => [r.clave, r])), { conSpread: true })
+  )
+}
+console.log(RAYA)
+
+// ¿Filtrar los rangos estrechos ayuda? Un rango de dos pips no marca dónde
+// están las órdenes de nadie.
+console.log('')
+console.log('¿AYUDA EXIGIR QUE EL RANGO SEA ANCHO? (neutra 1:1, con spread)')
+console.log(CAB)
+console.log(RAYA)
+for (const minAncho of [null, 1.2, 1.5, 2]) {
+  const ss = senalesApertura(completo, {
+    modo: mejor.modo,
+    horasRango: mejor.horasRango,
+    horasVentana: 4,
+    minAncho,
+    neutra: true,
+  })
+  const { resultados } = resolver(ss, completo)
+  fila(
+    minAncho === null ? 'sin filtro' : `rango ≥ ${minAncho}× la anchura media del día previo`,
+    medir(ss, new Map(resultados.map((r) => [r.clave, r])), { conSpread: true })
+  )
 }
 console.log(RAYA)
 
