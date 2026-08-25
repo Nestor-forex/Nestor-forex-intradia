@@ -308,6 +308,17 @@ console.log('\n9. Mover los umbrales no cambia la app por defecto')
     tend(conRsi70) === tend(porDefecto),
     `la app usa RSI 70, no otro valor (${tend(conRsi70)} = ${tend(porDefecto)})`
   )
+  // Que quite las extendidas y no otras cualesquiera. El margen de un punto es
+  // por el redondeo: el filtro compara el RSI con decimales y la señal guarda
+  // `Math.round`, así que un 69,6 pasa —correctamente— y queda anotado como 70.
+  comprobar(
+    porDefecto.filter((x) => x.tipo === 'tendencia' && x.ladoOriginal === 'COMPRA').every((x) => x.rsi <= 70),
+    'ninguna compra superviviente entra con el RSI por encima de 70'
+  )
+  comprobar(
+    porDefecto.filter((x) => x.tipo === 'tendencia' && x.ladoOriginal === 'VENTA').every((x) => x.rsi >= 30),
+    'ninguna venta superviviente entra con el RSI por debajo de 30'
+  )
   comprobar(
     tend(conRsiNulo) > tend(porDefecto),
     `apagarlo añade señales (${tend(conRsiNulo)} vs ${tend(porDefecto)}), como debe hacer un filtro`
@@ -316,10 +327,28 @@ console.log('\n9. Mover los umbrales no cambia la app por defecto')
   {
     // Solo quita, nunca añade: las que quedan tienen que estar TODAS entre las
     // de antes, una por una.
+    // ⚠️ ESTO AFIRMABA ALGO FALSO Y PASABA POR CASUALIDAD.
+    //
+    // Decía "todas las que sobreviven al filtro ya estaban sin él". No es
+    // cierto: la app se queda con los `topN` mejores, así que cuando el filtro
+    // rechaza un par extendido, el siguiente de la lista SUBE a ese hueco y
+    // aparecen señales que sin el filtro no existían.
+    //
+    // Pasaba porque en este mercado sintético el filtro deja UNA señal, y una
+    // señal es subconjunto de casi cualquier cosa. Se destapó al portar la
+    // misma prueba a swing, donde el mercado deja bastantes más y falló al
+    // primer intento: allí 35 de 77 supervivientes eran promovidas.
+    //
+    // No es un fallo del filtro —sigues recibiendo sugerencias, solo que no
+    // las estiradas—, pero cambia lo que significa la medición: no es "la app
+    // menos las malas", es "la app con otras señales". Una prueba en verde
+    // afirmando lo contrario es peor que no tenerla.
     const antes = new Set(conRsiNulo.filter((x) => x.tipo === 'tendencia').map((x) => `${x.id}@${x.vistoEl}`))
+    const supervivientes = porDefecto.filter((x) => x.tipo === 'tendencia')
+    const promovidas = supervivientes.filter((x) => !antes.has(`${x.id}@${x.vistoEl}`)).length
     comprobar(
-      porDefecto.filter((x) => x.tipo === 'tendencia').every((x) => antes.has(`${x.id}@${x.vistoEl}`)),
-      'todas las que sobreviven al filtro ya estaban sin él'
+      supervivientes.length - promovidas > 0,
+      `${supervivientes.length - promovidas} supervivientes ya estaban sin el filtro y ${promovidas} entraron promovidas al hueco`
     )
     // La simetría: tiene que recortar los DOS lados, no solo uno.
     const lado = (l, d) => l.filter((x) => x.tipo === 'tendencia' && x.ladoOriginal === d).length
