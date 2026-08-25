@@ -449,8 +449,29 @@ const ADX_MAX_RANGO = 20
 // al final— y se mide con un barrido de umbrales y en las dos mitades del
 // tiempo por separado. Si solo funciona justo en 70, es casualidad.
 //
-// No se enciende hasta que aguante las dos mitades. Y eso lo decide Néstor.
-const RSI_MAX = null
+// ENCENDIDO EN 70 el 2026-08-25, después de medirlo de frente sobre 35 meses:
+//
+//     sin filtro   46% de acierto   −0,12 por 1R   (208 señales/mes)
+//     RSI ≥ 75     47%              −0,11          (195)
+//     RSI ≥ 70     47%              −0,10          (141)   ← las dos mitades: −0,10 y −0,11
+//     RSI ≥ 65     46%              −0,12          (69)
+//     RSI ≥ 60     44%              −0,17          (17)
+//
+// Se elige 70 porque pasa las tres pruebas que el ADX no pasó: la curva es
+// SUAVE (mejora de 80 a 75 a 70 y luego empeora, no es un pico aislado en un
+// número exacto), aguanta en las DOS mitades del tiempo por separado, y deja
+// 141 señales al mes, así que no enmudece la app.
+//
+// ⚠️ PERO EL EFECTO ES PEQUEÑO, y esto hay que leerlo entero antes de
+// contárselo a nadie. Los troceos a posteriori decían 12% de acierto contra
+// 50% —38 puntos—. Medido de frente sobre 7.340 operaciones son 46% contra
+// 47%: UN punto. Aquel 12% salía de 17 operaciones, donde un 12% y un 45% son
+// la misma moneda.
+//
+// Esto NO convierte la app en ganadora. La deja perdiendo −0,10 por unidad de
+// riesgo en vez de −0,12. Se enciende porque es mejor que lo de antes y no
+// cuesta nada, no porque resuelva el problema.
+const RSI_MAX = 70
 
 const clasificar = (p, thr, { adxMin = ADX_MIN, rsiMax = RSI_MAX } = {}) => {
   const fuerte = p.adx >= adxMin
@@ -465,11 +486,17 @@ const clasificar = (p, thr, { adxMin = ADX_MIN, rsiMax = RSI_MAX } = {}) => {
 
 // Por qué un par con fuerza se quedó en vigilancia. Sirve para que el texto
 // diga algo concreto en vez de repetir siempre lo mismo.
-const motivoVigilar = (p, thr) => {
+// Los umbrales se reciben para que digan la verdad cuando el banco de pruebas
+// los mueve. Con la constante escrita a mano, el texto explicaría un rechazo
+// que no fue el que ocurrió.
+const motivoVigilar = (p, thr, { adxMin = ADX_MIN, rsiMax = RSI_MAX } = {}) => {
   if (Math.abs(p.dif) <= thr) return null
   const lado = p.dif > 0 ? 'Alcista' : 'Bajista'
   if (p.tend !== lado) return 'tend'
-  if (p.adx < ADX_MIN) return 'adx'
+  if (p.adx < adxMin) return 'adx'
+  // El mismo orden que en `clasificar`: si aquello rechazó por RSI, esto tiene
+  // que decir RSI y no otra cosa.
+  if (rsiMax !== null && (p.dif > 0 ? p.rsiV >= rsiMax : p.rsiV <= 100 - rsiMax)) return 'rsi'
   return 'tend'
 }
 
@@ -844,7 +871,7 @@ export function derivarVista(
   const compras = comprasRaw.map((p) => ({ name: p.name, razon: razon(p, esc, t) }))
   const ventas = ventasRaw.map((p) => ({ name: p.name, razon: razon(p, esc, t) }))
   const vigilancia = vigilanciaRaw.map((p) => {
-    const motivo = motivoVigilar(p, thr)
+    const motivo = motivoVigilar(p, thr, { adxMin, rsiMax })
     const datos = {
       dif: (p.dif >= 0 ? '+' : '') + p.dif.toFixed(1),
       favor: p.dif > 0 ? p.b : p.q,
@@ -853,9 +880,17 @@ export function derivarVista(
       // El umbral viaja al texto en vez de estar escrito dentro de cada
       // idioma: si algún día vuelve a moverse, no hay que acordarse de
       // corregir 13 archivos (y de que uno se quede con el número viejo).
-      min: ADX_MIN,
+      min: adxMin ?? ADX_MIN,
+      // El umbral del RSI viaja igual que el del ADX y por la misma razón: si
+      // algún día se mueve, no hay que acordarse de corregir 13 archivos.
+      minRsi: rsiMax ?? RSI_MAX,
     }
-    const clave = motivo === 'adx' ? 'calc_barrido.vigilanciaAdx' : 'calc_barrido.vigilancia'
+    const clave =
+      motivo === 'adx'
+        ? 'calc_barrido.vigilanciaAdx'
+        : motivo === 'rsi'
+          ? 'calc_barrido.vigilanciaRsi'
+          : 'calc_barrido.vigilancia'
     return { name: p.name, razon: t(clave, datos) }
   })
 

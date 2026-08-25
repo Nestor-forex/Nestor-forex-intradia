@@ -231,6 +231,7 @@ export default {
     adxOk: ({ adx }) => ` · ADX ${adx}：トレンドに勢いあり`,
 
     vigilanciaAdx: ({ dif, favor, adx, min }) => `${favor} 有利の差 ${dif} で EMA も並んでいますが、ADX は ${adx}：${min} 未満は本物のトレンドではなく往復にすぎません。`,
+    vigilanciaRsi: ({ dif, favor, rsi, minRsi }) => `差 ${dif} は ${favor} に有利で EMA も揃っていますが、RSI はすでに ${rsi} です。${minRsi} を超えると値動きはもう終わっており、今入るのは追いかけることになります。`,
 
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b}（${fb}）対 ${q}（${fq}）、EMA が同方向、RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI が行き過ぎ、追いかけずに押し目・戻りを待つ',

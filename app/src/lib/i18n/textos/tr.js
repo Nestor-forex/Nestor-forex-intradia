@@ -231,6 +231,7 @@ export default {
     adxOk: ({ adx }) => ` · ADX ${adx}: trendin gücü var`,
 
     vigilanciaAdx: ({ dif, favor, adx, min }) => `${favor} lehine ${dif} fark ve EMA’lar hizalı, ama ADX ${adx}: ${min}’nin altında gerçek bir trend yok, sadece salınım var.`,
+    vigilanciaRsi: ({ dif, favor, rsi, minRsi }) => `${favor} lehine ${dif} fark var ve EMA’lar hizalı, ama RSI çoktan ${rsi} seviyesinde: ${minRsi} üzerinde hareket zaten olmuş demektir ve şimdi girmek onu kovalamaktır.`,
 
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) - ${q} (${fq}), EMA’lar hizalı, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI aşırı uzamış, peşinden koşma, geri çekilme bekle',

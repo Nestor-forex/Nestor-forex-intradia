@@ -236,6 +236,7 @@ export default {
     adxOk: ({ adx }) => ` · ADX ${adx}: der Trend hat Kraft`,
 
     vigilanciaAdx: ({ dif, favor, adx, min }) => `Differenz ${dif} zugunsten von ${favor} bei ausgerichteten EMAs, aber der ADX steht bei ${adx}: unter ${min} gibt es keinen echten Trend, nur Hin und Her.`,
+    vigilanciaRsi: ({ dif, favor, rsi, minRsi }) => `Differenz ${dif} zugunsten von ${favor} und EMAs ausgerichtet, aber der RSI steht schon bei ${rsi}: über ${minRsi} ist die Bewegung bereits gelaufen, und jetzt einzusteigen heißt hinterherzulaufen.`,
 
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) vs ${q} (${fq}), EMAs ausgerichtet, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI überdehnt, nicht hinterherlaufen, Rücksetzer abwarten',

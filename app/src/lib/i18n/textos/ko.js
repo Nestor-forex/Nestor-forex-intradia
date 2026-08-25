@@ -231,6 +231,7 @@ export default {
     adxOk: ({ adx }) => ` · ADX ${adx}: 추세에 힘이 있음`,
 
     vigilanciaAdx: ({ dif, favor, adx, min }) => `${favor} 쪽으로 ${dif}의 차이에 EMA도 정렬됐지만 ADX가 ${adx}입니다: ${min} 아래면 진짜 추세가 아니라 등락일 뿐입니다.`,
+    vigilanciaRsi: ({ dif, favor, rsi, minRsi }) => `${favor} 쪽으로 ${dif}의 차이가 있고 EMA도 정렬됐지만, RSI가 이미 ${rsi}입니다: ${minRsi}를 넘으면 움직임은 이미 끝난 것이고 지금 들어가는 건 쫓아가는 것입니다.`,
 
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b}(${fb}) 대 ${q}(${fq}), EMA 정렬됨, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI 과열, 추격하지 말고 되돌림을 기다릴 것',
