@@ -428,10 +428,37 @@ const ADX_MAX_RANGO = 20
 // pruebas pueda medir otros valores SIN duplicar aquí la lógica de selección.
 // Si la copiara, un día las dos versiones dirían cosas distintas y no
 // sabríamos cuál creer. El valor por defecto es el que usa la app.
-const clasificar = (p, thr, { adxMin = ADX_MIN } = {}) => {
+// EL FILTRO DE "NO PERSEGUIR", APAGADO POR AHORA.
+//
+// `null` = apagado, y la app se comporta EXACTAMENTE igual que sin este
+// código. Con un número N, una COMPRA se rechaza si el RSI ya está en N o más,
+// y una VENTA si está en 100−N o menos: o sea, no se entra cuando el
+// movimiento ya se hizo.
+//
+// De dónde sale la idea, y por qué no basta con que salga tres veces:
+//
+//   · Historial real, 37 operaciones (2026-08-24): entrando con RSI ≥70 o ≤30
+//     el acierto fue 12% (−0,74 por 1R); entrando entre 30 y 70, 50% (+0,22).
+//   · La medición sobre 3 años apuntó igual al trocear por RSI.
+//   · El historial viejo de 11 operaciones, también.
+//
+// PERO las tres son TROCEOS A POSTERIORI: partir los resultados después de
+// verlos. Con suficientes cortes siempre aparece uno que separa las buenas de
+// las malas en los datos que ya tienes y no sirve para nada después. Por eso
+// esto se escribe como filtro de verdad —que rechaza la señal, no que la borra
+// al final— y se mide con un barrido de umbrales y en las dos mitades del
+// tiempo por separado. Si solo funciona justo en 70, es casualidad.
+//
+// No se enciende hasta que aguante las dos mitades. Y eso lo decide Néstor.
+const RSI_MAX = null
+
+const clasificar = (p, thr, { adxMin = ADX_MIN, rsiMax = RSI_MAX } = {}) => {
   const fuerte = p.adx >= adxMin
-  if (p.dif > thr && p.tend === 'Alcista' && fuerte) return 'COMPRA'
-  if (p.dif < -thr && p.tend === 'Bajista' && fuerte) return 'VENTA'
+  // "Extendido" es simétrico: comprar con el RSI arriba y vender con el RSI
+  // abajo son el mismo error visto en el espejo.
+  const estirado = rsiMax !== null && (p.dif > 0 ? p.rsiV >= rsiMax : p.rsiV <= 100 - rsiMax)
+  if (p.dif > thr && p.tend === 'Alcista' && fuerte && !estirado) return 'COMPRA'
+  if (p.dif < -thr && p.tend === 'Bajista' && fuerte && !estirado) return 'VENTA'
   if (Math.abs(p.dif) > thr) return 'VIGILAR'
   return '—'
 }
@@ -731,6 +758,10 @@ const porDifAbs = (a, b) => Math.abs(b.dif) - Math.abs(a.dif)
  *                     aparte del anterior: moverlos juntos mezcla dos cambios
  *                     y el resultado no dice nada (ver `clasificarRango`).
  * @param compresionMin compresión mínima para las señales de rango.
+ * @param rsiMax       filtro de "no perseguir": rechaza la COMPRA si el RSI ya
+ *                     está en `rsiMax` o más, y la VENTA si está en
+ *                     `100 - rsiMax` o menos. `undefined`/`null` = apagado, que
+ *                     es como corre la app hoy (ver `RSI_MAX`).
  * @param incluirRetrocesos enciende el tipo de señal "entrar en retroceso"
  *                     (ver `clasificarRetroceso`). APAGADO por defecto: está
  *                     sin medir, y aquí no sale nada a la calle sin su número.
@@ -750,10 +781,11 @@ export function derivarVista(
     adxMin,
     adxMaxRango,
     compresionMin,
+    rsiMax,
     incluirRetrocesos = false,
   } = {}
 ) {
-  const cls = (p) => clasificar(p, thr, { adxMin })
+  const cls = (p) => clasificar(p, thr, { adxMin, rsiMax })
   // Ojo: `adxMaxRango`, no `adxMin`. Son dos umbrales distintos y con valores
   // distintos — ver el comentario de `clasificarRango`.
   const clsRango = (p) => clasificarRango(p, { adxMax: adxMaxRango, compresionMin })

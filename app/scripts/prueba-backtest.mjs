@@ -276,6 +276,50 @@ console.log('\n9. Mover los umbrales no cambia la app por defecto')
     `y con 35 —el que estuvo puesto cinco días— salían menos (${tend(conAdx35)} vs ${tend(porDefecto)})`
   )
 
+  // --- El filtro de "no perseguir" (RSI) ---------------------------------
+  //
+  // Va APAGADO en la app. Estas comprobaciones fijan las tres cosas que lo
+  // hacen medible sin engañarse:
+  //
+  //   a) apagado = idéntico a no existir (si no, ya habría cambiado la app);
+  //   b) es un filtro de verdad: solo QUITA señales, nunca añade;
+  //   c) es SIMÉTRICO. Esto es lo que más fácil se rompe: si solo mirase el
+  //      RSI alto, filtraría las compras y dejaría intactas las ventas, y el
+  //      resultado parecería una mejora del filtro cuando en realidad sería
+  //      "la app opera menos compras". El error tiene la misma forma que el
+  //      del ADX gobernando dos cosas opuestas.
+  const conRsi70 = generarSenales(barras, rates, rangos, { vista: { rsiMax: 70 } })
+  const conRsi60 = generarSenales(barras, rates, rangos, { vista: { rsiMax: 60 } })
+  const conRsiNulo = generarSenales(barras, rates, rangos, { vista: { rsiMax: null } })
+  comprobar(
+    tend(conRsiNulo) === tend(porDefecto),
+    `apagado, el filtro de RSI no existe (${tend(conRsiNulo)} = ${tend(porDefecto)})`
+  )
+  comprobar(tend(conRsi70) < tend(porDefecto), `con RSI 70 quita señales (${tend(conRsi70)} vs ${tend(porDefecto)})`)
+  comprobar(tend(conRsi60) <= tend(conRsi70), `y con 60 quita más todavía (${tend(conRsi60)})`)
+  {
+    // Solo quita, nunca añade: las que quedan tienen que estar TODAS entre las
+    // de antes, una por una.
+    const antes = new Set(porDefecto.filter((x) => x.tipo === 'tendencia').map((x) => `${x.id}@${x.vistoEl}`))
+    comprobar(
+      conRsi70.filter((x) => x.tipo === 'tendencia').every((x) => antes.has(`${x.id}@${x.vistoEl}`)),
+      'todas las que sobreviven al filtro ya estaban sin él'
+    )
+    // La simetría: tiene que recortar los DOS lados, no solo uno.
+    const lado = (l, d) => l.filter((x) => x.tipo === 'tendencia' && x.ladoOriginal === d).length
+    const quitaC = lado(porDefecto, 'COMPRA') - lado(conRsi60, 'COMPRA')
+    const quitaV = lado(porDefecto, 'VENTA') - lado(conRsi60, 'VENTA')
+    comprobar(
+      quitaC > 0 && quitaV > 0,
+      `recorta los dos lados, no solo uno (${quitaC} compras y ${quitaV} ventas menos)`
+    )
+  }
+  // El filtro de tendencia no puede tocar las de rango, igual que con el ADX.
+  comprobar(
+    conRsi60.filter((s) => s.tipo === 'rango').length === porDefecto.filter((s) => s.tipo === 'rango').length,
+    'y no toca las señales de rango'
+  )
+
   // ⚠️ LO IMPORTANTE. El ADX se usa para dos cosas opuestas: las de tendencia
   // lo quieren ALTO y las de rango lo quieren BAJO. Si un solo número mandara
   // en las dos, mover el de tendencia cambiaría también las de rango y la
