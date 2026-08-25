@@ -236,6 +236,7 @@ export default {
     adxOk: ({ adx }) => ` · ADX ${adx}: the trend has strength`,
 
     vigilanciaAdx: ({ dif, favor, adx, min }) => `Differential ${dif} favouring ${favor} with EMAs aligned, but ADX is at ${adx}: below ${min} there is no real trend, just chop.`,
+    vigilanciaRsi: ({ dif, favor, rsi, minRsi }) => `Spread ${dif} favouring ${favor} with EMAs aligned, but RSI is already at ${rsi}: above ${minRsi} the move has already happened and entering now means chasing it.`,
 
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) vs ${q} (${fq}), EMAs aligned, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI extended, do not chase, wait for a pullback',

@@ -535,3 +535,63 @@ una sesión de hace dos años es mirar el futuro. Usa la anchura media de las
 La comprobación 3 de `prueba-apertura.mjs` lo caza —corre sobre media serie y
 sobre la serie entera y exige que el tramo común salga idéntico, también CON
 el filtro puesto—. Si alguien "simplifica" eso a `par.atrAbs`, la prueba falla.
+
+---
+
+# El filtro del RSI, medido de frente (2026-08-25)
+
+Lo que salió, sobre los mismos ~35 meses, solo señales de tendencia, vara
+neutra 1:1 y spread descontado. La mitad parte en 2025-04-24.
+
+| Umbral | Ops | Señ/mes | Acierto | Por 1R | 1ª mitad | 2ª mitad |
+|---|---:|---:|---:|---:|---:|---:|
+| Sin filtro *(hoy)* | 7.340 | 207,7 | 46% | −0,12 | −0,12 | −0,13 |
+| Rechaza si RSI ≥ 80 | 7.525 | 213,0 | 47% | −0,12 | −0,12 | −0,11 |
+| Rechaza si RSI ≥ 75 | 6.877 | 194,6 | 47% | −0,11 | −0,12 | −0,10 |
+| **Rechaza si RSI ≥ 70** | **4.975** | **140,8** | **47%** | **−0,10** | **−0,10** | **−0,11** |
+| Rechaza si RSI ≥ 65 | 2.438 | 69,0 | 46% | −0,12 | −0,14 | −0,08 |
+| Rechaza si RSI ≥ 60 | 606 | 17,1 | 44% | −0,17 | −0,16 | −0,20 |
+
+## Lo bueno: se porta como una regla de verdad, no como una casualidad
+
+Es la primera cosa medida en esta app que pasa las tres pruebas a la vez:
+
+- **La curva es suave.** 80 → 75 → 70 mejora progresivamente y después
+  empeora en 65 y 60. No es un pico aislado en un número exacto, que es la
+  firma de una coincidencia.
+- **Aguanta en las dos mitades.** En 70 da −0,10 y −0,11. El ADX en 35 fallaba
+  justo aquí: mejoraba en una ventana y desaparecía en la otra.
+- **Deja 141 señales al mes.** No enmudece la app. Ese fue el error de agosto.
+
+## Lo malo, y es lo que decide: el efecto es DIEZ VECES más pequeño de lo
+## que decían los troceos
+
+Esta es la lección cara de este día:
+
+| Fuente | Extendido | Zona sana | Diferencia |
+|---|---|---|---|
+| Historial real, 37 ops | 12% | 50% | **38 puntos** |
+| **Medido de frente, 3 años** | — | — | **1 punto** (46% → 47%) |
+
+Los tres "hallazgos" anteriores decían que entrar extendido era catastrófico.
+Medido de frente sobre 7.340 operaciones, quitar las extendidas mueve el
+acierto **un punto** y el resultado de −0,12 a −0,10.
+
+Aquel 12% de acierto salía de **17 operaciones**. Con 17 tiradas, un 12% y un
+45% son perfectamente compatibles con la misma moneda. Y que "saliera tres
+veces" no lo confirmaba: las tres eran el mismo troceo a posteriori sobre
+muestras chicas, no tres pruebas independientes.
+
+⚠️ **La regla que queda escrita:** un troceo a posteriori sirve para tener una
+IDEA, nunca para tener un NÚMERO. El número solo vale si la regla se escribe
+de frente y se mide fuera de la muestra donde se le ocurrió a uno.
+
+## Qué hacer con esto
+
+`RSI_MAX` queda en `null` —apagado— hasta que Néstor decida. Encenderlo en 70
+es defendible: mejora en las dos mitades, la curva es suave y sigue dando 141
+señales al mes. Pero **no convierte la app en ganadora**: la deja en −0,10 por
+unidad de riesgo en vez de −0,12. Sigue perdiendo.
+
+Con la geometría real de la app (no la neutra) el efecto es aún menor:
+−0,15 sin filtro contra −0,14 en 70.

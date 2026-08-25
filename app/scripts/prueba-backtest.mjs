@@ -252,11 +252,24 @@ console.log('\n9. Mover los umbrales no cambia la app por defecto')
   // hoy se descartan) y subirlo mucho tiene que quitarlas. Si no cambiara
   // nada, el umbral no estaría llegando a la app y la medición del ADX sería
   // un número inventado.
-  const sinAdx = generarSenales(barras, rates, rangos, { vista: { adxMin: 0 } })
-  const conAdxAlto = generarSenales(barras, rates, rangos, { vista: { adxMin: 60 } })
   const tend = (l) => l.filter((s) => s.tipo === 'tendencia').length
-  comprobar(tend(sinAdx) > tend(porDefecto), `sin ADX salen más señales de tendencia (${tend(sinAdx)} vs ${tend(porDefecto)})`)
-  comprobar(tend(conAdxAlto) < tend(porDefecto), `con ADX 60 salen menos (${tend(conAdxAlto)})`)
+
+  // ⚠️ TODO LO DEL ADX SE MIDE CON EL FILTRO DE RSI APAGADO, y no es un
+  // capricho. Desde que el RSI filtra (2026-08-25) hay DOS filtros encima de
+  // las mismas señales, y en el mercado sintético el del RSI deja casi
+  // ninguna: comparar contra `porDefecto` daba "1 vs 1" en todo y las
+  // comprobaciones del ADX pasaban a no comprobar nada.
+  //
+  // Es el MISMO error que este archivo ya advierte más abajo con el ADX
+  // gobernando tendencia y rango a la vez: dos cosas moviéndose juntas y un
+  // número que parece una respuesta y es un efecto secundario. Para medir un
+  // filtro hay que dejar quieto el otro.
+  const sinRsi = { rsiMax: null }
+  const base = generarSenales(barras, rates, rangos, { vista: sinRsi })
+  const sinAdx = generarSenales(barras, rates, rangos, { vista: { ...sinRsi, adxMin: 0 } })
+  const conAdxAlto = generarSenales(barras, rates, rangos, { vista: { ...sinRsi, adxMin: 60 } })
+  comprobar(tend(sinAdx) > tend(base), `sin ADX salen más señales de tendencia (${tend(sinAdx)} vs ${tend(base)})`)
+  comprobar(tend(conAdxAlto) < tend(base), `con ADX 60 salen menos (${tend(conAdxAlto)})`)
 
   // El umbral de la app está en 20. Estuvo en 35 entre el 2026-08-12 y el
   // 2026-08-17, hasta que medirlo sobre 35 meses mostró que el ADX no cambia
@@ -265,15 +278,62 @@ console.log('\n9. Mover los umbrales no cambia la app por defecto')
   //
   // Se fija aquí para que nadie lo mueva sin querer: pedir 20 a mano tiene que
   // dar EXACTAMENTE lo mismo que no pedir nada, y pedir 35 tiene que dar menos.
-  const conAdx20 = generarSenales(barras, rates, rangos, { vista: { adxMin: 20 } })
-  const conAdx35 = generarSenales(barras, rates, rangos, { vista: { adxMin: 35 } })
+  const conAdx20 = generarSenales(barras, rates, rangos, { vista: { ...sinRsi, adxMin: 20 } })
+  const conAdx35 = generarSenales(barras, rates, rangos, { vista: { ...sinRsi, adxMin: 35 } })
+  comprobar(tend(conAdx20) === tend(base), `la app usa ADX 20, no otro valor (${tend(conAdx20)} = ${tend(base)})`)
   comprobar(
-    tend(conAdx20) === tend(porDefecto),
-    `la app usa 20, no otro valor (${tend(conAdx20)} = ${tend(porDefecto)})`
+    tend(conAdx35) < tend(base),
+    `y con 35 —el que estuvo puesto cinco días— salían menos (${tend(conAdx35)} vs ${tend(base)})`
+  )
+
+  // --- El filtro de "no perseguir" (RSI) ---------------------------------
+  //
+  // Va APAGADO en la app. Estas comprobaciones fijan las tres cosas que lo
+  // hacen medible sin engañarse:
+  //
+  //   a) apagado = idéntico a no existir (si no, ya habría cambiado la app);
+  //   b) es un filtro de verdad: solo QUITA señales, nunca añade;
+  //   c) es SIMÉTRICO. Esto es lo que más fácil se rompe: si solo mirase el
+  //      RSI alto, filtraría las compras y dejaría intactas las ventas, y el
+  //      resultado parecería una mejora del filtro cuando en realidad sería
+  //      "la app opera menos compras". El error tiene la misma forma que el
+  //      del ADX gobernando dos cosas opuestas.
+  const conRsi70 = generarSenales(barras, rates, rangos, { vista: { rsiMax: 70 } })
+  const conRsi60 = generarSenales(barras, rates, rangos, { vista: { rsiMax: 60 } })
+  const conRsiNulo = generarSenales(barras, rates, rangos, { vista: { rsiMax: null } })
+  // El filtro se ENCENDIÓ en 70 el 2026-08-25. Estas dos fijan que sigue ahí:
+  // pedir 70 a mano tiene que dar EXACTAMENTE lo mismo que no pedir nada, y
+  // apagarlo tiene que AÑADIR señales. Si alguien lo apaga sin querer, salta.
+  comprobar(
+    tend(conRsi70) === tend(porDefecto),
+    `la app usa RSI 70, no otro valor (${tend(conRsi70)} = ${tend(porDefecto)})`
   )
   comprobar(
-    tend(conAdx35) < tend(porDefecto),
-    `y con 35 —el que estuvo puesto cinco días— salían menos (${tend(conAdx35)} vs ${tend(porDefecto)})`
+    tend(conRsiNulo) > tend(porDefecto),
+    `apagarlo añade señales (${tend(conRsiNulo)} vs ${tend(porDefecto)}), como debe hacer un filtro`
+  )
+  comprobar(tend(conRsi60) <= tend(porDefecto), `y con 60 quita más todavía (${tend(conRsi60)})`)
+  {
+    // Solo quita, nunca añade: las que quedan tienen que estar TODAS entre las
+    // de antes, una por una.
+    const antes = new Set(conRsiNulo.filter((x) => x.tipo === 'tendencia').map((x) => `${x.id}@${x.vistoEl}`))
+    comprobar(
+      porDefecto.filter((x) => x.tipo === 'tendencia').every((x) => antes.has(`${x.id}@${x.vistoEl}`)),
+      'todas las que sobreviven al filtro ya estaban sin él'
+    )
+    // La simetría: tiene que recortar los DOS lados, no solo uno.
+    const lado = (l, d) => l.filter((x) => x.tipo === 'tendencia' && x.ladoOriginal === d).length
+    const quitaC = lado(conRsiNulo, 'COMPRA') - lado(conRsi60, 'COMPRA')
+    const quitaV = lado(conRsiNulo, 'VENTA') - lado(conRsi60, 'VENTA')
+    comprobar(
+      quitaC > 0 && quitaV > 0,
+      `recorta los dos lados, no solo uno (${quitaC} compras y ${quitaV} ventas menos)`
+    )
+  }
+  // El filtro de tendencia no puede tocar las de rango, igual que con el ADX.
+  comprobar(
+    conRsi60.filter((s) => s.tipo === 'rango').length === conRsiNulo.filter((s) => s.tipo === 'rango').length,
+    'y no toca las señales de rango'
   )
 
   // ⚠️ LO IMPORTANTE. El ADX se usa para dos cosas opuestas: las de tendencia
@@ -287,19 +347,19 @@ console.log('\n9. Mover los umbrales no cambia la app por defecto')
   // cero, o sea borrándolas todas. El número parecía una respuesta y era un
   // efecto secundario.
   const rango = (l) => l.filter((s) => s.tipo === 'rango').length
-  const soloTendMasDuro = generarSenales(barras, rates, rangos, { vista: { adxMin: 45 } })
+  const soloTendMasDuro = generarSenales(barras, rates, rangos, { vista: { ...sinRsi, adxMin: 45 } })
   comprobar(
     rango(soloTendMasDuro) === rango(porDefecto),
     `subir el ADX de tendencia NO toca las de rango (${rango(soloTendMasDuro)} = ${rango(porDefecto)})`
   )
-  comprobar(tend(soloTendMasDuro) < tend(porDefecto), 'pero sí quita señales de tendencia, que es lo que se pedía')
+  comprobar(tend(soloTendMasDuro) < tend(base), 'pero sí quita señales de tendencia, que es lo que se pedía')
 
-  const soloRangoMasAncho = generarSenales(barras, rates, rangos, { vista: { adxMaxRango: 45 } })
+  const soloRangoMasAncho = generarSenales(barras, rates, rangos, { vista: { ...sinRsi, adxMaxRango: 45 } })
   comprobar(
-    tend(soloRangoMasAncho) === tend(porDefecto),
-    `y al revés: ampliar el de rango NO toca las de tendencia (${tend(soloRangoMasAncho)} = ${tend(porDefecto)})`
+    tend(soloRangoMasAncho) === tend(base),
+    `y al revés: ampliar el de rango NO toca las de tendencia (${tend(soloRangoMasAncho)} = ${tend(base)})`
   )
-  comprobar(rango(soloRangoMasAncho) > rango(porDefecto), 'pero sí añade señales de rango')
+  comprobar(rango(soloRangoMasAncho) > rango(base), 'pero sí añade señales de rango')
 
   // Y el guardián del cambio del 2026-08-12: el umbral de rango se quedó en
   // 20 cuando el de tendencia subió a 35. Si alguien volviera a atarlos (por
@@ -307,7 +367,7 @@ console.log('\n9. Mover los umbrales no cambia la app por defecto')
   // empezaría a llamar "rango" a tendencias arrancando, en silencio y en la
   // dirección contraria a la que se buscaba. Pedir 20 a mano tiene que dar
   // exactamente lo mismo que no pedir nada.
-  const rangoEn20 = generarSenales(barras, rates, rangos, { vista: { adxMaxRango: 20 } })
+  const rangoEn20 = generarSenales(barras, rates, rangos, { vista: { ...sinRsi, adxMaxRango: 20 } })
   comprobar(
     rango(rangoEn20) === rango(porDefecto),
     `el umbral de rango sigue en 20, no siguió al de tendencia (${rango(rangoEn20)} = ${rango(porDefecto)})`
@@ -315,7 +375,7 @@ console.log('\n9. Mover los umbrales no cambia la app por defecto')
 
   // Y quitar de verdad el filtro de tendencia tiene que ANADIR operaciones.
   // Si saliera al reves, es que se estaria colando otro cambio.
-  const sinAdxLimpio = generarSenales(barras, rates, rangos, { vista: { adxMin: 0 } })
+  const sinAdxLimpio = generarSenales(barras, rates, rangos, { vista: { ...sinRsi, adxMin: 0 } })
   comprobar(
     sinAdxLimpio.length > porDefecto.length,
     `quitar el filtro de ADX AÑADE operaciones (${sinAdxLimpio.length} vs ${porDefecto.length}), como debe hacer un filtro`

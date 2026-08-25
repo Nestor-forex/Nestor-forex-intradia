@@ -231,6 +231,7 @@ export default {
     adxOk: ({ adx }) => ` · ADX ${adx}: रुझान में दम है`,
 
     vigilanciaAdx: ({ dif, favor, adx, min }) => `${favor} के पक्ष में ${dif} का अंतर और EMA भी संरेखित, पर ADX ${adx} पर है: ${min} से नीचे असली रुझान नहीं, बस उतार-चढ़ाव है।`,
+    vigilanciaRsi: ({ dif, favor, rsi, minRsi }) => `${favor} के पक्ष में ${dif} का अंतर है और EMA भी क़तार में हैं, पर RSI पहले ही ${rsi} पर है: ${minRsi} से ऊपर चाल हो चुकी होती है और अब घुसना उसका पीछा करना है।`,
 
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) बनाम ${q} (${fq}), EMA एक दिशा में, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI अति-विस्तारित, पीछे मत भागें, गिरावट का इंतज़ार करें',

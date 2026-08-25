@@ -232,6 +232,7 @@ export default {
     adxOk: ({ adx }) => ` · ADX ${adx}: الاتجاه لديه قوة`,
 
     vigilanciaAdx: ({ dif, favor, adx, min }) => `فارق ${dif} لصالح ${favor} مع اصطفاف المتوسطات، لكن ADX عند ${adx}: دون ${min} لا يوجد اتجاه حقيقي، مجرد تذبذب.`,
+    vigilanciaRsi: ({ dif, favor, rsi, minRsi }) => `الفارق ${dif} لصالح ${favor} والمتوسطات مصطفة، لكن RSI وصل بالفعل إلى ${rsi}: فوق ${minRsi} تكون الحركة قد حدثت بالفعل والدخول الآن مطاردة لها.`,
 
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) مقابل ${q} (${fq})، EMA متوافقة، RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI ممتد، لا تلاحق السعر، انتظر ارتدادًا',

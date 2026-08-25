@@ -273,6 +273,7 @@ export default {
   calc_barrido: {
     adxOk: ({ adx }) => ` · ADX ${adx}: la tendencia tiene fuerza`,
     vigilanciaAdx: ({ dif, favor, adx, min }) => `Diferencial ${dif} a favor de ${favor} y EMAs alineadas, pero el ADX está en ${adx}: por debajo de ${min} no hay tendencia de verdad, solo chapoteo.`,
+    vigilanciaRsi: ({ dif, favor, rsi, minRsi }) => `Diferencial ${dif} a favor de ${favor} y EMAs alineadas, pero el RSI ya está en ${rsi}: por encima de ${minRsi} el movimiento ya se hizo y entrar ahora es perseguirlo.`,
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) vs ${q} (${fq}), EMAs alineadas, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI extendido, no perseguir, esperar retroceso',
     rsiContinuacion: ' — RSI en zona de continuación',

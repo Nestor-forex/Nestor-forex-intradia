@@ -569,6 +569,85 @@ for (const minAncho of [null, 1.2, 1.5, 2]) {
 }
 console.log(RAYA)
 
+// --------------------------------------------------------------------------
+// 11. EL FILTRO DE "NO PERSEGUIR" (RSI), MEDIDO DE FRENTE.
+//
+// POR QUÉ ESTE Y NO OTRA REGLA NUEVA
+//
+// Es lo ÚNICO que ha salido positivo en esta app, y ha salido tres veces por
+// caminos distintos: en el historial real de 37 operaciones (entrando con el
+// RSI extendido, 12% de acierto y −0,74; entrando en zona sana, 50% y +0,22),
+// en el troceo de la medición de 3 años, y en el historial viejo de 11.
+//
+// Y no es una regla nueva: es un filtro sobre las que la app YA da. Hoy el RSI
+// se enseña en pantalla pero no rechaza nada.
+//
+// LA TRAMPA QUE HAY QUE ESQUIVAR, Y CÓMO
+//
+// Las tres veces anteriores fueron TROCEOS A POSTERIORI: partir los resultados
+// después de verlos. Con suficientes cortes siempre aparece uno que separa las
+// buenas de las malas en los datos que ya tienes, y después no sirve de nada.
+// Volver a trocear lo mismo no confirma nada: da el mismo número otra vez.
+//
+// Tres cosas lo ponen a prueba de verdad:
+//
+//   1. EL FILTRO ES DE VERDAD. Va dentro de `clasificar`, o sea que la app
+//      rechaza la señal antes de darla. No se borran resultados al final.
+//   2. BARRIDO DE UMBRALES. Si solo funciona justo en 70 y no en 65 ni en 75,
+//      es casualidad. Una regla de mercado de verdad no depende de un número
+//      exacto.
+//   3. LAS DOS MITADES DEL TIEMPO POR SEPARADO. Es la prueba que el ADX no
+//      pasó: allí la "mejora" existía en 7 meses y desaparecía en 35. Un
+//      filtro que solo funciona en una mitad no es un filtro, es una
+//      coincidencia de esa mitad.
+//
+// Y la columna de señales/mes al lado, porque el error del ADX fue medir solo
+// el acierto: un filtro que deja la app muda no sirve aunque acierte.
+// --------------------------------------------------------------------------
+
+const mitad = barras[Math.floor((VENTANA + barras.length) / 2)]
+const MESES_MITAD = MESES / 2
+
+console.log('')
+console.log('EL FILTRO DE "NO PERSEGUIR" (RSI), MEDIDO DE FRENTE')
+console.log('Solo señales de TENDENCIA, geometría neutra 1:1, spread descontado.')
+console.log(`Las dos mitades se parten en ${mitad}.`)
+console.log('')
+console.log('umbral               ops  señ/mes  acierto   por 1R  │  1ª mitad  │  2ª mitad')
+console.log(RAYA)
+for (const u of [null, 80, 75, 70, 65, 60]) {
+  const r = correr({ geometria: simetrica, vista: { rsiMax: u } })
+  const tend = r.senales.filter((s) => s.tipo === 'tendencia')
+  const m = medir(tend, r.porClave, { conSpread: true })
+  const m1 = medir(tend.filter((s) => s.vistoEl < mitad), r.porClave, { conSpread: true })
+  const m2 = medir(tend.filter((s) => s.vistoEl >= mitad), r.porClave, { conSpread: true })
+  const pr = (x) => (x === null ? '   —  ' : ((x >= 0 ? '+' : '') + x.toFixed(2)).padStart(6))
+  const ac = (x) => (x === null ? '  — ' : (x.toFixed(0) + '%').padStart(4))
+  console.log(
+    `${(u === null ? 'sin filtro (hoy)' : `rechaza si RSI ≥ ${u}`).padEnd(20)} ` +
+      `${String(tend.length).padStart(5)}  ${(tend.length / MESES).toFixed(1).padStart(6)}    ` +
+      `${ac(m.acierto)}   ${pr(m.porRiesgo)}  │ ${ac(m1.acierto)} ${pr(m1.porRiesgo)} │ ` +
+      `${ac(m2.acierto)} ${pr(m2.porRiesgo)}   (${(m1.total / MESES_MITAD).toFixed(0)}/${(m2.total / MESES_MITAD).toFixed(0)} al mes)`
+  )
+}
+console.log(RAYA)
+console.log('Qué tiene que pasar para creerlo: que mejore en VARIOS umbrales')
+console.log('seguidos, en las DOS mitades, y que siga dejando señales de sobra.')
+console.log('Si solo mejora en uno, o solo en una mitad, es una coincidencia de')
+console.log('estos meses — exactamente lo que le pasó al ADX en 35.')
+
+// Y con la geometría de la app, que es lo que de verdad se le daría a nadie.
+console.log('')
+console.log('EL MISMO, PERO CON LA GEOMETRÍA REAL DE LA APP (con spread)')
+console.log(CAB)
+console.log(RAYA)
+for (const u of [null, 75, 70, 65]) {
+  const r = correr({ vista: { rsiMax: u } })
+  const tend = r.senales.filter((s) => s.tipo === 'tendencia')
+  fila(u === null ? 'sin filtro (hoy)' : `rechaza si RSI ≥ ${u}`, medir(tend, r.porClave, { conSpread: true }))
+}
+console.log(RAYA)
+
 console.log('')
 console.log('Cómo leerlo, y con qué desconfianza:')
 console.log(' · Con menos de ~30 operaciones el porcentaje puede ser suerte.')
