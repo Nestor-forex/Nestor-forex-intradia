@@ -11,12 +11,35 @@ import { readFileSync } from 'node:fs'
 export const SYMBOLS = ['USD/EUR', 'USD/GBP', 'USD/JPY', 'USD/CHF', 'USD/AUD', 'USD/NZD', 'USD/CAD']
 const SYM_TO_CCY = { 'USD/EUR': 'EUR', 'USD/GBP': 'GBP', 'USD/JPY': 'JPY', 'USD/CHF': 'CHF', 'USD/AUD': 'AUD', 'USD/NZD': 'NZD', 'USD/CAD': 'CAD' }
 
-// La llave sale de .env.production, que sí está en el repo (es una llave de
-// plan gratuito, no da acceso a nada más que a precios públicos).
+// DE DÓNDE SALE LA LLAVE.
+//
+// Primero del secreto `TWELVEDATA_KEY` del repositorio, y si no está, de
+// `.env.production`, que sigue en el repo.
+//
+// El orden importa y es el camino de salida. Mientras la app le pedía los
+// precios a Twelve Data desde el navegador, la llave TENÍA que ir en
+// `.env.production` porque de ahí la toma Vite al compilar — o sea que iba
+// dentro del JavaScript que se descarga cualquiera. Desde que la app lee el
+// barrido ya publicado, la llave solo la necesitan estos guiones, que corren
+// en GitHub Actions, donde un secreto sí está a salvo.
+//
+// PARA CERRARLO DEL TODO hay que hacer dos cosas, en este orden:
+//   1. crear el secreto TWELVEDATA_KEY en el repositorio,
+//   2. y solo entonces borrar la línea de `.env.production`.
+// Al revés se quedarían sin precios el vigía y el reporte diario. Por eso hay
+// respaldo en vez de exigir el secreto: así el cambio de la app se puede
+// publicar hoy y la limpieza se hace después, sin prisa y sin apagar nada.
 export function leerLlave(base = import.meta.url) {
+  const delEntorno = process.env.TWELVEDATA_KEY
+  if (delEntorno && delEntorno.trim()) return delEntorno.trim()
+
   const env = readFileSync(new URL('../../.env.production', base), 'utf8')
   const m = env.match(/^VITE_TWELVEDATA_KEY=(.+)$/m)
-  if (!m || !m[1].trim()) throw new Error('VITE_TWELVEDATA_KEY no está configurada en .env.production')
+  if (!m || !m[1].trim()) {
+    throw new Error(
+      'No hay llave de Twelve Data: ni el secreto TWELVEDATA_KEY ni VITE_TWELVEDATA_KEY en .env.production'
+    )
+  }
   return m[1].trim()
 }
 

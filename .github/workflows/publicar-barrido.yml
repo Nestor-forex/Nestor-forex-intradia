@@ -1,0 +1,97 @@
+name: Publicar el barrido para la app
+
+# Baja las velas, calcula el barrido y lo deja en `estado/barrido.json` de la
+# rama `datos`, que es lo que se baja la app. NO anota señales, NO las juzga y
+# NO manda avisos: de eso se encarga el vigía, una vez por hora. Ver el
+# comentario de cabecera de app/scripts/publicar-barrido.mjs para el porqué de
+# tenerlos separados.
+#
+# CUOTA: cada corrida gasta 7 créditos de Twelve Data.
+#
+#   este workflow ... 24 corridas × 7 = 168   (a la media, de lunes a viernes)
+#   el vigía ........ 24 corridas × 7 = 168   (al minuto 20)
+#   reporte diario ..  1 corrida  × 7 =   7
+#   ─────────────────────────────────────────
+#   total ...........................   343  de los 800 diarios
+#
+# Queda más de la mitad libre para una corrida a mano del banco de pruebas.
+#
+# POR QUÉ A LA MEDIA Y NO EN PUNTO: el vigía corre al minuto 20 y cada barrido
+# gasta 7 de los 8 créditos por minuto que da el plan gratuito. Si coincidieran,
+# uno de los dos se quedaría sin datos. Al minuto 50 quedan 30 minutos de
+# separación con el vigía por los dos lados.
+#
+# Y ASÍ CADA HORA TIENE DOS OPORTUNIDADES DE PUBLICARSE. El reloj de GitHub es
+# impuntual y se le han medido huecos de más de siete horas seguidas; con dos
+# corridas por hora, saltarse una no deja la app enseñando datos viejos.
+
+on:
+  schedule:
+    - cron: '50 * * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  # Comparte grupo con el vigía a propósito: los dos escriben el mismo archivo
+  # en la misma rama, así que no deben correr a la vez.
+  group: vigia
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    # Lo normal son unos 20 segundos; con reintentos por el límite de consultas
+    # por minuto de Twelve Data, un par de minutos. El tope es la red de
+    # seguridad para cualquier cuelgue no previsto: sin él GitHub deja correr
+    # un trabajo hasta 6 horas, y como `concurrency` no cancela el anterior,
+    # uno atascado bloquearía también al vigía.
+    timeout-minutes: 8
+    steps:
+      - name: Traer el código
+        uses: actions/checkout@v4
+
+      - name: Traer los datos
+        uses: actions/checkout@v4
+        with:
+          ref: datos
+          path: datos
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # No hace falta `npm ci`: este guion no usa ningún paquete (los avisos al
+      # celular, que son los que necesitan `web-push`, los manda el vigía). Sin
+      # instalar nada, la corrida tarda segundos en vez de medio minuto, y son
+      # 24 corridas al día.
+
+      - name: Publicar
+        working-directory: app
+        env:
+          VIGIA_DATOS: ${{ github.workspace }}/datos
+          # Si el secreto está puesto, se usa; si no, `velas.mjs` se cae a la
+          # clave de .env.production. Ver el comentario de `leerLlave`.
+          TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}
+        run: node scripts/publicar-barrido.mjs
+
+      - name: Guardar
+        working-directory: datos
+        run: |
+          git config user.name 'Vigía Nestor Forex'
+          git config user.email 'noreply@anthropic.com'
+          git add estado
+          if git diff --cached --quiet; then
+            echo 'Sin cambios que guardar.'
+            exit 0
+          fi
+          git commit -m "Barrido $(date -u +'%Y-%m-%d %H:%M UTC')"
+          # Si el vigía escribió mientras tanto, se reintenta encima de lo suyo
+          # en vez de pisarlo.
+          for i in 1 2 3; do
+            git pull --rebase origin datos && git push origin HEAD:datos && exit 0
+            sleep $((i * 5))
+          done
+          echo 'No se pudo guardar tras 3 intentos.'
+          exit 1

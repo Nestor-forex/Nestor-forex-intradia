@@ -79,6 +79,9 @@ jobs:
           # La clave PÚBLICA no va aquí: se lee de src/lib/push/vapid.js, para
           # que la app y el vigía usen exactamente la misma y no puedan
           # desincronizarse.
+          # La llave de Twelve Data. Si el secreto no está puesto, velas.mjs
+          # se cae a la de .env.production y todo sigue igual.
+          TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}
           VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: node scripts/vigia.mjs
