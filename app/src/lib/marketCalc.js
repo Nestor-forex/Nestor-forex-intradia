@@ -106,14 +106,21 @@ function perfilPorHora(barras, serieHi, serieLo, serie) {
   return { crudo, factor: crudo.map((r) => Math.min(TOPE_HORA, Math.max(PISO_HORA, r))) }
 }
 
-const emaLast = (c, p) => {
+// Los indicadores se EXPORTAN solo para poder probarlos contra valores de
+// referencia publicados (scripts/prueba-indicadores.mjs). Ninguna pantalla los
+// usa directamente: el barrido los consume aquí dentro.
+//
+// Mientras estuvieron privados nada comprobaba que el RSI siguiera siendo el
+// RSI. Estaban bien, pero por buen trabajo, no por protección — y de ellos
+// salen el stop, el objetivo y las señales.
+export const emaLast = (c, p) => {
   const k = 2 / (p + 1)
   let e = c.slice(0, p).reduce((a, b) => a + b) / p
   for (let i = p; i < c.length; i++) e = c[i] * k + e * (1 - k)
   return e
 }
 
-const rsi = (c, p = 14) => {
+export const rsi = (c, p = 14) => {
   let g = 0
   let l = 0
   for (let i = 1; i <= p; i++) {
@@ -138,7 +145,7 @@ const rsi = (c, p = 14) => {
 //   TR = max(máximo − mínimo, |máximo − cierre previo|, |mínimo − cierre previo|)
 // El ATR real es bastante mayor que aquel sustituto, y de él dependen el
 // stop y el tamaño del objetivo.
-function atrWilder(highs, lows, closes, p = 14) {
+export function atrWilder(highs, lows, closes, p = 14) {
   const n = closes.length
   const trs = []
   for (let i = Math.max(1, n - 60); i < n; i++) {
@@ -155,7 +162,7 @@ function atrWilder(highs, lows, closes, p = 14) {
 // dicen hacia dónde va el precio; el ADX dice si de verdad va hacia alguna
 // parte o solo está chapoteando. Por convención: por debajo de 20 no hay
 // tendencia que valga, por encima de 25 la hay y es clara.
-function adxWilder(highs, lows, closes, p = 14) {
+export function adxWilder(highs, lows, closes, p = 14) {
   const n = closes.length
   const desde = Math.max(1, n - 60)
   const tr = []
