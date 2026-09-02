@@ -32,6 +32,16 @@ export default {
     retirado: 'Dein Zugang wurde entzogen. Schreib Néstor, falls das ein Irrtum ist.',
   },
 
+  // La pantalla de último recurso, cuando algo falla al dibujarse.
+  // La usa RedDeSeguridad.jsx, que las lee SIN pasar por React: si esta
+  // clave faltara, cae al español en vez de dejar la pantalla en blanco.
+  error: {
+    titulo: 'Es ist ein Fehler aufgetreten',
+    cuerpo: 'Diese Ansicht konnte nicht geladen werden. Ihre Daten und Ihre Trades sind sicher — das ist ein Anzeigeproblem, kein Kontoproblem.',
+    boton: 'App neu laden',
+    detalle: 'Technische Details',
+  },
+
   nav: { historial: 'Verlauf', barrido: 'Scan', diario: 'Journal', riesgo: 'Risiko', miembros: 'Mitglieder' },
 
   sesgo: { COMPRA: 'BUY', VENTA: 'SELL', VIGILAR: 'WATCH', '—': '—' },

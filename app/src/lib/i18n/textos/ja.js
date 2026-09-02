@@ -28,6 +28,16 @@ export default {
     retirado: 'アクセス権が取り消されました。間違いだと思う場合は Néstor に連絡してください。',
   },
 
+  // La pantalla de último recurso, cuando algo falla al dibujarse.
+  // La usa RedDeSeguridad.jsx, que las lee SIN pasar por React: si esta
+  // clave faltara, cae al español en vez de dejar la pantalla en blanco.
+  error: {
+    titulo: '問題が発生しました',
+    cuerpo: 'この画面を表示できませんでした。データと取引は無事です。表示上の問題であり、アカウントの問題ではありません。',
+    boton: 'アプリを再読み込み',
+    detalle: '技術的な詳細',
+  },
+
   nav: { historial: '履歴', barrido: 'スキャン', diario: '売買日誌', riesgo: 'リスク', miembros: 'メンバー' },
 
   sesgo: { COMPRA: 'BUY', VENTA: 'SELL', VIGILAR: 'WATCH', '—': '—' },

@@ -32,6 +32,16 @@ export default {
     retirado: 'Seu acesso foi removido. Escreva para Néstor se achar que é um erro.',
   },
 
+  // La pantalla de último recurso, cuando algo falla al dibujarse.
+  // La usa RedDeSeguridad.jsx, que las lee SIN pasar por React: si esta
+  // clave faltara, cae al español en vez de dejar la pantalla en blanco.
+  error: {
+    titulo: 'A app teve um problema',
+    cuerpo: 'Esta tela não conseguiu carregar. Os seus dados e as suas operações estão seguros: é um problema de exibição, não da sua conta.',
+    boton: 'Recarregar a app',
+    detalle: 'Detalhe técnico',
+  },
+
   nav: { historial: 'Histórico', barrido: 'Varredura', diario: 'Diário', riesgo: 'Risco', miembros: 'Membros' },
 
   sesgo: { COMPRA: 'BUY', VENTA: 'SELL', VIGILAR: 'WATCH', '—': '—' },

@@ -28,6 +28,16 @@ export default {
     retirado: '你的访问权限已被取消。如果你认为是误操作，请联系 Néstor。',
   },
 
+  // La pantalla de último recurso, cuando algo falla al dibujarse.
+  // La usa RedDeSeguridad.jsx, que las lee SIN pasar por React: si esta
+  // clave faltara, cae al español en vez de dejar la pantalla en blanco.
+  error: {
+    titulo: '应用出现了问题',
+    cuerpo: '这个页面没能显示出来。您的数据和交易记录都是安全的——这是显示问题，不是账户问题。',
+    boton: '重新加载应用',
+    detalle: '技术详情',
+  },
+
   nav: { historial: '历史', barrido: '扫描', diario: '交易日志', riesgo: '风险', miembros: '成员' },
 
   sesgo: { COMPRA: 'BUY', VENTA: 'SELL', VIGILAR: 'WATCH', '—': '—' },

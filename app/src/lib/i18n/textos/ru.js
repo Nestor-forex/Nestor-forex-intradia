@@ -28,6 +28,16 @@ export default {
     retirado: 'Ваш доступ отозван. Напишите Néstor, если считаете это ошибкой.',
   },
 
+  // La pantalla de último recurso, cuando algo falla al dibujarse.
+  // La usa RedDeSeguridad.jsx, que las lee SIN pasar por React: si esta
+  // clave faltara, cae al español en vez de dejar la pantalla en blanco.
+  error: {
+    titulo: 'В приложении произошла ошибка',
+    cuerpo: 'Не удалось отобразить этот экран. Ваши данные и сделки в безопасности: это проблема отображения, а не вашего счёта.',
+    boton: 'Перезагрузить приложение',
+    detalle: 'Технические подробности',
+  },
+
   nav: { historial: 'История', barrido: 'Обзор', diario: 'Журнал', riesgo: 'Риск', miembros: 'Участники' },
 
   sesgo: { COMPRA: 'BUY', VENTA: 'SELL', VIGILAR: 'WATCH', '—': '—' },

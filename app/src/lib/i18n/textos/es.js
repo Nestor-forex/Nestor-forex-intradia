@@ -47,6 +47,16 @@ export default {
     retirado: 'Tu acceso fue retirado. Escríbele a Néstor si crees que es un error.',
   },
 
+  // La pantalla de último recurso, cuando algo falla al dibujarse.
+  // La usa RedDeSeguridad.jsx, que las lee SIN pasar por React: si esta
+  // clave faltara, cae al español en vez de dejar la pantalla en blanco.
+  error: {
+    titulo: 'La app tuvo un problema',
+    cuerpo: 'Algo falló al mostrar esta pantalla. Tus datos y tus operaciones están a salvo: esto es un problema de visualización, no de tu cuenta.',
+    boton: 'Recargar la app',
+    detalle: 'Detalle técnico',
+  },
+
   nav: {
     historial: 'Historial',
     barrido: 'Barrido',

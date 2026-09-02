@@ -32,6 +32,16 @@ export default {
     retirado: "Ton accès a été retiré. Écris à Néstor si tu penses que c'est une erreur.",
   },
 
+  // La pantalla de último recurso, cuando algo falla al dibujarse.
+  // La usa RedDeSeguridad.jsx, que las lee SIN pasar por React: si esta
+  // clave faltara, cae al español en vez de dejar la pantalla en blanco.
+  error: {
+    titulo: 'Un problème est survenu',
+    cuerpo: "Cet écran n'a pas pu s'afficher. Vos données et vos opérations sont intactes : c'est un problème d'affichage, pas de compte.",
+    boton: "Recharger l'app",
+    detalle: 'Détail technique',
+  },
+
   nav: { historial: 'Historique', barrido: 'Scan', diario: 'Journal', riesgo: 'Risque', miembros: 'Membres' },
 
   sesgo: { COMPRA: 'BUY', VENTA: 'SELL', VIGILAR: 'WATCH', '—': '—' },

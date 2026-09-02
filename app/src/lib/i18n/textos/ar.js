@@ -29,6 +29,16 @@ export default {
     retirado: 'تم سحب صلاحيتك. راسل Néstor إذا كنت ترى أن هذا خطأ.',
   },
 
+  // La pantalla de último recurso, cuando algo falla al dibujarse.
+  // La usa RedDeSeguridad.jsx, que las lee SIN pasar por React: si esta
+  // clave faltara, cae al español en vez de dejar la pantalla en blanco.
+  error: {
+    titulo: 'حدثت مشكلة في التطبيق',
+    cuerpo: 'تعذّر عرض هذه الشاشة. بياناتك وصفقاتك بأمان: هذه مشكلة في العرض وليست في حسابك.',
+    boton: 'إعادة تحميل التطبيق',
+    detalle: 'التفاصيل التقنية',
+  },
+
   nav: { historial: 'السجل', barrido: 'المسح', diario: 'اليومية', riesgo: 'المخاطر', miembros: 'الأعضاء' },
 
   sesgo: { COMPRA: 'BUY', VENTA: 'SELL', VIGILAR: 'WATCH', '—': '—' },

@@ -28,6 +28,16 @@ export default {
     retirado: 'Erişimin kaldırıldı. Bunun bir hata olduğunu düşünüyorsan Néstor’a yaz.',
   },
 
+  // La pantalla de último recurso, cuando algo falla al dibujarse.
+  // La usa RedDeSeguridad.jsx, que las lee SIN pasar por React: si esta
+  // clave faltara, cae al español en vez de dejar la pantalla en blanco.
+  error: {
+    titulo: 'Uygulamada bir sorun oluştu',
+    cuerpo: 'Bu ekran yüklenemedi. Verileriniz ve işlemleriniz güvende — bu bir görüntüleme sorunu, hesap sorunu değil.',
+    boton: 'Uygulamayı yeniden yükle',
+    detalle: 'Teknik ayrıntı',
+  },
+
   nav: { historial: 'Geçmiş', barrido: 'Tarama', diario: 'Günlük', riesgo: 'Risk', miembros: 'Üyeler' },
 
   sesgo: { COMPRA: 'BUY', VENTA: 'SELL', VIGILAR: 'WATCH', '—': '—' },
