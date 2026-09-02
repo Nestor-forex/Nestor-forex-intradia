@@ -48,6 +48,16 @@ jobs:
       - name: Comprobar el rompimiento de apertura
         working-directory: app
         run: node scripts/prueba-apertura.mjs
+      - name: Comprobar los indicadores contra la referencia
+        working-directory: app
+        run: node scripts/prueba-indicadores.mjs
+      # El modelo de costes decide si una regla se enciende o se apaga, o sea
+      # si Néstor le pone dinero. Un error de signo aquí —un coste que sumara
+      # en vez de restar— dejaría la tabla con buena pinta diciendo lo
+      # contrario de la verdad.
+      - name: Comprobar el modelo de costes
+        working-directory: app
+        run: node scripts/prueba-costes.mjs
       - name: Medir
         working-directory: app
         run: node scripts/backtest.mjs

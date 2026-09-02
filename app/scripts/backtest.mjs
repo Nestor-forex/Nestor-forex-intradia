@@ -26,7 +26,8 @@
 
 import { computarBarrido } from '../src/lib/marketCalc.js'
 import { leerLlave, obtenerVelas } from './lib/velas.mjs'
-import { generarSenales, VENTANA } from './lib/backtest-nucleo.mjs'
+import { costeEnPips, nochesEntre, NIVELES_SWAP, SPREAD_PIPS } from './lib/costes.mjs'
+import { generarSenales, medir, barridoSwap, VENTANA } from './lib/backtest-nucleo.mjs'
 import { GEOMETRIAS, simetrica } from './lib/geometrias.mjs'
 import { resolver } from './lib/resolver.mjs'
 import { senalesApertura } from './lib/apertura.mjs'
@@ -54,51 +55,24 @@ const completo = computarBarrido(barras, rates, rangos)
 
 // --------------------------------------------------------------------------
 
-// Cuánto cobra el bróker por abrir y cerrar, en pips. Es un coste FIJO por
-// operación, así que pesa mucho más cuanto más corto sea el objetivo — y en
-// intradía los objetivos son cortos. Un sistema que gana +0,14 por unidad de
-// riesgo con stops de 15 pips se lo come el spread entero.
+// Lo que cuesta operar sale de scripts/lib/costes.mjs: spread POR PAR (no uno
+// solo para los 18, que hacía parecer baratos los cruces) y swap por noche.
 //
-// 1,5 pips es una estimación prudente para los pares mayores de una cuenta
-// normal; en los cruces suele ser más. Cuando el puente de MT5 dé el spread
-// real de AvaTrade se puede poner el de verdad.
-const SPREAD_PIPS = 1.5
+// El spread pesa aquí más que en swing: los objetivos de intradía son de
+// decenas de pips, así que un pip de más o de menos se lleva un pedazo grande
+// del resultado. Un sistema que gana +0,14 por unidad de riesgo con stops de
+// 15 pips se lo come el spread entero.
+//
+// ⚠️ Y EL SWAP TAMPOCO SE CONTABA, aunque parecía razonable ignorarlo: la app
+// se llama Intradía y su idea es abrir y cerrar el mismo día. Pero eso es la
+// INTENCIÓN, no lo que pasa. Medido sobre las 42 operaciones reales ya
+// resueltas: mediana 9 horas, media 17,9, la más larga 102 — y 22 de 42 (52%)
+// cruzaron al menos una vez el corte al que el bróker cobra swap.
+//
+// Las noches se cuentan por los cortes REALES entre entrada y salida, no por
+// la duración: una operación de 6 horas abierta a las 20:00 cruza el corte, y
+// una de 20 horas abierta a las 23:00 no.
 
-function medir(senales, porClave, { conSpread = false } = {}) {
-  let ganadas = 0
-  let perdidas = 0
-  let pips = 0
-  // Resultado en "veces el riesgo de ESA operación", acumulado una a una. Los
-  // pips sueltos no sirven para comparar: 100 pips en GBP/JPY no son 100 en
-  // EUR/CHF, y dos geometrías con riesgos distintos no se pueden comparar en
-  // pips de ninguna manera.
-  let sumaR = 0
-
-  for (const s of senales) {
-    const r = porClave.get(`${s.id}@${s.vistoEl}`)
-    if (!r || (r.resultado !== 'ganada' && r.resultado !== 'perdida')) continue
-    // El spread se paga SIEMPRE, se gane o se pierda, y en veces el riesgo
-    // cuesta más cuanto más estrecho sea el stop.
-    const coste = conSpread ? SPREAD_PIPS / s.pipRiesgo : 0
-    if (r.resultado === 'ganada') {
-      ganadas++
-      sumaR += s.pipBeneficio / s.pipRiesgo - coste
-    } else {
-      perdidas++
-      sumaR -= 1 + coste
-    }
-    pips += r.pips - (conSpread ? SPREAD_PIPS : 0)
-  }
-
-  const total = ganadas + perdidas
-  return {
-    total,
-    ganadas,
-    pips: Math.round(pips),
-    acierto: total ? (ganadas / total) * 100 : null,
-    porRiesgo: total ? sumaR / total : null,
-  }
-}
 
 function correr(opciones) {
   const senales = generarSenales(barras, rates, rangos, { thr: THR, topN: TOP_N, ...opciones })
@@ -285,7 +259,15 @@ console.log(RAYA)
 
 console.log('')
 console.log('LO MISMO, DESCONTANDO EL SPREAD DEL BRÓKER')
-console.log(`(${SPREAD_PIPS} pips por operación, se gane o se pierda)`)
+// Antes aquí se imprimía UN número, porque se cobraba 1 pip igual a los 18
+// pares. Ya no: cada par tiene el suyo (ver lib/costes.mjs), así que se enseña
+// el rango — un número único sería mentira para casi todos.
+{
+  const v = Object.values(SPREAD_PIPS)
+  const medio = v.reduce((a, x) => a + x, 0) / v.length
+  console.log(`(de ${Math.min(...v)} a ${Math.max(...v)} pips según el par, ${medio.toFixed(1)} de media,`)
+  console.log(' se gane o se pierda. El swap va aparte, en la tabla siguiente.)')
+}
 console.log('')
 console.log(`combinación${CAB.slice(11)}`)
 console.log(RAYA)
@@ -648,6 +630,67 @@ for (const u of [null, 75, 70, 65]) {
 }
 console.log(RAYA)
 
+
+// --------------------------------------------------------------------------
+// ¿CUÁNTO SE COME EL SWAP?
+//
+// Parecía razonable ignorarlo —la app se llama Intradía y su idea es abrir y
+// cerrar el mismo día— pero eso es la INTENCIÓN, no lo que pasa. Más de la
+// mitad de las operaciones reales se quedan abiertas cuando el bróker pasa el
+// corte y cobra swap.
+//
+// No se elige un número de swap porque no se sabe: depende del diferencial de
+// tipos de cada momento y del margen de cada bróker. Se mide a varios niveles
+// y se enseña a partir de cuál cambia la conclusión.
+// --------------------------------------------------------------------------
+
+console.log('')
+console.log('══════════════════════════════════════════════════════════════════')
+console.log('¿CUÁNTO SE COME EL SWAP? (mismas señales, regla neutra 1:1)')
+console.log('══════════════════════════════════════════════════════════════════')
+console.log('')
+
+{
+  // Se reutiliza la corrida neutra que ya está calculada arriba. Recalcularla
+  // aquí sería repetir el barrido entero sobre miles de velas para obtener
+  // exactamente las mismas señales.
+  const base = neutra
+  const { total, cruzaron, mediaNoches, filas } = barridoSwap(base.senales, base.porClave)
+
+  console.log(`De ${total} operaciones resueltas, ${cruzaron} cruzaron al menos una noche`)
+  console.log(`(${total ? Math.round((cruzaron / total) * 100) : 0}%), con una media de ${mediaNoches.toFixed(2)} noches cada una.`)
+  console.log('')
+  console.log('Si ese porcentaje fuera casi cero, ignorar el swap estaría bien.')
+  console.log('No lo es.')
+  console.log('')
+
+  console.log('swap/noche      ops  acierto   por 1R   coste medio')
+  console.log('─────────────────────────────────────────────────────')
+  const sinCostes = medir(base.senales, base.porClave)
+  console.log(
+    `sin costes    ${String(sinCostes.total).padStart(5)}` +
+      `  ${(sinCostes.acierto ?? 0).toFixed(0).padStart(5)}%` +
+      `  ${(sinCostes.porRiesgo ?? 0).toFixed(3).padStart(7)}` +
+      `        —`
+  )
+  for (const { nivel, medicion: m, costeMedio } of filas) {
+    const etiqueta = nivel === 0 ? 'solo spread' : `+ ${nivel.toFixed(2)} pips`
+    console.log(
+      `${etiqueta.padEnd(13)} ${String(m.total).padStart(5)}` +
+        `  ${(m.acierto ?? 0).toFixed(0).padStart(5)}%` +
+        `  ${(m.porRiesgo ?? 0).toFixed(3).padStart(7)}` +
+        `  ${total ? costeMedio.toFixed(1).padStart(6) : '     —'} pips`
+    )
+  }
+  console.log('')
+  console.log('El acierto NO cambia entre filas: los costes no mueven si el precio')
+  console.log('llegó al objetivo o al stop, solo lo que queda después. Lo que hay')
+  console.log('que mirar es la columna "por 1R".')
+  console.log('')
+  console.log('Y ojo con leerlo al revés: que el swap empeore poco NO quiere decir')
+  console.log('que el sistema esté bien. Quiere decir que ya perdía antes.')
+}
+
 console.log('')
 console.log('Cómo leerlo, y con qué desconfianza:')
 console.log(' · Con menos de ~30 operaciones el porcentaje puede ser suerte.')
@@ -657,8 +700,9 @@ console.log(' · Los filtros solo QUITAN operaciones, así que siempre se puede'
 console.log('   encontrar uno que borre justo las malas de ESTOS meses sin que')
 console.log('   sirva de nada después. Vale la pena cuando además tiene una')
 console.log('   razón de mercado detrás, no solo un número bonito.')
-console.log(' · Los pips no descuentan el spread, y en intradía el spread pesa')
-console.log('   mucho más que en swing porque los objetivos son más cortos.')
+console.log(' · Donde dice "con costes" ya van descontados spread por par y')
+console.log('   swap por noche. En intradía el spread pesa mucho más que en')
+console.log('   swing, porque los objetivos son más cortos.')
 console.log(' · En los cruces (los que no llevan dólar) el rango se deriva de')
 console.log('   los dos pares contra el dólar, así que sale algo más amplio que')
 console.log('   el real. Sus números son aproximados.')
