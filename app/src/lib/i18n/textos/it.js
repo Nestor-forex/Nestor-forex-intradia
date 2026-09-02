@@ -258,7 +258,6 @@ export default {
     invalCompra: ({ sl, b }) => `chiusura oraria sotto ${sl}, o perdita di forza di ${b} nella classifica.`,
     invalVenta: ({ sl, q }) => `chiusura oraria sopra ${sl}, o recupero di forza di ${q}.`,
     corte: ({ local, utc, fuente }) => `Candela H1 più recente: ${local} ora della Colombia (${utc} UTC) · fonte: ${fuente}`,
-    fuenteVivo: 'Twelve Data + Capital.com (prezzo in tempo reale)',
     fuenteCierre: 'Twelve Data',
   },
 

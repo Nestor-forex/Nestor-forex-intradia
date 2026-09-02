@@ -777,8 +777,11 @@ const mkSetup = (p, lado, esc = {}, t, tipo = 'tendencia') => {
 const porDifAbs = (a, b) => Math.abs(b.dif) - Math.abs(a.dif)
 
 // data: salida de computarBarrido(). Devuelve todo ya formateado para las pantallas.
-// vivo: si la vela más reciente trae el precio en vivo de TrueFX (en vez de
-// solo el último cierre de Twelve Data) — únicamente cambia el texto de "corte".
+//
+// Aquí había un parámetro `vivo` que solo cambiaba la etiqueta de la fuente
+// cuando el precio venía de Capital.com. Esa capa se quitó (ver el comentario
+// largo en useMarketData.js: obligaba a publicar una contraseña en el
+// navegador), así que la fuente es siempre la misma y el parámetro sobraba.
 /**
  * @param adxMin       ADX mínimo para dar señal de TENDENCIA (la app: 35).
  * @param adxMaxRango  ADX máximo para dar señal de RANGO (la app: 20). Va
@@ -802,7 +805,6 @@ export function derivarVista(
   {
     thr = 0.5,
     topN = 3,
-    vivo = false,
     t = crearT(IDIOMA_BASE),
     locale,
     adxMin,
@@ -955,7 +957,7 @@ export function derivarVista(
   const loc = locale || localeDe(IDIOMA_BASE)
   const enUTC = ultima.toLocaleString(loc, { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' })
   const enCO = ultima.toLocaleString(loc, { dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Bogota' })
-  const fuente = vivo ? t('calc_barrido.fuenteVivo') : t('calc_barrido.fuenteCierre')
+  const fuente = t('calc_barrido.fuenteCierre')
   const corte = t('calc_barrido.corte', { local: enCO, utc: enUTC, fuente })
 
   return { monedas, pares, compras, ventas, vigilancia, rangos, retrocesos, setups, corte, sesion }

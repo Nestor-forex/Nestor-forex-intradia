@@ -258,7 +258,6 @@ export default {
     invalCompra: ({ sl, b }) => `إغلاق ساعي دون ${sl}، أو فقدان ${b} لقوتها في الترتيب.`,
     invalVenta: ({ sl, q }) => `إغلاق ساعي فوق ${sl}، أو استعادة ${q} لقوتها.`,
     corte: ({ local, utc, fuente }) => `أحدث شمعة H1: ${local} بتوقيت كولومبيا (${utc} UTC) · المصدر: ${fuente}`,
-    fuenteVivo: 'Twelve Data + Capital.com (سعر مباشر)',
     fuenteCierre: 'Twelve Data',
   },
 

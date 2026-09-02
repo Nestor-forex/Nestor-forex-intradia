@@ -256,7 +256,6 @@ export default {
     invalCompra: ({ sl, b }) => `${sl} 아래의 시간봉 종가, 또는 ${b}가 순위에서 약해질 때.`,
     invalVenta: ({ sl, q }) => `${sl} 위의 시간봉 종가, 또는 ${q}가 다시 강해질 때.`,
     corte: ({ local, utc, fuente }) => `최신 H1 캔들: ${local} 콜롬비아 시간 (${utc} UTC) · 출처: ${fuente}`,
-    fuenteVivo: 'Twelve Data + Capital.com (실시간 가격)',
     fuenteCierre: 'Twelve Data',
   },
 

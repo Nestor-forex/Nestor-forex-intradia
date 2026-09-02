@@ -262,7 +262,6 @@ export default {
     invalCompra: ({ sl, b }) => `hourly close below ${sl}, or ${b} losing strength in the ranking.`,
     invalVenta: ({ sl, q }) => `hourly close above ${sl}, or ${q} regaining strength.`,
     corte: ({ local, utc, fuente }) => `Latest H1 candle: ${local} Colombia time (${utc} UTC) · source: ${fuente}`,
-    fuenteVivo: 'Twelve Data + Capital.com (live price)',
     fuenteCierre: 'Twelve Data',
   },
 

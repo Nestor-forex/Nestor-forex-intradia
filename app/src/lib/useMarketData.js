@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { computarBarrido, derivarVista } from './marketCalc'
-import { useCapitalLive } from './useCapitalLive'
 import { useT } from './i18n'
 
 // v2: la caché guardada ahora incluye el máximo y el mínimo de cada vela. Se
@@ -106,7 +105,6 @@ export function useMarketData({ thr = 0.5, topN = 3 } = {}) {
   const [stale, setStale] = useState(false)
   const [guardadoEl, setGuardadoEl] = useState(null)
   const primeraCarga = useRef(true)
-  const { filaViva, actualizadoEl: vivoActualizadoEl, configurado: vivoConfigurado } = useCapitalLive()
 
   useEffect(() => {
     if (sinConfigurar) return
@@ -142,30 +140,37 @@ export function useMarketData({ thr = 0.5, topN = 3 } = {}) {
     }
   }, [sinConfigurar])
 
-  // Si Capital.com trae un precio en vivo más fresco, reemplaza el cierre de
-  // la vela más reciente antes de recalcular — así los indicadores reflejan
-  // el precio de ahora mismo en vez del último refresco de Twelve Data
-  // (hasta 15 min de atraso). Si Capital.com no está configurado o falla,
-  // esto no hace nada y queda igual que antes (solo Twelve Data).
-  const vivo = Boolean(filaViva)
-  const data = useMemo(() => {
-    if (!crudo) return null
-    if (!filaViva) return computarBarrido(crudo.barras, crudo.rates, crudo.rangos)
-    const ultimaHora = crudo.barras[crudo.barras.length - 1]
-    const ratesConVivo = { ...crudo.rates, [ultimaHora]: filaViva }
-    // El precio en vivo puede haber superado el máximo (o perforado el
-    // mínimo) que traía la vela de la hora en curso, porque esa vela todavía
-    // se está formando. Si no se estira el rango, el cierre quedaría fuera de
-    // su propio máximo/mínimo y tanto el ATR como los soportes saldrían mal.
-    const rangoUltima = { ...(crudo.rangos?.[ultimaHora] || {}) }
-    for (const [ccy, precio] of Object.entries(filaViva)) {
-      const prev = rangoUltima[ccy] || { h: precio, l: precio }
-      rangoUltima[ccy] = { h: Math.max(prev.h, precio), l: Math.min(prev.l, precio) }
-    }
-    return computarBarrido(crudo.barras, ratesConVivo, { ...crudo.rangos, [ultimaHora]: rangoUltima })
-  }, [crudo, filaViva])
+  // ⚠️ AQUÍ HABÍA UNA CAPA DE PRECIO EN VIVO DE CAPITAL.COM, Y SE QUITÓ.
+  //
+  // Preguntaba el precio del momento cada 10 segundos y con él "adelantaba" el
+  // cierre de la hora en curso, para no esperar al refresco de Twelve Data.
+  // La idea era buena; el precio que se pagaba por ella, no.
+  //
+  // Para autenticarse hacían falta tres cosas —clave de API, usuario y
+  // CONTRASEÑA— y como el navegador es quien preguntaba, las tres viajaban
+  // dentro del JavaScript que descarga cualquiera que abra la app. Se comprobó
+  // buscándolas en el archivo publicado: estaban ahí, en texto claro, y la
+  // clave tenía permiso de "leer y operar", no solo de leer.
+  //
+  // La cuenta era demo y no había dinero en juego, así que el daño posible era
+  // limitado. Lo que no era limitado era el hábito: el mismo camino con una
+  // cuenta real habría publicado unas credenciales reales.
+  //
+  // NO se sustituye por otra cosa. Un precio al segundo necesita un servidor
+  // encendido todo el rato que guarde la credencial, y este proyecto no tiene
+  // ninguno: solo robots que corren a ratos. Cualquier apaño que deje la clave
+  // en el navegador es el mismo agujero con otro nombre.
+  //
+  // Qué se pierde en la práctica: la app calcula sobre velas de una hora YA
+  // CERRADAS, y esas no cambian. Lo único que se pierde es que el precio de la
+  // hora en curso se refresca cada 15 minutos en vez de cada 10 segundos.
+  // Ninguna señal cambia por eso.
+  const data = useMemo(
+    () => (crudo ? computarBarrido(crudo.barras, crudo.rates, crudo.rangos) : null),
+    [crudo]
+  )
 
-  const vista = data ? derivarVista(data, { thr, topN, vivo, t }) : null
+  const vista = data ? derivarVista(data, { thr, topN, t }) : null
 
   return {
     loading,
@@ -173,9 +178,6 @@ export function useMarketData({ thr = 0.5, topN = 3 } = {}) {
     sinConfigurar,
     stale,
     guardadoEl,
-    vivo,
-    vivoConfigurado,
-    vivoActualizadoEl,
     ultima: data?.ultima ?? null,
     ratesUSD: data?.ratesUSD ?? null,
     monedas: vista?.monedas ?? [],

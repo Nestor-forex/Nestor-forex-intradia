@@ -262,7 +262,6 @@ export default {
     invalCompra: ({ sl, b }) => `clôture horaire sous ${sl}, ou perte de force de ${b} au classement.`,
     invalVenta: ({ sl, q }) => `clôture horaire au-dessus de ${sl}, ou retour en force de ${q}.`,
     corte: ({ local, utc, fuente }) => `Dernière bougie H1 : ${local} heure de Colombie (${utc} UTC) · source : ${fuente}`,
-    fuenteVivo: 'Twelve Data + Capital.com (prix en direct)',
     fuenteCierre: 'Twelve Data',
   },
 

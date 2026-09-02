@@ -256,7 +256,6 @@ export default {
     invalCompra: ({ sl, b }) => `${sl} を下回る 1 時間足の終値、または ${b} のランキングでの弱化。`,
     invalVenta: ({ sl, q }) => `${sl} を上回る 1 時間足の終値、または ${q} の再強化。`,
     corte: ({ local, utc, fuente }) => `最新の H1 足：${local}（コロンビア時間）（${utc} UTC）· データ元：${fuente}`,
-    fuenteVivo: 'Twelve Data + Capital.com（ライブ価格）',
     fuenteCierre: 'Twelve Data',
   },
 

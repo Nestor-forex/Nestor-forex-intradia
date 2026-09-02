@@ -298,7 +298,6 @@ export default {
     invalCompra: ({ sl, b }) => `cierre horario por debajo de ${sl}, o pérdida de fuerza de ${b} en el ranking.`,
     invalVenta: ({ sl, q }) => `cierre horario por encima de ${sl}, o recuperación de fuerza de ${q}.`,
     corte: ({ local, utc, fuente }) => `Vela H1 más reciente: ${local} hora de Colombia (${utc} UTC) · fuente: ${fuente}`,
-    fuenteVivo: 'Twelve Data + Capital.com (precio en vivo)',
     fuenteCierre: 'Twelve Data',
   },
 
