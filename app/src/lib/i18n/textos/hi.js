@@ -257,7 +257,6 @@ export default {
     invalCompra: ({ sl, b }) => `${sl} से नीचे घंटे का क्लोज़, या रैंकिंग में ${b} की मज़बूती घटना।`,
     invalVenta: ({ sl, q }) => `${sl} से ऊपर घंटे का क्लोज़, या ${q} का दोबारा मज़बूत होना।`,
     corte: ({ local, utc, fuente }) => `सबसे नई H1 कैंडल: ${local} कोलंबिया समय (${utc} UTC) · स्रोत: ${fuente}`,
-    fuenteVivo: 'Twelve Data + Capital.com (लाइव भाव)',
     fuenteCierre: 'Twelve Data',
   },
 

@@ -258,7 +258,6 @@ export default {
     invalCompra: ({ sl, b }) => `часовое закрытие ниже ${sl}, либо ${b} теряет силу в рейтинге.`,
     invalVenta: ({ sl, q }) => `часовое закрытие выше ${sl}, либо ${q} снова набирает силу.`,
     corte: ({ local, utc, fuente }) => `Последняя свеча H1: ${local} по колумбийскому времени (${utc} UTC) · источник: ${fuente}`,
-    fuenteVivo: 'Twelve Data + Capital.com (цена в реальном времени)',
     fuenteCierre: 'Twelve Data',
   },
 

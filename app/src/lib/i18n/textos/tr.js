@@ -257,7 +257,6 @@ export default {
     invalCompra: ({ sl, b }) => `${sl} altında saatlik kapanış, ya da ${b} sıralamada güç kaybederse.`,
     invalVenta: ({ sl, q }) => `${sl} üstünde saatlik kapanış, ya da ${q} yeniden güçlenirse.`,
     corte: ({ local, utc, fuente }) => `En son H1 mumu: ${local} Kolombiya saati (${utc} UTC) · kaynak: ${fuente}`,
-    fuenteVivo: 'Twelve Data + Capital.com (canlı fiyat)',
     fuenteCierre: 'Twelve Data',
   },
 

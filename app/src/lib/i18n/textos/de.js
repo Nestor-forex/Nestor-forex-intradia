@@ -262,7 +262,6 @@ export default {
     invalCompra: ({ sl, b }) => `Stundenschluss unter ${sl}, oder ${b} verliert Stärke im Ranking.`,
     invalVenta: ({ sl, q }) => `Stundenschluss über ${sl}, oder ${q} gewinnt wieder an Stärke.`,
     corte: ({ local, utc, fuente }) => `Letzte H1-Kerze: ${local} kolumbianischer Zeit (${utc} UTC) · Quelle: ${fuente}`,
-    fuenteVivo: 'Twelve Data + Capital.com (Live-Kurs)',
     fuenteCierre: 'Twelve Data',
   },
 

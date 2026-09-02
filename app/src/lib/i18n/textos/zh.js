@@ -253,7 +253,6 @@ export default {
     invalCompra: ({ sl, b }) => `小时收盘价低于 ${sl}，或 ${b} 在排名中走弱。`,
     invalVenta: ({ sl, q }) => `小时收盘价高于 ${sl}，或 ${q} 重新走强。`,
     corte: ({ local, utc, fuente }) => `最新 H1 K 线：${local}（哥伦比亚时间）（${utc} UTC）· 数据源：${fuente}`,
-    fuenteVivo: 'Twelve Data + Capital.com（实时价格）',
     fuenteCierre: 'Twelve Data',
   },
 
