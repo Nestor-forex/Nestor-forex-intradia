@@ -41,12 +41,54 @@ export function resolver(senales, data, resueltas = new Set()) {
     if (resueltas.has(clave)) continue
 
     const par = porNombre.get(s.par)
-    const desde = data.barras.indexOf(s.vela)
 
-    // La vela en la que apareció ya no está entre las que descargamos (solo
-    // llegan las últimas 300 horas, ~12 días). No se puede juzgar y no tiene
-    // sentido volver a intentarlo cada hora para siempre.
-    if (!par || desde === -1) {
+    // DESDE QUÉ VELA SE EMPIEZA A JUZGAR.
+    //
+    // Lo natural es buscar la vela exacta de la señal y empezar por la
+    // siguiente, y eso se intenta primero. Pero EXIGIR la vela exacta es
+    // frágil, y en la app hermana de swing costó 8 señales reales:
+    //
+    // El vigía anota la última vela que traía la descarga de ese momento. Si
+    // esa vela después desaparece de la serie —la fuente la consolida, la
+    // descarta, o era una vela rara de fin de semana— `indexOf` devuelve -1 y
+    // la señal queda marcada "caducada" para siempre. Operaciones que el
+    // mercado sí resolvió, tiradas por un detalle de la fuente de datos.
+    //
+    // Aquí todavía no ha pasado, pero el riesgo es MAYOR que en swing: son
+    // velas de una hora, y en 300 horas hay muchos más huecos posibles
+    // (feriados locales, horas sin cotización, cortes del proveedor) que en
+    // 300 días.
+    //
+    // Ahora, si la vela exacta no está, se busca LA PRIMERA VELA POSTERIOR.
+    // Es lo mismo que se hacía (`desde + 1`), sin depender de que la vela de
+    // la señal siga existiendo.
+    //
+    // ⚠️ Estrictamente POSTERIOR, nunca la de la señal ni una anterior.
+    // Empezar antes sería juzgar con precios que ya habían pasado cuando la
+    // señal nació: inventaría ganancias que nadie pudo tomar. Por eso `>` y
+    // no `>=`.
+    const exacta = data.barras.indexOf(s.vela)
+    const hallada = exacta !== -1 ? exacta + 1 : data.barras.findIndex((b) => b > s.vela)
+
+    // `findIndex` devuelve -1 en dos situaciones OPUESTAS, y confundirlas
+    // rompe el historial en la dirección contraria:
+    //
+    //   · la señal es MÁS VIEJA que la primera vela → caducada de verdad;
+    //   · la señal es MÁS NUEVA que la última → todavía no ha pasado nada,
+    //     está ABIERTA. Caducarla la mataría en la misma hora en que nace.
+    const masViejaQueLaSerie = data.barras.length > 0 && s.vela < data.barras[0]
+    const primeraPosterior = hallada === -1 ? data.barras.length : hallada
+
+    // Y una tercera: una señal SIN vela. No debería existir, pero si se
+    // renombra el campo o una línea llega a medias, todas las comparaciones
+    // darían false y la señal se quedaría abierta para siempre, sin juzgar y
+    // sin avisar. Ese silencio es peor que caducarla porque nadie lo nota.
+    const sinVela = !s.vela
+
+    // Caduca solo si de verdad no hay nada que mirar ni lo habrá: el par ya no
+    // se sigue, la señal quedó fuera de las 300 horas descargadas, o no dice
+    // de qué vela es.
+    if (!par || masViejaQueLaSerie || sinVela) {
       caducadas++
       resultados.push({
         clave,
@@ -64,7 +106,7 @@ export function resolver(senales, data, resueltas = new Set()) {
     let veredicto = null
     let velaFinal = null
 
-    for (let i = desde + 1; i < data.barras.length; i++) {
+    for (let i = primeraPosterior; i < data.barras.length; i++) {
       const alto = par.highs[i]
       const bajo = par.lows[i]
 
@@ -108,7 +150,10 @@ export function resolver(senales, data, resueltas = new Set()) {
       resultado: veredicto,
       // Cuántas horas tardó en resolverse. Sirve para saber si los objetivos
       // son realistas o si se quedan colgados días.
-      velasTardadas: data.barras.indexOf(velaFinal) - desde,
+      // Se cuenta desde la primera vela mirada, no desde la de la señal:
+      // resolverse en la siguiente es 1, y sale igual tanto si la vela de la
+      // señal sigue en la serie como si desapareció.
+      velasTardadas: data.barras.indexOf(velaFinal) - primeraPosterior + 1,
       // Lo que se habría ganado o perdido, en pips, según los niveles que la
       // app dio en su momento.
       pips: veredicto === 'ganada' ? s.pipBeneficio : -s.pipRiesgo,
