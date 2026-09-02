@@ -1,3 +1,4 @@
+import { costeEnPips, nochesEntre, NIVELES_SWAP } from './costes.mjs'
 // El motor del banco de pruebas: qué señales habría dado la app cada hora.
 //
 // Va aparte de `backtest.mjs` para poder comprobarlo sin internet: el script
@@ -105,4 +106,101 @@ export function generarSenales(
   }
 
   return senales
+}
+
+// Cuenta el resultado de una lista de señales ya resueltas.
+//
+// Vive aquí y no en backtest.mjs porque de esta función salen TODOS los
+// números con los que se decide si una regla se enciende o se apaga. Mientras
+// estuvo dentro del script no se podía probar sin internet ni sin gastar
+// créditos de la API: la cuenta que más pesa era la única sin comprobar.
+// Ahora `prueba-costes.mjs` la mide directamente.
+export function medir(senales, porClave, { conSpread = false, swapPipsNoche = 0 } = {}) {
+  let ganadas = 0
+  let perdidas = 0
+  let pips = 0
+  // Las que todavía no llegaron ni al stop ni al objetivo. Se cuentan aparte
+  // en vez de dejarlas caer en silencio: si un cambio de reglas dejara la
+  // mitad de las señales sin resolver, el acierto seguiría saliendo bonito
+  // sobre las pocas que sí cerraron y nadie se enteraría del hueco.
+  let sinJuzgar = 0
+  // Resultado en "veces el riesgo de ESA operación", acumulado una a una. Los
+  // pips sueltos no sirven para comparar: 100 pips en GBP/JPY no son 100 en
+  // EUR/CHF, y dos geometrías con riesgos distintos no se pueden comparar en
+  // pips de ninguna manera.
+  let sumaR = 0
+
+  for (const s of senales) {
+    const r = porClave.get(`${s.id}@${s.vistoEl}`)
+    if (!r || (r.resultado !== 'ganada' && r.resultado !== 'perdida')) {
+      sinJuzgar++
+      continue
+    }
+    // Los costes se pagan SIEMPRE, se gane o se pierda, y en veces el riesgo
+    // cuestan más cuanto más estrecho sea el stop.
+    //
+    // Las noches se cuentan por los cortes reales entre la vela de entrada y
+    // la de salida, no por la duración: a qué hora se abrió decide si se cruza
+    // el corte o no.
+    const costePips = conSpread
+      ? costeEnPips(s.par, nochesEntre(r.velaEntrada ?? s.vela, r.velaFinal), swapPipsNoche)
+      : 0
+    const coste = costePips / s.pipRiesgo
+    if (r.resultado === 'ganada') {
+      ganadas++
+      sumaR += s.pipBeneficio / s.pipRiesgo - coste
+    } else {
+      perdidas++
+      sumaR -= 1 + coste
+    }
+    pips += r.pips - costePips
+  }
+
+  const total = ganadas + perdidas
+  return {
+    total,
+    ganadas,
+    sinJuzgar,
+    pips: Math.round(pips),
+    acierto: total ? (ganadas / total) * 100 : null,
+    porRiesgo: total ? sumaR / total : null,
+  }
+}
+
+/**
+ * El barrido de swap: cuántas operaciones duermen abiertas y cuánto cuesta eso
+ * a cada nivel de swap.
+ *
+ * Vive aquí, y no dentro de `backtest.mjs`, por la misma razón que `medir`, y
+ * la razón no es teórica: la primera versión de esta cuenta vivía en el script
+ * y llamaba a `generarSenales` con los argumentos cambiados. El linter no lo
+ * vio —los dos nombres existían— y como el script necesita descargar miles de
+ * velas para arrancar, el fallo no habría aparecido hasta después de gastar
+ * los créditos de la API. Aquí se prueba con datos de mentira en un segundo.
+ *
+ * @returns { total, cruzaron, mediaNoches, filas } — `filas` trae una entrada
+ *          por nivel de NIVELES_SWAP con su medición y su coste medio en pips.
+ */
+export function barridoSwap(senales, porClave, niveles = NIVELES_SWAP) {
+  const resueltas = []
+  for (const s of senales) {
+    const r = porClave.get(`${s.id}@${s.vistoEl}`)
+    if (!r || (r.resultado !== 'ganada' && r.resultado !== 'perdida')) continue
+    resueltas.push({ par: s.par, noches: nochesEntre(r.velaEntrada ?? s.vela, r.velaFinal) })
+  }
+
+  const total = resueltas.length
+  const cruzaron = resueltas.filter((x) => x.noches > 0).length
+  const sumaNoches = resueltas.reduce((a, x) => a + x.noches, 0)
+
+  const filas = niveles.map((nivel) => {
+    const sumaCoste = resueltas.reduce((a, x) => a + costeEnPips(x.par, x.noches, nivel), 0)
+    return {
+      nivel,
+      medicion: medir(senales, porClave, { conSpread: true, swapPipsNoche: nivel }),
+      costeMedio: total ? sumaCoste / total : 0,
+    }
+  })
+
+  return { total, cruzaron, mediaNoches: total ? sumaNoches / total : 0, filas }
 }
