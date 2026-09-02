@@ -595,3 +595,171 @@ unidad de riesgo en vez de −0,12. Sigue perdiendo.
 
 Con la geometría real de la app (no la neutra) el efecto es aún menor:
 −0,15 sin filtro contra −0,14 en 70.
+
+---
+
+# Lo que se hizo el 2026-09-02
+
+Dos cosas grandes, las dos ya fusionadas, publicadas y comprobadas.
+
+## 1. Contar lo que cuesta operar de verdad (PR #32)
+
+El banco de pruebas descontaba **1 pip de spread, igual para los 18 pares, y
+nada de swap**. Las dos cosas empujaban en la misma dirección: hacían que las
+reglas parecieran mejores de lo que son.
+
+### El spread ahora va por par
+
+EUR/USD cuesta menos de 1 pip; NZD/CHF o EUR/NZD cuestan 3 o 4. Con un número
+único los cruces salían baratos, y son la mitad de la lista. Aquí pesa más que
+en swing: los objetivos son de decenas de pips, así que un pip de más se lleva
+un pedazo grande del resultado.
+
+Están en `app/scripts/lib/costes.mjs`, **a propósito en el lado alto de lo
+normal**: si el número final sale bien con costes generosos, sale bien de
+verdad. Para afinarlos, abrir la plataforma con el mercado abierto y cambiar el
+número — es el único sitio donde hay que tocarlo.
+
+### El swap SÍ aplica, aunque la app se llame Intradía
+
+Parecía razonable ignorarlo. Pero eso es la INTENCIÓN, no lo que pasa. Medido
+sobre las 42 operaciones reales ya resueltas:
+
+| | |
+|---|---:|
+| duración mediana | 9 horas |
+| duración media | 17,9 horas |
+| la más larga | 102 horas |
+| **cruzaron al menos una noche** | **22 de 42 (52%)** |
+
+⚠️ **Y no se cuenta por duración sino por los cortes reales de las 22:00 UTC.**
+Una operación de 6 horas abierta a las 20:00 cruza uno; una de 20 horas abierta
+a las 23:00 no cruza ninguno. Depende de la hora de entrada. Eso es
+`nochesEntre()`, y es **la diferencia grande con swing**, donde cada vela ES un
+día y las noches salen solas de `diasTardados`.
+
+No se elige un número de swap: depende del diferencial de tipos de cada momento
+y del margen de cada bróker, cambia mes a mes y no hay histórico. Se barren
+cinco niveles y se enseña **a partir de cuál cambia la conclusión**.
+
+### Lo que más valió: sacar `medir()` del script
+
+`medir()` y el barrido de swap vivían dentro de `backtest.mjs`, que necesita
+descargar miles de velas para arrancar. De ellos salen TODOS los números con
+los que se decide encender o apagar una regla, y eran lo único sin comprobar.
+Ahora están en `lib/backtest-nucleo.mjs`, con `prueba-costes.mjs`: 47
+comprobaciones en un segundo, sin gastar créditos.
+
+**No es teórico:** al sacar el barrido de swap del script apareció que llamaba
+a `generarSenales` con los argumentos cambiados. El linter no lo veía —los dos
+nombres existían— y el fallo no habría salido hasta después de gastar los
+créditos del día.
+
+⚠️ **Lección al portar pruebas desde swing:** la de costes se copió tal cual y
+fallaron 5 comprobaciones. No era un error del código: los datos de mentira de
+swing traen `diasTardados`, que aquí no se mira. **Una prueba portada que falla
+suele estar diciendo que las dos apps son distintas ahí, no que el código nuevo
+esté mal.** Mirar eso primero.
+
+También se añadió `sinJuzgar` al resultado de `medir` (ya estaba en swing): si
+un cambio de reglas dejara la mitad de las señales sin resolver, el acierto
+seguiría saliendo bonito sobre las pocas que cerraron y nadie vería el hueco.
+
+## 2. La app ya no le pide los precios a Twelve Data (PR #33)
+
+Swing funcionaba así desde el 2026-08-09. Aquí llegó ahora.
+
+### Los dos problemas que cierra
+
+1. **La llave viajaba dentro de la app.** Cualquiera que abriera la página
+   podía sacarla del JavaScript descargado y gastar la cuota. Es el mismo
+   agujero que ya se cerró con las credenciales de Capital.com, por el mismo
+   camino: si el navegador es quien pregunta, el navegador lleva la credencial
+   encima. Comprobado sobre el build: la llave ya no aparece en `dist/`, ni la
+   palabra «twelvedata».
+
+2. **El techo de suscriptores era MUCHO peor de lo que se dijo.** No eran ~20:
+   cada apertura costaba 7 créditos **y se repetía cada 15 minutos con la app
+   abierta**. Ocho horas abierta = 224 créditos. **Tres personas agotaban los
+   800 del día.** Y al agotarse la app no avisa: deja de traer precios.
+
+### Cómo quedó
+
+El vigía sigue **exactamente igual, una vez por hora**. No se tocó a propósito:
+anota las señales, las juzga y manda los avisos, y el historial es lo único de
+este proyecto que no se puede recuperar si se estropea. Correrlo cada 30
+minutos duplicaría las corridas anotadas y haría sonar el celular el doble.
+
+Aparte va `app/scripts/publicar-barrido.mjs`, que **solo** baja, calcula y
+escribe `estado/barrido.json` en la rama `datos`. Corre **cada 30 minutos**
+(`.github/workflows/publicar-barrido.yml`, al minuto 50 — el vigía va al 20, y
+cada barrido gasta 7 de los 8 créditos por minuto que da el plan gratuito, así
+que no pueden coincidir).
+
+| cadencia | créditos/día | por qué no |
+|---|---:|---|
+| solo el vigía, cada hora | 168 | el reloj de GitHub se salta horas (medidos huecos de 7,6 h): un salto dejaría la app con datos de la mañana por la tarde |
+| cada 15 min | 672 | cabe en 800, pero sin sitio para el reporte diario ni el banco de pruebas |
+| **cada 30 min** | **336** | menos de la mitad, y **cada hora tiene dos oportunidades** de publicarse |
+
+Total del día: 168 (vigía) + 168 (publicador) + 7 (reporte) = **343 de 800**.
+
+⚠️ **No se pierde ninguna señal.** La app calcula sobre velas de una hora YA
+CERRADAS, y esas no se mueven. Solo el precio de la hora en curso pasa de
+refrescarse cada 15 min a cada 30.
+
+### Pendiente de Néstor: sacar la llave del repositorio
+
+`velas.mjs` lee primero el secreto `TWELVEDATA_KEY` y **se cae a
+`.env.production`** si no está. Para cerrarlo del todo, EN ESTE ORDEN:
+
+1. crear el secreto `TWELVEDATA_KEY` en este repositorio,
+2. y **solo entonces** borrar la línea de `.env.production`.
+
+Al revés se quedan sin precios el vigía y el reporte diario.
+
+### La prueba nueva, y por qué su mercado inventado costó varios intentos
+
+`app/scripts/prueba-barrido-publicado.mjs` corre el barrido sobre un mercado
+inventado, lo publica, lo relee **pasando por JSON como el navegador** y exige
+que `derivarVista` saque la vista idéntica. Vigila los dos fallos invisibles:
+que **falte un campo** (la app se ve rara, no da error) y que **se cuele una
+serie larga** (18 KB → más de 400).
+
+⚠️ El primer mercado era una tendencia limpia: daba ADX 100 y **cero setups**,
+porque una tendencia sin retrocesos deja el RSI clavado arriba y el filtro los
+rechaza todos. **La prueba pasaba comparando dos listas vacías.** Ahora cada
+divisa lleva una onda de periodo medio **con su propia fase**. Si se toca ese
+mercado, mirar que siga pasando la comprobación de "más de cero setups".
+
+⚠️ `armarBarrido` quita las series largas **por nombre de lo que SALE**, no de
+lo que entra. Al revés, el día que `computarBarrido` calcule un campo nuevo la
+app se quedaría sin él y el fallo aparecería como una pantalla rara. De que no
+se cuele otra serie larga se encarga la prueba (falla si un campo publicado
+trae más de 30 números).
+
+### Textos que habían quedado falsos
+
+El pie decía «precio en vivo (se actualiza cada 15 min)», verdad cuando la app
+llamaba a la API ella misma. Corregido en los **13 idiomas**, junto con
+«Descargando velas H1 en vivo…».
+
+⚠️ Esta app **no tiene** el comparador de diccionarios que sí tiene swing. Se
+comprobó a mano (254 claves, mismos tipos en los 13). Si se vuelven a tocar los
+idiomas, conviene portarlo.
+
+### Cómo se verificó, y cómo verificar en este entorno
+
+No solo compilando. Con **Chromium**, sirviendo la app compilada y
+alimentándola con el `barrido.json` **real de producción**: la pestaña Barrido
+y el tablero completo pintaron enteros, en español, con precios reales
+(EUR/USD 1.1585, una señal de venta en USD/JPY con sus niveles) y **cero
+errores de consola**. Ninguna llamada a Twelve Data.
+
+⚠️ **GitHub Pages está bloqueado** desde el entorno de estas sesiones, así que
+la app publicada no se puede abrir desde aquí; `raw.githubusercontent.com` sí.
+Chromium tampoco sale a internet solo: hay que pasarle
+`proxy: { server: process.env.HTTPS_PROXY }`, y aun así falla contra algunos
+destinos. Lo que funciona siempre es bajar el archivo con `curl` e interceptar
+la petición en Playwright con ese contenido. El binario está en
+`/opt/pw-browsers/chromium-1194/chrome-linux/chrome`.
