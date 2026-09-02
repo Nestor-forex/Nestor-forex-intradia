@@ -233,6 +233,7 @@ export default {
 
     vigilanciaAdx: ({ dif, favor, adx, min }) => `Разница ${dif} в пользу ${favor}, EMA выстроены, но ADX равен ${adx}: ниже ${min} настоящего тренда нет, только болтанка.`,
     vigilanciaRsi: ({ dif, favor, rsi, minRsi }) => `Разница ${dif} в пользу ${favor}, скользящие выстроены, но RSI уже на ${rsi}: выше ${minRsi} движение уже произошло, и входить сейчас — значит гнаться за ним.`,
+    vigilanciaRsiBajo: ({ dif, favor, rsi, minRsi }) => `Разница ${dif} в пользу ${favor}, скользящие выстроены, но RSI уже на ${rsi}: ниже ${minRsi} движение уже произошло, и входить сейчас — значит гнаться за ним.`,
 
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) против ${q} (${fq}), EMA выстроены, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI перегрет, не догонять, ждать отката',

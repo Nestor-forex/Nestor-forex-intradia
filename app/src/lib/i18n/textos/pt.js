@@ -237,6 +237,7 @@ export default {
 
     vigilanciaAdx: ({ dif, favor, adx, min }) => `Diferencial ${dif} a favor de ${favor} com as EMAs alinhadas, mas o ADX está em ${adx}: abaixo de ${min} não há tendência de verdade, só vaivém.`,
     vigilanciaRsi: ({ dif, favor, rsi, minRsi }) => `Diferencial ${dif} a favor de ${favor} e EMAs alinhadas, mas o RSI já está em ${rsi}: acima de ${minRsi} o movimento já aconteceu e entrar agora é persegui-lo.`,
+    vigilanciaRsiBajo: ({ dif, favor, rsi, minRsi }) => `Diferencial ${dif} a favor de ${favor} e EMAs alinhadas, mas o RSI já está em ${rsi}: abaixo de ${minRsi} o movimento já aconteceu e entrar agora é persegui-lo.`,
 
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b} (${fb}) vs ${q} (${fq}), EMAs alinhadas, RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI esticado, não persiga, espere um recuo',

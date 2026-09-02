@@ -872,24 +872,36 @@ export function derivarVista(
   const ventas = ventasRaw.map((p) => ({ name: p.name, razon: razon(p, esc, t) }))
   const vigilancia = vigilanciaRaw.map((p) => {
     const motivo = motivoVigilar(p, thr, { adxMin, rsiMax })
+    // En una COMPRA el filtro rechaza con el RSI POR ENCIMA del umbral (70);
+    // en una VENTA, por debajo del umbral espejo (100 - 70 = 30). Son dos
+    // frases distintas: decir "por encima de 70" junto a un RSI de 12 —que es
+    // lo que salía— no tiene sentido para quien lo lee.
+    const rsiAlto = p.dif > 0
+    const umbralRsi = rsiMax ?? RSI_MAX
     const datos = {
       dif: (p.dif >= 0 ? '+' : '') + p.dif.toFixed(1),
       favor: p.dif > 0 ? p.b : p.q,
       tend: t(`tend.${p.tend}`).toLowerCase(),
       adx: p.adx.toFixed(0),
+      // El RSI del par. Faltaba, y el texto de `vigilanciaRsi` lo pide: sin
+      // él salía la palabra "undefined" donde debía ir el número.
+      rsi: p.rsiV.toFixed(0),
       // El umbral viaja al texto en vez de estar escrito dentro de cada
       // idioma: si algún día vuelve a moverse, no hay que acordarse de
       // corregir 13 archivos (y de que uno se quede con el número viejo).
       min: adxMin ?? ADX_MIN,
       // El umbral del RSI viaja igual que el del ADX y por la misma razón: si
-      // algún día se mueve, no hay que acordarse de corregir 13 archivos.
-      minRsi: rsiMax ?? RSI_MAX,
+      // algún día se mueve, no hay que acordarse de corregir 13 archivos. Va
+      // el que de verdad se aplicó, no siempre el de la compra.
+      minRsi: umbralRsi === null ? null : rsiAlto ? umbralRsi : 100 - umbralRsi,
     }
     const clave =
       motivo === 'adx'
         ? 'calc_barrido.vigilanciaAdx'
         : motivo === 'rsi'
-          ? 'calc_barrido.vigilanciaRsi'
+          ? rsiAlto
+            ? 'calc_barrido.vigilanciaRsi'
+            : 'calc_barrido.vigilanciaRsiBajo'
           : 'calc_barrido.vigilancia'
     return { name: p.name, razon: t(clave, datos) }
   })
