@@ -28,6 +28,16 @@ export default {
     retirado: 'Il tuo accesso è stato revocato. Scrivi a Néstor se pensi sia un errore.',
   },
 
+  // La pantalla de último recurso, cuando algo falla al dibujarse.
+  // La usa RedDeSeguridad.jsx, que las lee SIN pasar por React: si esta
+  // clave faltara, cae al español en vez de dejar la pantalla en blanco.
+  error: {
+    titulo: 'Si è verificato un problema',
+    cuerpo: 'Questa schermata non è riuscita a caricarsi. I tuoi dati e le tue operazioni sono al sicuro: è un problema di visualizzazione, non del tuo account.',
+    boton: "Ricarica l'app",
+    detalle: 'Dettaglio tecnico',
+  },
+
   nav: { historial: 'Storico', barrido: 'Scan', diario: 'Diario', riesgo: 'Rischio', miembros: 'Membri' },
 
   sesgo: { COMPRA: 'BUY', VENTA: 'SELL', VIGILAR: 'WATCH', '—': '—' },

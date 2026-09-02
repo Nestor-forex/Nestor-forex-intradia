@@ -28,6 +28,16 @@ export default {
     retirado: '접근 권한이 해제되었습니다. 착오라고 생각되면 Néstor에게 연락하세요.',
   },
 
+  // La pantalla de último recurso, cuando algo falla al dibujarse.
+  // La usa RedDeSeguridad.jsx, que las lee SIN pasar por React: si esta
+  // clave faltara, cae al español en vez de dejar la pantalla en blanco.
+  error: {
+    titulo: '앱에 문제가 발생했습니다',
+    cuerpo: '이 화면을 표시하지 못했습니다. 데이터와 거래 내역은 안전합니다 — 계정 문제가 아니라 화면 표시 문제입니다.',
+    boton: '앱 다시 불러오기',
+    detalle: '기술 세부정보',
+  },
+
   nav: { historial: '기록', barrido: '스캔', diario: '매매일지', riesgo: '리스크', miembros: '멤버' },
 
   sesgo: { COMPRA: 'BUY', VENTA: 'SELL', VIGILAR: 'WATCH', '—': '—' },

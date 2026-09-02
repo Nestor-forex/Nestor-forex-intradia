@@ -32,6 +32,16 @@ export default {
     retirado: 'Your access was revoked. Write to Néstor if you think this is a mistake.',
   },
 
+  // La pantalla de último recurso, cuando algo falla al dibujarse.
+  // La usa RedDeSeguridad.jsx, que las lee SIN pasar por React: si esta
+  // clave faltara, cae al español en vez de dejar la pantalla en blanco.
+  error: {
+    titulo: 'Something went wrong',
+    cuerpo: 'This screen failed to load. Your data and your trades are safe — this is a display problem, not an account problem.',
+    boton: 'Reload the app',
+    detalle: 'Technical details',
+  },
+
   nav: { historial: 'History', barrido: 'Scan', diario: 'Journal', riesgo: 'Risk', miembros: 'Members' },
 
   sesgo: { COMPRA: 'BUY', VENTA: 'SELL', VIGILAR: 'WATCH', '—': '—' },

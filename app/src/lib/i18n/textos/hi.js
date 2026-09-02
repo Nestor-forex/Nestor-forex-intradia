@@ -28,6 +28,16 @@ export default {
     retirado: 'आपकी पहुँच हटा दी गई है। अगर आपको लगता है कि यह गलती है तो Néstor को लिखें।',
   },
 
+  // La pantalla de último recurso, cuando algo falla al dibujarse.
+  // La usa RedDeSeguridad.jsx, que las lee SIN pasar por React: si esta
+  // clave faltara, cae al español en vez de dejar la pantalla en blanco.
+  error: {
+    titulo: 'ऐप में कोई समस्या आई',
+    cuerpo: 'यह स्क्रीन नहीं दिखाई जा सकी। आपका डेटा और आपके ट्रेड सुरक्षित हैं — यह दिखाने की समस्या है, आपके खाते की नहीं।',
+    boton: 'ऐप फिर से लोड करें',
+    detalle: 'तकनीकी विवरण',
+  },
+
   nav: { historial: 'इतिहास', barrido: 'स्कैन', diario: 'जर्नल', riesgo: 'जोखिम', miembros: 'सदस्य' },
 
   sesgo: { COMPRA: 'BUY', VENTA: 'SELL', VIGILAR: 'WATCH', '—': '—' },
