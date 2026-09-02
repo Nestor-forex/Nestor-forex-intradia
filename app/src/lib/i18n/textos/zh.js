@@ -229,6 +229,7 @@ export default {
 
     vigilanciaAdx: ({ dif, favor, adx, min }) => `差值 ${dif} 有利于 ${favor}，均线也已排列，但 ADX 只有 ${adx}：低于 ${min} 就不是真正的趋势，只是来回震荡。`,
     vigilanciaRsi: ({ dif, favor, rsi, minRsi }) => `差值 ${dif} 有利于 ${favor}，均线也已排列，但 RSI 已经到 ${rsi}：超过 ${minRsi} 说明行情已经走完，现在进场就是追高杀跌。`,
+    vigilanciaRsiBajo: ({ dif, favor, rsi, minRsi }) => `差值 ${dif} 有利于 ${favor}，均线也已排列，但 RSI 已经到 ${rsi}：低于 ${minRsi} 说明行情已经走完，现在进场就是追高杀跌。`,
 
     razon: ({ b, fb, q, fq, rsi, extra }) => `${b}（${fb}）对 ${q}（${fq}），EMA 已对齐，RSI ${rsi}${extra}`,
     rsiExtendido: ' — RSI 过度延伸，不要追，等回调',
