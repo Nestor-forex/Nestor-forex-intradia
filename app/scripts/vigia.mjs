@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url'
 import { computarBarrido, derivarVista } from '../src/lib/marketCalc.js'
 import { leerLlave, obtenerVelas } from './lib/velas.mjs'
 import { compararConAnterior, escribir, esSombra, leerEstado, leerJsonl, separarSombra } from './lib/vigia-nucleo.mjs'
+import { armarBarrido } from './lib/barrido-publicado.mjs'
 import { resolver, resumir } from './lib/resolver.mjs'
 
 // Dónde se guardan los datos. En GitHub Actions apunta a la copia de la rama
@@ -26,6 +27,7 @@ import { resolver, resumir } from './lib/resolver.mjs'
 // escribe al lado del repo (útil para probar a mano).
 const DATOS = process.env.VIGIA_DATOS || fileURLToPath(new URL('../../datos-local', import.meta.url))
 const ESTADO = `${DATOS}/estado/vigia.json`
+const BARRIDO = `${DATOS}/estado/barrido.json`
 const LOG_SENALES = `${DATOS}/historial/senales.jsonl`
 const LOG_CORRIDAS = `${DATOS}/historial/corridas.jsonl`
 const LOG_RESULTADOS = `${DATOS}/historial/resultados.jsonl`
@@ -136,6 +138,16 @@ const { resultados, abiertas, caducadas } = resolver(
 )
 
 for (const r of resultados) escribir(LOG_RESULTADOS, JSON.stringify(r) + '\n', true)
+
+// El barrido que va a leer la app. Lo publica también `publicar-barrido.mjs`
+// a la media hora; aquí se escribe otra vez para que la corrida del vigía deje
+// el archivo al día aunque la otra hubiera fallado, y para que un despliegue
+// nuevo no dependa de esperar hasta la siguiente media hora.
+//
+// Va DESPUÉS del historial y ANTES de los avisos, en el mismo sitio y por el
+// mismo motivo que en la app hermana: si algo aquí fallara, los datos que no
+// se pueden recuperar ya están escritos en disco.
+escribir(BARRIDO, JSON.stringify(armarBarrido(data, ahora)) + '\n')
 
 // Avisos al celular. Va al FINAL y aislado a propósito: para cuando llegamos
 // aquí, el historial y el estado ya están escritos en disco, así que ni un
