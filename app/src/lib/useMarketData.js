@@ -42,8 +42,8 @@ const LIMITE_MS = 15_000
 // Cada cuánto se vuelve a mirar si hay barrido nuevo mientras la app está
 // abierta. Se mantienen los 15 minutos de antes: ahora es un archivo estático
 // de 20 KB en vez de siete consultas a una API con cuota, así que mirar
-// seguido no le cuesta nada a nadie. Al publicarse cada 30 minutos, mirar cada
-// 15 garantiza que lo nuevo se ve como mucho 15 minutos después de publicarse.
+// seguido no le cuesta nada a nadie. Se publica hasta tres veces por hora, así
+// que mirar cada 15 minutos garantiza ver lo nuevo casi en cuanto aparece.
 const REFRESCO_MS = 15 * 60 * 1000
 
 function leerCache() {
