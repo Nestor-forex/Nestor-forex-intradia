@@ -440,6 +440,54 @@ console.log('Y la comprobación de que no se pisan con las que ya existen:')
 }
 console.log(RAYA)
 
+// ⚠️ EL RETROCESO, PAGANDO LAS NOCHES. ESTA TABLA FALTABA, Y ES LA QUE DECIDE.
+//
+// El retroceso es la ÚNICA regla candidata a salir de la sombra, y hasta ahora
+// se medía con spread pero SIN swap — mientras que el barrido de swap se
+// aplicaba solo a las señales de la app.
+//
+// Y aquí el swap no es un detalle: de las 42 operaciones reales ya resueltas,
+// 22 (el 52%) cruzaron al menos una noche, pese a que la app se llama
+// Intradía. Decidir si esta regla se enciende con un número que no cuenta eso
+// sería decidir con la cuenta a medias.
+{
+  console.log('')
+  console.log('EL RETROCESO, PERO PAGANDO LAS NOCHES')
+  const b = barridoSwap(retro, conRetro.porClave)
+  if (!b.total) {
+    console.log('  (sin operaciones resueltas)')
+  } else {
+    console.log(
+      `${b.total} ops · ${b.cruzaron} cruzaron alguna noche ` +
+        `(${Math.round((b.cruzaron / b.total) * 100)}%), ${b.mediaNoches.toFixed(2)} de media`
+    )
+    console.log('')
+    console.log('   swap/noche      acierto   por 1R   coste medio')
+    const sinNada = medir(retro, conRetro.porClave)
+    console.log(
+      `   sin costes       ${(sinNada.acierto ?? 0).toFixed(0).padStart(5)}%` +
+        `  ${(sinNada.porRiesgo ?? 0).toFixed(3).padStart(7)}         —`
+    )
+    for (const { nivel, medicion: m, costeMedio } of b.filas) {
+      const etiqueta = nivel === 0 ? 'solo spread' : `+ ${nivel.toFixed(2)} pips`
+      console.log(
+        `   ${etiqueta.padEnd(15)} ${(m.acierto ?? 0).toFixed(0).padStart(5)}%` +
+          `  ${(m.porRiesgo ?? 0).toFixed(3).padStart(7)}   ${costeMedio.toFixed(1).padStart(6)} pips`
+      )
+    }
+    // La pregunta práctica no es "cuánto gana" sino "cuánto aguanta".
+    const ultimoBueno = [...b.filas].reverse().find((f) => (f.medicion.porRiesgo ?? -1) > 0)
+    if (!ultimoBueno) {
+      console.log('   → PIERDE ya solo con el spread. El swap ni hace falta.')
+    } else if (ultimoBueno.nivel === b.filas.at(-1).nivel) {
+      console.log(`   → aguanta hasta ${ultimoBueno.nivel} pips de swap por noche, el nivel más caro que se mide.`)
+    } else {
+      console.log(`   → deja de ganar por encima de ${ultimoBueno.nivel} pips de swap por noche.`)
+    }
+  }
+  console.log(RAYA)
+}
+
 // --------------------------------------------------------------------------
 // 10. EL ROMPIMIENTO DEL RANGO DE APERTURA.
 //
