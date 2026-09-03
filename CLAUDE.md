@@ -708,15 +708,37 @@ Total del día: 168 (vigía) + 168 (publicador) + 7 (reporte) = **343 de 800**.
 CERRADAS, y esas no se mueven. Solo el precio de la hora en curso pasa de
 refrescarse cada 15 min a cada 30.
 
-### Pendiente de Néstor: sacar la llave del repositorio
+### La llave YA NO está en este repositorio (2026-09-03, PR #35)
 
-`velas.mjs` lee primero el secreto `TWELVEDATA_KEY` y **se cae a
-`.env.production`** si no está. Para cerrarlo del todo, EN ESTE ORDEN:
+Néstor creó el secreto `TWELVEDATA_KEY` y se borró la línea de
+`.env.production`. **En ese orden** — al revés se habrían quedado sin precios el
+vigía y el reporte diario.
 
-1. crear el secreto `TWELVEDATA_KEY` en este repositorio,
-2. y **solo entonces** borrar la línea de `.env.production`.
+Cómo se comprobó que el secreto servía **antes** de borrar nada: en el log del
+reporte salía `TWELVEDATA_KEY: ***` (GitHub solo enmascara así un secreto que
+existe y no está vacío) y el reporte salió con precios reales. Como `leerLlave`
+usa **primero** el secreto, la llave que funcionó fue la del secreto. Y después
+de borrarla, el publicador volvió a correr con éxito.
 
-Al revés se quedan sin precios el vigía y el reporte diario.
+⚠️ **SI SE AÑADE UN WORKFLOW NUEVO** que llame a estos guiones, hay que pasarle
+el secreto o fallará:
+
+```yaml
+    env:
+      TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}
+```
+
+📌 **Esto no es hipotético.** Al hacer el cambio apareció que
+`comparar-reglas.yml` llamaba a estos guiones y **se había quedado sin el
+`env`**. Habría fallado la próxima vez que alguien lo lanzara, y con la llave ya
+borrada, sin explicación. Se descubrió revisando los workflows uno por uno antes
+de borrar nada. **Revisar TODOS, no solo los que uno recuerda.**
+
+⚠️ **EN SWING SIGUE PUBLICADA, y es LA MISMA llave.** Las dos apps comparten los
+800 créditos diarios, así que mientras siga escrita en el repositorio de Swing,
+haberla sacado de aquí no sirve de mucho en la práctica. Allí el paso del código
+ya está hecho (su PR #34): falta que Néstor cree el secreto **en ese**
+repositorio —los secretos son por repositorio— y después borrar la línea.
 
 ### La prueba nueva, y por qué su mercado inventado costó varios intentos
 
