@@ -20,4 +20,6 @@ jobs:
           node-version: 22
       - name: Comparar
         working-directory: app
+        env:
+          TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}
         run: node scripts/comparar-reglas.mjs
