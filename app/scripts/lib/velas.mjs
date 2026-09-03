@@ -11,24 +11,34 @@ import { readFileSync } from 'node:fs'
 export const SYMBOLS = ['USD/EUR', 'USD/GBP', 'USD/JPY', 'USD/CHF', 'USD/AUD', 'USD/NZD', 'USD/CAD']
 const SYM_TO_CCY = { 'USD/EUR': 'EUR', 'USD/GBP': 'GBP', 'USD/JPY': 'JPY', 'USD/CHF': 'CHF', 'USD/AUD': 'AUD', 'USD/NZD': 'NZD', 'USD/CAD': 'CAD' }
 
-// DE DÓNDE SALE LA LLAVE.
+// DE DÓNDE SALE LA LLAVE. **Ya NO está en el repositorio.**
 //
-// Primero del secreto `TWELVEDATA_KEY` del repositorio, y si no está, de
-// `.env.production`, que sigue en el repo.
+// Vive en el secreto `TWELVEDATA_KEY` del repositorio, que solo ven los
+// workflows de GitHub Actions.
 //
-// El orden importa y es el camino de salida. Mientras la app le pedía los
-// precios a Twelve Data desde el navegador, la llave TENÍA que ir en
-// `.env.production` porque de ahí la toma Vite al compilar — o sea que iba
-// dentro del JavaScript que se descarga cualquiera. Desde que la app lee el
-// barrido ya publicado, la llave solo la necesitan estos guiones, que corren
-// en GitHub Actions, donde un secreto sí está a salvo.
+// Antes estaba escrita en `.env.production`, y no por descuido: mientras la
+// app le pedía los precios a Twelve Data desde el navegador, TENÍA que estar
+// ahí, porque de ese archivo la toma Vite al compilar. O sea que la llave iba
+// dentro del JavaScript que se descarga cualquiera que abra la página.
 //
-// PARA CERRARLO DEL TODO hay que hacer dos cosas, en este orden:
-//   1. crear el secreto TWELVEDATA_KEY en el repositorio,
-//   2. y solo entonces borrar la línea de `.env.production`.
-// Al revés se quedarían sin precios el vigía y el reporte diario. Por eso hay
-// respaldo en vez de exigir el secreto: así el cambio de la app se puede
-// publicar hoy y la limpieza se hace después, sin prisa y sin apagar nada.
+// Desde que la app lee el barrido ya publicado (ver `barrido-publicado.mjs`),
+// la llave solo la necesitan estos guiones, que corren en GitHub. El
+// 2026-09-03 se creó el secreto y se borró la línea del archivo, EN ESE ORDEN
+// —al revés se habrían quedado sin precios el vigía y el reporte diario—.
+//
+// ⚠️ SI SE AÑADE UN WORKFLOW NUEVO que llame a estos guiones, hay que pasarle
+// el secreto:
+//
+//     env:
+//       TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}
+//
+// Sin eso falla, y falla bien: con el mensaje de abajo, no en silencio. Pasó
+// de verdad con `comparar-reglas.yml`, que se quedó sin el secreto al hacer
+// este cambio y se descubrió revisando los workflows uno por uno.
+//
+// El respaldo a `.env.production` se conserva para poder probar en el
+// computador de alguien sin tener que tocar código: quien quiera, escribe ahí
+// su propia llave y NO la sube.
 export function leerLlave(base = import.meta.url) {
   const delEntorno = process.env.TWELVEDATA_KEY
   if (delEntorno && delEntorno.trim()) return delEntorno.trim()
@@ -37,7 +47,10 @@ export function leerLlave(base = import.meta.url) {
   const m = env.match(/^VITE_TWELVEDATA_KEY=(.+)$/m)
   if (!m || !m[1].trim()) {
     throw new Error(
-      'No hay llave de Twelve Data: ni el secreto TWELVEDATA_KEY ni VITE_TWELVEDATA_KEY en .env.production'
+      'No hay llave de Twelve Data. En GitHub Actions: falta pasarle al paso ' +
+        '`env: TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}`. En un computador: ' +
+        'exporta TWELVEDATA_KEY o pon VITE_TWELVEDATA_KEY en app/.env.production ' +
+        '(sin subirla al repositorio).'
     )
   }
   return m[1].trim()
