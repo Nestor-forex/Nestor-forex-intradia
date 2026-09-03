@@ -734,11 +734,12 @@ el secreto o fallará:
 borrada, sin explicación. Se descubrió revisando los workflows uno por uno antes
 de borrar nada. **Revisar TODOS, no solo los que uno recuerda.**
 
-⚠️ **EN SWING SIGUE PUBLICADA, y es LA MISMA llave.** Las dos apps comparten los
-800 créditos diarios, así que mientras siga escrita en el repositorio de Swing,
-haberla sacado de aquí no sirve de mucho en la práctica. Allí el paso del código
-ya está hecho (su PR #34): falta que Néstor cree el secreto **en ese**
-repositorio —los secretos son por repositorio— y después borrar la línea.
+✅ **En Swing también está cerrado** (sus PR #34 y #35, el mismo día). Era **la
+misma llave en los dos** y comparten los 800 créditos, así que no bastaba con
+sacarla de aquí: mientras siguiera publicada allí, seguía a la vista. Ahora no
+está en ninguno de los dos repositorios.
+
+Si algún día hay que cambiarla, se cambia en **los dos** secretos.
 
 ### La prueba nueva, y por qué su mercado inventado costó varios intentos
 
@@ -785,3 +786,26 @@ Chromium tampoco sale a internet solo: hay que pasarle
 destinos. Lo que funciona siempre es bajar el archivo con `curl` e interceptar
 la petición en Playwright con ese contenido. El binario está en
 `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`.
+
+
+## La API de GitHub Actions va con retraso — TODA, no solo el estado
+
+Salió al verificar lo de la llave y vale para cualquier sesión futura que lance
+un workflow y espere el resultado.
+
+El **estado** dijo `in_progress` durante 10 minutos de un trabajo que había
+terminado en 65 segundos. Ya había pasado el 2026-08-28.
+
+📌 **Y aquí me equivoqué sobre la marcha, así que queda escrito:** al ver que
+los logs daban 404 mientras el estado mentía, concluí que *los logs sí eran
+fiables* —404 mientras corre, disponibles al terminar— y lo di por bueno. **Es
+falso.** En la corrida siguiente los logs dieron 404 durante **13 minutos** de
+un trabajo que también había terminado en 65 segundos. El 404 no distingue
+«sigue corriendo» de «el log todavía no está publicado».
+
+**Qué hacer entonces:** no deducir nada de que algo tarde en aparecer. Esperar,
+reintentar, y **mirar las marcas de tiempo DENTRO del log** cuando por fin
+llegue: ahí sí está cuándo empezó y cuándo terminó. Si el tiempo que dice el log
+es el normal (una corrida del vigía son ~15 s, con reintentos por el límite de
+Twelve Data unos 2 min y medio), no pasó nada raro por mucho que la API tardara
+en contarlo.
