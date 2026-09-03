@@ -809,3 +809,93 @@ llegue: ahí sí está cuándo empezó y cuándo terminó. Si el tiempo que dice
 es el normal (una corrida del vigía son ~15 s, con reintentos por el límite de
 Twelve Data unos 2 min y medio), no pasó nada raro por mucho que la API tardara
 en contarlo.
+
+
+---
+
+# Fase 3 (2026-09-03): que las dos apps no se separen en silencio
+
+Hecha en **las dos apps** a la vez, que es justo de lo que trata.
+
+## El problema, con nombres y apellidos
+
+Swing e Intradía viven en repositorios separados y son casi idénticas por
+dentro. Cada arreglo hay que hacerlo **dos veces**, y cuando se olvida una, no
+falla nada: las dos siguen compilando, las dos siguen publicándose, y la
+diferencia queda ahí meses hasta que alguien la busca.
+
+Ya había pasado cuatro veces documentadas:
+
+- el `start_url` del ícono instalable apuntaba a la raíz del dominio en las dos;
+- la pantalla de detalle de la señal se hizo en Intradía y hubo que portarla;
+- la llave de Twelve Data se sacó de un repositorio y siguió publicada en el
+  otro — y era **la misma llave**, así que no sirvió hasta hacerlo en los dos;
+- y un cierre de etiqueta que quedó en otra línea sin ninguna razón, solo
+  porque alguien editó una app y no la otra.
+
+## Lo medido antes de tocar nada
+
+De los 82 archivos de código, **76 existen con el mismo nombre en las dos
+apps**. Comparándolos uno a uno salieron tres grupos:
+
+| grupo | cuántos | qué son |
+|---|---:|---|
+| idénticos | 23 | el armazón: sesión, miembros, idioma, avisos, calculadora |
+| casi idénticos (1-15%) | 13 | difieren por la identidad de la app… o por nada |
+| genuinamente distintos | el resto | las apps de verdad |
+
+## Lo que se hizo
+
+**1. `src/lib/identidad.js`** — el único archivo de `src/` que sabe si esto es
+Swing o Intradía: `APP`, `NOMBRE_APP` y `PREFIJO` (`nfs`/`nfi`). Tres líneas
+distintas, el resto igual. Con eso, tres archivos más pasaron a ser idénticos.
+
+**2. Se borró el ruido.** Cuatro archivos (`Auth`, `Pendiente`, `MiembrosTab`,
+`CalculadoraTab`) diferían SOLO en dónde iba el cierre de una etiqueta. Se
+comprobó por máquina que la diferencia era únicamente espacios antes de tocar
+nada.
+
+**3. `scripts/gemelos.mjs`** — el manifiesto: qué archivos DEBEN ser idénticos
+(30 hoy) y, aparte, la lista de **PRIMOS** con el motivo escrito de por qué
+cada uno difiere. Esa segunda lista es documentación pura y vale tanto como la
+primera: evita que alguien "arregle" una diferencia que existe por una buena
+razón.
+
+**4. `scripts/prueba-gemelos.mjs` + `.github/workflows/gemelos.yml`** — compara
+contra el otro repositorio (que es público, se clona sin credenciales) en cada
+push, en cada PR y una vez al día. Lo del día suelto no sobra: **la divergencia
+puede nacer de un cambio en el OTRO repositorio**, y eso no dispara nada aquí.
+
+## Las dos decisiones que no hay que ablandar
+
+⚠️ **La lista de gemelos va ESCRITA A MANO.** Sería más cómodo calcularla
+("todos los que hoy son iguales") y sería inútil: en cuanto dos archivos se
+separaran, saldrían solos de la lista y la prueba seguiría en verde. Una prueba
+que se adapta a lo que encuentra no comprueba nada.
+
+⚠️ **NO se unifica nada de trading.** Pares, umbrales, medias, geometría del
+stop: distintos en cada app por buenas razones y medidos por separado. Está
+comprobado que el filtro de RSI mejora Intradía y empeora Swing. `identidad.js`
+lleva un aviso para que nadie meta ahí un número de esos.
+
+## Dos fallos que salieron al probar la propia prueba
+
+📌 **La prueba ignoraba la ruta que se le pasaba a mano.** La trataba como una
+candidata más y, si no le cuadraba, seguía buscando por su cuenta — o sea que
+un robot con la ruta mal escrita habría acabado comparando contra otra cosa y
+pasando en verde. Corregido: si se le da una ruta, se usa **esa y ninguna
+otra**, y si no vale, falla.
+
+📌 **Y al comprobar que la prueba "muerde" me equivoqué yo:** el comando con el
+que rompí un archivo a propósito no cambió nada (insertaba texto antes de un
+`import` y ese archivo no tenía ninguno), así que interpreté un falso "no
+detecta" como fallo de la prueba. Al romperlo de verdad, sí falló. **Antes de
+concluir que una comprobación no muerde, comprobar que el daño se hizo.**
+
+## Cómo se verificó
+
+Lint, build y **todas** las pruebas sin internet en los dos repos. Y en
+**Chromium**, las dos apps compiladas: arrancan en español, y al cambiar de
+idioma cada una guarda con **su** prefijo (`nfs_idioma` / `nfi_idioma`) — que
+era exactamente lo que podía romperse al extraer la identidad — con cero
+errores de consola.
