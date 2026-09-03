@@ -989,3 +989,72 @@ dependiendo del vigía. Para arreglar los avisos y el historial hay dos caminos:
 
 La 2 es más valiosa para el objetivo de fondo del proyecto y no añade
 credenciales. No se ha hecho: toca el vigía, y eso pide mucho cuidado.
+
+
+---
+
+# Fase 4 en Intradía (2026-09-03): ninguna regla gana. Y el 54% era ruido
+
+## El resultado del retroceso, que era la única candidata
+
+564 operaciones, 33% cruzaron alguna noche, 0,47 de media:
+
+| swap/noche | acierto | por 1R | coste medio |
+|---|---:|---:|---:|
+| sin costes | 45% | −0,110 | — |
+| solo spread | 45% | **−0,164** | 2,0 pips |
+| + 0,50 | 45% | −0,169 | 2,2 pips |
+| + 2,00 | 45% | −0,185 | 2,9 pips |
+
+**→ Pierde ya solo con el spread. El swap ni hace falta.**
+
+Y acierta el **45%**: con la vara neutra 1:1, por debajo del 50% significa que
+la señal apunta al **lado equivocado**.
+
+## ⚠️ LA LECCIÓN, Y ES LA MÁS CARA DEL PROYECTO
+
+Esta misma regla medía **54% y +0,03** cuando se decidió dejarla corriendo en
+la sombra. Eran **50 operaciones**, con un margen de ±14 puntos. Ahora, con
+**564 operaciones y costes honestos**, sale 45% y −0,164.
+
+**Aquel 54% era ruido.** La advertencia estaba escrita en el pie del propio
+informe («con menos de ~30 operaciones el porcentaje puede ser suerte, y con
+100 un 58% puede ser en realidad un 49%») y aun así se guardó la esperanza en
+ese número durante semanas.
+
+📌 **Regla que sale de aquí: un número medido sobre menos de ~200 operaciones
+no es un resultado, es una pista.** Y una pista no justifica dejar una regla
+«en pruebas» esperando que se confirme: justifica medirla mejor.
+
+## Las otras candidatas, para no dejar cabos sueltos
+
+| regla | por 1R con costes |
+|---|---:|
+| Rompimiento del rango de apertura (6 variantes) | de −0,10 a −0,31 |
+| Filtro de RSI (mejor umbral, 70) | −0,11 |
+| La app tal cual | −0,096 |
+| Las de RANGO de la app | +0,02 **sin** costes → negativo con ellos |
+
+**Ninguna gana.**
+
+## Un contraste con Swing que conviene tener claro
+
+| | lo que mata el resultado |
+|---|---|
+| **Intradía** | **el spread** (de −0,029 a −0,096 de golpe); el swap añade poco, las operaciones duran 0,57 noches |
+| **Swing** | **el swap** (de +0,085 a +0,016 a 1 pip); el spread pesa menos, los objetivos son largos |
+
+Es la diferencia entre objetivos cortos y largos, y explica por qué las dos
+apps necesitan modelos de coste distintos — lo que la Fase 2 hizo.
+
+## Dónde está la ventaja, y dónde no
+
+| | mejor regla | por 1R con costes |
+|---|---|---:|
+| **Swing** | reversión con el RSI estirado | **+0,051** |
+| **Intradía** | ninguna | todas negativas |
+
+⚠️ **La ventaja medida está en Swing.** No en esta app. Cualquier trabajo que
+busque hacer vendibles las señales debería empezar por ahí, y no por seguir
+buscando en Intradía, donde se han medido ya cuatro familias de reglas sin
+encontrar una sola positiva después de costes.
