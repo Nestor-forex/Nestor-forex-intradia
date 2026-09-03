@@ -1,0 +1,48 @@
+name: Comprobar que las dos apps no se separaron
+
+# Compara los archivos gemelos de esta app con los de la app hermana y falla
+# si alguno cambió en una y no en la otra. Ver app/scripts/gemelos.mjs para la
+# lista y para los casos reales que motivaron esto.
+#
+# NO cambia nada ni publica nada: solo compara. Y no gasta ni un crédito de
+# Twelve Data — no toca precios, solo lee archivos.
+#
+# Corre en cada push a main, en cada pull request, y una vez al día. Lo del
+# día suelto no sobra: la divergencia puede aparecer por un cambio en el OTRO
+# repositorio, y eso no dispara nada aquí.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # 06:40 UTC (1:40 a. m. en Colombia), lejos del vigía y del reporte para
+    # no competir por los ejecutores.
+    - cron: '40 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  gemelos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Traer esta app
+        uses: actions/checkout@v4
+        with:
+          path: esta
+
+      # La app hermana. Es un repositorio público, así que se clona sin
+      # credenciales: este trabajo no necesita ningún permiso especial.
+      - name: Traer la app hermana
+        uses: actions/checkout@v4
+        with:
+          repository: Nestor-forex/Nestor-forex
+          path: otra
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Comparar
+        working-directory: esta/app
+        run: node scripts/prueba-gemelos.mjs "${{ github.workspace }}/otra/app"

@@ -14,6 +14,7 @@ import { deleteDoc, doc, serverTimestamp, setDoc } from 'firebase/firestore'
 import { db } from '../firebase.js'
 import { motivoNoDisponible } from './soporte.js'
 import { VAPID_PUBLICA } from './vapid.js'
+import { APP } from '../identidad'
 
 export { VAPID_PUBLICA }
 
@@ -146,7 +147,7 @@ async function guardar(uid, suscripcion, idioma) {
     auth: bruto.keys?.auth || bytesABase64Url(suscripcion.getKey('auth')),
     // De qué app viene: los dos repos comparten proyecto de Firebase, así
     // que el vigía de intradía solo debe escribirle a los suyos.
-    app: 'intradia',
+    app: APP,
     creadaEl: serverTimestamp(),
   })
 }

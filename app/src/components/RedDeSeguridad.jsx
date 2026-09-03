@@ -1,6 +1,7 @@
 import { Component } from 'react'
 import { crearT } from '../lib/i18n/crearT.js'
 import { IDIOMA_BASE } from '../lib/i18n/idiomas.js'
+import { clave } from '../lib/identidad'
 
 // LA RED QUE EVITA LA PANTALLA EN BLANCO.
 //
@@ -40,7 +41,7 @@ import { IDIOMA_BASE } from '../lib/i18n/idiomas.js'
 // La clave con la que la app guarda el idioma elegido. Está repetida aquí a
 // propósito, en vez de importarla: si el módulo de idioma fuera el que falla,
 // importar de él traería el problema a la única pantalla que debe sobrevivir.
-const CLAVE_IDIOMA = 'nfi_idioma'
+const CLAVE_IDIOMA = clave('idioma')
 
 // Respaldo del respaldo. Si hasta la traducción falla, se ve esto.
 const RESPALDO = {

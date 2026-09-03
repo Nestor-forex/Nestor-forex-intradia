@@ -4,8 +4,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { CODIGOS, IDIOMA_BASE, esRTL, localeDe } from './idiomas.js'
 import { crearT } from './crearT.js'
+import { clave } from '../identidad'
 
-const CLAVE = 'nfi_idioma'
+const CLAVE = clave('idioma')
 
 // Primera vez: se usa el idioma del teléfono si lo tenemos traducido. Se mira
 // la lista completa de preferencias (no solo la primera), porque mucha gente
