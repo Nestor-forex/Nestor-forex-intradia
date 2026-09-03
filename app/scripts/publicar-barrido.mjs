@@ -9,7 +9,7 @@
 //   · las juzga contra lo que hizo el precio,
 //   · y manda los avisos al celular.
 //
-// Correrlo cada 30 minutos duplicaría las corridas anotadas, podría registrar
+// Correrlo más seguido duplicaría las corridas anotadas, podría registrar
 // dos veces una señal que parpadea dentro de la misma vela de una hora, y
 // haría sonar el celular el doble. El historial es lo único de este proyecto
 // que no se puede recuperar si se estropea, así que el vigía se queda

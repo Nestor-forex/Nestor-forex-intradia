@@ -899,3 +899,93 @@ Lint, build y **todas** las pruebas sin internet en los dos repos. Y en
 idioma cada una guarda con **su** prefijo (`nfs_idioma` / `nfi_idioma`) — que
 era exactamente lo que podía romperse al extraer la identidad — con cero
 errores de consola.
+
+
+---
+
+# El reloj de GitHub, medido de verdad (2026-09-03)
+
+Néstor preguntó si el retraso de GitHub perjudica las señales. La respuesta
+corta es **sí, pero no por donde él pensaba**, y el tamaño del problema era
+peor de lo que estaba escrito.
+
+## Lo medido, sobre las 184 corridas registradas del vigía
+
+| | |
+|---|---:|
+| retraso mediano | **35 minutos** |
+| corridas puntuales (<5 min) | **6 de 184 (3%)** |
+| corridas con +30 min de retraso | **116 de 184 (63%)** |
+| el peor hueco sin vigilar | **13,4 horas seguidas** |
+| corridas perdidas en huecos | **220** |
+
+## ⚠️ Y el contraste que lo explica todo: en Swing NO pasa
+
+El vigía de Swing corre **una vez al día** y va **18 de 18 corridas**, con 10
+minutos de retraso mediano. Impecable.
+
+**El reloj de GitHub es fiable para tareas diarias y muy poco fiable para
+tareas por hora.** No es un error de configuración y no hay ajuste que lo
+corrija: cuando GitHub tiene carga, descarta las tareas frecuentes.
+
+## Qué se pierde de verdad, y qué no
+
+**NO se pierde el barrido que ve la app.** Lo publican DOS workflows
+independientes (el vigía y `publicar-barrido`), y eso funciona: comprobado con
+el archivo real, tenía 26 minutos de antigüedad.
+
+**Sí se pierden dos cosas:**
+
+1. **Avisos al celular.** Si el vigía debía correr a las 10:00 y no corre, una
+   señal que apareció y se desvaneció dentro de esa hora no avisa nunca.
+2. ⚠️ **Y el historial queda INCOMPLETO.** El banco de pruebas mide como si el
+   vigía revisara cada hora; en la realidad revisa ~40% de las veces. O sea que
+   las señales que entran al historial real son un subconjunto arbitrario de
+   las medidas. **Eso puede explicar en parte por qué el historial real no
+   cuadra con el backtest** (la reversión 0 de 5 en Swing, el 32% de aquí). No
+   lo explica todo, pero es un factor que se estaba ignorando.
+
+## Lo que se hizo, y la prueba de que funciona
+
+Se añadió un segundo horario a `publicar-barrido.yml` (minutos 5 y 35, con el
+vigía en el 20 → **tres intentos por hora**).
+
+📌 **Antes de hacerlo se comprobó que la redundancia sirve, con datos.** La
+duda era razonable: si GitHub descarta las tareas frecuentes bajo carga, poner
+más podría no dar más corridas. Medido el 3 de septiembre, de 16 horas:
+
+| | horas con datos nuevos |
+|---|---:|
+| solo con el vigía | **3 de 16** |
+| con el vigía + el publicador | **7 de 16** |
+
+**Los dos fallan de forma INDEPENDIENTE**, así que cada horario nuevo es una
+oportunidad de verdad y no una repetición del mismo fallo.
+
+Cuota: 48 corridas del publicador (336) + 24 del vigía (168) + 7 del reporte =
+**511 de 800**, dejando ~289 libres para una corrida a mano del banco de
+pruebas.
+
+## Lo que NO se tocó, a propósito
+
+⚠️ **El vigía sigue una vez por hora.** Duplicarlo duplicaría las corridas
+anotadas y haría sonar el celular el doble. El historial es lo único de este
+proyecto que no se puede recuperar si se estropea.
+
+⚠️ **Swing no se tocó**: no tiene el problema (18 de 18).
+
+## Lo que queda pendiente y es lo más valioso
+
+Esto mejora **el barrido que ve la app**, no los **avisos**, que siguen
+dependiendo del vigía. Para arreglar los avisos y el historial hay dos caminos:
+
+1. **Un disparador externo** (un servicio gratuito que llame a la API de GitHub
+   a la hora exacta). Puntual de verdad, pero añade una credencial que cuidar.
+2. **Que el vigía RECUPERE los huecos**: tiene las últimas 300 velas, así que
+   podría mirar hacia atrás y anotar las señales que se perdió mientras no
+   corría. No arreglaría los avisos (una señal de hace 5 horas ya no sirve para
+   operar) pero **sí completaría el historial**, que es lo que hace falta para
+   saber si las señales sirven.
+
+La 2 es más valiosa para el objetivo de fondo del proyecto y no añade
+credenciales. No se ha hecho: toca el vigía, y eso pide mucho cuidado.

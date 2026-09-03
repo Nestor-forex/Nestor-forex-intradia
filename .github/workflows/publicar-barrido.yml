@@ -16,18 +16,45 @@ name: Publicar el barrido para la app
 #
 # Queda más de la mitad libre para una corrida a mano del banco de pruebas.
 #
-# POR QUÉ A LA MEDIA Y NO EN PUNTO: el vigía corre al minuto 20 y cada barrido
-# gasta 7 de los 8 créditos por minuto que da el plan gratuito. Si coincidieran,
-# uno de los dos se quedaría sin datos. Al minuto 50 quedan 30 minutos de
-# separación con el vigía por los dos lados.
+# POR QUÉ EN LOS MINUTOS 5 Y 35: el vigía corre al minuto 20 y cada barrido
+# gasta 7 de los 8 créditos por minuto que da el plan gratuito, así que dos
+# tareas en el mismo minuto se estorbarían. Repartidos en 5, 20 y 35 quedan
+# TRES intentos por hora sin pisarse.
 #
-# Y ASÍ CADA HORA TIENE DOS OPORTUNIDADES DE PUBLICARSE. El reloj de GitHub es
-# impuntual y se le han medido huecos de más de siete horas seguidas; con dos
-# corridas por hora, saltarse una no deja la app enseñando datos viejos.
+# Ver el bloque `schedule` de abajo para los números que justifican tener
+# varios horarios en vez de uno.
 
 on:
   schedule:
-    - cron: '50 * * * 1-5'
+    # ⚠️ DOS HORARIOS, NO UNO, Y NO ES UN DESCUIDO.
+    #
+    # El reloj de GitHub Actions es muy poco fiable para tareas frecuentes.
+    # Medido sobre las 184 corridas registradas del vigía: solo el 3% llegaron
+    # puntuales, el 63% con más de media hora de retraso, y se perdieron 220
+    # corridas en huecos — el peor de 13,4 HORAS seguidas sin vigilar.
+    #
+    # (El de Swing, que corre UNA VEZ AL DÍA, va perfecto: 18 de 18. El
+    # problema es específico de las tareas por hora.)
+    #
+    # Y se comprobó que la redundancia SÍ funciona, con datos: el 3 de
+    # septiembre, de 16 horas, el vigía solo cubrió 3 — pero entre el vigía y
+    # este publicador se cubrieron 7. Los dos fallan de forma INDEPENDIENTE,
+    # así que cada horario nuevo es una oportunidad más de verdad, no una
+    # repetición del mismo fallo.
+    #
+    # Con estos dos y el vigía (minuto 20) quedan TRES intentos por hora,
+    # repartidos: minutos 5, 20 y 35.
+    #
+    # CUOTA: cada corrida gasta 7 créditos de Twelve Data.
+    #   este workflow ... 48 corridas × 7 = 336
+    #   el vigía ........ 24 corridas × 7 = 168
+    #   reporte diario ..  1 corrida  × 7 =   7
+    #   ─────────────────────────────────────────
+    #   total ...........................   511  de los 800 diarios
+    # Quedan ~289 libres, suficiente para una corrida a mano del banco de
+    # pruebas (28) sin acercarse al tope.
+    - cron: '5 * * * 1-5'
+    - cron: '35 * * * 1-5'
   workflow_dispatch:
 
 permissions:
