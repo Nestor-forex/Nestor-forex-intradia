@@ -1,7 +1,9 @@
 {
-  "actualizadoEl": "2026-09-03T19:56:30.833Z",
-  "vela": "2026-09-03 19:00:00",
+  "actualizadoEl": "2026-09-03T22:42:46.626Z",
+  "vela": "2026-09-03 22:00:00",
   "senales": [
-    "GBP/JPY|VENTA|retroceso"
+    "AUD/JPY|VENTA|retroceso",
+    "NZD/JPY|VENTA|retroceso",
+    "USD/JPY|VENTA|retroceso"
   ]
 }
