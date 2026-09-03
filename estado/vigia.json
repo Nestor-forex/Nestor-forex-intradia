@@ -1,9 +1,7 @@
 {
-  "actualizadoEl": "2026-09-03T00:21:08.308Z",
-  "vela": "2026-09-03 00:00:00",
+  "actualizadoEl": "2026-09-03T05:54:47.141Z",
+  "vela": "2026-09-03 05:00:00",
   "senales": [
-    "USD/CHF|COMPRA|rango",
-    "NZD/JPY|VENTA|retroceso",
-    "NZD/CAD|VENTA|retroceso"
+    "AUD/USD|VENTA|rango"
   ]
 }
