@@ -739,6 +739,206 @@ console.log('')
   console.log('que el sistema esté bien. Quiere decir que ya perdía antes.')
 }
 
+
+
+// --------------------------------------------------------------------------
+// LA REVERSIÓN, QUE NUNCA SE HABÍA MEDIDO EN ESTA APP.
+//
+// POR QUÉ SE MIDE AHORA
+// ---------------------
+// En esta app se han medido ya cuatro familias de reglas —tendencia, rango,
+// retroceso y rompimiento de apertura— y NINGUNA gana después de costes. Pero
+// la reversión no estaba entre ellas, y es la única que ha dado positivo en
+// todo el proyecto: en la app hermana de swing mide +0,051 por unidad de
+// riesgo con spread por par y medio pip de swap.
+//
+// Además tiene respaldo fuera de este proyecto. La investigación sobre
+// reversión en velas HORARIAS de Forex encuentra que los rebotes son
+// "generalizados y altamente significativos" en las divisas más operadas, y
+// —esto es lo importante aquí— que el efecto es MÁS FUERTE EN CIERTAS HORAS,
+// sobre todo en el solape de Londres con Nueva York.
+//
+// ⚠️ NO SE HEREDA NINGÚN NÚMERO DE SWING. Allí el umbral es RSI ≤35 sobre
+// velas de un día. Aquí son velas de una hora, con otras medias y otro
+// horizonte, y está comprobado en este proyecto que un número que funciona en
+// una app puede empeorar la otra (pasó con el filtro de RSI). Por eso el
+// umbral se BARRE en vez de copiarse.
+//
+// La app tal cual COMPRA lo fuerte. Estas reglas hacen lo contrario.
+// --------------------------------------------------------------------------
+
+// El solape de Londres (7-16) con Nueva York (12-21): de 12 a 16 UTC. Es la
+// franja que la investigación señala como la de más información.
+const enSolape = (h) => h >= 12 && h < 16
+
+const REGLAS_REVERSION = [
+  ['R1. Comprar lo débil, vender lo fuerte', (p, esc, thr) => (p.dif < -thr ? 'COMPRA' : p.dif > thr ? 'VENTA' : null)],
+  [
+    'R2. …y solo con el RSI estirado (35/65)',
+    (p, esc, thr) => (p.dif < -thr && p.rsiV <= 35 ? 'COMPRA' : p.dif > thr && p.rsiV >= 65 ? 'VENTA' : null),
+  ],
+  [
+    'R3. …y solo lejos de la EMA21',
+    (p, esc, thr) => (p.dif < -thr && p.c < p.e21 ? 'COMPRA' : p.dif > thr && p.c > p.e21 ? 'VENTA' : null),
+  ],
+  [
+    'R4. R2 solo en el solape Londres-NY',
+    (p, esc, thr, hora) =>
+      !enSolape(hora) ? null : p.dif < -thr && p.rsiV <= 35 ? 'COMPRA' : p.dif > thr && p.rsiV >= 65 ? 'VENTA' : null,
+  ],
+  [
+    'R5. CONTROL: la inversión, de frente',
+    (p, esc, thr) =>
+      p.dif < -thr && p.tend === 'Bajista' ? 'COMPRA' : p.dif > thr && p.tend === 'Alcista' ? 'VENTA' : null,
+  ],
+]
+
+console.log('')
+console.log('LA REVERSIÓN, MEDIDA AQUÍ POR PRIMERA VEZ (regla de medir neutra)')
+console.log('Comprar lo que se cayó en vez de lo que subió. Es la única familia')
+console.log('que ha dado positivo en el proyecto, y nunca se había probado aquí.')
+console.log('')
+console.log(`regla                                       ops  acierto   por 1R   CON COSTES`)
+console.log(RAYA)
+const revCorridas = []
+for (const [nombre, regla] of REGLAS_REVERSION) {
+  const r = correr({ geometria: simetrica, reglaEntrada: regla })
+  revCorridas.push({ nombre, r })
+  const m = medir(r.senales, r.porClave)
+  const ms = medir(r.senales, r.porClave, { conSpread: true, swapPipsNoche: 0.5 })
+  const num = (x) => (x === null ? '   —  ' : (x >= 0 ? '+' : '') + x.toFixed(3)).padStart(7)
+  console.log(
+    `${nombre.padEnd(42)} ${String(m.total).padStart(5)}  ` +
+      `${m.acierto === null ? '  — ' : (m.acierto.toFixed(0) + '%').padStart(5)}  ${num(m.porRiesgo)}   ${num(ms.porRiesgo)}`
+  )
+}
+console.log(RAYA)
+console.log('"CON COSTES" = spread por par + medio pip de swap por noche.')
+console.log('Para comparar, la app tal cual con la misma vara:')
+{
+  const m = medir(neutra.senales, neutra.porClave)
+  const ms = medir(neutra.senales, neutra.porClave, { conSpread: true, swapPipsNoche: 0.5 })
+  const num = (x) => (x === null ? '   —  ' : (x >= 0 ? '+' : '') + x.toFixed(3)).padStart(7)
+  console.log(
+    `${'   la app hoy'.padEnd(42)} ${String(m.total).padStart(5)}  ` +
+      `${(m.acierto.toFixed(0) + '%').padStart(5)}  ${num(m.porRiesgo)}   ${num(ms.porRiesgo)}`
+  )
+}
+
+// --------------------------------------------------------------------------
+// ¿A QUÉ HORAS FUNCIONA?
+//
+// Esto es lo propio de intradía y no existe en swing, donde solo hay una vela
+// por día. Si la investigación acierta, el efecto debería concentrarse en las
+// horas de más actividad y desaparecer en las muertas.
+//
+// No cuesta ninguna corrida nueva: se reparten por hora las señales de R2, que
+// ya están medidas.
+// --------------------------------------------------------------------------
+
+console.log('')
+console.log('¿A QUÉ HORAS FUNCIONA LA REVERSIÓN? (R2, con costes)')
+console.log('Si el efecto es real debería concentrarse donde hay actividad.')
+console.log('')
+console.log('franja horaria (UTC)              ops  acierto   por 1R')
+console.log(RAYA)
+{
+  const r2 = revCorridas.find((x) => x.nombre.startsWith('R2'))
+  const FRANJAS = [
+    ['Asia (0-7)', (h) => h >= 0 && h < 7],
+    ['Londres sin NY (7-12)', (h) => h >= 7 && h < 12],
+    ['SOLAPE Londres-NY (12-16)', (h) => h >= 12 && h < 16],
+    ['NY sin Londres (16-21)', (h) => h >= 16 && h < 21],
+    ['Noche (21-24)', (h) => h >= 21],
+  ]
+  for (const [nombre, dentro] of FRANJAS) {
+    const suyas = r2.r.senales.filter((s) => dentro(Number(String(s.vela).slice(11, 13))))
+    const m = medir(suyas, r2.r.porClave, { conSpread: true, swapPipsNoche: 0.5 })
+    const num = (x) => (x === null ? '   —  ' : (x >= 0 ? '+' : '') + x.toFixed(3)).padStart(7)
+    console.log(
+      `${nombre.padEnd(30)} ${String(m.total).padStart(5)}  ` +
+        `${m.acierto === null ? '  — ' : (m.acierto.toFixed(0) + '%').padStart(5)}  ${num(m.porRiesgo)}`
+    )
+  }
+}
+console.log(RAYA)
+console.log('⚠️ Con pocas operaciones en una franja, su número no significa nada.')
+
+// --------------------------------------------------------------------------
+// ¿ES REAL EL UMBRAL DEL RSI, O LO ELEGÍ YO?
+//
+// El 35 viene de swing, y aquí NO tiene por qué valer: son velas de una hora,
+// no de un día. Si el efecto es real, los umbrales vecinos tienen que
+// acompañar y el resultado debe cambiar poco a poco. Un pico solitario en un
+// número es una curva ajustada a estos meses, no un descubrimiento.
+// --------------------------------------------------------------------------
+
+console.log('')
+console.log('¿ES REAL EL UMBRAL, O LO ELEGÍ YO? (con costes, regla neutra)')
+console.log('')
+console.log('RSI ≤ (compra) / ≥ (venta)     ops  acierto   por 1R    1ª mitad   2ª mitad')
+console.log(RAYA)
+{
+  const corte = barras[Math.floor(barras.length / 2)]
+  for (const u of [25, 30, 35, 40, 45, 50]) {
+    const regla = (p, esc, thr) =>
+      p.dif < -thr && p.rsiV <= u ? 'COMPRA' : p.dif > thr && p.rsiV >= 100 - u ? 'VENTA' : null
+    const r = correr({ geometria: simetrica, reglaEntrada: regla })
+    const opciones = { conSpread: true, swapPipsNoche: 0.5 }
+    const m = medir(r.senales, r.porClave, opciones)
+    const m1 = medir(r.senales.filter((s) => s.vistoEl < corte), r.porClave, opciones)
+    const m2 = medir(r.senales.filter((s) => s.vistoEl >= corte), r.porClave, opciones)
+    const num = (x) => (x === null ? '   —  ' : (x >= 0 ? '+' : '') + x.toFixed(3)).padStart(7)
+    console.log(
+      `RSI ${String(u).padStart(2)} / ${String(100 - u).padEnd(2)}                  ${String(m.total).padStart(5)}  ` +
+        `${m.acierto === null ? '  — ' : (m.acierto.toFixed(0) + '%').padStart(5)}  ${num(m.porRiesgo)}   ` +
+        `${num(m1.porRiesgo)}   ${num(m2.porRiesgo)}`
+    )
+  }
+}
+console.log(RAYA)
+console.log('Si TODA la columna es positiva y cambia suave, el efecto es real.')
+console.log('Si solo destaca uno y los vecinos se caen, lo ajusté yo y no sirve.')
+
+// --------------------------------------------------------------------------
+// Y EL SWAP, que es lo que decide si una regla positiva lo sigue siendo.
+// --------------------------------------------------------------------------
+
+console.log('')
+console.log('LA MEJOR DE ELLAS, PAGANDO LAS NOCHES')
+for (const { nombre, r } of revCorridas) {
+  const b = barridoSwap(r.senales, r.porClave)
+  if (!b.total) {
+    console.log(`${nombre} — sin operaciones resueltas`)
+    continue
+  }
+  const sinNada = medir(r.senales, r.porClave)
+  // Solo se detalla la que tenga alguna posibilidad: si ya pierde sin costes,
+  // la tabla entera sobra y solo estorba para leer.
+  if ((sinNada.porRiesgo ?? -1) <= 0) {
+    console.log(`${nombre} — pierde ya SIN costes (${(sinNada.porRiesgo ?? 0).toFixed(3)}), no hace falta mirar el swap`)
+    continue
+  }
+  console.log('')
+  console.log(`${nombre}  (${b.total} ops · ${b.cruzaron} cruzaron noche, ${b.mediaNoches.toFixed(2)} de media)`)
+  console.log('   swap/noche      acierto   por 1R   coste medio')
+  console.log(
+    `   sin costes       ${(sinNada.acierto ?? 0).toFixed(0).padStart(5)}%` +
+      `  ${(sinNada.porRiesgo ?? 0).toFixed(3).padStart(7)}         —`
+  )
+  for (const { nivel, medicion: m, costeMedio } of b.filas) {
+    const etiqueta = nivel === 0 ? 'solo spread' : `+ ${nivel.toFixed(2)} pips`
+    console.log(
+      `   ${etiqueta.padEnd(15)} ${(m.acierto ?? 0).toFixed(0).padStart(5)}%` +
+        `  ${(m.porRiesgo ?? 0).toFixed(3).padStart(7)}   ${costeMedio.toFixed(1).padStart(6)} pips`
+    )
+  }
+  const ultimoBueno = [...b.filas].reverse().find((f) => (f.medicion.porRiesgo ?? -1) > 0)
+  if (!ultimoBueno) console.log('   → PIERDE ya solo con el spread.')
+  else if (ultimoBueno.nivel === b.filas.at(-1).nivel) console.log(`   → aguanta hasta ${ultimoBueno.nivel} pips de swap, el nivel más caro que se mide.`)
+  else console.log(`   → deja de ganar por encima de ${ultimoBueno.nivel} pips de swap por noche.`)
+}
+
 console.log('')
 console.log('Cómo leerlo, y con qué desconfianza:')
 console.log(' · Con menos de ~30 operaciones el porcentaje puede ser suerte.')

@@ -33,11 +33,69 @@ import { actual } from './geometrias.mjs'
 // medir la app de verdad.
 export const VENTANA = 300
 
+// Candidatos elegidos por una REGLA PROPIA en vez de por el barrido de la app.
+//
+// Hace falta para poder medir ideas que la app no puede producir hoy. La
+// reversión es el caso: la app exige medias alineadas y precio por fuera —
+// condiciones para PERSEGUIR un movimiento— y la reversión quiere justo lo
+// contrario, entrar cuando el precio se estiró demasiado. Filtrar las señales
+// de la app nunca daría esas entradas, porque la app no las genera.
+//
+// Se ordena y se corta por topN igual que la app, para que la comparación no
+// cambie solo por el número de operaciones.
+//
+// ⚠️ La regla recibe la HORA de la vela como cuarto argumento. En la app
+// hermana de swing no existe ese parámetro y aquí sí, porque es lo propio de
+// intradía: la investigación sobre reversión en velas horarias encuentra que
+// el efecto cambia mucho según la sesión abierta, así que hay que poder
+// medirlo por hora en vez de suponer que da igual.
+function porReglaPropia(data, regla, thr, topN) {
+  const hora = data.horaUltima
+  const salida = []
+  for (const lado of ['COMPRA', 'VENTA']) {
+    const suyos = data.pares
+      .filter((p) => regla(p, data.esc, thr, hora) === lado)
+      // Igual que la app: primero los de mayor diferencia de fuerza.
+      .sort((a, b) => Math.abs(b.dif) - Math.abs(a.dif))
+      .slice(0, topN)
+
+    for (const p of suyos) {
+      salida.push({
+        name: p.name,
+        lado,
+        // Solo los campos que necesitan las geometrías y la señal. Se arman a
+        // mano y no con `mkSetup` porque `mkSetup` aplica los filtros de la
+        // app (ADX, RSI, R/B), que son exactamente los que aquí se quieren
+        // evitar: si los aplicara, no se estaría midiendo la regla propia.
+        crudo: {
+          b: p.b,
+          q: p.q,
+          dec: p.dec,
+          precio: p.c,
+          res: p.hi20,
+          sup: p.lo20,
+          pivote: p.pivots?.p ?? p.hi20,
+          atrAbs: p.atrAbs,
+          rsi: Math.round(p.rsiV),
+          adx: Math.round(p.adx),
+          tend: p.tend,
+          fuerzaB: data.esc[p.b],
+          fuerzaQ: data.esc[p.q],
+        },
+      })
+    }
+  }
+  return salida
+}
+
 /**
  * @param geometria       (crudo, compra) → { sl, tp }. Por defecto la de la app.
  * @param invertirVentas  operar al revés lo que el barrido manda vender. Es un
  *                        diagnóstico: una señal que pierde siempre no es una
  *                        señal sin información, es una con el signo cambiado.
+ * @param reglaEntrada    (par, esc, thr, hora) → 'COMPRA' | 'VENTA' | null.
+ *                        Sustituye al barrido de la app para poder medir ideas
+ *                        que la app no puede producir. Ver `porReglaPropia`.
  * @returns señales en el mismo formato que escribe el vigía, listas para
  *          `resolver.mjs`.
  */
@@ -45,7 +103,15 @@ export function generarSenales(
   barras,
   rates,
   rangos,
-  { calentamiento = VENTANA, thr = 0.5, topN = 3, geometria = actual, invertirVentas = false, vista = {} } = {}
+  {
+    calentamiento = VENTANA,
+    thr = 0.5,
+    topN = 3,
+    geometria = actual,
+    invertirVentas = false,
+    reglaEntrada = null,
+    vista = {},
+  } = {}
 ) {
   const senales = []
   let previas = new Set()
@@ -55,13 +121,16 @@ export function generarSenales(
     const desde = Math.max(0, i + 1 - VENTANA)
     const hasta = barras.slice(desde, i + 1)
     const data = computarBarrido(hasta, rates, rangos)
-    // `vista` deja mover los umbrales de la app (ADX, confirmación de 4 horas,
-    // compresión) SIN duplicar aquí su lógica de selección. Vacío = la app tal
-    // cual.
-    const { setups } = derivarVista(data, { thr, topN, ...vista })
+    // Sin `reglaEntrada` se mide el barrido de la app tal cual, que es lo que
+    // hay que medir por defecto; `vista` deja mover sus umbrales (ADX,
+    // compresión) sin duplicar aquí su lógica de selección. Con
+    // `reglaEntrada` se mide una idea que la app no da hoy.
+    const candidatos = reglaEntrada
+      ? porReglaPropia(data, reglaEntrada, thr, topN)
+      : derivarVista(data, { thr, topN, ...vista }).setups
 
     const ahora = new Set()
-    for (const s of setups) {
+    for (const s of candidatos) {
       const tipo = s.tipo || 'tendencia'
       const id = `${s.name}|${s.lado}|${tipo}`
       ahora.add(id)
