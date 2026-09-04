@@ -986,18 +986,28 @@ for (const { nombre, r } of revCorridas) {
   console.log('Cada fila quita o relaja una pared. Las DOS columnas juntas:')
   console.log('más señales no es mejor si el resultado por operación empeora.')
   console.log('')
-  console.log('qué se afloja                          ops  señ/mes  acierto   por 1R')
-  console.log('─'.repeat(80))
+  // ⚠️ LAS DOS MITADES SON OBLIGATORIAS, y no estaban. Es LA prueba que el ADX
+  // no pasó: el 2026-08-12 se subió de 20 a 35 aquí porque «acertaba más», y
+  // salieron SIETE reportes seguidos sin una sola señal. Un número que solo es
+  // bueno en una mitad del periodo no es una mejora.
+  //
+  // Sin estas dos columnas no se puede recomendar ENCENDER nada.
+  const corteAfl = barras[Math.floor((VENTANA + barras.length) / 2)]
+
+  console.log(`Las dos mitades se parten en ${corteAfl}.`)
+  console.log('')
+  console.log('qué se afloja                          ops  señ/mes  acierto   por 1R  │ 1ª mit │ 2ª mit')
+  console.log('─'.repeat(92))
 
   const linea = (nombre, r) => {
     const m = medir(r.senales, r.porClave, { conSpread: true })
+    const m1 = medir(r.senales.filter((x) => x.vistoEl < corteAfl), r.porClave, { conSpread: true })
+    const m2 = medir(r.senales.filter((x) => x.vistoEl >= corteAfl), r.porClave, { conSpread: true })
     const ac = m.acierto === null ? '  — ' : (m.acierto.toFixed(0) + '%').padStart(4)
-    const pr =
-      m.porRiesgo === null
-        ? '   —  '
-        : ((m.porRiesgo >= 0 ? '+' : '') + m.porRiesgo.toFixed(2)).padStart(6)
+    const pr = (x) => (x === null ? '   —  ' : ((x >= 0 ? '+' : '') + x.toFixed(2)).padStart(6))
     console.log(
-      `${nombre.padEnd(34)} ${String(m.total).padStart(5)}   ${(m.total / meses).toFixed(1).padStart(5)}    ${ac}   ${pr}`
+      `${nombre.padEnd(34)} ${String(m.total).padStart(5)}   ${(m.total / meses).toFixed(1).padStart(5)}    ${ac}   ` +
+        `${pr(m.porRiesgo)} │ ${pr(m1.porRiesgo)} │ ${pr(m2.porRiesgo)}`
     )
   }
 
@@ -1037,15 +1047,32 @@ for (const { nombre, r } of revCorridas) {
   console.log('─'.repeat(80))
   console.log('Con la geometría REAL de la app:')
   console.log('filtro                                           ops   acierto      pips   por 1R')
+  // ⚠️ LAS DOS FILAS «A SECAS» SON LAS QUE IMPORTAN, y faltaban.
+  // La primera versión de esta tabla solo probaba «ADX 10 + RSI apagado»
+  // JUNTOS, y con la vara neutra está medido que apagar el RSI EMPEORA aquí
+  // (−0,10 → −0,12). O sea que esa fila mezclaba un cambio bueno con uno malo y
+  // no se podía saber cuál mandaba. Con la vara neutra el ADX sale gratis
+  // (185,6 → 206 señales/mes y −0,10 → −0,09), pero eso NO autoriza a decir que
+  // salga gratis con la geometría de verdad: hay que medirlo, y es esto.
   for (const [nombre, vista] of [
     ['tal cual (hoy)', {}],
+    ['ADX 10 a secas (sin tocar el RSI)', { adxMin: 10 }],
+    ['ADX 0 a secas (sin tocar el RSI)', { adxMin: 0 }],
     ['ADX 10 + RSI apagado', { adxMin: 10, rsiMax: null }],
     ['todo suelto', { adxMin: 0, rsiMax: null, tendenciaMin: 'ninguna' }],
   ]) {
     // `actual` es ya el valor por defecto, pero se pasa a la vista para que la
     // línea diga lo que hace: esta tabla es con la geometría REAL de la app.
     const r = correr({ geometria: actual, vista })
-    fila(nombre, medir(r.senales, r.porClave, { conSpread: true }))
+    const m = medir(r.senales, r.porClave, { conSpread: true })
+    const m1 = medir(r.senales.filter((x) => x.vistoEl < corteAfl), r.porClave, { conSpread: true })
+    const m2 = medir(r.senales.filter((x) => x.vistoEl >= corteAfl), r.porClave, { conSpread: true })
+    const pr = (x) => (x === null ? '   —  ' : ((x >= 0 ? '+' : '') + x.toFixed(2)).padStart(6))
+    const acierto = m.acierto === null ? '   —  ' : `${m.acierto.toFixed(0).padStart(4)}%`
+    console.log(
+      `${nombre.padEnd(46)} ${String(m.total).padStart(5)}   ${acierto}   ` +
+        `${String(m.pips).padStart(7)}   ${pr(m.porRiesgo)} │ ${pr(m1.porRiesgo)} │ ${pr(m2.porRiesgo)}`
+    )
   }
 }
 
