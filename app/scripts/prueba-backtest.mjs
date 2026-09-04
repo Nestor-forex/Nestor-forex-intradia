@@ -464,5 +464,68 @@ console.log('\n10. La señal de retroceso está apagada y no se pisa con nada')
   )
 }
 
+
+// --- 11. LA REGLA DE ENTRADA PROPIA --------------------------------------
+//
+// `reglaEntrada` deja medir ideas que la app NO puede producir hoy — la
+// reversión es el caso, porque la app exige medias alineadas y la reversión
+// quiere justo lo contrario. Si esto estuviera mal, el banco de pruebas
+// mediría otra cosa distinta de la que dice medir, y el número saldría igual
+// de convincente.
+
+console.log('\n11. La regla de entrada propia')
+{
+  // Una regla que compra TODO lo que tenga la base débil.
+  const soloDebiles = (p, esc, thr) => (p.dif < -thr ? 'COMPRA' : null)
+  const propias = generarSenales(barras, rates, rangos, { reglaEntrada: soloDebiles })
+  const deLaApp = generarSenales(barras, rates, rangos)
+
+  comprobar(propias.length > 0, `la regla propia produce senales (${propias.length})`)
+  comprobar(
+    propias.every((s) => s.lado === 'COMPRA'),
+    'y todas son COMPRA, como pide la regla: no se cuela ninguna venta'
+  )
+
+  // La comprobación que importa: que de verdad mida OTRA cosa. Si saliera lo
+  // mismo que la app, no se estaría probando nada.
+  const clavesApp = new Set(deLaApp.map((s) => `${s.par}@${s.vistoEl}`))
+  const nuevas = propias.filter((s) => !clavesApp.has(`${s.par}@${s.vistoEl}`))
+  comprobar(nuevas.length > 0, `y ${nuevas.length} de ellas la app NO las habria dado`)
+
+  // Que respete topN, para que la comparación no cambie solo por el número de
+  // operaciones.
+  const porVela = {}
+  for (const s of propias) porVela[s.vistoEl] = (porVela[s.vistoEl] || 0) + 1
+  comprobar(
+    Object.values(porVela).every((n) => n <= 3),
+    'y nunca saca mas de topN por vela, igual que la app'
+  )
+
+  // Que la HORA llegue a la regla. Es lo propio de intradia: si no llegara, un
+  // filtro por sesion no filtraria nada y pareceria que "no aporta".
+  const horasVistas = new Set()
+  generarSenales(barras, rates, rangos, {
+    reglaEntrada: (p, esc, thr, hora) => {
+      horasVistas.add(hora)
+      return null
+    },
+  })
+  comprobar(horasVistas.size > 1, `la regla recibe la hora de la vela (${horasVistas.size} horas distintas)`)
+  comprobar(
+    [...horasVistas].every((h) => Number.isInteger(h) && h >= 0 && h < 24),
+    'y es una hora valida, entre 0 y 23'
+  )
+
+  const ninguna = generarSenales(barras, rates, rangos, { reglaEntrada: () => null })
+  comprobar(ninguna.length === 0, 'una regla que no elige nada da cero senales, sin reventar')
+
+  // Si `crudo` no llevara `atrAbs`, la geometria daria NaN y todas las senales
+  // serian basura silenciosa.
+  comprobar(
+    propias.every((s) => Number.isFinite(s.sl) && Number.isFinite(s.tp) && s.pipRiesgo > 0),
+    'todas traen stop y objetivo con numeros de verdad, y riesgo mayor que cero'
+  )
+}
+
 console.log(fallos ? `\n✗ ${fallos} comprobaciones fallaron\n` : '\n✓ todo bien\n')
 process.exit(fallos ? 1 : 0)

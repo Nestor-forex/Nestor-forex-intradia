@@ -1058,3 +1058,103 @@ apps necesitan modelos de coste distintos — lo que la Fase 2 hizo.
 busque hacer vendibles las señales debería empezar por ahí, y no por seguir
 buscando en Intradía, donde se han medido ya cuatro familias de reglas sin
 encontrar una sola positiva después de costes.
+
+---
+
+# La reversión tampoco funciona en Intradía (2026-09-03)
+
+Es la **quinta familia de reglas** que se mide aquí y la quinta que falla. Y
+era la que más razones tenía para funcionar: es la única que ha dado positivo
+en todo el proyecto (en Swing, +0,051 por 1R con costes) y tiene respaldo
+publicado fuera de él —la investigación sobre reversión en velas horarias de
+Forex encuentra rebotes generalizados y significativos, más fuertes en el
+solape de Londres con Nueva York—.
+
+Medido sobre ~19.000 velas de una hora, vara neutra 1:1, spread por par y medio
+pip de swap por noche.
+
+| regla | ops | acierto | sin costes | **con costes** |
+|---|---:|---:|---:|---:|
+| R1. Comprar lo débil, vender lo fuerte | 6.091 | 51% | +0,011 | **−0,056** |
+| R2. …y solo con el RSI estirado (35/65) | 5.302 | 50% | −0,005 | **−0,074** |
+| R3. …y solo lejos de la EMA21 | 6.084 | 51% | +0,011 | **−0,056** |
+| R4. R2 solo en el solape Londres-NY | 1.824 | 51% | +0,019 | **−0,050** |
+| R5. CONTROL: la inversión, de frente | 6.075 | 50% | +0,009 | **−0,058** |
+| *(la app tal cual, misma vara)* | 7.217 | 49% | −0,028 | −0,104 |
+
+**Las cinco pierden.** Y las tres que salen positivas sin costes lo hacen por
++0,01, que es nada: el spread solo ya se lleva 0,05 y las hunde a todas.
+
+## Por qué falla aquí lo que en Swing funciona
+
+**El spread.** Es el mismo en las dos apps —los mismos pares, los mismos 2
+pips de media— pero en Intradía los objetivos son cortos, así que esos 2 pips
+son una fracción mucho mayor del riesgo de cada operación. En Swing la misma
+regla arranca de +0,103 y le sobra margen para pagarlos; aquí arranca de +0,011
+y no le llega ni para eso.
+
+O sea: **no es que la reversión no exista en velas de una hora.** Es que el
+efecto es demasiado pequeño para pagar el peaje de entrar y salir. R1 gana
++0,011 por operación y el peaje cuesta 0,06.
+
+## Lo que sí se ve, aunque no salve nada
+
+**Por franja horaria (R2, con costes):**
+
+| franja (UTC) | ops | acierto | por 1R |
+|---|---:|---:|---:|
+| Asia (0-7) | 1.378 | 49% | −0,089 |
+| Londres sin NY (7-12) | 1.096 | 48% | −0,115 |
+| SOLAPE Londres-NY (12-16) | 1.494 | 50% | −0,077 |
+| **NY sin Londres (16-21)** | 939 | **53%** | **−0,012** |
+| Noche (21-24) | 395 | 51% | −0,039 |
+
+La franja de Nueva York sin Londres es claramente la mejor, y coincide con lo
+que dice la literatura sobre reversiones en hora de Nueva York. **Pero sigue
+siendo negativa**, y son 939 operaciones de una sola franja elegida DESPUÉS de
+ver la tabla. No es un hallazgo: es, como mucho, dónde mirar si algún día se
+retoma esto con costes más baratos.
+
+**Barrido de umbrales del RSI** (la prueba de si el número lo elegí yo):
+
+| RSI compra/venta | ops | por 1R | 1ª mitad | 2ª mitad |
+|---|---:|---:|---:|---:|
+| 25 / 75 | 2.446 | −0,092 | −0,117 | −0,059 |
+| 30 / 70 | 4.121 | −0,077 | −0,080 | −0,073 |
+| 35 / 65 | 5.302 | −0,074 | −0,084 | −0,060 |
+| 40 / 60 | 5.883 | −0,061 | −0,058 | −0,065 |
+| 45 / 55 | 6.052 | −0,058 | −0,052 | −0,067 |
+| 50 / 50 | 6.086 | −0,056 | −0,049 | −0,067 |
+
+La columna entera es negativa y cambia suave: no hay ningún umbral escondido
+que funcione. Y fíjese en el sentido: **cuanto MENOS exigente es el filtro del
+RSI, mejor sale** — o sea que el filtro no aporta nada, solo quita operaciones.
+Justo lo contrario que en Swing, donde el filtro del RSI era lo único que hacía
+sobrevivir a la regla.
+
+⚠️ **Esto confirma otra vez la regla de "lo medido en una app no vale para la
+otra".** Se resistió la tentación de copiar el umbral 35/65 de Swing y se barrió
+en su lugar; de haberlo copiado, se habría elegido precisamente uno de los peores.
+
+## El marcador de Intradía, completo
+
+| familia | por 1R con costes |
+|---|---:|
+| La app tal cual (tendencia) | −0,096 |
+| Las de RANGO de la app | negativo |
+| Rompimiento del rango de apertura (6 variantes) | −0,10 a −0,31 |
+| Retroceso (564 ops) | −0,164 |
+| **Reversión (5 variantes)** | **−0,050 a −0,074** |
+
+**Cinco familias, ninguna positiva.** Esto ya no parece mala suerte con las
+reglas elegidas: coincide con [el estudio de los límites estructurales de las
+señales intradía sobre OHLCV](https://arxiv.org/abs/2605.04004), que probó 14
+familias sobre 947 días y no pasó ninguna, y concluye que una ventaja intradía
+real necesita datos propios o ventajas de ejecución que no se obtienen de
+máximo/mínimo/cierre por hora.
+
+📌 **Consecuencia práctica: dejar de buscar reglas nuevas en Intradía con esta
+fuente de datos.** No es que falte probar la correcta; es que la vía está
+medida y agotada. Si alguna vez se retoma, tendría que ser con otra cosa
+—datos de otro tipo, o costes mucho más baratos—, no con otro indicador sobre
+las mismas velas.
