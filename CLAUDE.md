@@ -1158,3 +1158,27 @@ fuente de datos.** No es que falte probar la correcta; es que la vía está
 medida y agotada. Si alguna vez se retoma, tendría que ser con otra cosa
 —datos de otro tipo, o costes mucho más baratos—, no con otro indicador sobre
 las mismas velas.
+
+---
+
+# Convención para cambios que tocan las dos apps (2026-09-04)
+
+Un cambio en un archivo GEMELO hay que hacerlo en los dos repositorios, y eso
+son dos ramas y dos pull requests. Comparando siempre contra la `main` de la
+hermana, esas dos ramas **nunca pueden estar en verde a la vez**: cada una ve
+la mitad del cambio y el comparador falla. Pasó la primera vez que se intentó
+(la importación del bróker), y dejaría la disciplina de los gemelos con un
+peaje fijo sobre cada cambio compartido.
+
+**Desde ahora: un cambio emparejado usa LA MISMA RAMA en los dos
+repositorios.** El workflow `gemelos.yml` busca en la app hermana una rama con
+el mismo nombre y, si existe, compara contra ella; si no, contra la principal.
+
+⚠️ **Esto no afloja la comprobación.** Lo que hay que garantizar es que las dos
+`main` no se separen, y eso lo siguen comprobando el push a `main` y la corrida
+diaria, que van siempre main contra main. Si de un par solo se fusionara una
+mitad, la corrida del día siguiente lo canta. Lo único que cambia es que al
+revisar un pull request se compara lo comparable.
+
+📌 El workflow **imprime contra qué rama comparó**. Una comprobación que no
+dice qué miró deja al que la lee adivinando si el verde significa algo.

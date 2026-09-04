@@ -38,6 +38,44 @@ jobs:
         with:
           repository: Nestor-forex/Nestor-forex
           path: otra
+          # Hace falta el historial completo para poder cambiar de rama abajo.
+          fetch-depth: 0
+
+      # ─────────────────────────────────────────────────────────────────────
+      # COMPARAR RAMA CONTRA RAMA CUANDO EXISTE LA PAREJA
+      # ─────────────────────────────────────────────────────────────────────
+      # Un cambio que toca un archivo gemelo hay que hacerlo en las DOS apps, y
+      # eso son dos ramas y dos pull requests. Comparando siempre contra la
+      # `main` de la hermana, esas dos ramas NUNCA pueden estar en verde a la
+      # vez: cada una ve la mitad del cambio y falla. Pasó la primera vez que
+      # se intentó, y dejaría la disciplina de los gemelos con un peaje fijo
+      # sobre cada cambio compartido.
+      #
+      # Así que si en la app hermana existe una rama CON EL MISMO NOMBRE, se
+      # compara contra ella. Esa es la convención para un cambio emparejado:
+      # misma rama en los dos repositorios.
+      #
+      # ⚠️ ESTO NO AFLOJA LA COMPROBACIÓN, Y EL PORQUÉ IMPORTA. Lo que hay que
+      # garantizar es que las dos `main` no se separen, y eso lo siguen
+      # comprobando el push a main y la corrida diaria, que van siempre
+      # main contra main. Si de un par solo se fusionara una mitad, la corrida
+      # del día siguiente lo canta. Lo único que cambia es que a la hora de
+      # revisar un pull request se compara lo comparable.
+      #
+      # Y se IMPRIME contra qué se comparó: una comprobación que no dice qué
+      # miró deja al que la lee adivinando si el verde significa algo.
+      - name: Elegir con qué rama de la hermana comparar
+        id: rama
+        working-directory: otra
+        run: |
+          RAMA="${{ github.head_ref || github.ref_name }}"
+          if [ -n "$RAMA" ] && [ "$RAMA" != 'main' ] && git rev-parse --verify --quiet "origin/$RAMA" >/dev/null; then
+            git checkout -q "$RAMA"
+            echo "Comparando contra la rama '$RAMA' de la app hermana (cambio emparejado)."
+          else
+            echo "Comparando contra la rama principal de la app hermana."
+          fi
+          echo "ref=$(git rev-parse --abbrev-ref HEAD) ($(git rev-parse --short HEAD))" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-node@v4
         with:
@@ -45,4 +83,6 @@ jobs:
 
       - name: Comparar
         working-directory: esta/app
-        run: node scripts/prueba-gemelos.mjs "${{ github.workspace }}/otra/app"
+        run: |
+          echo "App hermana: ${{ steps.rama.outputs.ref }}"
+          node scripts/prueba-gemelos.mjs "${{ github.workspace }}/otra/app"
