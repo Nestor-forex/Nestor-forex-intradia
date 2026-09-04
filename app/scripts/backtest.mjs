@@ -29,6 +29,7 @@ import { leerLlave, obtenerVelas } from './lib/velas.mjs'
 import { costeEnPips, nochesEntre, NIVELES_SWAP, SPREAD_PIPS } from './lib/costes.mjs'
 import { generarSenales, medir, barridoSwap, VENTANA } from './lib/backtest-nucleo.mjs'
 import { GEOMETRIAS, simetrica, actual } from './lib/geometrias.mjs'
+import { reglaBarrido } from './lib/patrones.mjs'
 import { resolver } from './lib/resolver.mjs'
 import { senalesApertura } from './lib/apertura.mjs'
 
@@ -1024,6 +1025,99 @@ for (const { nombre, r } of revCorridas) {
   ]) {
     const r = correr(actual, null, vista)
     fila(nombre, medir(r.senales, r.porClave, { conSpread: true }))
+  }
+}
+
+// --------------------------------------------------------------------------
+// EL BARRIDO DE LIQUIDEZ (idea traída por Néstor de los métodos ICT / SMC)
+//
+// El precio perfora un máximo o un mínimo anterior —donde está la gente con sus
+// stops— y CIERRA DE VUELTA DENTRO. Ver `lib/patrones.mjs` para el porqué de
+// esta idea antes que las otras de esa lista.
+//
+// ⚠️ AQUÍ LOS NÚMEROS DE VELAS SIGNIFICAN OTRA COSA QUE EN SWING, y por eso NO
+// se copian. Allí una vela es un día, así que «barrido de 5» es la semana
+// pasada. Aquí una vela es una HORA:
+//
+//     n = 24  → el máximo/mínimo del DÍA anterior (el nivel del que hablan
+//               los métodos ICT, y que esta app no tenía)
+//     n = 8   → la sesión anterior, más o menos
+//     n = 120 → la semana pasada (5 días × 24 h)
+//
+// Es la regla de siempre de este proyecto: lo medido en una app no vale en la
+// otra, y menos cuando la unidad de tiempo es distinta.
+//
+// Y AQUÍ HAY UNA ADVERTENCIA PROPIA DE ESTA APP: en los CRUCES (los que no
+// llevan dólar) el máximo y el mínimo se derivan de los dos pares contra el
+// dólar, o sea que salen algo más amplios que los reales. Un barrido depende
+// justo de si el extremo se perforó por poco, así que en los cruces este
+// patrón se detecta con más ruido que en los pares con dólar. Por eso la tabla
+// separa las dos cosas.
+// --------------------------------------------------------------------------
+
+{
+  const corteBar = barras[Math.floor((VENTANA + barras.length) / 2)]
+  const meses = (barras.length - VENTANA) / (24 * 21)
+
+  console.log('')
+  console.log('EL BARRIDO DE LIQUIDEZ (regla nueva, vara neutra 1:1, con spread)')
+  console.log('El precio perfora un extremo anterior y CIERRA DE VUELTA dentro.')
+  console.log(`Las dos mitades se parten en ${corteBar}.`)
+  console.log('')
+  console.log('regla                                  ops  señ/mes  acierto  por 1R  │ 1ª mit │ 2ª mit')
+  console.log('─'.repeat(92))
+
+  const linea = (nombre, regla, filtro = null) => {
+    const r = correr(simetrica, regla)
+    const sel = filtro ? r.senales.filter(filtro) : r.senales
+    const m = medir(sel, r.porClave, { conSpread: true })
+    const m1 = medir(sel.filter((x) => x.vistoEl < corteBar), r.porClave, { conSpread: true })
+    const m2 = medir(sel.filter((x) => x.vistoEl >= corteBar), r.porClave, { conSpread: true })
+    const pr = (x) => (x === null ? '   —  ' : ((x >= 0 ? '+' : '') + x.toFixed(2)).padStart(6))
+    const ac = (x) => (x === null ? '  — ' : (x.toFixed(0) + '%').padStart(4))
+    console.log(
+      `${nombre.padEnd(36)} ${String(m.total).padStart(5)}   ${(m.total / meses).toFixed(1).padStart(5)}    ` +
+        `${ac(m.acierto)}  ${pr(m.porRiesgo)} │ ${pr(m1.porRiesgo)} │ ${pr(m2.porRiesgo)}`
+    )
+    return r
+  }
+
+  console.log('· Cuántas HORAS atrás está el nivel que se barre')
+  for (const [n, que] of [[4, 'las últimas 4 h'], [8, 'la sesión anterior'], [24, 'el DÍA anterior'], [120, 'la semana pasada']]) {
+    linea(`  B${n}. barrido de ${n} h (${que})`, reglaBarrido(n))
+  }
+
+  console.log('')
+  console.log('· Añadiéndole condiciones al del día anterior (24 h)')
+  linea('  + fuerza relativa a favor', reglaBarrido(24, { exigirFuerza: true }))
+  linea('  + RSI estirado', reglaBarrido(24, { rsiEstirado: true }))
+  linea('  + las dos', reglaBarrido(24, { exigirFuerza: true, rsiEstirado: true }))
+
+  console.log('')
+  console.log('· CONTROL: la misma perforación pero cerrando FUERA (rompimiento)')
+  console.log('  Si esto da lo mismo, lo que importa es tocar el nivel, no volverse.')
+  for (const n of [8, 24, 120]) {
+    linea(`  R${n}. rompimiento de ${n} h`, reglaBarrido(n, { volver: false }))
+  }
+
+  // Los cruces llevan máximo y mínimo derivados, así que el barrido se detecta
+  // con más ruido en ellos. Si el patrón sirviera SOLO en los cruces, habría
+  // que desconfiar: sería más probable que fuera un artefacto de la derivación
+  // que un efecto de mercado.
+  console.log('')
+  console.log('· El del día anterior, separando pares con dólar de cruces')
+  const conDolar = (s) => s.par.includes('USD')
+  linea('  solo pares con dólar (exactos)', reglaBarrido(24), conDolar)
+  linea('  solo cruces (aproximados)', reglaBarrido(24), (s) => !conDolar(s))
+
+  console.log('─'.repeat(92))
+  {
+    const base = correr(simetrica)
+    const m = medir(base.senales, base.porClave, { conSpread: true })
+    console.log(
+      `Para comparar, la app hoy:           ${String(m.total).padStart(5)}   ${(m.total / meses).toFixed(1).padStart(5)}    ` +
+        `${(m.acierto ?? 0).toFixed(0).padStart(3)}%  ${((m.porRiesgo ?? 0) >= 0 ? '+' : '') + (m.porRiesgo ?? 0).toFixed(2)}`
+    )
   }
 }
 

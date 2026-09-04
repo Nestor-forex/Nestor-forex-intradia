@@ -79,6 +79,12 @@ export const GEMELOS = [
   'scripts/lib/firestore-rest.mjs',
   'scripts/prueba-aviso-real.mjs',
   'scripts/prueba-importar.mjs',
+  // El barrido de liquidez. Es identico a proposito: el patron —perforar un
+  // extremo anterior y cerrar de vuelta dentro— no sabe si la vela es de un
+  // dia o de una hora. Lo que SI cambia entre apps es cuantas velas atras se
+  // mira, y eso se pasa por parametro desde cada backtest, no se escribe aqui.
+  'scripts/lib/patrones.mjs',
+  'scripts/prueba-barrido-liquidez.mjs',
   // El comparador de los 13 diccionarios. La memoria daba por hecho que
   // existia y no existia en ninguna de las dos apps: se hizo a mano una vez y
   // no se guardo. Ahora esta, y en las dos.

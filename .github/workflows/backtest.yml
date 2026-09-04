@@ -64,6 +64,10 @@ jobs:
       - name: Comprobar el barrido que lee la app
         working-directory: app
         run: node scripts/prueba-barrido-publicado.mjs
+      - name: Comprobar el barrido de liquidez
+        working-directory: app
+        run: node scripts/prueba-barrido-liquidez.mjs
+
       - name: Medir
         working-directory: app
         env:
