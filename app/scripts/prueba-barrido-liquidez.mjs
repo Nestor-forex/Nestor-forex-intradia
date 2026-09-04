@@ -13,7 +13,7 @@
 //     operaciones y parecería que "el patrón no ocurre", cuando en realidad no
 //     se estaría midiendo nada.
 //
-//  2. CONFUNDIR BARRIDO CON ROMPIMIENTO. Los dos perforan el mismo nivel; solo
+//  2. CONFUNDIR EL BARRIDO CON SU CONTROL. Los dos perforan el mismo nivel; solo
 //     cambia dónde cierran. Si la condición del cierre estuviera al revés, la
 //     tabla mediría el rompimiento creyendo medir el barrido — y el CONTROL,
 //     que existe justo para distinguirlos, daría exactamente lo mismo sin que
@@ -49,7 +49,7 @@ console.log('\nEl barrido de compra: perfora el suelo y cierra por encima')
   comprobar(!barridoDeLiquidez(roto, 3, 'COMPRA'), 'si cierra en 9.5 (fuera) NO es barrido')
   comprobar(
     barridoDeLiquidez(roto, 3, 'COMPRA', false),
-    '…y ese mismo caso SÍ es rompimiento (el control)'
+    '…y ese mismo caso SÍ es el control (cierra fuera, sigue cayendo)'
   )
 
   // Sin perforar no hay nada, cierre donde cierre.
@@ -57,7 +57,7 @@ console.log('\nEl barrido de compra: perfora el suelo y cierra por encima')
   comprobar(!barridoDeLiquidez(sinTocar, 3, 'COMPRA'), 'sin perforar no hay barrido')
   comprobar(
     !barridoDeLiquidez(sinTocar, 3, 'COMPRA', false),
-    'ni rompimiento: los dos exigen perforar primero'
+    'ni el control: los dos exigen perforar primero'
   )
 }
 
@@ -69,7 +69,7 @@ console.log('\nEl barrido de venta es el espejo exacto')
 
   const roto = par([20, 19, 20, 21], [15, 15, 15, 15], 20.5)
   comprobar(!barridoDeLiquidez(roto, 3, 'VENTA'), 'si cierra en 20.5 (fuera) NO es barrido')
-  comprobar(barridoDeLiquidez(roto, 3, 'VENTA', false), '…y sí es rompimiento')
+  comprobar(barridoDeLiquidez(roto, 3, 'VENTA', false), '…y sí es el control')
 }
 
 console.log('\nEl nivel sale de los días ANTERIORES, no incluye hoy')
@@ -115,7 +115,7 @@ console.log('\nEs simétrico: los dos lados se detectan igual de bien')
   comprobar(compras === 2 && ventas === 2, `detecta los 2 de compra y los 2 de venta (${compras}/${ventas})`)
 }
 
-console.log('\nBarrido y rompimiento NUNCA son ciertos a la vez')
+console.log('\nEl barrido y su control NUNCA son ciertos a la vez')
 {
   // Es lo que hace que el control valga: son la misma perforación con
   // desenlaces que se excluyen. Si pudieran coincidir, comparar sus
@@ -133,7 +133,7 @@ console.log('\nBarrido y rompimiento NUNCA son ciertos a la vez')
       if (barridoDeLiquidez(p, 3, lado, true) && barridoDeLiquidez(p, 3, lado, false)) choques++
     }
   }
-  comprobar(choques === 0, 'ningún caso es barrido Y rompimiento al mismo tiempo')
+  comprobar(choques === 0, 'ningún caso es barrido Y control al mismo tiempo')
 }
 
 console.log(fallos ? `\n✗ ${fallos} comprobaciones fallaron\n` : '\n✓ todo bien\n')

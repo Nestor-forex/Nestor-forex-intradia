@@ -34,11 +34,23 @@
  * @param p       par del barrido: necesita `highs`, `lows` y `c` (cierre de hoy)
  * @param n       cuántas velas atrás está el nivel que se barre
  * @param lado    'COMPRA' (se barre un suelo) o 'VENTA' (se barre un techo)
- * @param volver  true = barrido (cierra DENTRO). false = rompimiento (cierra
- *                FUERA). Son la MISMA perforación con desenlaces opuestos, y
- *                por eso el rompimiento sirve de control: si los dos dan lo
- *                mismo, lo que importa no es volverse sino tocar el nivel, y la
- *                historia de la recogida de stops sobra.
+ * @param volver  true = el precio RECUPERA al cierre (el barrido). false = se
+ *                queda FUERA, o sea sigue cayendo (o subiendo) al cerrar. Son
+ *                la MISMA perforación con desenlaces opuestos, y por eso la
+ *                segunda sirve de control: si las dos dan lo mismo, lo que
+ *                importa no es volverse sino tocar el nivel, y la historia de
+ *                la recogida de stops sobra.
+ *
+ *                ⚠️ `volver: false` NO es «un rompimiento» en el sentido
+ *                habitual, aunque se llamó así al principio y confundía. Un
+ *                rompimiento se OPERA A FAVOR del movimiento: mínimo nuevo →
+ *                vender. Aquí el lado no cambia con `volver`: 'COMPRA' sigue
+ *                queriendo decir comprar. Así que `volver: false` en el lado
+ *                'COMPRA' es comprar un mínimo nuevo que cierra en el mínimo:
+ *                comprar la caída SIN esperar el rebote.
+ *
+ *                Las dos variantes compran debilidad. Lo único que las separa
+ *                es si se exige que el precio ya haya recuperado al cierre.
  */
 export function barridoDeLiquidez(p, n, lado, volver = true) {
   const H = p.highs

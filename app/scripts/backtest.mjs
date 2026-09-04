@@ -1115,10 +1115,22 @@ for (const { nombre, r } of revCorridas) {
   linea('  + las dos', reglaBarrido(24, { exigirFuerza: true, rsiEstirado: true }))
 
   console.log('')
-  console.log('· CONTROL: la misma perforación pero cerrando FUERA (rompimiento)')
+  // ⚠️ CUIDADO CON EL NOMBRE DE ESTAS FILAS. Se llamaron «rompimiento» en la
+  // primera versión y era ENGAÑOSO: un rompimiento, tal como se entiende
+  // normalmente, es VENDER cuando el precio hace un mínimo nuevo (seguir el
+  // movimiento). Aquí es al revés: se COMPRA ese mínimo nuevo. Comprobado con
+  // el código en la mano, no de memoria — un par que perfora el suelo y cierra
+  // abajo sale `true` para 'COMPRA', no para 'VENTA'.
+  //
+  // O sea que estas filas son «comprar la caída sin esperar a que rebote»:
+  // reversión más profunda todavía que el barrido, no lo contrario de él. Las
+  // dos compran debilidad; lo que cambia es si se exige que el precio ya haya
+  // recuperado al cierre (barrido) o no (esto).
+  console.log('· CONTROL: perfora y NO recupera — y se compra igual')
+  console.log('  Comprar el mínimo nuevo mientras sigue cayendo, sin esperar rebote.')
   console.log('  Si esto da lo mismo, lo que importa es tocar el nivel, no volverse.')
   for (const n of [8, 24, 120]) {
-    linea(`  R${n}. rompimiento de ${n} h`, reglaBarrido(n, { volver: false }))
+    linea(`  C${n}. comprar la caída de ${n} h`, reglaBarrido(n, { volver: false }))
   }
 
   // Los cruces llevan máximo y mínimo derivados, así que el barrido se detecta
