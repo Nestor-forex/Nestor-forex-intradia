@@ -75,7 +75,26 @@ const completo = computarBarrido(barras, rates, rangos)
 // una de 20 horas abierta a las 23:00 no.
 
 
-function correr(opciones) {
+// ⚠️ AQUÍ `correr` RECIBE UN SOLO OBJETO. En Swing recibe argumentos sueltos
+// —`correr(geometria, reglaEntrada, vista)`— y esa diferencia ya costó una
+// medición entera: el 2026-09-04 se portó desde allí la sección de aflojar los
+// filtros con la forma de Swing, y como `simetrica` y `null` son valores
+// perfectamente válidos, ni el linter ni el arranque dijeron nada. Las opciones
+// nunca llegaron, las 17 filas midieron LO MISMO —todas con 7208 operaciones y
+// −0,13— y la tabla parecía un resultado: «ningún filtro cambia nada». Se
+// descubrió por lo raro de que fueran idénticas, después de 35 minutos de
+// corrida y de gastar los créditos del día.
+//
+// Por eso rechaza los argumentos de más en vez de ignorarlos: una llamada con
+// la forma equivocada tiene que ROMPERSE en el primer segundo, no devolver un
+// número plausible media hora después.
+function correr(opciones, ...sobran) {
+  if (sobran.length) {
+    throw new Error(
+      `correr() recibe UN objeto, no argumentos sueltos (llegaron ${sobran.length + 1}). ` +
+        'Es la forma de Swing: usa correr({ geometria, reglaEntrada, vista }).'
+    )
+  }
   const senales = generarSenales(barras, rates, rangos, { thr: THR, topN: TOP_N, ...opciones })
   const { resultados } = resolver(senales, completo)
   return { senales, porClave: new Map(resultados.map((r) => [r.clave, r])) }
@@ -984,14 +1003,14 @@ for (const { nombre, r } of revCorridas) {
 
   console.log('· El ADX mínimo (hoy 20)')
   for (const a of [0, 10, 15, 20, 25]) {
-    linea(`  ADX ≥ ${a}${a === 20 ? '  (hoy)' : ''}`, correr(simetrica, null, { adxMin: a }))
+    linea(`  ADX ≥ ${a}${a === 20 ? '  (hoy)' : ''}`, correr({ geometria: simetrica, vista: { adxMin: a } }))
   }
 
   console.log('')
   console.log('· El filtro de "no perseguir" (hoy RSI 70)')
   for (const r of [null, 80, 75, 70]) {
     linea(`  ${r === null ? 'apagado' : `rechaza si RSI ≥ ${r}`}${r === 70 ? '  (hoy)' : ''}`,
-      correr(simetrica, null, { rsiMax: r }))
+      correr({ geometria: simetrica, vista: { rsiMax: r } }))
   }
 
   console.log('')
@@ -1001,7 +1020,7 @@ for (const { nombre, r } of revCorridas) {
     ['media', '  solo precio sobre la EMA9'],
     ['ninguna', '  nada: manda solo la fuerza'],
   ]) {
-    linea(nombre, correr(simetrica, null, { tendenciaMin: clave }))
+    linea(nombre, correr({ geometria: simetrica, vista: { tendenciaMin: clave } }))
   }
 
   console.log('')
@@ -1012,7 +1031,7 @@ for (const { nombre, r } of revCorridas) {
     ['  ADX 10 + RSI apagado + EMA9', { adxMin: 10, rsiMax: null, tendenciaMin: 'media' }],
     ['  todo suelto', { adxMin: 0, rsiMax: null, tendenciaMin: 'ninguna' }],
   ]) {
-    linea(nombre, correr(simetrica, null, vista))
+    linea(nombre, correr({ geometria: simetrica, vista }))
   }
 
   console.log('─'.repeat(80))
@@ -1023,7 +1042,9 @@ for (const { nombre, r } of revCorridas) {
     ['ADX 10 + RSI apagado', { adxMin: 10, rsiMax: null }],
     ['todo suelto', { adxMin: 0, rsiMax: null, tendenciaMin: 'ninguna' }],
   ]) {
-    const r = correr(actual, null, vista)
+    // `actual` es ya el valor por defecto, pero se pasa a la vista para que la
+    // línea diga lo que hace: esta tabla es con la geometría REAL de la app.
+    const r = correr({ geometria: actual, vista })
     fila(nombre, medir(r.senales, r.porClave, { conSpread: true }))
   }
 }
@@ -1068,7 +1089,7 @@ for (const { nombre, r } of revCorridas) {
   console.log('─'.repeat(92))
 
   const linea = (nombre, regla, filtro = null) => {
-    const r = correr(simetrica, regla)
+    const r = correr({ geometria: simetrica, reglaEntrada: regla })
     const sel = filtro ? r.senales.filter(filtro) : r.senales
     const m = medir(sel, r.porClave, { conSpread: true })
     const m1 = medir(sel.filter((x) => x.vistoEl < corteBar), r.porClave, { conSpread: true })
@@ -1112,7 +1133,7 @@ for (const { nombre, r } of revCorridas) {
 
   console.log('─'.repeat(92))
   {
-    const base = correr(simetrica)
+    const base = correr({ geometria: simetrica })
     const m = medir(base.senales, base.porClave, { conSpread: true })
     console.log(
       `Para comparar, la app hoy:           ${String(m.total).padStart(5)}   ${(m.total / meses).toFixed(1).padStart(5)}    ` +
