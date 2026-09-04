@@ -480,13 +480,58 @@ const ADX_MAX_RANGO = 20
 // cuesta nada, no porque resuelva el problema.
 const RSI_MAX = 70
 
-const clasificar = (p, thr, { adxMin = ADX_MIN, rsiMax = RSI_MAX } = {}) => {
+// CUÁNTA TENDENCIA SE EXIGE PARA DEJAR PASAR UNA SEÑAL.
+//
+// Néstor investigó por su cuenta y trajo una observación que vale la pena tener
+// escrita: los operadores con experiencia usan POCOS indicadores, y una de las
+// razones es justo lo que le pasa a esta app — apilar condiciones la deja muda.
+// Cada filtro parece razonable por separado y juntos son una pared.
+//
+// Aquí hay CINCO puertas en fila: fuerza, medias alineadas, ADX, RSI, y el R/B
+// mínimo para que suene el celular. Es la app de las dos que menos habla, y no
+// por casualidad.
+//
+// Y este proyecto ya se dio el golpe aquí mismo: el 2026-08-12 se subió el ADX
+// de 20 a 35 porque acertaba más, y salieron SIETE reportes seguidos sin una
+// sola señal, incluido el solape de Londres con Nueva York. Se eligió bien
+// según lo que se midió, y se midió lo que no era.
+//
+//   'alineada' (hoy) → precio sobre la EMA9 Y la EMA9 sobre la EMA21.
+//   'media'          → solo precio sobre la EMA9.
+//   'ninguna'        → no se mira la tendencia: manda solo la fuerza relativa.
+//
+// ⚠️ AFLOJAR NO ES MEJORAR. Da MÁS señales, y está medido que las de esta app
+// pierden dinero (−0,10 por unidad de riesgo con costes). Más señales de un
+// sistema que pierde es perder más rápido. Lo que sí puede justificar aflojar
+// es que la app sirva como herramienta de información sin que el resultado por
+// operación empeore. Por eso la tabla del banco de pruebas lleva las
+// señales/mes AL LADO del resultado.
+const TENDENCIA_MIN = 'alineada'
+
+const cumpleTendencia = (p, lado, exigencia) => {
+  if (exigencia === 'ninguna') return true
+  if (exigencia === 'media') {
+    // Solo el precio contra la media rápida: se quita la condición de que una
+    // media esté por encima de la otra, que es la que más tarda en cumplirse
+    // después de un giro — y en velas de una hora los giros son constantes.
+    return lado === 'COMPRA' ? p.c > p.e9 : p.c < p.e9
+  }
+  return p.tend === (lado === 'COMPRA' ? 'Alcista' : 'Bajista')
+}
+
+const clasificar = (
+  p,
+  thr,
+  { adxMin = ADX_MIN, rsiMax = RSI_MAX, tendenciaMin = TENDENCIA_MIN } = {}
+) => {
   const fuerte = p.adx >= adxMin
   // "Extendido" es simétrico: comprar con el RSI arriba y vender con el RSI
   // abajo son el mismo error visto en el espejo.
   const estirado = rsiMax !== null && (p.dif > 0 ? p.rsiV >= rsiMax : p.rsiV <= 100 - rsiMax)
-  if (p.dif > thr && p.tend === 'Alcista' && fuerte && !estirado) return 'COMPRA'
-  if (p.dif < -thr && p.tend === 'Bajista' && fuerte && !estirado) return 'VENTA'
+  if (p.dif > thr && cumpleTendencia(p, 'COMPRA', tendenciaMin) && fuerte && !estirado)
+    return 'COMPRA'
+  if (p.dif < -thr && cumpleTendencia(p, 'VENTA', tendenciaMin) && fuerte && !estirado)
+    return 'VENTA'
   if (Math.abs(p.dif) > thr) return 'VIGILAR'
   return '—'
 }
@@ -818,10 +863,11 @@ export function derivarVista(
     adxMaxRango,
     compresionMin,
     rsiMax,
+    tendenciaMin,
     incluirRetrocesos = false,
   } = {}
 ) {
-  const cls = (p) => clasificar(p, thr, { adxMin, rsiMax })
+  const cls = (p) => clasificar(p, thr, { adxMin, rsiMax, tendenciaMin })
   // Ojo: `adxMaxRango`, no `adxMin`. Son dos umbrales distintos y con valores
   // distintos — ver el comentario de `clasificarRango`.
   const clsRango = (p) => clasificarRango(p, { adxMax: adxMaxRango, compresionMin })

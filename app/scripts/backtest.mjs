@@ -28,7 +28,7 @@ import { computarBarrido } from '../src/lib/marketCalc.js'
 import { leerLlave, obtenerVelas } from './lib/velas.mjs'
 import { costeEnPips, nochesEntre, NIVELES_SWAP, SPREAD_PIPS } from './lib/costes.mjs'
 import { generarSenales, medir, barridoSwap, VENTANA } from './lib/backtest-nucleo.mjs'
-import { GEOMETRIAS, simetrica } from './lib/geometrias.mjs'
+import { GEOMETRIAS, simetrica, actual } from './lib/geometrias.mjs'
 import { resolver } from './lib/resolver.mjs'
 import { senalesApertura } from './lib/apertura.mjs'
 
@@ -937,6 +937,94 @@ for (const { nombre, r } of revCorridas) {
   if (!ultimoBueno) console.log('   → PIERDE ya solo con el spread.')
   else if (ultimoBueno.nivel === b.filas.at(-1).nivel) console.log(`   → aguanta hasta ${ultimoBueno.nivel} pips de swap, el nivel más caro que se mide.`)
   else console.log(`   → deja de ganar por encima de ${ultimoBueno.nivel} pips de swap por noche.`)
+}
+
+// --------------------------------------------------------------------------
+// AFLOJAR LOS FILTROS: esta app tiene CINCO puertas en fila
+//
+// Lo pidió Néstor tras investigar por su cuenta, y su observación es correcta:
+// los operadores con experiencia usan POCOS indicadores, y una razón es esta —
+// cada condición parece razonable sola y apiladas no dejan pasar nada.
+//
+// Para que salga una señal aquí hay que pasar: fuerza > thr, medias alineadas,
+// ADX ≥ 20, RSI dentro de 30-70, y R/B ≥ 1.5 para el aviso al celular. El
+// 2026-09-04 salieron DOS reportes seguidos completamente vacíos, uno de ellos
+// durante el solape de Londres con Nueva York, que es la mejor hora del día.
+//
+// ⚠️ AFLOJAR NO ES MEJORAR. Da más señales, y las de esta app pierden −0,10 por
+// unidad de riesgo con costes. Más señales de un sistema que pierde es perder
+// más rápido. Lo único que puede justificar aflojar es que la app SIRVA como
+// herramienta de información sin que el resultado por operación empeore. Las
+// señales/mes van al lado del "por 1R" porque la decisión es un intercambio.
+// --------------------------------------------------------------------------
+
+{
+  const meses = (barras.length - VENTANA) / (24 * 21)
+
+  console.log('')
+  console.log('AFLOJAR LOS FILTROS (regla neutra 1:1, con spread)')
+  console.log('Cada fila quita o relaja una pared. Las DOS columnas juntas:')
+  console.log('más señales no es mejor si el resultado por operación empeora.')
+  console.log('')
+  console.log('qué se afloja                          ops  señ/mes  acierto   por 1R')
+  console.log('─'.repeat(80))
+
+  const linea = (nombre, r) => {
+    const m = medir(r.senales, r.porClave, { conSpread: true })
+    const ac = m.acierto === null ? '  — ' : (m.acierto.toFixed(0) + '%').padStart(4)
+    const pr =
+      m.porRiesgo === null
+        ? '   —  '
+        : ((m.porRiesgo >= 0 ? '+' : '') + m.porRiesgo.toFixed(2)).padStart(6)
+    console.log(
+      `${nombre.padEnd(34)} ${String(m.total).padStart(5)}   ${(m.total / meses).toFixed(1).padStart(5)}    ${ac}   ${pr}`
+    )
+  }
+
+  console.log('· El ADX mínimo (hoy 20)')
+  for (const a of [0, 10, 15, 20, 25]) {
+    linea(`  ADX ≥ ${a}${a === 20 ? '  (hoy)' : ''}`, correr(simetrica, null, { adxMin: a }))
+  }
+
+  console.log('')
+  console.log('· El filtro de "no perseguir" (hoy RSI 70)')
+  for (const r of [null, 80, 75, 70]) {
+    linea(`  ${r === null ? 'apagado' : `rechaza si RSI ≥ ${r}`}${r === 70 ? '  (hoy)' : ''}`,
+      correr(simetrica, null, { rsiMax: r }))
+  }
+
+  console.log('')
+  console.log('· Cuánta tendencia se exige')
+  for (const [clave, nombre] of [
+    ['alineada', '  medias alineadas  (hoy)'],
+    ['media', '  solo precio sobre la EMA9'],
+    ['ninguna', '  nada: manda solo la fuerza'],
+  ]) {
+    linea(nombre, correr(simetrica, null, { tendenciaMin: clave }))
+  }
+
+  console.log('')
+  console.log('· Varias a la vez, que es lo que de verdad se plantea')
+  for (const [nombre, vista] of [
+    ['  ADX 10', { adxMin: 10 }],
+    ['  ADX 10 + RSI apagado', { adxMin: 10, rsiMax: null }],
+    ['  ADX 10 + RSI apagado + EMA9', { adxMin: 10, rsiMax: null, tendenciaMin: 'media' }],
+    ['  todo suelto', { adxMin: 0, rsiMax: null, tendenciaMin: 'ninguna' }],
+  ]) {
+    linea(nombre, correr(simetrica, null, vista))
+  }
+
+  console.log('─'.repeat(80))
+  console.log('Con la geometría REAL de la app:')
+  console.log('filtro                                           ops   acierto      pips   por 1R')
+  for (const [nombre, vista] of [
+    ['tal cual (hoy)', {}],
+    ['ADX 10 + RSI apagado', { adxMin: 10, rsiMax: null }],
+    ['todo suelto', { adxMin: 0, rsiMax: null, tendenciaMin: 'ninguna' }],
+  ]) {
+    const r = correr(actual, null, vista)
+    fila(nombre, medir(r.senales, r.porClave, { conSpread: true }))
+  }
 }
 
 console.log('')
