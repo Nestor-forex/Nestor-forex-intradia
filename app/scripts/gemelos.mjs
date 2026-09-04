@@ -51,6 +51,12 @@ export const GEMELOS = [
   'src/components/CargandoApp.jsx',
   'src/components/DiarioTab.jsx',
   'src/components/Glosario.jsx',
+  // Leer el informe del broker y meterlo en el Diario. Es identico en las dos
+  // apps a proposito: el formato de MT4/MT5 no sabe nada de si se opera en
+  // velas de un dia o de una hora, y los pares que cada app acepta se le pasan
+  // por parametro (`conocidos`) en vez de estar escritos dentro.
+  'src/components/ImportarBroker.jsx',
+  'src/lib/importarOperaciones.js',
   'src/components/Header.jsx',
   'src/components/MiembrosTab.jsx',
   'src/components/Pendiente.jsx',
@@ -72,6 +78,11 @@ export const GEMELOS = [
   'src/lib/useMembers.js',
   'scripts/lib/firestore-rest.mjs',
   'scripts/prueba-aviso-real.mjs',
+  'scripts/prueba-importar.mjs',
+  // El comparador de los 13 diccionarios. La memoria daba por hecho que
+  // existia y no existia en ninguna de las dos apps: se hizo a mano una vez y
+  // no se guardo. Ahora esta, y en las dos.
+  'scripts/prueba-idiomas.mjs',
 ]
 
 // ─────────────────────────────────────────────────────────────────────────

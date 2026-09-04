@@ -186,6 +186,31 @@ export default {
     promptCerrar: ({ par }) => `Risultato finale di ${par} (USD, usa - per la perdita):`,
   },
 
+  importar: {
+    aviso: {
+      vacio: 'Il file è vuoto.',
+      sinTabla: 'Nessuna tabella trovata nel file.',
+      sinColumnas: 'Colonne non riconosciute. Il file deve avere una riga di intestazioni con almeno il simbolo e il tipo di operazione.',
+      sinResultado: 'Colonna del risultato non trovata: le operazioni entrano con 0.',
+      saltadasPorPar: ({ n, pares }) => `${n === 1 ? 'Saltata una operazione' : `Saltate ${n} operazioni`} su strumenti che questa app non analizza (oro, indici, azioni o coppie fuori dalle ${pares} che segue).`,
+      saltadasPorTipo: ({ n }) => `${n === 1 ? 'Saltata una riga che non era' : `Saltate ${n} righe che non erano`} né un acquisto né una vendita.`,
+      nadaAprovechable: 'Sono state lette delle righe, ma nessuna era un’operazione utilizzabile.',
+    },
+    titulo: "Importa le operazioni dal broker",
+    explicacion: "Esporta il tuo storico da MT4 («Salva come rapporto dettagliato») o MT5 («Rapporto») e caricalo qui. Va bene anche un CSV. Nulla viene salvato finché non confermi.",
+    elegir: "Scegli file…",
+    errorLeer: "Non è stato possibile leggere il file.",
+    errorGuardar: "Non è stato possibile salvare tutte le operazioni.",
+    hecho: ({ n }) => `${n} operazioni aggiunte al Diario.`,
+    entran: "nuove operazioni entreranno nel Diario",
+    repetidas: ({ n }) => `${n} erano già registrate e non verranno duplicate.`,
+    resultadoTotal: "Risultato totale (swap e commissione inclusi):",
+    yMas: ({ n }) => `…e altre ${n}`,
+    confirmar: ({ n }) => `Aggiungi tutte e ${n}`,
+    cancelar: "Annulla",
+    guardando: "Salvataggio…",
+  },
+
   calc: {
     titulo: 'Calcolatore di lotto e rischio',
     capital: 'Capitale del conto (USD)',

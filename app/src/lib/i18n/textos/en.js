@@ -190,6 +190,31 @@ export default {
     promptCerrar: ({ par }) => `Final result for ${par} (USD, use - for a loss):`,
   },
 
+  importar: {
+    aviso: {
+      vacio: 'The file is empty.',
+      sinTabla: 'No table was found in the file.',
+      sinColumnas: 'The columns were not recognised. The file needs a header row with at least the symbol and the trade type.',
+      sinResultado: 'No result column was found: trades are added with 0.',
+      saltadasPorPar: ({ n, pares }) => `Skipped ${n === 1 ? 'one trade' : `${n} trades`} on instruments this app does not analyse (gold, indices, shares, or pairs outside the ${pares} it follows).`,
+      saltadasPorTipo: ({ n }) => `Skipped ${n === 1 ? 'one row that was not' : `${n} rows that were not`} a buy or a sell.`,
+      nadaAprovechable: 'Rows were read, but none turned out to be a usable trade.',
+    },
+    titulo: "Import trades from your broker",
+    explicacion: "Export your history from MT4 (\"Save as Detailed Report\") or MT5 (\"Report\") and upload it here. A CSV works too. Nothing is saved until you confirm.",
+    elegir: "Choose file…",
+    errorLeer: "The file could not be read.",
+    errorGuardar: "Not all trades could be saved.",
+    hecho: ({ n }) => `${n} trades added to the Journal.`,
+    entran: "new trades will be added to the Journal",
+    repetidas: ({ n }) => `${n} were already recorded and will not be duplicated.`,
+    resultadoTotal: "Total result (swap and commission included):",
+    yMas: ({ n }) => `…and ${n} more`,
+    confirmar: ({ n }) => `Add all ${n}`,
+    cancelar: "Cancel",
+    guardando: "Saving…",
+  },
+
   calc: {
     titulo: 'Lot and risk calculator',
     capital: 'Account capital (USD)',

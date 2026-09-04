@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { PAIR_NAMES, monedasDe } from '../lib/pairs'
 import { useT } from '../lib/i18n'
+import ImportarBroker from './ImportarBroker'
 
 const esAbierta = (t) => t.estado === 'abierta'
 
@@ -138,6 +139,11 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
           {tr('diario.guardar')}
         </button>
       </div>
+
+      {/* Debajo del formulario a mano y no encima: quien apunta una operación
+          suelta es el caso de todos los días; importar el informe del bróker
+          es algo que se hace de vez en cuando. */}
+      <ImportarBroker trades={trades} onImportar={onGuardar} />
 
       {avisoRiesgo.length > 0 && (
         <div style={{ padding: 12, border: '1px solid oklch(0.4 0.06 85)', borderRadius: 8, background: 'oklch(0.22 0.03 85)' }}>

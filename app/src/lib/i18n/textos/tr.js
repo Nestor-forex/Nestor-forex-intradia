@@ -186,6 +186,31 @@ export default {
     promptCerrar: ({ par }) => `${par} için nihai sonuç (USD, zarar için - kullan):`,
   },
 
+  importar: {
+    aviso: {
+      vacio: 'Dosya boş.',
+      sinTabla: 'Dosyada tablo bulunamadı.',
+      sinColumnas: 'Sütunlar tanınmadı. Dosyada en az sembol ve işlem türünü içeren bir başlık satırı olmalı.',
+      sinResultado: 'Sonuç sütunu bulunamadı: işlemler 0 ile ekleniyor.',
+      saltadasPorPar: ({ n, pares }) => `Bu uygulamanın analiz etmediği enstrümanlardaki ${n} işlem atlandı (altın, endeksler, hisseler veya takip ettiği ${pares} paritenin dışındakiler).`,
+      saltadasPorTipo: ({ n }) => `Alış ya da satış olmayan ${n} satır atlandı.`,
+      nadaAprovechable: 'Satırlar okundu ama hiçbiri kullanılabilir bir işlem değildi.',
+    },
+    titulo: "Aracı kurumdan işlemleri içe aktar",
+    explicacion: "Geçmişini MT4 (\"Ayrıntılı rapor olarak kaydet\") veya MT5 (\"Rapor\") üzerinden dışa aktar ve buraya yükle. CSV de olur. Sen onaylayana kadar hiçbir şey kaydedilmez.",
+    elegir: "Dosya seç…",
+    errorLeer: "Dosya okunamadı.",
+    errorGuardar: "İşlemlerin tamamı kaydedilemedi.",
+    hecho: ({ n }) => `Günlüğe ${n} işlem eklendi.`,
+    entran: "yeni işlem günlüğe eklenecek",
+    repetidas: ({ n }) => `${n} tanesi zaten kayıtlıydı, tekrarlanmayacak.`,
+    resultadoTotal: "Toplam sonuç (Swap ve komisyon dahil):",
+    yMas: ({ n }) => `…ve ${n} tane daha`,
+    confirmar: ({ n }) => `${n} işlemi ekle`,
+    cancelar: "İptal",
+    guardando: "Kaydediliyor…",
+  },
+
   calc: {
     titulo: 'Lot ve risk hesaplayıcı',
     capital: 'Hesap sermayesi (USD)',
