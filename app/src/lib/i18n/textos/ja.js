@@ -186,6 +186,31 @@ export default {
     promptCerrar: ({ par }) => `${par} の最終結果（USD、損失は - を付けてください）：`,
   },
 
+  importar: {
+    aviso: {
+      vacio: 'ファイルが空です。',
+      sinTabla: 'ファイル内に表が見つかりませんでした。',
+      sinColumnas: '列を認識できませんでした。銘柄と取引種別を含む見出し行が必要です。',
+      sinResultado: '結果の列が見つかりません。取引は 0 で取り込まれます。',
+      saltadasPorPar: ({ n, pares }) => `このアプリが分析しない銘柄の取引を ${n} 件スキップしました（金、指数、株式、または対象の ${pares} 通貨ペア以外）。`,
+      saltadasPorTipo: ({ n }) => `売買のいずれでもない行を ${n} 件スキップしました。`,
+      nadaAprovechable: '行は読めましたが、使える取引はありませんでした。',
+    },
+    titulo: "ブローカーから取引を取り込む",
+    explicacion: "MT4（「詳細レポートとして保存」）または MT5（「レポート」）から履歴を書き出して、ここにアップロードしてください。CSV でも構いません。確認するまで何も保存されません。",
+    elegir: "ファイルを選ぶ…",
+    errorLeer: "ファイルを読み込めませんでした。",
+    errorGuardar: "すべての取引を保存できませんでした。",
+    hecho: ({ n }) => `${n} 件の取引を日誌に追加しました。`,
+    entran: "件の新しい取引が日誌に入ります",
+    repetidas: ({ n }) => `${n} 件はすでに記録済みなので重複しません。`,
+    resultadoTotal: "合計結果（Swap と手数料を含む）:",
+    yMas: ({ n }) => `…ほか ${n} 件`,
+    confirmar: ({ n }) => `${n} 件すべて追加`,
+    cancelar: "キャンセル",
+    guardando: "保存中…",
+  },
+
   calc: {
     titulo: 'ロットとリスクの計算機',
     capital: '口座資金（USD）',

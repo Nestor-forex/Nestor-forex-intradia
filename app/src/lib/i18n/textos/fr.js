@@ -190,6 +190,31 @@ export default {
     promptCerrar: ({ par }) => `Résultat final de ${par} (USD, utilise - pour une perte) :`,
   },
 
+  importar: {
+    aviso: {
+      vacio: 'Le fichier est vide.',
+      sinTabla: 'Aucun tableau trouvé dans le fichier.',
+      sinColumnas: 'Colonnes non reconnues. Le fichier doit avoir une ligne d’en-têtes avec au moins le symbole et le type d’opération.',
+      sinResultado: 'Colonne de résultat introuvable : les opérations entrent à 0.',
+      saltadasPorPar: ({ n, pares }) => `${n === 1 ? 'Une opération ignorée' : `${n} opérations ignorées`} sur des instruments que cette app n’analyse pas (or, indices, actions, ou paires hors des ${pares} qu’elle suit).`,
+      saltadasPorTipo: ({ n }) => `${n === 1 ? 'Une ligne ignorée' : `${n} lignes ignorées`} : ni achat ni vente.`,
+      nadaAprovechable: 'Des lignes ont été lues, mais aucune n’était une opération exploitable.',
+    },
+    titulo: "Importer les opérations du courtier",
+    explicacion: "Exporte ton historique depuis MT4 (« Enregistrer comme rapport détaillé ») ou MT5 (« Rapport ») et dépose-le ici. Un CSV convient aussi. Rien n’est enregistré tant que tu ne confirmes pas.",
+    elegir: "Choisir un fichier…",
+    errorLeer: "Le fichier n’a pas pu être lu.",
+    errorGuardar: "Toutes les opérations n’ont pas pu être enregistrées.",
+    hecho: ({ n }) => `${n} opérations ajoutées au Journal.`,
+    entran: "nouvelles opérations entreront dans le Journal",
+    repetidas: ({ n }) => `${n} étaient déjà enregistrées et ne seront pas dupliquées.`,
+    resultadoTotal: "Résultat total (swap et commission compris) :",
+    yMas: ({ n }) => `…et ${n} de plus`,
+    confirmar: ({ n }) => `Ajouter les ${n}`,
+    cancelar: "Annuler",
+    guardando: "Enregistrement…",
+  },
+
   calc: {
     titulo: 'Calculateur de lot et de risque',
     capital: 'Capital du compte (USD)',

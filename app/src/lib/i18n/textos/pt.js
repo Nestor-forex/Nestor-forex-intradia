@@ -190,6 +190,31 @@ export default {
     promptCerrar: ({ par }) => `Resultado final de ${par} (USD, use - para perda):`,
   },
 
+  importar: {
+    aviso: {
+      vacio: 'O ficheiro está vazio.',
+      sinTabla: 'Não se encontrou nenhuma tabela no ficheiro.',
+      sinColumnas: 'As colunas não foram reconhecidas. O ficheiro precisa de uma linha de cabeçalhos com pelo menos o símbolo e o tipo de operação.',
+      sinResultado: 'Não se encontrou a coluna de resultado: as operações entram com 0.',
+      saltadasPorPar: ({ n, pares }) => `${n === 1 ? 'Saltou-se uma operação' : `Saltaram-se ${n} operações`} de instrumentos que esta app não analisa (ouro, índices, ações ou pares fora dos ${pares} que segue).`,
+      saltadasPorTipo: ({ n }) => `${n === 1 ? 'Saltou-se uma linha que não era' : `Saltaram-se ${n} linhas que não eram`} uma compra nem uma venda.`,
+      nadaAprovechable: 'Leram-se linhas, mas nenhuma era uma operação aproveitável.',
+    },
+    titulo: "Importar operações da corretora",
+    explicacion: "Exporta o teu histórico do MT4 («Guardar como relatório detalhado») ou do MT5 («Relatório») e carrega-o aqui. Um CSV também serve. Nada é guardado até confirmares.",
+    elegir: "Escolher ficheiro…",
+    errorLeer: "Não foi possível ler o ficheiro.",
+    errorGuardar: "Não foi possível guardar todas as operações.",
+    hecho: ({ n }) => `${n} operações adicionadas ao Diário.`,
+    entran: "novas operações vão entrar no Diário",
+    repetidas: ({ n }) => `${n} já estavam registadas e não serão repetidas.`,
+    resultadoTotal: "Resultado total (com swap e comissão):",
+    yMas: ({ n }) => `…e mais ${n}`,
+    confirmar: ({ n }) => `Adicionar as ${n}`,
+    cancelar: "Cancelar",
+    guardando: "A guardar…",
+  },
+
   calc: {
     titulo: 'Calculadora de lote e risco',
     capital: 'Capital da conta (USD)',

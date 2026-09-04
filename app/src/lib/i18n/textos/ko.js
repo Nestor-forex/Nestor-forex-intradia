@@ -186,6 +186,31 @@ export default {
     promptCerrar: ({ par }) => `${par}의 최종 결과 (USD, 손실은 -를 사용):`,
   },
 
+  importar: {
+    aviso: {
+      vacio: '파일이 비어 있습니다.',
+      sinTabla: '파일에서 표를 찾지 못했습니다.',
+      sinColumnas: '열을 인식하지 못했습니다. 최소한 종목과 거래 유형이 있는 머리글 행이 필요합니다.',
+      sinResultado: '결과 열을 찾지 못했습니다: 거래가 0으로 들어갑니다.',
+      saltadasPorPar: ({ n, pares }) => `이 앱이 분석하지 않는 종목의 거래 ${n}건을 건너뛰었습니다(금, 지수, 주식 또는 추적 대상 ${pares}개 통화쌍 외).`,
+      saltadasPorTipo: ({ n }) => `매수도 매도도 아닌 ${n}개 행을 건너뛰었습니다.`,
+      nadaAprovechable: '행은 읽었지만 사용할 수 있는 거래가 없었습니다.',
+    },
+    titulo: "브로커에서 거래 가져오기",
+    explicacion: "MT4(\"자세한 보고서로 저장\") 또는 MT5(\"보고서\")에서 내역을 내보낸 뒤 여기에 올리세요. CSV도 됩니다. 확인하기 전까지는 아무것도 저장되지 않습니다.",
+    elegir: "파일 선택…",
+    errorLeer: "파일을 읽을 수 없습니다.",
+    errorGuardar: "모든 거래를 저장하지 못했습니다.",
+    hecho: ({ n }) => `일지에 거래 ${n}건을 추가했습니다.`,
+    entran: "건의 새 거래가 일지에 들어갑니다",
+    repetidas: ({ n }) => `${n}건은 이미 기록되어 있어 중복되지 않습니다.`,
+    resultadoTotal: "총 결과 (Swap 및 수수료 포함):",
+    yMas: ({ n }) => `…외 ${n}건`,
+    confirmar: ({ n }) => `${n}건 모두 추가`,
+    cancelar: "취소",
+    guardando: "저장 중…",
+  },
+
   calc: {
     titulo: '랏·리스크 계산기',
     capital: '계좌 자본 (USD)',

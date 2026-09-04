@@ -183,6 +183,31 @@ export default {
     promptCerrar: ({ par }) => `${par} 的最终结果（USD，亏损请用 -）：`,
   },
 
+  importar: {
+    aviso: {
+      vacio: '文件是空的。',
+      sinTabla: '文件中没有找到表格。',
+      sinColumnas: '无法识别列名。文件需要一行表头，至少包含品种和交易类型。',
+      sinResultado: '未找到结果列：交易以 0 录入。',
+      saltadasPorPar: ({ n, pares }) => `已跳过 ${n} 笔本应用不分析的品种交易（黄金、指数、股票，或不在所跟踪的 ${pares} 个货币对之内）。`,
+      saltadasPorTipo: ({ n }) => `已跳过 ${n} 行既不是买入也不是卖出的记录。`,
+      nadaAprovechable: '读到了数据行，但没有一行是可用的交易。',
+    },
+    titulo: "从经纪商导入交易",
+    explicacion: "从 MT4（\"保存为详细报告\"）或 MT5（\"报告\"）导出你的历史记录并上传到这里。CSV 文件也可以。在你确认之前不会保存任何内容。",
+    elegir: "选择文件…",
+    errorLeer: "无法读取该文件。",
+    errorGuardar: "无法保存全部交易。",
+    hecho: ({ n }) => `已向日志添加 ${n} 笔交易。`,
+    entran: "笔新交易将加入日志",
+    repetidas: ({ n }) => `其中 ${n} 笔已记录过，不会重复添加。`,
+    resultadoTotal: "总结果（含 Swap 与佣金）：",
+    yMas: ({ n }) => `…还有 ${n} 笔`,
+    confirmar: ({ n }) => `全部添加（${n} 笔）`,
+    cancelar: "取消",
+    guardando: "保存中…",
+  },
+
   calc: {
     titulo: '手数与风险计算器',
     capital: '账户资金（USD）',

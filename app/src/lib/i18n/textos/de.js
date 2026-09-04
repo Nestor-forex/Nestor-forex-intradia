@@ -190,6 +190,31 @@ export default {
     promptCerrar: ({ par }) => `Endergebnis für ${par} (USD, mit - für Verlust):`,
   },
 
+  importar: {
+    aviso: {
+      vacio: 'Die Datei ist leer.',
+      sinTabla: 'In der Datei wurde keine Tabelle gefunden.',
+      sinColumnas: 'Die Spalten wurden nicht erkannt. Die Datei braucht eine Kopfzeile mit mindestens Symbol und Handelsart.',
+      sinResultado: 'Keine Ergebnisspalte gefunden: Trades werden mit 0 übernommen.',
+      saltadasPorPar: ({ n, pares }) => `${n === 1 ? 'Ein Trade' : `${n} Trades`} auf Instrumenten übersprungen, die diese App nicht analysiert (Gold, Indizes, Aktien oder Paare außerhalb der ${pares}, die sie verfolgt).`,
+      saltadasPorTipo: ({ n }) => `${n === 1 ? 'Eine Zeile' : `${n} Zeilen`} übersprungen, die weder Kauf noch Verkauf war.`,
+      nadaAprovechable: 'Zeilen wurden gelesen, aber keine war ein brauchbarer Trade.',
+    },
+    titulo: "Trades vom Broker importieren",
+    explicacion: "Exportiere deine Historie aus MT4 („Als detaillierten Bericht speichern\") oder MT5 („Bericht\") und lade sie hier hoch. Eine CSV funktioniert auch. Nichts wird gespeichert, bis du bestätigst.",
+    elegir: "Datei wählen…",
+    errorLeer: "Die Datei konnte nicht gelesen werden.",
+    errorGuardar: "Nicht alle Trades konnten gespeichert werden.",
+    hecho: ({ n }) => `${n} Trades zum Journal hinzugefügt.`,
+    entran: "neue Trades kommen ins Journal",
+    repetidas: ({ n }) => `${n} waren bereits erfasst und werden nicht doppelt angelegt.`,
+    resultadoTotal: "Gesamtergebnis (inkl. Swap und Kommission):",
+    yMas: ({ n }) => `…und ${n} weitere`,
+    confirmar: ({ n }) => `Alle ${n} hinzufügen`,
+    cancelar: "Abbrechen",
+    guardando: "Wird gespeichert…",
+  },
+
   calc: {
     titulo: 'Lot- und Risikorechner',
     capital: 'Kontokapital (USD)',
