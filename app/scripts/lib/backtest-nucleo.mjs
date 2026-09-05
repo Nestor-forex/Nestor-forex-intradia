@@ -199,6 +199,22 @@ export function medir(senales, porClave, { conSpread = false, swapPipsNoche = 0 
   // pips de ninguna manera.
   let sumaR = 0
 
+  // Para el ACIERTO DE EQUILIBRIO: cuánto hay que acertar SOLO para no perder.
+  //
+  // ⚠️ ES LA COLUMNA QUE EVITA EL AUTOENGAÑO, y sin ella comparar dos
+  // geometrías no significa nada. Con el objetivo cerca del stop se acierta
+  // más veces Y hace falta acertar más veces; con el objetivo lejos, menos de
+  // las dos. Mirar solo el porcentaje de acierto entre geometrías distintas es
+  // comparar con dos varas y creer que son la misma.
+  //
+  // En Swing esto ya se pagó una vez: en una rejilla de doce geometrías, la de
+  // MEJOR acierto (55 %) perdía dinero, porque su equilibrio estaba en 57 %.
+  //
+  // La cuenta, con `k` = objetivo/riesgo y `c` = coste en veces el riesgo:
+  //   g·(k − c) − (1 − g)·(1 + c) = 0   →   g = (1 + c) / (k + 1)
+  let sumaK = 0
+  let sumaCoste = 0
+
   for (const s of senales) {
     const r = porClave.get(`${s.id}@${s.vistoEl}`)
     if (!r || (r.resultado !== 'ganada' && r.resultado !== 'perdida')) {
@@ -215,6 +231,11 @@ export function medir(senales, porClave, { conSpread = false, swapPipsNoche = 0 
       ? costeEnPips(s.par, nochesEntre(r.velaEntrada ?? s.vela, r.velaFinal), swapPipsNoche)
       : 0
     const coste = costePips / s.pipRiesgo
+    // Se acumulan sobre las MISMAS operaciones que entran en el resultado (las
+    // resueltas), no sobre todas las señales: si no, el equilibrio hablaría de
+    // un conjunto distinto del que mide `porRiesgo` y no se podrían comparar.
+    sumaK += s.pipBeneficio / s.pipRiesgo
+    sumaCoste += coste
     if (r.resultado === 'ganada') {
       ganadas++
       sumaR += s.pipBeneficio / s.pipRiesgo - coste
@@ -233,6 +254,10 @@ export function medir(senales, porClave, { conSpread = false, swapPipsNoche = 0 
     pips: Math.round(pips),
     acierto: total ? (ganadas / total) * 100 : null,
     porRiesgo: total ? sumaR / total : null,
+    // Cuánto habría que acertar para quedar en cero, con estos costes y esta
+    // geometría. Si `acierto` no le llega, la regla pierde por mucho que el
+    // porcentaje suene bien.
+    equilibrio: total ? ((1 + sumaCoste / total) / (sumaK / total + 1)) * 100 : null,
   }
 }
 

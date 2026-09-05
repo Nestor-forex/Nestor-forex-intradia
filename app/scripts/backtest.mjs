@@ -28,7 +28,7 @@ import { computarBarrido } from '../src/lib/marketCalc.js'
 import { leerLlave, obtenerVelas } from './lib/velas.mjs'
 import { costeEnPips, nochesEntre, NIVELES_SWAP, SPREAD_PIPS } from './lib/costes.mjs'
 import { generarSenales, medir, barridoSwap, VENTANA } from './lib/backtest-nucleo.mjs'
-import { GEOMETRIAS, simetrica, actual } from './lib/geometrias.mjs'
+import { GEOMETRIAS, simetrica, actual, porRiesgo } from './lib/geometrias.mjs'
 import { reglaBarrido } from './lib/patrones.mjs'
 import { resolver } from './lib/resolver.mjs'
 import { senalesApertura } from './lib/apertura.mjs'
@@ -843,6 +843,78 @@ console.log('Para comparar, la app tal cual con la misma vara:')
     `${'   la app hoy'.padEnd(42)} ${String(m.total).padStart(5)}  ` +
       `${(m.acierto.toFixed(0) + '%').padStart(5)}  ${num(m.porRiesgo)}   ${num(ms.porRiesgo)}`
   )
+}
+
+// --------------------------------------------------------------------------
+// LA REVERSIÓN CON OTRAS GEOMETRÍAS: ¿es el spread lo que la mata?
+//
+// POR QUÉ ESTA PREGUNTA Y NO OTRA
+// Arriba, con la vara neutra 1:1, la reversión sale +0,016 SIN costes y −0,051
+// CON ellos. O sea que aquí no falla la señal: falla lo que cuesta operarla.
+// Y el spread es un coste FIJO en pips, así que pesa menos cuanto más lejos
+// esté el objetivo. Eso es una razón mecánica para probar otras geometrías, no
+// una corazonada.
+//
+// ⚠️ Y ES EXACTAMENTE DONDE SE CAE EN LA TRAMPA. Alejar el objetivo baja el
+// acierto, y acercarlo lo sube: mirando solo el porcentaje siempre se puede
+// contar la historia que uno quiera. Por eso va la columna EQUILIBRIO al lado
+// —cuánto hay que acertar SOLO para no perder con esa geometría—: si el
+// acierto no llega al equilibrio, la regla pierde por bonito que suene.
+//
+// En Swing esto ya se pagó: en una rejilla de doce geometrías, la de MEJOR
+// acierto (55 %) perdía dinero porque su equilibrio estaba en 57 %. Aquella
+// rejilla cierra el tema PARA LAS SEÑALES DE LA APP DE SWING; esto es otra
+// regla y otra app, y nunca se había medido.
+// --------------------------------------------------------------------------
+
+console.log('')
+console.log('LA REVERSIÓN CON OTRAS GEOMETRÍAS (con costes: spread por par + 0,5 de swap)')
+console.log('El «equilibrio» es cuánto hay que acertar SOLO para no perder.')
+console.log('Si el acierto no le llega, la regla pierde. Mirar las dos columnas juntas.')
+console.log('')
+console.log('regla · geometría                          ops  acierto  equilib.   por 1R │ 1ª mit │ 2ª mit')
+console.log(RAYA)
+{
+  const corteRev = barras[Math.floor((VENTANA + barras.length) / 2)]
+  const COSTES = { conSpread: true, swapPipsNoche: 0.5 }
+  const GEOS = [
+    ['vara neutra 1:1', simetrica],
+    ['la de la app', actual],
+    ['objetivo 2× el riesgo', (c, compra) => porRiesgo(c, compra)],
+    ['objetivo 3× el riesgo', (c, compra) => porRiesgo(c, compra, { veces: 3 })],
+  ]
+
+  for (const [nombreRegla, regla] of [REGLAS_REVERSION[0], REGLAS_REVERSION[1]]) {
+    console.log(`· ${nombreRegla}`)
+    for (const [nombreGeo, geometria] of GEOS) {
+      const r = correr({ geometria, reglaEntrada: regla })
+      const m = medir(r.senales, r.porClave, COSTES)
+      const m1 = medir(r.senales.filter((x) => x.vistoEl < corteRev), r.porClave, COSTES)
+      const m2 = medir(r.senales.filter((x) => x.vistoEl >= corteRev), r.porClave, COSTES)
+      const pr = (x) => (x === null ? '   —  ' : ((x >= 0 ? '+' : '') + x.toFixed(2)).padStart(6))
+      const pc = (x) => (x === null ? '  — ' : (x.toFixed(0) + '%').padStart(4))
+      // La marca sale de comparar acierto con equilibrio, no de que el
+      // resultado sea positivo: son la misma cosa dicha de dos maneras, y
+      // verlas coincidir es la comprobación de que la cuenta está bien.
+      const gana = m.acierto !== null && m.acierto > m.equilibrio
+      console.log(
+        `  ${nombreGeo.padEnd(38)} ${String(m.total).padStart(5)}    ${pc(m.acierto)}     ${pc(m.equilibrio)}  ` +
+          `${pr(m.porRiesgo)} │ ${pr(m1.porRiesgo)} │ ${pr(m2.porRiesgo)}${gana ? '  ← PASA' : ''}`
+      )
+    }
+    console.log('')
+  }
+  console.log(RAYA)
+  console.log('Para comparar, la app tal cual con SU geometría:')
+  {
+    const r = correr({ geometria: actual })
+    const m = medir(r.senales, r.porClave, COSTES)
+    const pc = (x) => (x === null ? '  — ' : (x.toFixed(0) + '%').padStart(4))
+    console.log(
+      `  ${'la app hoy'.padEnd(38)} ${String(m.total).padStart(5)}    ${pc(m.acierto)}     ${pc(m.equilibrio)}  ` +
+        `${((m.porRiesgo >= 0 ? '+' : '') + m.porRiesgo.toFixed(2)).padStart(6)}`
+    )
+  }
 }
 
 // --------------------------------------------------------------------------
