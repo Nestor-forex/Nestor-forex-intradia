@@ -89,6 +89,15 @@ export const GEMELOS = [
   // existia y no existia en ninguna de las dos apps: se hizo a mano una vez y
   // no se guardo. Ahora esta, y en las dos.
   'scripts/prueba-idiomas.mjs',
+  // La copia de seguridad del historial. Identica a proposito y con mas razon
+  // que ninguna: no contiene ni un numero de trading —solo cuenta lineas y
+  // avisa si el archivo encogio— y protege el MISMO activo irremplazable en
+  // las dos apps. Si un dia divergen, es que alguien arreglo la alarma en una
+  // sola, que es exactamente el fallo que la lista de gemelos existe para
+  // cazar.
+  'scripts/lib/respaldo.mjs',
+  'scripts/respaldo-historial.mjs',
+  'scripts/prueba-respaldo.mjs',
 ]
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -106,6 +115,18 @@ export const GEMELOS = [
 // empeora en Swing; está medido. Unificar umbrales sería el peor error posible
 // aquí.
 export const PRIMOS = {
+  'src/components/ClimaMercado.jsx':
+    'El clima del par (idea tomada de Visual Trader). El DIBUJO es el mismo, ' +
+    'pero los umbrales NO pueden serlo: un ATR del 1.2% es tormenta en velas ' +
+    'diarias y seria un terremoto en velas de una hora. Por eso vive solo en ' +
+    'Swing hasta que se elijan los umbrales de intradia MIRANDO SUS DATOS, no ' +
+    'copiando estos. Es la regla de siempre: lo medido en una app no vale en la otra.',
+
+  'src/lib/medicion.js':
+    'Los numeros del banco de pruebas que la app ensena en pantalla. Son de ' +
+    'ESTA app y de nadie mas: ensenar aqui los de la hermana seria mentir con ' +
+    'numeros verdaderos, que es la peor clase de mentira.',
+
   'src/lib/marketCalc.js':
     'El corazón de cada app. Swing usa EMA20/50 sobre velas diarias; Intradía ' +
     'EMA9/21 sobre velas de una hora, más pivotes de sesión y modo rango. ' +
