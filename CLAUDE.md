@@ -1496,3 +1496,77 @@ objetivos son cortos contra un coste fijo.
 
 Volver a leer los spreads **con el mercado abierto** (8:00-11:00 hora Colombia,
 de lunes en adelante). **Esos** sí sustituyen a `SPREAD_PIPS`.
+
+---
+
+# Copia de seguridad del historial (2026-09-05). En las dos apps
+
+Néstor preguntó para qué servía antes de aprobarla, y la respuesta es la razón
+de todo lo demás: **`historial/senales.jsonl` y `historial/resultados.jsonl` son
+lo ÚNICO del proyecto que no se puede volver a fabricar.** El código se reescribe
+en un día; una señal del 12 de agosto no, porque depende de lo que la app dijo
+ESE día con los precios de ESE día.
+
+Y es justo lo que hace falta para poder vender: los ~11 meses de historial que
+dirán si la reversión aguanta en la realidad. Perderlos no cuesta un archivo —
+cuesta el año de espera, y encima antes de terminarlo.
+
+Hasta hoy había **una sola copia**, en la rama `datos`, y el vigía escribe encima
+de ella cada día.
+
+```
+app/scripts/lib/respaldo.mjs          # la lógica pura (contar, comparar, alarmar)
+app/scripts/respaldo-historial.mjs    # el guion que corre
+app/scripts/prueba-respaldo.mjs       # 26 comprobaciones, sin internet
+.github/workflows/respaldo-historial.yml
+```
+
+Domingos 04:20 UTC (el vigía corre de lunes a viernes en las DOS apps —
+comprobado, no supuesto—, así que en domingo nadie está escribiendo y no se
+puede pillar el archivo a medias). Copias fechadas en la rama `respaldos`. No
+gasta créditos de Twelve Data ni toca la red.
+
+## ⚠️ Lo que hace que esto no sea «copiar el archivo y ya»
+
+**El peligro real no es que el archivo desaparezca —eso se nota— sino que
+encoja en silencio.** Una copia que reproduce fielmente un archivo truncado es
+PEOR que no tener copia: da tranquilidad falsa mientras el historial se pierde.
+
+Por eso compara con la copia anterior y **termina en rojo si algo encogió**.
+Estos archivos solo crecen: el vigía añade al final y no borra nunca. Menos
+líneas que la semana pasada significa que pasó algo, y hay que enterarse ese día
+y no dentro de ocho meses. También caza una línea a medio escribir, que las
+cuentas solas no ven.
+
+## Tres decisiones que no hay que ablandar
+
+⚠️ **NO BORRA COPIAS VIEJAS.** Sería fácil añadir «deja solo las últimas doce» y
+sería justo la clase de código que un día borra lo que hacía falta. Son 25 KB de
+texto casi idéntico que git comprime hasta casi nada. **La lógica de borrado es
+lo último que uno quiere cerca de su único activo irremplazable.**
+
+⚠️ **La copia se guarda AUNQUE haya alarma, y el rojo va DESPUÉS.** El workflow
+lleva `continue-on-error` en el paso que revisa y un paso final que vuelve a
+fallar. Al revés, una alarma impediría que la copia llegara a la rama: lo que no
+se guarda no vuelve, un correo de fallo sí.
+
+⚠️ **La copia anterior nunca se toca.** Si la de hoy sale mal, la buena sigue
+al lado. La alarma lo dice con esas palabras («NO la borres») porque el primer
+impulso al ver algo raro es limpiar.
+
+## Cómo se comprobó
+
+Las 26 comprobaciones sin internet, y **de punta a punta con el historial REAL
+de producción**: primera copia de 44 señales y 37 resultados en verde; después
+se truncó el archivo a 20 líneas a propósito y salió la alarma nombrando los dos
+números (44 → 20), con salida 1 y la copia buena intacta al lado.
+
+## De paso, un texto que llevaba un mes falso
+
+`vigia.yml` decía que los precios «vienen del Banco Central Europeo». Es falso
+desde el 2026-08-09. Corregido, y anotado que **la hora (15:50 UTC) se eligió
+por el horario del BCE**: con velas de Twelve Data (cierran a las 22:00 UTC) el
+vigía ve la del día anterior cerrada más la de hoy a medias. Sigue siendo lo
+correcto —no juzgar con una vela sin terminar— pero por otro motivo.
+
+📌 Es el mismo patrón del día: **al cambiar algo, mirar también quién lo NOMBRA.**
