@@ -1182,3 +1182,148 @@ revisar un pull request se compara lo comparable.
 
 📌 El workflow **imprime contra qué rama comparó**. Una comprobación que no
 dice qué miró deja al que la lee adivinando si el verde significa algo.
+
+---
+
+# Aflojar los filtros y el barrido de liquidez (2026-09-04, Intradía)
+
+## Primero: la medición anterior de aflojar NO valía
+
+La sección se portó desde Swing con la forma de llamada de Swing. Allí `correr`
+recibe argumentos sueltos y aquí recibe **un solo objeto**, así que las opciones
+nunca llegaron: **las 17 filas salieron idénticas** (7208 ops, 39%, −0,13).
+
+El linter no lo podía ver — `simetrica` y `null` son valores válidos, y un
+argumento de más es silencioso en JavaScript. Se descubrió por lo raro de que
+17 filas fueran iguales, tras 35 minutos de corrida y los créditos del día.
+
+Ahora `correr` **rechaza los argumentos sobrantes**. Comprobado que muerde con
+la forma mala y deja pasar la buena.
+
+⚠️ **Al portar entre las dos apps no basta con que los nombres existan en las
+dos: las FIRMAS también difieren, y eso no da error.**
+
+## Aflojar los filtros: aquí la pared es el ADX, no la tendencia
+
+Vara neutra 1:1, con spread. Las dos columnas juntas a propósito.
+
+| qué se afloja | ops | señ/mes | acierto | por 1R |
+|---|---:|---:|---:|---:|
+| **ADX ≥ 0** | 8.016 | **206,2** | 49% | **−0,09** |
+| ADX ≥ 10 | 8.010 | 206,0 | 49% | −0,09 |
+| ADX ≥ 15 | 7.843 | 201,7 | 49% | −0,10 |
+| ADX ≥ 20 (hoy) | 7.214 | 185,6 | 48% | −0,10 |
+| ADX ≥ 25 | 6.250 | 160,8 | 48% | −0,10 |
+| RSI apagado | 9.575 | 246,3 | 48% | −0,12 |
+| RSI ≥ 70 (hoy) | 7.214 | 185,6 | 48% | −0,10 |
+| tendencia alineada (hoy) | 7.214 | 185,6 | 48% | −0,10 |
+| solo precio sobre EMA9 | 7.276 | 187,1 | 48% | −0,10 |
+| nada: manda la fuerza | 7.392 | 190,1 | 48% | −0,10 |
+
+**El ADX es la única puerta que se puede abrir gratis**: bajarlo a 10 da **+20
+señales/mes y un pelo MEJOR** por operación. El RSI 70 sí aporta aquí (apagarlo
+empeora a −0,12) — al revés que en Swing, donde el RSI no sirve. Y la exigencia
+de tendencia casi no mueve nada, otra vez al revés que en Swing, donde es la
+pared alta.
+
+⚠️ **Regla del proyecto confirmada una vez más: la pared no está en el mismo
+sitio en las dos apps.** En Swing afloja la tendencia; aquí, el ADX.
+
+⚠️ **HUECO SIN MEDIR:** la tabla con la geometría REAL solo probó «tal cual»,
+«ADX 10 + RSI apagado» (−0,14) y «todo suelto» (−0,15), y las dos últimas
+llevan dentro el cambio del RSI, que la vara neutra dice que es malo. **No hay
+una fila de "ADX 10 a secas" con la geometría real**, así que no se puede
+afirmar que bajar el ADX salga gratis en la app de verdad. Falta esa corrida.
+
+## El barrido de liquidez tampoco funciona aquí
+
+| tamaño | ops | señ/mes | acierto | por 1R | 1ª mit | 2ª mit |
+|---|---:|---:|---:|---:|---:|---:|
+| 4 h | 59.564 | 1.532 | 47% | −0,14 | −0,12 | −0,16 |
+| 8 h | 45.369 | 1.167 | 47% | −0,14 | −0,12 | −0,17 |
+| 24 h (día anterior) | 25.684 | 660,6 | 48% | −0,12 | −0,11 | −0,14 |
+| 120 h (semana) | 11.276 | 290,0 | 49% | −0,10 | −0,11 | −0,09 |
+| *la app hoy* | 7.214 | 185,6 | 48% | *−0,10* | | |
+
+Y el **control** (comprar la caída sin esperar rebote) da **−0,08 plano** en 8,
+24 y 120 h. ⚠️ **En Swing ese mismo control salió +0,09 y creciente.** O sea que
+el hallazgo de Swing **no cruza a esta app**, y la esperanza de «dos vías
+independientes» no se cumplió.
+
+**Los cruces salen mucho peor que los pares con dólar** (−0,15 contra −0,08),
+que es lo esperado: ahí el máximo y el mínimo se derivan y el barrido depende
+justo de si el extremo se perforó por poco. Lo tranquilizador es que va en esa
+dirección: si el patrón hubiera funcionado SOLO en los cruces, habría sido más
+probable un artefacto de la derivación que un efecto de mercado.
+
+## Lo que confirma la intuición de Néstor
+
+Pedir **fuerza relativa Y RSI estirado a la vez** dio **CERO señales**, igual
+que en Swing. Su «todas juntas son paredes que no te dejan pasar» es literal.
+
+
+---
+
+# El ADX baja a 10 (2026-09-04). Y la regla de decisión se fijó ANTES
+
+Néstor lo pidió tras ver la medición. La regla se escribió **antes de mirar el
+resultado**, justo para no ajustarla a lo que saliera:
+
+> Se enciende solo si da **más señales/mes** Y **no es peor que hoy en NINGUNA
+> de las dos mitades del periodo**.
+
+Es el listón que el ADX no pasó el 2026-08-12, cuando se subió a 35 «porque
+acertaba más» y salieron siete reportes seguidos sin una sola señal. Las
+columnas de mitades **no existían** en la tabla de aflojar: se añadieron antes
+de decidir, no después.
+
+## Lo medido, con la geometría REAL y partido en dos (2025-05-09)
+
+| filtro | ops | acierto | pips | por 1R | 1ª mit | 2ª mit |
+|---|---:|---:|---:|---:|---:|---:|
+| ADX ≥ 20 (antes) | 7.217 | 39% | −41.886 | −0,13 | −0,14 | −0,12 |
+| **ADX ≥ 10 (ahora)** | **8.009** | 38% | −45.744 | −0,13 | −0,14 | −0,12 |
+| ADX ≥ 0 | 8.015 | 38% | −45.941 | −0,13 | −0,14 | −0,12 |
+
+792 señales más (+11 %), resultado por operación idéntico en las dos mitades, y
+en pips por operación incluso baja un pelo: 5,80 → 5,71.
+
+📌 **EL DATO QUE DECIDIÓ: entre ADX 0 y ADX 10 hay SEIS señales de diferencia
+en toda la serie.** Por debajo de 10 el filtro no hace literalmente nada, y
+entre 10 y 20 solo quita 792 señales a cambio de cero. Un filtro que cuesta y
+no paga.
+
+Se eligió 10 y no 0 por la misma razón que en Swing se eligió `'media'` y no
+`'ninguna'`: deja un suelo para los mercados de verdad muertos, y 0 no compra
+nada a cambio.
+
+## ⚠️ Este caso es MÁS FLOJO que el de Swing, y no hay que olvidarlo
+
+En Swing aflojar **mejoró** el resultado (−0,07 → −0,05) y además se perdieron
+**menos** pips en total pese a operar 548 veces más. Aquí el resultado por
+operación se queda **igual**, así que el total de pips perdidos **sube un 9 %**
+solo porque hay más operaciones.
+
+Lo que se compró es que la app **hable** —el 2026-09-04 salieron dos reportes
+seguidos vacíos, uno en el solape de Londres con Nueva York— no que acierte.
+Si algún día se operan todas con dinero de verdad, eso es perder más en total.
+
+## Las dos guardas que fallaron, y una que cambió de FORMA
+
+`prueba-backtest.mjs` fijaba el ADX en 20 y se rompió al cambiarlo. **Eso es su
+trabajo.** Se actualizan al valor nuevo —nunca se borran— y se les añade la
+comprobación contraria (que YA NO coincida con 20).
+
+📌 Pero una tuvo que cambiar de **forma**, no solo de número, y el motivo es el
+hallazgo mismo: exigía «sin ADX salen MÁS señales», cierto con el umbral en 20.
+Con el umbral en 10, quitarlo del todo da **el mismo número**. Seguir exigiendo
+«más» habría sido exigir que el ADX siguiera estorbando. Pasó a exigir que
+quitarlo no QUITE señales.
+
+⚠️ **Lección: cuando una constante cambia, revisar si la comprobación sigue
+midiendo lo que quiere medir, no solo si el número cuadra.**
+
+## Lo que NO cambia
+
+La app sigue perdiendo con la vara honesta (−0,13). Más señales de un sistema
+que pierde es perder más rápido si se operan con dinero.

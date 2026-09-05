@@ -268,19 +268,43 @@ console.log('\n9. Mover los umbrales no cambia la app por defecto')
   const base = generarSenales(barras, rates, rangos, { vista: sinRsi })
   const sinAdx = generarSenales(barras, rates, rangos, { vista: { ...sinRsi, adxMin: 0 } })
   const conAdxAlto = generarSenales(barras, rates, rangos, { vista: { ...sinRsi, adxMin: 60 } })
-  comprobar(tend(sinAdx) > tend(base), `sin ADX salen más señales de tendencia (${tend(sinAdx)} vs ${tend(base)})`)
+  // ⚠️ ESTA COMPROBACIÓN CAMBIÓ DE FORMA EL 2026-09-04, y el motivo es el
+  // hallazgo mismo: con el umbral en 10, quitar el ADX del todo (0) da EL MISMO
+  // número de señales. Antes exigía "sin ADX salen MÁS", que era cierto con el
+  // umbral en 20. Ahora exigir eso sería exigir que el ADX siga estorbando.
+  //
+  // Lo medido sobre 35 meses dice justo eso: entre 0 y 10 hay SEIS señales de
+  // diferencia en toda la serie real. Así que lo correcto es exigir que quitarlo
+  // no quite señales, no que añada.
+  comprobar(
+    tend(sinAdx) >= tend(base),
+    `quitar el ADX no puede QUITAR señales (${tend(sinAdx)} vs ${tend(base)})`
+  )
   comprobar(tend(conAdxAlto) < tend(base), `con ADX 60 salen menos (${tend(conAdxAlto)})`)
 
-  // El umbral de la app está en 20. Estuvo en 35 entre el 2026-08-12 y el
+  // El umbral de la app está en 10 desde el 2026-09-04 (antes 20, y 35 entre
+  // el 2026-08-12 y el 2026-08-17). Se baja a 10 tras medir con la geometría
+  // REAL y en dos mitades: 792 señales más (+11 %) con el resultado por
+  // operación idéntico en ambas mitades.
+  //
+  // Estuvo en 35 entre el 2026-08-12 y el
   // 2026-08-17, hasta que medirlo sobre 35 meses mostró que el ADX no cambia
   // nada en ningún valor (46-47% de acierto en todos) y que 35 solo recortaba
   // la mitad de las señales a cambio de nada.
   //
   // Se fija aquí para que nadie lo mueva sin querer: pedir 20 a mano tiene que
   // dar EXACTAMENTE lo mismo que no pedir nada, y pedir 35 tiene que dar menos.
+  const conAdx10 = generarSenales(barras, rates, rangos, { vista: { ...sinRsi, adxMin: 10 } })
   const conAdx20 = generarSenales(barras, rates, rangos, { vista: { ...sinRsi, adxMin: 20 } })
   const conAdx35 = generarSenales(barras, rates, rangos, { vista: { ...sinRsi, adxMin: 35 } })
-  comprobar(tend(conAdx20) === tend(base), `la app usa ADX 20, no otro valor (${tend(conAdx20)} = ${tend(base)})`)
+  comprobar(
+    tend(conAdx10) === tend(base),
+    `la app usa ADX 10 desde el 2026-09-04 (${tend(conAdx10)} = ${tend(base)})`
+  )
+  comprobar(
+    tend(conAdx20) < tend(base),
+    `…y YA NO usa 20: el cambio está de verdad puesto (${tend(conAdx20)} < ${tend(base)})`
+  )
   comprobar(
     tend(conAdx35) < tend(base),
     `y con 35 —el que estuvo puesto cinco días— salían menos (${tend(conAdx35)} vs ${tend(base)})`

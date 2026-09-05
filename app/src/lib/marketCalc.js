@@ -410,7 +410,57 @@ export function computarBarrido(barras, rates, rangos = null) {
 // corta no es una mejora. Antes de mover una constante por un resultado, hay
 // que verla aguantar en dos mitades del tiempo o en varios años. Esto costó
 // cinco días de señales recortadas a la mitad para nada.
-const ADX_MIN = 20
+// ─────────────────────────────────────────────────────────────────────────
+// BAJADO DE 20 A 10 EL 2026-09-04, con permiso de Néstor.
+//
+// El comentario de arriba ya decía que el ADX no hace nada, pero se dejó en 20
+// «por si acaso». Medido ahora de frente, con la geometría REAL de la app y
+// PARTIDO EN DOS MITADES (2025-05-09):
+//
+//   filtro          ops   acierto      pips   por 1R   1ª mitad   2ª mitad
+//   ADX ≥ 20 (antes) 7.217   39%    −41.886   −0,13     −0,14      −0,12
+//   ADX ≥ 10 (ahora) 8.009   38%    −45.744   −0,13     −0,14      −0,12
+//   ADX ≥ 0          8.015   38%    −45.941   −0,13     −0,14      −0,12
+//
+// 792 señales más (+11 %) con el resultado por operación IDÉNTICO en las dos
+// mitades. En pips por operación incluso baja un pelo: 5,80 → 5,71.
+//
+// 📌 EL DATO QUE DECIDE: entre ADX 0 y ADX 10 hay SEIS señales de diferencia.
+// O sea que por debajo de 10 el filtro no hace literalmente nada, y entre 10 y
+// 20 solo quita 792 señales a cambio de cero. Un filtro que cuesta y no paga.
+//
+// Se elige 10 y no 0 por la misma razón que en Swing se eligió 'media' y no
+// 'ninguna': deja un suelo para los mercados de verdad muertos, y 0 no compra
+// nada a cambio.
+//
+// ⚠️ ESTE CASO ES MÁS FLOJO QUE EL DE SWING Y HAY QUE DECIRLO. Allí aflojar
+// MEJORÓ el resultado (−0,07 → −0,05) y además se perdieron MENOS pips en
+// total pese a operar más. Aquí el resultado por operación se queda igual, así
+// que el total de pips perdidos SUBE un 9 % simplemente porque hay más
+// operaciones. Si algún día se operan todas con dinero de verdad, eso es
+// perder más en total. Lo que se compra aquí es que la app HABLE —el
+// 2026-09-04 salieron dos reportes seguidos vacíos, uno en el solape de
+// Londres con Nueva York— sin que cada señal salga peor.
+// ─────────────────────────────────────────────────────────────────────────
+// APAGADO DEL TODO (0) EL 2026-09-05, a petición de Néstor.
+//
+// Unas horas antes se había bajado de 20 a 10. Néstor pidió quitarlo entero
+// mientras se hace un ensayo con menos indicadores, y la medición le da la
+// razón sin discusión: entre ADX 0 y ADX 10 hay SEIS señales de diferencia en
+// cinco años (8.015 contra 8.009), con el mismo −0,13 por unidad de riesgo y
+// los mismos −0,14 / −0,12 en las dos mitades. Poner 10 era mantener encendida
+// una condición que no decide nada.
+//
+// `p.adx >= 0` siempre es cierto —el ADX nunca es negativo— así que 0 lo apaga
+// por completo. Se deja la constante en vez de arrancar el código: el ADX se
+// sigue CALCULANDO y MOSTRANDO en la tabla, que es útil como información;
+// lo que deja de hacer es RECHAZAR señales.
+//
+// Para volver a encenderlo basta cambiar este número. Pero antes de hacerlo,
+// leer el historial de arriba: este umbral ya se movió tres veces (20 → 35 →
+// 20 → 10 → 0) y en NINGUNA cambió el resultado. Está medido en 20, 25, 35 y
+// 40 sobre 35 meses: 46-47 % de acierto en todos.
+const ADX_MIN = 0
 
 // ⚠️ EL DE RANGO ES OTRO NÚMERO, Y ES A PROPÓSITO.
 //
@@ -480,13 +530,58 @@ const ADX_MAX_RANGO = 20
 // cuesta nada, no porque resuelva el problema.
 const RSI_MAX = 70
 
-const clasificar = (p, thr, { adxMin = ADX_MIN, rsiMax = RSI_MAX } = {}) => {
+// CUÁNTA TENDENCIA SE EXIGE PARA DEJAR PASAR UNA SEÑAL.
+//
+// Néstor investigó por su cuenta y trajo una observación que vale la pena tener
+// escrita: los operadores con experiencia usan POCOS indicadores, y una de las
+// razones es justo lo que le pasa a esta app — apilar condiciones la deja muda.
+// Cada filtro parece razonable por separado y juntos son una pared.
+//
+// Aquí hay CINCO puertas en fila: fuerza, medias alineadas, ADX, RSI, y el R/B
+// mínimo para que suene el celular. Es la app de las dos que menos habla, y no
+// por casualidad.
+//
+// Y este proyecto ya se dio el golpe aquí mismo: el 2026-08-12 se subió el ADX
+// de 20 a 35 porque acertaba más, y salieron SIETE reportes seguidos sin una
+// sola señal, incluido el solape de Londres con Nueva York. Se eligió bien
+// según lo que se midió, y se midió lo que no era.
+//
+//   'alineada' (hoy) → precio sobre la EMA9 Y la EMA9 sobre la EMA21.
+//   'media'          → solo precio sobre la EMA9.
+//   'ninguna'        → no se mira la tendencia: manda solo la fuerza relativa.
+//
+// ⚠️ AFLOJAR NO ES MEJORAR. Da MÁS señales, y está medido que las de esta app
+// pierden dinero (−0,10 por unidad de riesgo con costes). Más señales de un
+// sistema que pierde es perder más rápido. Lo que sí puede justificar aflojar
+// es que la app sirva como herramienta de información sin que el resultado por
+// operación empeore. Por eso la tabla del banco de pruebas lleva las
+// señales/mes AL LADO del resultado.
+const TENDENCIA_MIN = 'alineada'
+
+const cumpleTendencia = (p, lado, exigencia) => {
+  if (exigencia === 'ninguna') return true
+  if (exigencia === 'media') {
+    // Solo el precio contra la media rápida: se quita la condición de que una
+    // media esté por encima de la otra, que es la que más tarda en cumplirse
+    // después de un giro — y en velas de una hora los giros son constantes.
+    return lado === 'COMPRA' ? p.c > p.e9 : p.c < p.e9
+  }
+  return p.tend === (lado === 'COMPRA' ? 'Alcista' : 'Bajista')
+}
+
+const clasificar = (
+  p,
+  thr,
+  { adxMin = ADX_MIN, rsiMax = RSI_MAX, tendenciaMin = TENDENCIA_MIN } = {}
+) => {
   const fuerte = p.adx >= adxMin
   // "Extendido" es simétrico: comprar con el RSI arriba y vender con el RSI
   // abajo son el mismo error visto en el espejo.
   const estirado = rsiMax !== null && (p.dif > 0 ? p.rsiV >= rsiMax : p.rsiV <= 100 - rsiMax)
-  if (p.dif > thr && p.tend === 'Alcista' && fuerte && !estirado) return 'COMPRA'
-  if (p.dif < -thr && p.tend === 'Bajista' && fuerte && !estirado) return 'VENTA'
+  if (p.dif > thr && cumpleTendencia(p, 'COMPRA', tendenciaMin) && fuerte && !estirado)
+    return 'COMPRA'
+  if (p.dif < -thr && cumpleTendencia(p, 'VENTA', tendenciaMin) && fuerte && !estirado)
+    return 'VENTA'
   if (Math.abs(p.dif) > thr) return 'VIGILAR'
   return '—'
 }
@@ -790,7 +885,8 @@ const porDifAbs = (a, b) => Math.abs(b.dif) - Math.abs(a.dif)
 // largo en useMarketData.js: obligaba a publicar una contraseña en el
 // navegador), así que la fuente es siempre la misma y el parámetro sobraba.
 /**
- * @param adxMin       ADX mínimo para dar señal de TENDENCIA (la app: 35).
+ * @param adxMin       ADX mínimo para dar señal de TENDENCIA (la app: 0, o sea
+ *                     APAGADO desde el 2026-09-05 — ver `ADX_MIN` arriba).
  * @param adxMaxRango  ADX máximo para dar señal de RANGO (la app: 20). Va
  *                     aparte del anterior: moverlos juntos mezcla dos cambios
  *                     y el resultado no dice nada (ver `clasificarRango`).
@@ -818,10 +914,11 @@ export function derivarVista(
     adxMaxRango,
     compresionMin,
     rsiMax,
+    tendenciaMin,
     incluirRetrocesos = false,
   } = {}
 ) {
-  const cls = (p) => clasificar(p, thr, { adxMin, rsiMax })
+  const cls = (p) => clasificar(p, thr, { adxMin, rsiMax, tendenciaMin })
   // Ojo: `adxMaxRango`, no `adxMin`. Son dos umbrales distintos y con valores
   // distintos — ver el comentario de `clasificarRango`.
   const clsRango = (p) => clasificarRango(p, { adxMax: adxMaxRango, compresionMin })
