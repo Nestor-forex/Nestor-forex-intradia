@@ -1327,3 +1327,84 @@ midiendo lo que quiere medir, no solo si el número cuadra.**
 
 La app sigue perdiendo con la vara honesta (−0,13). Más señales de un sistema
 que pierde es perder más rápido si se operan con dinero.
+
+---
+
+# La reversión NO se salva con otra geometría en Intradía (2026-09-05)
+
+Era la última vía abierta para esta app, y se cierra. Néstor pidió expresamente
+no rendirse con Intradía, así que se midió de frente.
+
+## La hipótesis, que tenía una razón mecánica de verdad
+
+Con la vara neutra la reversión sale **+0,016 sin costes y −0,051 con ellos**.
+O sea que aquí no falla la señal: falla lo que cuesta operarla. Y el spread es
+un coste **fijo en pips**, así que pesa menos cuanto más lejos esté el
+objetivo. Eso no era una corazonada: era una razón para probar.
+
+## El resultado: ninguna de las ocho pasa
+
+Con costes (spread por par + 0,5 de swap), partido en dos mitades:
+
+| regla · geometría | ops | acierto | equilibrio | por 1R | 1ª mit | 2ª mit |
+|---|---:|---:|---:|---:|---:|---:|
+| **R1. Comprar lo débil** | | | | | | |
+| vara neutra 1:1 | 6.076 | 51 % | 53 % | −0,05 | −0,04 | −0,06 |
+| la de la app | 6.076 | 32 % | ~32 % | −0,10 | −0,10 | −0,11 |
+| objetivo 2× | 6.075 | 32 % | 36 % | −0,10 | −0,08 | −0,14 |
+| objetivo 3× | 6.072 | 24 % | 27 % | −0,15 | −0,13 | −0,17 |
+| **R2. …con el RSI estirado** | | | | | | |
+| vara neutra 1:1 | 5.288 | 50 % | 53 % | −0,07 | −0,07 | −0,06 |
+| la de la app | 5.287 | 30 % | ~31 % | −0,12 | −0,12 | −0,13 |
+| objetivo 2× | 5.287 | 32 % | 36 % | −0,11 | −0,10 | −0,14 |
+| objetivo 3× | 5.283 | 23 % | 27 % | −0,15 | −0,15 | −0,17 |
+| *la app tal cual* | 8.015 | 38 % | ~43 % | *−0,15* | | |
+
+**En las ocho, el acierto queda por debajo de su equilibrio.** Ninguna marca
+«← PASA».
+
+## ⚠️ Y LA HIPÓTESIS MECÁNICA ERA FALSA, que es lo que hay que recordar
+
+Alejar el objetivo **no diluye el coste: empeora el resultado**. De la vara
+neutra (−0,05) a 2× (−0,10) a 3× (−0,15), monótono hacia abajo.
+
+El motivo: alejar el objetivo baja el acierto MÁS de lo que ahorra en costes.
+Es exactamente la trampa que la columna del equilibrio existe para enseñar.
+
+📌 Acerté al predecir que ninguna pasaría, y **me equivoqué en el mecanismo**:
+dije que el objetivo lejano ayudaría diluyendo el spread. La predicción
+gruesa salió bien por casualidad, no por entender el porqué.
+
+## Lo que esto cierra, y lo que no
+
+**CIERRA:** la geometría no salva a la reversión en Intradía. No volver a
+proponer «alejamos el objetivo» ahí, igual que la rejilla de doce geometrías
+cerró el tema para las señales de Swing.
+
+**NO cierra:** la reversión sigue siendo lo único positivo medido en SWING
+(+0,085 con spread, y 6-6 con +117 pips en operaciones reales). Lo que se cierra
+es Intradía por esta vía. Son apps distintas y esa regla vale ahí, no aquí.
+
+## Un límite de la columna nueva, encontrado al leer su propio resultado
+
+`medir` devuelve `equilibrio` desde el 2026-09-05. Al leer la tabla salió algo
+que no cuadraba: con la geometría de la app, **acierto 32 % y equilibrio 32 %
+—empatados— y aun así −0,10 por 1R**. Si fuera exacto, empatar daría CERO.
+
+La causa: la fórmula usa la proporción **media**, y eso solo es exacto cuando
+todas las operaciones comparten la misma. Con la geometría de la app cada una
+tiene la suya (el objetivo es el primer nivel real que aparece), y las que
+ganan no tienen la proporción media.
+
+Comprobado que en las geometrías de proporción fija el número sí cuadra al
+decimal: 1:1 → 50 % + costes = 53 %; 2× → 33,3 % + costes = 36 %; 3× → 25 % +
+costes = 27 %.
+
+Arreglado: `medir` devuelve además `equilibrioExacto`, y la tabla marca con
+**«~»** las filas donde el número es solo indicativo. **En esas manda el
+`por 1R`, no la comparación acierto-contra-equilibrio.** Tres comprobaciones
+nuevas en `prueba-costes.mjs`.
+
+⚠️ Si algún día se porta el `equilibrio` al núcleo de Swing, portar TAMBIÉN el
+`equilibrioExacto`. Sin él la columna miente justo donde más se mira: la
+geometría real de la app.

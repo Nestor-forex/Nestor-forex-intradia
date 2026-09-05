@@ -351,6 +351,25 @@ console.log('\n10. El acierto de equilibrio: cuánto hay que acertar para no per
   // enseñar un número inventado.
   comprobar(medir(par(1), new Map()).equilibrio === null, 'sin nada resuelto devuelve null, no NaN')
 
+  // ⚠️ Y QUE AVISE CUANDO EL NÚMERO ES SOLO APROXIMADO.
+  //
+  // La fórmula usa la proporción MEDIA. Con todas iguales es exacto; con cada
+  // operación con la suya —la geometría de la app— deja de serlo. Se vio en la
+  // corrida del 2026-09-05: acierto 32 % y equilibrio 32 %, empatados, y aun
+  // así −0,10 por unidad de riesgo. Empatar debería dar cero.
+  {
+    const mismas = medir(par(2), res)
+    comprobar(mismas.equilibrioExacto === true, 'con todas iguales, el equilibrio se marca EXACTO')
+
+    const distintas = [
+      { id: 'A', vistoEl: 't1', par: 'EUR/USD', pipRiesgo: 100, pipBeneficio: 100 },
+      { id: 'B', vistoEl: 't2', par: 'EUR/USD', pipRiesgo: 100, pipBeneficio: 300 },
+    ]
+    const m = medir(distintas, res)
+    comprobar(m.equilibrioExacto === false, 'con proporciones distintas se marca APROXIMADO')
+    comprobar(medir(par(1), new Map()).equilibrioExacto === null, 'y sin nada resuelto, ni exacto ni aproximado: null')
+  }
+
   // LA COMPROBACIÓN QUE DE VERDAD IMPORTA: que el equilibrio y el resultado
   // cuenten la misma historia. Si el acierto real iguala al equilibrio, el
   // resultado por unidad de riesgo tiene que ser cero.

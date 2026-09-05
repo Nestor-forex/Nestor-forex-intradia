@@ -871,6 +871,8 @@ console.log('')
 console.log('LA REVERSIÓN CON OTRAS GEOMETRÍAS (con costes: spread por par + 0,5 de swap)')
 console.log('El «equilibrio» es cuánto hay que acertar SOLO para no perder.')
 console.log('Si el acierto no le llega, la regla pierde. Mirar las dos columnas juntas.')
+console.log('Un «~» delante del equilibrio = cada operación tiene su propia proporción')
+console.log('objetivo/riesgo, así que ese número es indicativo y manda el «por 1R».')
 console.log('')
 console.log('regla · geometría                          ops  acierto  equilib.   por 1R │ 1ª mit │ 2ª mit')
 console.log(RAYA)
@@ -896,9 +898,14 @@ console.log(RAYA)
       // La marca sale de comparar acierto con equilibrio, no de que el
       // resultado sea positivo: son la misma cosa dicha de dos maneras, y
       // verlas coincidir es la comprobación de que la cuenta está bien.
-      const gana = m.acierto !== null && m.acierto > m.equilibrio
+      // ⚠️ Solo se puede comparar acierto contra equilibrio cuando el
+      // equilibrio es EXACTO. Con la geometría de la app cada operación tiene
+      // su propia proporción y el número sale de la media, así que ahí manda
+      // `por 1R` y la fila se marca con «~» para que nadie lea de más.
+      const gana = m.acierto !== null && m.equilibrioExacto && m.acierto > m.equilibrio
+      const aprox = m.equilibrioExacto === false ? '~' : ' '
       console.log(
-        `  ${nombreGeo.padEnd(38)} ${String(m.total).padStart(5)}    ${pc(m.acierto)}     ${pc(m.equilibrio)}  ` +
+        `  ${nombreGeo.padEnd(38)} ${String(m.total).padStart(5)}    ${pc(m.acierto)}    ${aprox}${pc(m.equilibrio)}  ` +
           `${pr(m.porRiesgo)} │ ${pr(m1.porRiesgo)} │ ${pr(m2.porRiesgo)}${gana ? '  ← PASA' : ''}`
       )
     }

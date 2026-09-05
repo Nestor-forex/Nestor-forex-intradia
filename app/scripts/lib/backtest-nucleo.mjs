@@ -214,6 +214,23 @@ export function medir(senales, porClave, { conSpread = false, swapPipsNoche = 0 
   //   g·(k − c) − (1 − g)·(1 + c) = 0   →   g = (1 + c) / (k + 1)
   let sumaK = 0
   let sumaCoste = 0
+  // ⚠️ Y SI LA PROPORCIÓN NO ES LA MISMA EN TODAS, EL EQUILIBRIO ES APROXIMADO.
+  //
+  // La fórmula usa la proporción MEDIA. Eso es exacto cuando todas las
+  // operaciones tienen la misma —la vara neutra, «objetivo 2×», «3×»— y solo
+  // aproximado cuando cada una tiene la suya, como en la geometría de la app,
+  // donde el objetivo es el primer nivel real que aparece.
+  //
+  // No es teórico: en la corrida del 2026-09-05 la reversión con la geometría
+  // de la app salió con acierto 32 % y equilibrio 32 % —empatados— y sin
+  // embargo −0,10 por unidad de riesgo. Si fuera exacto, empatar daría CERO.
+  // Pasa porque las que ganan no tienen la misma proporción que la media.
+  //
+  // Por eso se devuelve `equilibrioExacto`: quien pinte la tabla puede marcar
+  // las filas donde el número es solo indicativo. En esas, la que decide es
+  // `porRiesgo`, no la comparación acierto-contra-equilibrio.
+  let kMin = Infinity
+  let kMax = -Infinity
 
   for (const s of senales) {
     const r = porClave.get(`${s.id}@${s.vistoEl}`)
@@ -234,8 +251,11 @@ export function medir(senales, porClave, { conSpread = false, swapPipsNoche = 0 
     // Se acumulan sobre las MISMAS operaciones que entran en el resultado (las
     // resueltas), no sobre todas las señales: si no, el equilibrio hablaría de
     // un conjunto distinto del que mide `porRiesgo` y no se podrían comparar.
-    sumaK += s.pipBeneficio / s.pipRiesgo
+    const k = s.pipBeneficio / s.pipRiesgo
+    sumaK += k
     sumaCoste += coste
+    if (k < kMin) kMin = k
+    if (k > kMax) kMax = k
     if (r.resultado === 'ganada') {
       ganadas++
       sumaR += s.pipBeneficio / s.pipRiesgo - coste
@@ -258,6 +278,9 @@ export function medir(senales, porClave, { conSpread = false, swapPipsNoche = 0 
     // geometría. Si `acierto` no le llega, la regla pierde por mucho que el
     // porcentaje suene bien.
     equilibrio: total ? ((1 + sumaCoste / total) / (sumaK / total + 1)) * 100 : null,
+    // true solo si TODAS las operaciones comparten la misma proporción
+    // objetivo/riesgo. Si es false, `equilibrio` es indicativo: ver arriba.
+    equilibrioExacto: total ? kMax - kMin < 1e-9 : null,
   }
 }
 
