@@ -956,12 +956,24 @@ console.log('')
 console.log('regla                                       ops   sin costes      A        B')
 console.log(RAYA)
 {
-  const filas = [
-    ['la app tal cual', { geometria: simetrica }],
-    ...REGLAS_REVERSION.map(([n, r]) => [n, { geometria: simetrica, reglaEntrada: r }]),
-  ]
-  for (const [nombre, opciones] of filas) {
-    const r = correr(opciones)
+  // ⚠️ ESTA SECCIÓN NO VUELVE A CORRER NI UNA SEÑAL, y eso no es una
+  // optimización cosmética: es lo que la hace posible.
+  //
+  // La primera versión repetía `correr()` seis veces y el trabajo se pasó de
+  // los 45 minutos de `timeout-minutes`: GitHub canceló la corrida entera a
+  // los 44:46 y no salió ninguna tabla. Se perdieron 45 minutos y los créditos
+  // de la API para no ver nada.
+  //
+  // Y era trabajo REGALADO: cambiar la tabla de costes no cambia ni una señal
+  // ni un resultado del mercado. Las mismas operaciones, sumadas con otro
+  // peaje. `correr()` cuesta ~25 s cada una; `medir()` es instantáneo.
+  //
+  // Así que se reutilizan las corridas que el script ya hizo más arriba:
+  // `neutra` (la app con vara neutra) y `revCorridas` (las cinco de reversión).
+  const filas = [{ nombre: 'la app tal cual', r: neutra }, ...revCorridas]
+  const n = (x) => (x === null ? '   —  ' : ((x >= 0 ? '+' : '') + x.toFixed(3)).padStart(7))
+
+  for (const { nombre, r } of filas) {
     const sin = medir(r.senales, r.porClave)
     const a = medir(r.senales, r.porClave, { conSpread: true, swapPipsNoche: 0.5 })
     const b = medir(r.senales, r.porClave, {
@@ -969,15 +981,15 @@ console.log(RAYA)
       swapPipsNoche: 0.5,
       tablaSpread: SPREAD_NESTOR_FINDE,
     })
-    const n = (x) => (x === null ? '   —  ' : ((x >= 0 ? '+' : '') + x.toFixed(3)).padStart(7))
     console.log(
       `${nombre.padEnd(42)} ${String(sin.total).padStart(5)}   ${n(sin.porRiesgo)}  ${n(a.porRiesgo)}  ${n(b.porRiesgo)}`
     )
   }
+
   console.log(RAYA)
-  // Cuánto se lleva cada tabla, en pips y en veces el riesgo. Es el número que
-  // dice si vale la pena pelear por un bróker más barato.
-  const r = correr({ geometria: simetrica, reglaEntrada: REGLAS_REVERSION[0][1] })
+  // Cuánto se lleva cada tabla, en veces el riesgo. Es EL número de esta
+  // sección: dice cuánto decide el bróker y cuánto la regla.
+  const { r } = revCorridas[0]
   const sin = medir(r.senales, r.porClave)
   const a = medir(r.senales, r.porClave, { conSpread: true, swapPipsNoche: 0.5 })
   const b = medir(r.senales, r.porClave, { conSpread: true, swapPipsNoche: 0.5, tablaSpread: SPREAD_NESTOR_FINDE })
