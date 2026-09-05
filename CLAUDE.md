@@ -1408,3 +1408,91 @@ nuevas en `prueba-costes.mjs`.
 ⚠️ Si algún día se porta el `equilibrio` al núcleo de Swing, portar TAMBIÉN el
 `equilibrioExacto`. Sin él la columna miente justo donde más se mira: la
 geometría real de la app.
+
+📌 **Portado a Swing el 2026-09-05** (su PR #45), con su `equilibrioExacto` y
+sus nueve comprobaciones. Allí la columna se llama «hace falta» y sale en la
+tabla de geometrías — que es justo donde el 2026-08-25 se había calculado a
+mano, y donde la geometría de MEJOR acierto (55 %) perdía por necesitar 57 %.
+⚠️ Sus noches salen de `diasTardados`, no de `nochesEntre`: allí cada vela ES
+un día. Una prueba portada que falla suele decir que las apps son distintas
+ahí, no que el código nuevo esté mal.
+
+---
+
+# El informe decía «(hoy)» sobre filas que no eran la app (2026-09-05)
+
+Salió leyendo el resultado del ensayo de spreads, no buscándolo.
+
+Las tablas de aflojar marcan con «(hoy)» la fila que la app usa de verdad. Esa
+marca estaba **escrita a mano** y había envejecido:
+
+| decía «(hoy)» en | valor real | consecuencia |
+|---|---|---|
+| `ADX ≥ 20` | `ADX_MIN = 0` | la fila marcada tenía 7.219 ops; la de verdad, 8.022 |
+| `con ADX ≥ 35 (hoy)` | ídem | **dos etiquetas, dos valores, ninguno el real** |
+| `sin filtro (hoy)` (RSI) | `RSI_MAX = 70` | decía que no había filtro habiéndolo |
+
+Y **en Swing lo mismo** con `TENDENCIA_MIN`, aflojado el día antes de
+`'alineada'` a `'media'` sin mover su etiqueta.
+
+📌 **Los números estaban BIEN.** Lo que engañaba era el rótulo — y ya estaba
+escrito, del 2026-09-04, que **una etiqueta equivocada es un error de
+medición** (aquella vez «rompimiento» por «comprar la caída»). Volvió a pasar
+en menos de un día: la lección sola no basta.
+
+## El arreglo, y por qué no es «tener más cuidado»
+
+Los umbrales se **exportan** desde `marketCalc.js` (`ADX_MIN`, `RSI_MAX`,
+`TENDENCIA_MIN`) y `backtest.mjs` los importa. La marca la pone
+`hoySi(nombre, esLaDeHoy)` comparando contra el valor real.
+
+⚠️ **Esto NO junta las dos apps.** `marketCalc.js` sigue siendo PRIMO y los
+valores siguen distintos y medidos por separado.
+
+`prueba-costes.mjs` falla si aparece «(hoy» en un texto literal fuera de
+`hoySi`. Al estrenarla **cazó una que se me había pasado**; y exige que `hoySi`
+exista, porque si no, borrarla dejaría la prueba en verde sobre un informe que
+ya no marca nada.
+
+📌 **Regla: al cambiar un umbral, mirar también quién lo NOMBRA.** El código que
+lo usa se actualiza solo; el texto que lo describe, no.
+
+---
+
+# El ensayo con los spreads reales de Néstor (2026-09-05)
+
+Leyó los 18 spreads de su cuenta de AvaTrade **con el mercado cerrado**, así que
+están inflados: media 4,36 pips contra los 2,17 de la tabla. Guardados como
+`SPREAD_NESTOR_FINDE`, marcados, y **no se usan por defecto**.
+
+Vara neutra 1:1, mismas señales, solo cambia el peaje.
+
+| regla | ops | sin costes | A (2,17) | B (4,36) |
+|---|---:|---:|---:|---:|
+| la app tal cual | 8.022 | −0,030 | −0,106 | −0,172 |
+| R1. Comprar lo débil, vender lo fuerte | 6.070 | **+0,016** | −0,051 | −0,108 |
+| R2. …y solo con el RSI estirado (35/65) | 5.281 | +0,002 | −0,067 | −0,126 |
+| R3. …y solo lejos de la EMA21 | 6.063 | **+0,016** | −0,051 | −0,108 |
+| R4. R2 solo en el solape Londres-NY | 1.820 | **+0,023** | −0,045 | −0,108 |
+| R5. CONTROL: la inversión, de frente | 6.054 | +0,014 | −0,054 | −0,111 |
+
+**El peaje se lleva 0,068 con la tabla A y 0,125 con la B.**
+
+## Lo que cierra, y es más de lo que se buscaba
+
+La pregunta era «¿cuánto decide el bróker?». La respuesta salió de la columna
+que ya estaba: **la mejor ventaja SIN costes es +0,023 y el peaje más barato es
+0,068 — tres veces más.**
+
+⚠️ **No hay bróker que salve a Intradía.** Para que R4 saliera a cero haría
+falta un spread medio por debajo de ~0,7 pips en 18 pares, cruces incluidos.
+Eso no existe al por menor.
+
+📌 Y es el aviso de siempre al revés: la reversión, que en **Swing** aguanta
+hasta 1 pip de swap, **aquí no se salva** — y no por la regla, sino porque los
+objetivos son cortos contra un coste fijo.
+
+## Pendiente de Néstor
+
+Volver a leer los spreads **con el mercado abierto** (8:00-11:00 hora Colombia,
+de lunes en adelante). **Esos** sí sustituyen a `SPREAD_PIPS`.
