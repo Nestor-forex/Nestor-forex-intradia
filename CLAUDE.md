@@ -1261,3 +1261,69 @@ probable un artefacto de la derivación que un efecto de mercado.
 Pedir **fuerza relativa Y RSI estirado a la vez** dio **CERO señales**, igual
 que en Swing. Su «todas juntas son paredes que no te dejan pasar» es literal.
 
+
+---
+
+# El ADX baja a 10 (2026-09-04). Y la regla de decisión se fijó ANTES
+
+Néstor lo pidió tras ver la medición. La regla se escribió **antes de mirar el
+resultado**, justo para no ajustarla a lo que saliera:
+
+> Se enciende solo si da **más señales/mes** Y **no es peor que hoy en NINGUNA
+> de las dos mitades del periodo**.
+
+Es el listón que el ADX no pasó el 2026-08-12, cuando se subió a 35 «porque
+acertaba más» y salieron siete reportes seguidos sin una sola señal. Las
+columnas de mitades **no existían** en la tabla de aflojar: se añadieron antes
+de decidir, no después.
+
+## Lo medido, con la geometría REAL y partido en dos (2025-05-09)
+
+| filtro | ops | acierto | pips | por 1R | 1ª mit | 2ª mit |
+|---|---:|---:|---:|---:|---:|---:|
+| ADX ≥ 20 (antes) | 7.217 | 39% | −41.886 | −0,13 | −0,14 | −0,12 |
+| **ADX ≥ 10 (ahora)** | **8.009** | 38% | −45.744 | −0,13 | −0,14 | −0,12 |
+| ADX ≥ 0 | 8.015 | 38% | −45.941 | −0,13 | −0,14 | −0,12 |
+
+792 señales más (+11 %), resultado por operación idéntico en las dos mitades, y
+en pips por operación incluso baja un pelo: 5,80 → 5,71.
+
+📌 **EL DATO QUE DECIDIÓ: entre ADX 0 y ADX 10 hay SEIS señales de diferencia
+en toda la serie.** Por debajo de 10 el filtro no hace literalmente nada, y
+entre 10 y 20 solo quita 792 señales a cambio de cero. Un filtro que cuesta y
+no paga.
+
+Se eligió 10 y no 0 por la misma razón que en Swing se eligió `'media'` y no
+`'ninguna'`: deja un suelo para los mercados de verdad muertos, y 0 no compra
+nada a cambio.
+
+## ⚠️ Este caso es MÁS FLOJO que el de Swing, y no hay que olvidarlo
+
+En Swing aflojar **mejoró** el resultado (−0,07 → −0,05) y además se perdieron
+**menos** pips en total pese a operar 548 veces más. Aquí el resultado por
+operación se queda **igual**, así que el total de pips perdidos **sube un 9 %**
+solo porque hay más operaciones.
+
+Lo que se compró es que la app **hable** —el 2026-09-04 salieron dos reportes
+seguidos vacíos, uno en el solape de Londres con Nueva York— no que acierte.
+Si algún día se operan todas con dinero de verdad, eso es perder más en total.
+
+## Las dos guardas que fallaron, y una que cambió de FORMA
+
+`prueba-backtest.mjs` fijaba el ADX en 20 y se rompió al cambiarlo. **Eso es su
+trabajo.** Se actualizan al valor nuevo —nunca se borran— y se les añade la
+comprobación contraria (que YA NO coincida con 20).
+
+📌 Pero una tuvo que cambiar de **forma**, no solo de número, y el motivo es el
+hallazgo mismo: exigía «sin ADX salen MÁS señales», cierto con el umbral en 20.
+Con el umbral en 10, quitarlo del todo da **el mismo número**. Seguir exigiendo
+«más» habría sido exigir que el ADX siguiera estorbando. Pasó a exigir que
+quitarlo no QUITE señales.
+
+⚠️ **Lección: cuando una constante cambia, revisar si la comprobación sigue
+midiendo lo que quiere medir, no solo si el número cuadra.**
+
+## Lo que NO cambia
+
+La app sigue perdiendo con la vara honesta (−0,13). Más señales de un sistema
+que pierde es perder más rápido si se operan con dinero.
