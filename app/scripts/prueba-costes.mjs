@@ -14,6 +14,7 @@
 import { spreadDe, costeEnPips, nochesEntre, HORA_CORTE_UTC, SPREAD_PIPS, SPREAD_POR_DEFECTO, NIVELES_SWAP } from './lib/costes.mjs'
 import { PAIRS } from '../src/lib/marketCalc.js'
 import { medir, barridoSwap } from './lib/backtest-nucleo.mjs'
+import { readFileSync } from 'node:fs'
 
 let fallos = 0
 const comprobar = (bien, que) => {
@@ -446,6 +447,49 @@ console.log('\n11. Se puede medir con OTRA tabla de spreads sin tocar la oficial
     medir(senales, res, { conSpread: true }).porRiesgo === normal.porRiesgo,
     'sin pasar tabla, manda la oficial'
   )
+}
+
+console.log('\n12. Ninguna etiqueta «(hoy)» del banco de pruebas está escrita a mano')
+{
+  // ⚠️ ESTA COMPROBACIÓN NACE DE UN FALLO REAL DEL 2026-09-05.
+  //
+  // El informe marca con «(hoy)» la fila que la app usa de verdad, para que al
+  // leer una tabla de aflojar se vea de dónde se parte. Esa marca estaba
+  // escrita a mano, y el día que se aflojó `TENDENCIA_MIN` de 'alineada' a
+  // 'media' nadie la movió: el informe siguió señalando 'alineada'.
+  //
+  // En Intradía fue peor: `ADX_MIN` estaba en 0 y las etiquetas decían «ADX ≥
+  // 20 (hoy)» en un sitio y «con ADX ≥ 35 (hoy)» en otro. Dos valores, ninguno
+  // el real, y 800 operaciones de diferencia entre la fila marcada y la que de
+  // verdad corre.
+  //
+  // 📌 Los números estaban bien. Lo que engañaba era el rótulo — y una etiqueta
+  // equivocada es un error de medición, no un detalle de presentación.
+  const fuente = readFileSync(new URL('./backtest.mjs', import.meta.url), 'utf8')
+
+  // Se busca «(hoy)» dentro de un texto literal, que es la forma de escribirla
+  // a mano. La única permitida es la de `hoySi`, que la deriva del valor.
+  const sospechosas = fuente
+    .split('\n')
+    .map((linea, i) => [i + 1, linea])
+    .filter(([, l]) => /\(hoy\b/.test(l))
+    .filter(([, l]) => !l.trimStart().startsWith('//'))
+    .filter(([, l]) => !l.includes('hoySi'))
+    // Un `${...}` en la misma línea significa que el valor se interpola, que es
+    // justo lo que se quiere.
+    .filter(([, l]) => !/\(hoy[^)]*\$\{/.test(l))
+
+  comprobar(
+    sospechosas.length === 0,
+    sospechosas.length === 0
+      ? 'ninguna etiqueta «(hoy)» lleva el valor escrito a mano'
+      : `hay ${sospechosas.length} escritas a mano: ${sospechosas.map(([n]) => `línea ${n}`).join(', ')}`
+  )
+
+  // Y que la herramienta que las pone exista y haga lo suyo. Sin esto, borrar
+  // `hoySi` dejaría la comprobación de arriba pasando en verde sobre un informe
+  // que ya no marca nada.
+  comprobar(/const hoySi = /.test(fuente), 'y `hoySi` sigue existiendo para ponerlas')
 }
 
 console.log('')

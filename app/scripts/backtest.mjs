@@ -24,7 +24,22 @@
 // bloqueado api.twelvedata.com:
 //   Actions → "Banco de pruebas de las reglas" → Run workflow
 
-import { computarBarrido } from '../src/lib/marketCalc.js'
+// ⚠️ LOS UMBRALES SE IMPORTAN, NO SE ESCRIBEN AQUÍ.
+//
+// Las tablas marcan con «(hoy)» la fila que la app usa de verdad, y esa marca
+// estaba escrita a mano. El 2026-09-05 se vio lo que pasa: `ADX_MIN` estaba en
+// 0 y el informe seguía diciendo «ADX ≥ 20 (hoy)» y «con ADX ≥ 35 (hoy)» —dos
+// valores distintos, ninguno el real— con 800 operaciones de diferencia entre
+// la fila marcada y la que de verdad corre. En Swing pasaba lo mismo con la
+// tendencia.
+//
+// 📌 Una etiqueta equivocada es un error de medición: los números estaban bien
+// y la conclusión que inducían era falsa. Ya había pasado con «rompimiento» el
+// 2026-09-04. Derivándola del propio valor no puede volver a envejecer sola.
+import { computarBarrido, ADX_MIN, RSI_MAX, TENDENCIA_MIN } from '../src/lib/marketCalc.js'
+
+// Le pega «(hoy)» a la fila que de verdad corre en la app.
+const hoySi = (nombre, esLaDeHoy) => (esLaDeHoy ? `${nombre}  (hoy)` : nombre)
 import { leerLlave, obtenerVelas } from './lib/velas.mjs'
 import { costeEnPips, nochesEntre, NIVELES_SWAP, SPREAD_PIPS, SPREAD_NESTOR_FINDE } from './lib/costes.mjs'
 import { generarSenales, medir, barridoSwap, VENTANA } from './lib/backtest-nucleo.mjs'
@@ -346,7 +361,8 @@ console.log('  Y la comparación limpia, solo señales de TENDENCIA:')
 for (const [nombre, vista] of [
   ['sin filtro de ADX', { adxMin: 0 }],
   ['con ADX ≥ 20 (el de antes)', { adxMin: 20 }],
-  ['con ADX ≥ 35 (hoy)', {}],
+  ['con ADX ≥ 35 (el de 2026-08-12)', { adxMin: 35 }],
+  [hoySi(`el de la app: ADX ≥ ${ADX_MIN}`, true), {}],
 ]) {
   const r = Object.keys(vista).length ? correr({ geometria: simetrica, vista }) : neutra
   const m = medir(r.senales.filter((s) => s.tipo === 'tendencia'), r.porClave)
@@ -674,7 +690,7 @@ for (const u of [null, 80, 75, 70, 65, 60]) {
   const pr = (x) => (x === null ? '   —  ' : ((x >= 0 ? '+' : '') + x.toFixed(2)).padStart(6))
   const ac = (x) => (x === null ? '  — ' : (x.toFixed(0) + '%').padStart(4))
   console.log(
-    `${(u === null ? 'sin filtro (hoy)' : `rechaza si RSI ≥ ${u}`).padEnd(20)} ` +
+    `${hoySi(u === null ? 'sin filtro' : `rechaza si RSI ≥ ${u}`, u === RSI_MAX).padEnd(20)} ` +
       `${String(tend.length).padStart(5)}  ${(tend.length / MESES).toFixed(1).padStart(6)}    ` +
       `${ac(m.acierto)}   ${pr(m.porRiesgo)}  │ ${ac(m1.acierto)} ${pr(m1.porRiesgo)} │ ` +
       `${ac(m2.acierto)} ${pr(m2.porRiesgo)}   (${(m1.total / MESES_MITAD).toFixed(0)}/${(m2.total / MESES_MITAD).toFixed(0)} al mes)`
@@ -694,7 +710,7 @@ console.log(RAYA)
 for (const u of [null, 75, 70, 65]) {
   const r = correr({ vista: { rsiMax: u } })
   const tend = r.senales.filter((s) => s.tipo === 'tendencia')
-  fila(u === null ? 'sin filtro (hoy)' : `rechaza si RSI ≥ ${u}`, medir(tend, r.porClave, { conSpread: true }))
+  fila(hoySi(u === null ? 'sin filtro' : `rechaza si RSI ≥ ${u}`, u === RSI_MAX), medir(tend, r.porClave, { conSpread: true }))
 }
 console.log(RAYA)
 
@@ -1166,26 +1182,26 @@ for (const { nombre, r } of revCorridas) {
     )
   }
 
-  console.log('· El ADX mínimo (hoy 20)')
+  console.log(`· El ADX mínimo (hoy ${ADX_MIN})`)
   for (const a of [0, 10, 15, 20, 25]) {
-    linea(`  ADX ≥ ${a}${a === 20 ? '  (hoy)' : ''}`, correr({ geometria: simetrica, vista: { adxMin: a } }))
+    linea(hoySi(`  ADX ≥ ${a}`, a === ADX_MIN), correr({ geometria: simetrica, vista: { adxMin: a } }))
   }
 
   console.log('')
-  console.log('· El filtro de "no perseguir" (hoy RSI 70)')
+  console.log(`· El filtro de "no perseguir" (hoy RSI ${RSI_MAX ?? 'apagado'})`)
   for (const r of [null, 80, 75, 70]) {
-    linea(`  ${r === null ? 'apagado' : `rechaza si RSI ≥ ${r}`}${r === 70 ? '  (hoy)' : ''}`,
+    linea(hoySi(`  ${r === null ? 'apagado' : `rechaza si RSI ≥ ${r}`}`, r === RSI_MAX),
       correr({ geometria: simetrica, vista: { rsiMax: r } }))
   }
 
   console.log('')
   console.log('· Cuánta tendencia se exige')
   for (const [clave, nombre] of [
-    ['alineada', '  medias alineadas  (hoy)'],
+    ['alineada', '  medias alineadas'],
     ['media', '  solo precio sobre la EMA9'],
     ['ninguna', '  nada: manda solo la fuerza'],
   ]) {
-    linea(nombre, correr({ geometria: simetrica, vista: { tendenciaMin: clave } }))
+    linea(hoySi(nombre, clave === TENDENCIA_MIN), correr({ geometria: simetrica, vista: { tendenciaMin: clave } }))
   }
 
   console.log('')
@@ -1210,7 +1226,7 @@ for (const { nombre, r } of revCorridas) {
   // (185,6 → 206 señales/mes y −0,10 → −0,09), pero eso NO autoriza a decir que
   // salga gratis con la geometría de verdad: hay que medirlo, y es esto.
   for (const [nombre, vista] of [
-    ['tal cual (hoy)', {}],
+    [hoySi('tal cual', true), {}],
     ['ADX 10 a secas (sin tocar el RSI)', { adxMin: 10 }],
     ['ADX 0 a secas (sin tocar el RSI)', { adxMin: 0 }],
     ['ADX 10 + RSI apagado', { adxMin: 10, rsiMax: null }],

@@ -460,7 +460,7 @@ export function computarBarrido(barras, rates, rangos = null) {
 // leer el historial de arriba: este umbral ya se movió tres veces (20 → 35 →
 // 20 → 10 → 0) y en NINGUNA cambió el resultado. Está medido en 20, 25, 35 y
 // 40 sobre 35 meses: 46-47 % de acierto en todos.
-const ADX_MIN = 0
+export const ADX_MIN = 0
 
 // ⚠️ EL DE RANGO ES OTRO NÚMERO, Y ES A PROPÓSITO.
 //
@@ -528,7 +528,7 @@ const ADX_MAX_RANGO = 20
 // Esto NO convierte la app en ganadora. La deja perdiendo −0,10 por unidad de
 // riesgo en vez de −0,12. Se enciende porque es mejor que lo de antes y no
 // cuesta nada, no porque resuelva el problema.
-const RSI_MAX = 70
+export const RSI_MAX = 70
 
 // CUÁNTA TENDENCIA SE EXIGE PARA DEJAR PASAR UNA SEÑAL.
 //
@@ -556,7 +556,7 @@ const RSI_MAX = 70
 // es que la app sirva como herramienta de información sin que el resultado por
 // operación empeore. Por eso la tabla del banco de pruebas lleva las
 // señales/mes AL LADO del resultado.
-const TENDENCIA_MIN = 'alineada'
+export const TENDENCIA_MIN = 'alineada'
 
 const cumpleTendencia = (p, lado, exigencia) => {
   if (exigencia === 'ninguna') return true
