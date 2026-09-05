@@ -314,6 +314,87 @@ console.log('\n10. El barrido de swap cuenta bien las noches y el coste')
   comprobar(vacio.filas.every((f) => Number.isFinite(f.costeMedio)), 'y ningún coste medio sale NaN')
 }
 
+console.log('\n10. El acierto de equilibrio: cuánto hay que acertar para no perder')
+{
+  // ⚠️ ESTA COLUMNA EXISTE PARA EVITAR UN AUTOENGAÑO CONCRETO, y por eso se
+  // prueba con casos donde la respuesta se sabe de memoria.
+  //
+  // Sin ella, comparar dos geometrías por su porcentaje de acierto es comparar
+  // con dos varas distintas: acercar el objetivo sube el acierto Y sube el
+  // listón. En Swing una geometría con 55 % de acierto perdía dinero porque su
+  // equilibrio estaba en 57 %.
+  const par = (k) => [
+    { id: 'A', vistoEl: 't1', par: 'EUR/USD', pipRiesgo: 100, pipBeneficio: 100 * k },
+    { id: 'B', vistoEl: 't2', par: 'EUR/USD', pipRiesgo: 100, pipBeneficio: 100 * k },
+  ]
+  const res = new Map([
+    ['A@t1', { resultado: 'ganada', pips: 0, velaEntrada: '2026-08-10 08:00:00', velaFinal: '2026-08-10 12:00:00' }],
+    ['B@t2', { resultado: 'perdida', pips: 0, velaEntrada: '2026-08-10 08:00:00', velaFinal: '2026-08-10 12:00:00' }],
+  ])
+  const eq = (k) => medir(par(k), res).equilibrio
+
+  // Sin costes, objetivo = riesgo (1:1): hay que ganar la mitad. Es la vara
+  // neutra, y su equilibrio del 50 % es lo que la hace una vara honesta.
+  comprobar(Math.abs(eq(1) - 50) < 1e-9, `con objetivo 1× el equilibrio es 50 % (${eq(1).toFixed(1)})`)
+  // Objetivo al doble del riesgo: basta acertar una de cada tres.
+  comprobar(Math.abs(eq(2) - 100 / 3) < 1e-9, `con objetivo 2× baja a 33,3 % (${eq(2).toFixed(1)})`)
+  // Objetivo a la mitad: hay que acertar dos de cada tres. Éste es el caso que
+  // engaña: sube el acierto y sube más el listón.
+  comprobar(Math.abs(eq(0.5) - 200 / 3) < 1e-9, `con objetivo 0,5× sube a 66,7 % (${eq(0.5).toFixed(1)})`)
+
+  // Y tiene que MOVERSE con los costes: pagar spread sube el listón.
+  const sin = medir(par(1), res).equilibrio
+  const con = medir(par(1), res, { conSpread: true }).equilibrio
+  comprobar(con > sin, `pagar costes sube el equilibrio (${sin.toFixed(1)} → ${con.toFixed(1)})`)
+
+  // Sin operaciones resueltas devuelve null, no NaN: una fila vacía no puede
+  // enseñar un número inventado.
+  comprobar(medir(par(1), new Map()).equilibrio === null, 'sin nada resuelto devuelve null, no NaN')
+
+  // ⚠️ Y QUE AVISE CUANDO EL NÚMERO ES SOLO APROXIMADO.
+  //
+  // La fórmula usa la proporción MEDIA. Con todas iguales es exacto; con cada
+  // operación con la suya —la geometría de la app— deja de serlo. Se vio en la
+  // corrida del 2026-09-05: acierto 32 % y equilibrio 32 %, empatados, y aun
+  // así −0,10 por unidad de riesgo. Empatar debería dar cero.
+  {
+    const mismas = medir(par(2), res)
+    comprobar(mismas.equilibrioExacto === true, 'con todas iguales, el equilibrio se marca EXACTO')
+
+    const distintas = [
+      { id: 'A', vistoEl: 't1', par: 'EUR/USD', pipRiesgo: 100, pipBeneficio: 100 },
+      { id: 'B', vistoEl: 't2', par: 'EUR/USD', pipRiesgo: 100, pipBeneficio: 300 },
+    ]
+    const m = medir(distintas, res)
+    comprobar(m.equilibrioExacto === false, 'con proporciones distintas se marca APROXIMADO')
+    comprobar(medir(par(1), new Map()).equilibrioExacto === null, 'y sin nada resuelto, ni exacto ni aproximado: null')
+  }
+
+  // LA COMPROBACIÓN QUE DE VERDAD IMPORTA: que el equilibrio y el resultado
+  // cuenten la misma historia. Si el acierto real iguala al equilibrio, el
+  // resultado por unidad de riesgo tiene que ser cero.
+  {
+    const k = 2
+    // Tres operaciones, una ganada: 33,3 % de acierto, justo el equilibrio de
+    // un objetivo 2×. El resultado tiene que salir clavado en cero.
+    const tres = [
+      { id: 'A', vistoEl: 't1', par: 'EUR/USD', pipRiesgo: 100, pipBeneficio: 100 * k },
+      { id: 'B', vistoEl: 't2', par: 'EUR/USD', pipRiesgo: 100, pipBeneficio: 100 * k },
+      { id: 'C', vistoEl: 't3', par: 'EUR/USD', pipRiesgo: 100, pipBeneficio: 100 * k },
+    ]
+    const r3 = new Map([
+      ['A@t1', { resultado: 'ganada', pips: 0 }],
+      ['B@t2', { resultado: 'perdida', pips: 0 }],
+      ['C@t3', { resultado: 'perdida', pips: 0 }],
+    ])
+    const m = medir(tres, r3)
+    comprobar(
+      Math.abs(m.acierto - m.equilibrio) < 1e-9 && Math.abs(m.porRiesgo) < 1e-9,
+      `acertar justo el equilibrio deja el resultado en cero (${m.porRiesgo.toFixed(6)})`
+    )
+  }
+}
+
 console.log('')
 console.log(fallos ? `${fallos} comprobación(es) FALLARON` : 'El modelo de costes se comporta como debe.')
 process.exit(fallos ? 1 : 0)
