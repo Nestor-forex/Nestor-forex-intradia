@@ -26,7 +26,7 @@
 
 import { computarBarrido } from '../src/lib/marketCalc.js'
 import { leerLlave, obtenerVelas } from './lib/velas.mjs'
-import { costeEnPips, nochesEntre, NIVELES_SWAP, SPREAD_PIPS } from './lib/costes.mjs'
+import { costeEnPips, nochesEntre, NIVELES_SWAP, SPREAD_PIPS, SPREAD_NESTOR_FINDE } from './lib/costes.mjs'
 import { generarSenales, medir, barridoSwap, VENTANA } from './lib/backtest-nucleo.mjs'
 import { GEOMETRIAS, simetrica, actual, porRiesgo } from './lib/geometrias.mjs'
 import { reglaBarrido } from './lib/patrones.mjs'
@@ -922,6 +922,70 @@ console.log(RAYA)
         `${((m.porRiesgo >= 0 ? '+' : '') + m.porRiesgo.toFixed(2)).padStart(6)}`
     )
   }
+}
+
+// --------------------------------------------------------------------------
+// ENSAYO CON LOS SPREADS QUE NÉSTOR LEYÓ EN SU CUENTA
+//
+// ⚠️ ESTO NO DECIDE NADA, Y ES IMPORTANTE QUE SE LEA ASÍ.
+// Los tomó CON EL MERCADO CERRADO (2026-09-05), y ahí el spread se infla
+// porque no hay nadie al otro lado ofreciendo precio: su media sale en 4,36
+// pips contra los 2,17 de la tabla que se usa. El doble.
+//
+// Se corre por dos razones concretas:
+//
+//  1. Ver CUÁNTO cambia el resultado al doblar el peaje. Eso mide la
+//     sensibilidad de la conclusión: si con el doble de coste el número apenas
+//     se mueve, es que el spread no era lo que decidía; si se hunde, entonces
+//     los spreads REALES importan mucho y vale la pena tomarlos bien.
+//
+//  2. Como techo. Una regla que salga positiva pagando ESTOS costes sería
+//     durísima de tumbar. No se espera que pase.
+//
+// Cuando Néstor los vuelva a tomar con el mercado abierto (8:00-11:00 hora
+// Colombia), esos SÍ sustituyen a `SPREAD_PIPS` y esta sección se borra o se
+// convierte en la comparación entre dos brókers.
+// --------------------------------------------------------------------------
+
+console.log('')
+console.log('ENSAYO: ¿cuánto cambia todo si el peaje es el DOBLE?')
+console.log('Columna A = spreads de la tabla (media 2,17 pips).')
+console.log('Columna B = los que leyó Néstor con el MERCADO CERRADO (media 4,36).')
+console.log('⚠️ La B no decide nada: sirve para ver la sensibilidad al coste.')
+console.log('')
+console.log('regla                                       ops   sin costes      A        B')
+console.log(RAYA)
+{
+  const filas = [
+    ['la app tal cual', { geometria: simetrica }],
+    ...REGLAS_REVERSION.map(([n, r]) => [n, { geometria: simetrica, reglaEntrada: r }]),
+  ]
+  for (const [nombre, opciones] of filas) {
+    const r = correr(opciones)
+    const sin = medir(r.senales, r.porClave)
+    const a = medir(r.senales, r.porClave, { conSpread: true, swapPipsNoche: 0.5 })
+    const b = medir(r.senales, r.porClave, {
+      conSpread: true,
+      swapPipsNoche: 0.5,
+      tablaSpread: SPREAD_NESTOR_FINDE,
+    })
+    const n = (x) => (x === null ? '   —  ' : ((x >= 0 ? '+' : '') + x.toFixed(3)).padStart(7))
+    console.log(
+      `${nombre.padEnd(42)} ${String(sin.total).padStart(5)}   ${n(sin.porRiesgo)}  ${n(a.porRiesgo)}  ${n(b.porRiesgo)}`
+    )
+  }
+  console.log(RAYA)
+  // Cuánto se lleva cada tabla, en pips y en veces el riesgo. Es el número que
+  // dice si vale la pena pelear por un bróker más barato.
+  const r = correr({ geometria: simetrica, reglaEntrada: REGLAS_REVERSION[0][1] })
+  const sin = medir(r.senales, r.porClave)
+  const a = medir(r.senales, r.porClave, { conSpread: true, swapPipsNoche: 0.5 })
+  const b = medir(r.senales, r.porClave, { conSpread: true, swapPipsNoche: 0.5, tablaSpread: SPREAD_NESTOR_FINDE })
+  console.log(
+    `El peaje se lleva ${(sin.porRiesgo - a.porRiesgo).toFixed(3)} con la tabla A ` +
+      `y ${(sin.porRiesgo - b.porRiesgo).toFixed(3)} con la B (por unidad de riesgo).`
+  )
+  console.log('Cuanto mayor sea eso, más decide el bróker y menos la regla.')
 }
 
 // --------------------------------------------------------------------------
