@@ -442,7 +442,25 @@ export function computarBarrido(barras, rates, rangos = null) {
 // 2026-09-04 salieron dos reportes seguidos vacíos, uno en el solape de
 // Londres con Nueva York— sin que cada señal salga peor.
 // ─────────────────────────────────────────────────────────────────────────
-const ADX_MIN = 10
+// APAGADO DEL TODO (0) EL 2026-09-05, a petición de Néstor.
+//
+// Unas horas antes se había bajado de 20 a 10. Néstor pidió quitarlo entero
+// mientras se hace un ensayo con menos indicadores, y la medición le da la
+// razón sin discusión: entre ADX 0 y ADX 10 hay SEIS señales de diferencia en
+// cinco años (8.015 contra 8.009), con el mismo −0,13 por unidad de riesgo y
+// los mismos −0,14 / −0,12 en las dos mitades. Poner 10 era mantener encendida
+// una condición que no decide nada.
+//
+// `p.adx >= 0` siempre es cierto —el ADX nunca es negativo— así que 0 lo apaga
+// por completo. Se deja la constante en vez de arrancar el código: el ADX se
+// sigue CALCULANDO y MOSTRANDO en la tabla, que es útil como información;
+// lo que deja de hacer es RECHAZAR señales.
+//
+// Para volver a encenderlo basta cambiar este número. Pero antes de hacerlo,
+// leer el historial de arriba: este umbral ya se movió tres veces (20 → 35 →
+// 20 → 10 → 0) y en NINGUNA cambió el resultado. Está medido en 20, 25, 35 y
+// 40 sobre 35 meses: 46-47 % de acierto en todos.
+const ADX_MIN = 0
 
 // ⚠️ EL DE RANGO ES OTRO NÚMERO, Y ES A PROPÓSITO.
 //
@@ -867,7 +885,8 @@ const porDifAbs = (a, b) => Math.abs(b.dif) - Math.abs(a.dif)
 // largo en useMarketData.js: obligaba a publicar una contraseña en el
 // navegador), así que la fuente es siempre la misma y el parámetro sobraba.
 /**
- * @param adxMin       ADX mínimo para dar señal de TENDENCIA (la app: 35).
+ * @param adxMin       ADX mínimo para dar señal de TENDENCIA (la app: 0, o sea
+ *                     APAGADO desde el 2026-09-05 — ver `ADX_MIN` arriba).
  * @param adxMaxRango  ADX máximo para dar señal de RANGO (la app: 20). Va
  *                     aparte del anterior: moverlos juntos mezcla dos cambios
  *                     y el resultado no dice nada (ver `clasificarRango`).
