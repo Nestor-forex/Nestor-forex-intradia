@@ -26,7 +26,7 @@
 
 import { computarBarrido } from '../src/lib/marketCalc.js'
 import { leerLlave, obtenerVelas } from './lib/velas.mjs'
-import { costeEnPips, nochesEntre, NIVELES_SWAP, SPREAD_PIPS } from './lib/costes.mjs'
+import { costeEnPips, nochesEntre, NIVELES_SWAP, SPREAD_PIPS, SPREAD_NESTOR_FINDE } from './lib/costes.mjs'
 import { generarSenales, medir, barridoSwap, VENTANA } from './lib/backtest-nucleo.mjs'
 import { GEOMETRIAS, simetrica, actual, porRiesgo } from './lib/geometrias.mjs'
 import { reglaBarrido } from './lib/patrones.mjs'
@@ -922,6 +922,82 @@ console.log(RAYA)
         `${((m.porRiesgo >= 0 ? '+' : '') + m.porRiesgo.toFixed(2)).padStart(6)}`
     )
   }
+}
+
+// --------------------------------------------------------------------------
+// ENSAYO CON LOS SPREADS QUE NÉSTOR LEYÓ EN SU CUENTA
+//
+// ⚠️ ESTO NO DECIDE NADA, Y ES IMPORTANTE QUE SE LEA ASÍ.
+// Los tomó CON EL MERCADO CERRADO (2026-09-05), y ahí el spread se infla
+// porque no hay nadie al otro lado ofreciendo precio: su media sale en 4,36
+// pips contra los 2,17 de la tabla que se usa. El doble.
+//
+// Se corre por dos razones concretas:
+//
+//  1. Ver CUÁNTO cambia el resultado al doblar el peaje. Eso mide la
+//     sensibilidad de la conclusión: si con el doble de coste el número apenas
+//     se mueve, es que el spread no era lo que decidía; si se hunde, entonces
+//     los spreads REALES importan mucho y vale la pena tomarlos bien.
+//
+//  2. Como techo. Una regla que salga positiva pagando ESTOS costes sería
+//     durísima de tumbar. No se espera que pase.
+//
+// Cuando Néstor los vuelva a tomar con el mercado abierto (8:00-11:00 hora
+// Colombia), esos SÍ sustituyen a `SPREAD_PIPS` y esta sección se borra o se
+// convierte en la comparación entre dos brókers.
+// --------------------------------------------------------------------------
+
+console.log('')
+console.log('ENSAYO: ¿cuánto cambia todo si el peaje es el DOBLE?')
+console.log('Columna A = spreads de la tabla (media 2,17 pips).')
+console.log('Columna B = los que leyó Néstor con el MERCADO CERRADO (media 4,36).')
+console.log('⚠️ La B no decide nada: sirve para ver la sensibilidad al coste.')
+console.log('')
+console.log('regla                                       ops   sin costes      A        B')
+console.log(RAYA)
+{
+  // ⚠️ ESTA SECCIÓN NO VUELVE A CORRER NI UNA SEÑAL, y eso no es una
+  // optimización cosmética: es lo que la hace posible.
+  //
+  // La primera versión repetía `correr()` seis veces y el trabajo se pasó de
+  // los 45 minutos de `timeout-minutes`: GitHub canceló la corrida entera a
+  // los 44:46 y no salió ninguna tabla. Se perdieron 45 minutos y los créditos
+  // de la API para no ver nada.
+  //
+  // Y era trabajo REGALADO: cambiar la tabla de costes no cambia ni una señal
+  // ni un resultado del mercado. Las mismas operaciones, sumadas con otro
+  // peaje. `correr()` cuesta ~25 s cada una; `medir()` es instantáneo.
+  //
+  // Así que se reutilizan las corridas que el script ya hizo más arriba:
+  // `neutra` (la app con vara neutra) y `revCorridas` (las cinco de reversión).
+  const filas = [{ nombre: 'la app tal cual', r: neutra }, ...revCorridas]
+  const n = (x) => (x === null ? '   —  ' : ((x >= 0 ? '+' : '') + x.toFixed(3)).padStart(7))
+
+  for (const { nombre, r } of filas) {
+    const sin = medir(r.senales, r.porClave)
+    const a = medir(r.senales, r.porClave, { conSpread: true, swapPipsNoche: 0.5 })
+    const b = medir(r.senales, r.porClave, {
+      conSpread: true,
+      swapPipsNoche: 0.5,
+      tablaSpread: SPREAD_NESTOR_FINDE,
+    })
+    console.log(
+      `${nombre.padEnd(42)} ${String(sin.total).padStart(5)}   ${n(sin.porRiesgo)}  ${n(a.porRiesgo)}  ${n(b.porRiesgo)}`
+    )
+  }
+
+  console.log(RAYA)
+  // Cuánto se lleva cada tabla, en veces el riesgo. Es EL número de esta
+  // sección: dice cuánto decide el bróker y cuánto la regla.
+  const { r } = revCorridas[0]
+  const sin = medir(r.senales, r.porClave)
+  const a = medir(r.senales, r.porClave, { conSpread: true, swapPipsNoche: 0.5 })
+  const b = medir(r.senales, r.porClave, { conSpread: true, swapPipsNoche: 0.5, tablaSpread: SPREAD_NESTOR_FINDE })
+  console.log(
+    `El peaje se lleva ${(sin.porRiesgo - a.porRiesgo).toFixed(3)} con la tabla A ` +
+      `y ${(sin.porRiesgo - b.porRiesgo).toFixed(3)} con la B (por unidad de riesgo).`
+  )
+  console.log('Cuanto mayor sea eso, más decide el bróker y menos la regla.')
 }
 
 // --------------------------------------------------------------------------

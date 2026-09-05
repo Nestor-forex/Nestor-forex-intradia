@@ -52,7 +52,18 @@ console.log('\n2. Los cruces cuestan más que los pares con dólar')
   // líquidos (EUR/GBP, AUD/JPY) que cuestan menos que un mayor caro como
   // NZD/USD, y eso es correcto — no todos los cruces son caros.
   comprobar(medioCruce > medioMayor, `de media, los cruces cuestan más (${medioCruce.toFixed(2)}) que los mayores (${medioMayor.toFixed(2)})`)
-  comprobar(spreadDe('EUR/USD') === Math.min(...conDolar.map(spreadDe)), 'EUR/USD es el más barato, como en el mercado real')
+  comprobar(spreadDe('EUR/USD') === Math.min(...conDolar.map((p) => spreadDe(p))), 'EUR/USD es el más barato, como en el mercado real')
+  // ⚠️ Y que usarlo mal REVIENTE en vez de devolver un número creíble. Esta
+  // línea existe porque el fallo ocurrió de verdad: al añadir el parámetro
+  // `tabla`, un `.map(spreadDe)` empezó a pasarle el índice y EUR/USD pasó a
+  // costar 3 pips sin que nada avisara.
+  let reventó = false
+  try {
+    conDolar.map(spreadDe)
+  } catch {
+    reventó = true
+  }
+  comprobar(reventó, 'usarlo como `.map(spreadDe)` revienta, no devuelve un número falso')
 }
 
 // --- 3. Un par desconocido se mide CARO, no barato ------------------------
@@ -393,6 +404,48 @@ console.log('\n10. El acierto de equilibrio: cuánto hay que acertar para no per
       `acertar justo el equilibrio deja el resultado en cero (${m.porRiesgo.toFixed(6)})`
     )
   }
+}
+
+console.log('\n11. Se puede medir con OTRA tabla de spreads sin tocar la oficial')
+{
+  // ⚠️ El fallo que esto vigila es SILENCIOSO: si `tablaSpread` se ignorara,
+  // las dos columnas saldrían idénticas y parecería que «el bróker da igual».
+  // Esa es exactamente la conclusión falsa más cómoda de creer.
+  const caros = { 'EUR/USD': 20 }
+  const senales = [
+    { id: 'A', vistoEl: 't1', par: 'EUR/USD', pipRiesgo: 100, pipBeneficio: 100 },
+    { id: 'B', vistoEl: 't2', par: 'EUR/USD', pipRiesgo: 100, pipBeneficio: 100 },
+  ]
+  const res = new Map([
+    ['A@t1', { resultado: 'ganada', pips: 100 }],
+    ['B@t2', { resultado: 'perdida', pips: -100 }],
+  ])
+  const normal = medir(senales, res, { conSpread: true })
+  const caro = medir(senales, res, { conSpread: true, tablaSpread: caros })
+  comprobar(caro.porRiesgo < normal.porRiesgo, `una tabla más cara da PEOR resultado (${normal.porRiesgo.toFixed(3)} → ${caro.porRiesgo.toFixed(3)})`)
+
+  // Con 20 pips sobre un riesgo de 100, el coste es 0,2 por operación. Se paga
+  // se gane o se pierda, así que el resultado baja exactamente 0,2.
+  comprobar(
+    Math.abs(caro.porRiesgo - (0 - 0.2)) < 1e-9,
+    `y la cuenta cuadra a mano: 20 pips sobre 100 de riesgo = −0,200 (${caro.porRiesgo.toFixed(3)})`
+  )
+
+  // Un par que no esté en la tabla nueva cae al valor por defecto, no revienta
+  // ni se cuela gratis.
+  const otro = medir(
+    [{ id: 'C', vistoEl: 't3', par: 'XXX/YYY', pipRiesgo: 100, pipBeneficio: 100 }],
+    new Map([['C@t3', { resultado: 'ganada', pips: 100 }]]),
+    { conSpread: true, tablaSpread: caros }
+  )
+  comprobar(Number.isFinite(otro.porRiesgo), 'un par ausente de la tabla usa el valor por defecto, no NaN')
+
+  // Y sin pasar nada, manda la tabla oficial: el ensayo no puede contaminar
+  // las mediciones de verdad.
+  comprobar(
+    medir(senales, res, { conSpread: true }).porRiesgo === normal.porRiesgo,
+    'sin pasar tabla, manda la oficial'
+  )
 }
 
 console.log('')

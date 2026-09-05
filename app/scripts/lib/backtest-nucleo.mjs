@@ -1,4 +1,4 @@
-import { costeEnPips, nochesEntre, NIVELES_SWAP } from './costes.mjs'
+import { costeEnPips, nochesEntre, NIVELES_SWAP, SPREAD_PIPS } from './costes.mjs'
 // El motor del banco de pruebas: qué señales habría dado la app cada hora.
 //
 // Va aparte de `backtest.mjs` para poder comprobarlo sin internet: el script
@@ -184,7 +184,7 @@ export function generarSenales(
 // estuvo dentro del script no se podía probar sin internet ni sin gastar
 // créditos de la API: la cuenta que más pesa era la única sin comprobar.
 // Ahora `prueba-costes.mjs` la mide directamente.
-export function medir(senales, porClave, { conSpread = false, swapPipsNoche = 0 } = {}) {
+export function medir(senales, porClave, { conSpread = false, swapPipsNoche = 0, tablaSpread = SPREAD_PIPS } = {}) {
   let ganadas = 0
   let perdidas = 0
   let pips = 0
@@ -245,7 +245,7 @@ export function medir(senales, porClave, { conSpread = false, swapPipsNoche = 0 
     // la de salida, no por la duración: a qué hora se abrió decide si se cruza
     // el corte o no.
     const costePips = conSpread
-      ? costeEnPips(s.par, nochesEntre(r.velaEntrada ?? s.vela, r.velaFinal), swapPipsNoche)
+      ? costeEnPips(s.par, nochesEntre(r.velaEntrada ?? s.vela, r.velaFinal), swapPipsNoche, tablaSpread)
       : 0
     const coste = costePips / s.pipRiesgo
     // Se acumulan sobre las MISMAS operaciones que entran en el resultado (las

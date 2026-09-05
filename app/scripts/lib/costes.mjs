@@ -79,12 +79,76 @@ export const SPREAD_PIPS = {
   'EUR/GBP': 1.4,
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+// LOS SPREADS QUE NÉSTOR LEYÓ EN SU CUENTA DE AVATRADE (2026-09-05)
+// ─────────────────────────────────────────────────────────────────────────
+//
+// ⚠️ NO SE USAN POR DEFECTO, Y NO DEBEN USARSE PARA DECIDIR NADA.
+// Están tomados CON EL MERCADO CERRADO, y con el mercado cerrado el spread se
+// infla porque no hay nadie al otro lado ofreciendo precio. La media sale en
+// 4,36 pips contra los 2,17 de la tabla de arriba: el doble.
+//
+// Se guardan por dos razones concretas:
+//
+//  1. LA FORMA DEL REPARTO SÍ INFORMA, aunque el nivel esté inflado. Y ya dijo
+//     algo: los cruces que yo estimaba caros salieron BIEN estimados (EUR/CHF
+//     2.2 = 2.2, EUR/CAD 2.8 vs 2.9) y dos salieron más BARATOS de lo que yo
+//     suponía (NZD/CHF 3.6 → 2.5, NZD/CAD 3.4 → 3.0). Lo que se dispara son
+//     los pares con yen y los mayores con dólar, justo los de las sesiones que
+//     estaban cerradas.
+//
+//  2. SIRVEN DE TECHO. Si una regla saliera positiva pagando ESTOS costes,
+//     sería un resultado durísimo de tumbar. No se espera que pase.
+//
+// CUANDO ABRA EL MERCADO hay que volver a tomarlos entre las 8:00 y las 11:00
+// (hora Colombia), y ESOS sí sustituyen a `SPREAD_PIPS`.
+export const SPREAD_NESTOR_FINDE = {
+  'EUR/USD': 1.4,
+  'GBP/USD': 1.8,
+  'USD/JPY': 5.3,
+  'USD/CHF': 5.2,
+  'USD/CAD': 5.5,
+  'AUD/USD': 1.5,
+  'NZD/USD': 4.2,
+  'EUR/CHF': 2.2,
+  'EUR/CAD': 2.9,
+  'EUR/NZD': 3.9,
+  'EUR/GBP': 2.2,
+  'GBP/CAD': 5.5,
+  'GBP/JPY': 7.5,
+  'NZD/CHF': 2.5,
+  'NZD/CAD': 3.0,
+  'AUD/JPY': 4.4,
+  'NZD/JPY': 3.1,
+  'AUD/NZD': 16.3,
+}
+
 // Para un par que no esté en la tabla. Alto a propósito: que un par nuevo se
 // mida caro hasta que alguien ponga su número real, y no barato por descuido.
 export const SPREAD_POR_DEFECTO = 3.0
 
-export function spreadDe(par) {
-  return SPREAD_PIPS[par] ?? SPREAD_POR_DEFECTO
+// `tabla` deja medir con OTRA lista de spreads sin tocar la oficial. Sirve
+// para comparar brókers, o para el ensayo con los números de fin de semana.
+// Por defecto manda `SPREAD_PIPS`, que es la única que decide conclusiones.
+//
+// ⚠️ Y REVIENTA SI `tabla` NO ES UNA TABLA, en vez de caer al valor por
+// defecto. El motivo no es teórico: al añadir este segundo parámetro se rompió
+// una comprobación que hacía `conDolar.map(spreadDe)`, porque `map` le pasa el
+// ÍNDICE como segundo argumento. Con un `?? SPREAD_POR_DEFECTO` silencioso,
+// EUR/USD pasaba a costar 3 pips y nadie se enteraba — el número seguía siendo
+// un número creíble.
+//
+// La prueba lo cazó esa vez. La próxima puede no haber prueba, así que el
+// error tiene que doler aquí.
+export function spreadDe(par, tabla = SPREAD_PIPS) {
+  if (typeof tabla !== 'object' || tabla === null) {
+    throw new TypeError(
+      `spreadDe(par, tabla): la tabla llegó como ${typeof tabla} (${tabla}). ` +
+        '¿Se está usando como `lista.map(spreadDe)`? Ahí `map` pasa el índice ' +
+        'en el segundo argumento: usa `lista.map((p) => spreadDe(p))`.'
+    )
+  }
+  return tabla[par] ?? SPREAD_POR_DEFECTO
 }
 
 // La hora UTC a la que el bróker pasa el corte y cobra el swap. Las 17:00 de
@@ -147,6 +211,6 @@ export const NIVELES_SWAP = [0, 0.25, 0.5, 1.0, 2.0]
  * @param noches         cuántas veces cruzó el corte (ver `nochesEntre`)
  * @param swapPipsNoche  a qué nivel de swap se está midiendo
  */
-export function costeEnPips(par, noches = 0, swapPipsNoche = 0) {
-  return spreadDe(par) + Math.max(0, noches) * swapPipsNoche
+export function costeEnPips(par, noches = 0, swapPipsNoche = 0, tabla = SPREAD_PIPS) {
+  return spreadDe(par, tabla) + Math.max(0, noches) * swapPipsNoche
 }
