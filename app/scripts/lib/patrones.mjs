@@ -52,19 +52,11 @@
  *                Las dos variantes compran debilidad. Lo único que las separa
  *                es si se exige que el precio ya haya recuperado al cierre.
  */
-export function barridoDeLiquidez(p, n, lado, volver = true) {
-  const H = p.highs
-  const L = p.lows
-  if (!H || !L || H.length < n + 1) return false
-  if (lado === 'COMPRA') {
-    const suelo = Math.min(...L.slice(-n - 1, -1))
-    const perforo = L.at(-1) < suelo
-    return perforo && (volver ? p.c > suelo : p.c < suelo)
-  }
-  const techo = Math.max(...H.slice(-n - 1, -1))
-  const perforo = H.at(-1) > techo
-  return perforo && (volver ? p.c < techo : p.c > techo)
-}
+// La función vive ahora en `src/lib/marketCalc.js`, porque también la
+// necesita `derivarVista` para anotar la regla en la sombra. Se reexporta
+// con el nombre de siempre para no tocar a quien ya la usaba.
+export { perforaExtremo as barridoDeLiquidez } from '../../src/lib/marketCalc.js'
+import { perforaExtremo as barridoDeLiquidez } from '../../src/lib/marketCalc.js'
 
 /**
  * El barrido convertido en regla de entrada para el banco de pruebas.

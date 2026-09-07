@@ -903,6 +903,42 @@ const porDifAbs = (a, b) => Math.abs(b.dif) - Math.abs(a.dif)
  * Los primeros existen para poder MEDIR la app con otros valores sin copiar
  * aquí la lógica de selección. Sin tocarlos, se comporta exactamente igual.
  */
+/**
+ * ¿PERFORA EL PAR UN EXTREMO DE LAS N VELAS ANTERIORES?
+ *
+ * Vive aquí, y no en `scripts/lib/patrones.mjs` donde nació, porque ahora la
+ * necesitan los dos lados: el banco de pruebas (que la importa desde allí) y
+ * `derivarVista`, para poder anotar la regla en la sombra. Una sola copia:
+ * mantener dos iguales a mano es trabajo que la máquina puede evitar, y la
+ * primera versión de aquel archivo ya se estrelló por tener dos.
+ *
+ * ⚠️ EL NIVEL SALE DE LAS VELAS ANTERIORES, NO INCLUYE LA DE HOY. Es el error
+ * que dejaría todo en cero sin avisar: el mínimo de hoy es, por definición,
+ * candidato a ser el más bajo, así que incluirlo lo compararía consigo mismo y
+ * no habría señal NUNCA. Saldría cero operaciones y parecería que «el patrón
+ * no ocurre».
+ *
+ * @param volver  true  = el precio RECUPERA al cierre (el barrido de liquidez)
+ *                false = se queda fuera, o sea sigue cayendo al cerrar
+ *
+ *                ⚠️ `volver: false` NO es un rompimiento: el lado NO cambia.
+ *                'COMPRA' con `volver: false` es comprar un mínimo nuevo que
+ *                cierra abajo — comprar la caída SIN esperar el rebote.
+ */
+export function perforaExtremo(p, n, lado, volver = true) {
+  const H = p.highs
+  const L = p.lows
+  if (!H || !L || H.length < n + 1) return false
+  if (lado === 'COMPRA') {
+    const suelo = Math.min(...L.slice(-n - 1, -1))
+    const perforo = L.at(-1) < suelo
+    return perforo && (volver ? p.c > suelo : p.c < suelo)
+  }
+  const techo = Math.max(...H.slice(-n - 1, -1))
+  const perforo = H.at(-1) > techo
+  return perforo && (volver ? p.c < techo : p.c > techo)
+}
+
 export function derivarVista(
   data,
   {

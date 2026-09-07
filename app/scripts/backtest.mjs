@@ -41,7 +41,11 @@ import { computarBarrido, ADX_MIN, RSI_MAX, TENDENCIA_MIN } from '../src/lib/mar
 // Le pega «(hoy)» a la fila que de verdad corre en la app.
 const hoySi = (nombre, esLaDeHoy) => (esLaDeHoy ? `${nombre}  (hoy)` : nombre)
 import { leerLlave, obtenerVelas } from './lib/velas.mjs'
-import { costeEnPips, nochesEntre, NIVELES_SWAP, SPREAD_PIPS, SPREAD_NESTOR_FINDE } from './lib/costes.mjs'
+import { costeEnPips, nochesEntre, NIVELES_SWAP, SPREAD_PIPS, SPREAD_NESTOR_FINDE, SPREAD_NESTOR_ASIA } from './lib/costes.mjs'
+
+// La media de una tabla de spreads, para poder decir en pantalla con qué se
+// está midiendo en vez de que el lector lo tenga que buscar en otro archivo.
+const mediaDe = (t) => (Object.values(t).reduce((a, b) => a + b, 0) / Object.keys(t).length).toFixed(2)
 import { generarSenales, medir, barridoSwap, VENTANA } from './lib/backtest-nucleo.mjs'
 import { GEOMETRIAS, simetrica, actual, porRiesgo } from './lib/geometrias.mjs'
 import { reglaBarrido } from './lib/patrones.mjs'
@@ -964,12 +968,16 @@ console.log(RAYA)
 // --------------------------------------------------------------------------
 
 console.log('')
-console.log('ENSAYO: ¿cuánto cambia todo si el peaje es el DOBLE?')
-console.log('Columna A = spreads de la tabla (media 2,17 pips).')
-console.log('Columna B = los que leyó Néstor con el MERCADO CERRADO (media 4,36).')
-console.log('⚠️ La B no decide nada: sirve para ver la sensibilidad al coste.')
+console.log('¿CUÁNTO DECIDE EL BRÓKER? (mismas operaciones, tres peajes)')
+console.log(`  oficial = la tabla del banco de pruebas (media ${mediaDe(SPREAD_PIPS)} pips)`)
+console.log(`  REAL    = la cuenta de Néstor, mercado ABIERTO (media ${mediaDe(SPREAD_NESTOR_ASIA)})`)
+console.log(`  cerrado = la misma cuenta con el mercado CERRADO (media ${mediaDe(SPREAD_NESTOR_FINDE)})`)
 console.log('')
-console.log('regla                                       ops   sin costes      A        B')
+console.log('⚠️ La columna «cerrado» no decide nada y se queda solo como recordatorio:')
+console.log('   un bróker sin mercado no ensancha el spread, se lo INVENTA. Por eso')
+console.log('   aquellos números no servían y estos sí.')
+console.log('')
+console.log('regla                                       ops   sin costes   oficial     REAL   cerrado')
 console.log(RAYA)
 {
   // ⚠️ ESTA SECCIÓN NO VUELVE A CORRER NI UNA SEÑAL, y eso no es una
@@ -992,13 +1000,18 @@ console.log(RAYA)
   for (const { nombre, r } of filas) {
     const sin = medir(r.senales, r.porClave)
     const a = medir(r.senales, r.porClave, { conSpread: true, swapPipsNoche: 0.5 })
+    const real = medir(r.senales, r.porClave, {
+      conSpread: true,
+      swapPipsNoche: 0.5,
+      tablaSpread: SPREAD_NESTOR_ASIA,
+    })
     const b = medir(r.senales, r.porClave, {
       conSpread: true,
       swapPipsNoche: 0.5,
       tablaSpread: SPREAD_NESTOR_FINDE,
     })
     console.log(
-      `${nombre.padEnd(42)} ${String(sin.total).padStart(5)}   ${n(sin.porRiesgo)}  ${n(a.porRiesgo)}  ${n(b.porRiesgo)}`
+      `${nombre.padEnd(42)} ${String(sin.total).padStart(5)}   ${n(sin.porRiesgo)}  ${n(a.porRiesgo)}  ${n(real.porRiesgo)}  ${n(b.porRiesgo)}`
     )
   }
 
@@ -1008,12 +1021,29 @@ console.log(RAYA)
   const { r } = revCorridas[0]
   const sin = medir(r.senales, r.porClave)
   const a = medir(r.senales, r.porClave, { conSpread: true, swapPipsNoche: 0.5 })
+  const real = medir(r.senales, r.porClave, { conSpread: true, swapPipsNoche: 0.5, tablaSpread: SPREAD_NESTOR_ASIA })
   const b = medir(r.senales, r.porClave, { conSpread: true, swapPipsNoche: 0.5, tablaSpread: SPREAD_NESTOR_FINDE })
   console.log(
-    `El peaje se lleva ${(sin.porRiesgo - a.porRiesgo).toFixed(3)} con la tabla A ` +
-      `y ${(sin.porRiesgo - b.porRiesgo).toFixed(3)} con la B (por unidad de riesgo).`
+    `El peaje se lleva ${(sin.porRiesgo - a.porRiesgo).toFixed(3)} con la oficial, ` +
+      `${(sin.porRiesgo - real.porRiesgo).toFixed(3)} con la REAL ` +
+      `y ${(sin.porRiesgo - b.porRiesgo).toFixed(3)} con la del mercado cerrado.`
   )
-  console.log('Cuanto mayor sea eso, más decide el bróker y menos la regla.')
+  console.log('Cuanto mayor sea eso frente a la columna «sin costes», más decide el')
+  console.log('bróker y menos la regla.')
+  console.log('')
+  // ⚠️ EL NÚMERO QUE DE VERDAD CIERRA LA PREGUNTA EN INTRADÍA. Comparar el
+  // peaje más barato posible con la MEJOR ventaja sin costes que tiene ninguna
+  // regla: si el peaje es varias veces mayor, no hay bróker que la salve, y
+  // seguir buscando uno más barato es perder el tiempo.
+  const mejorSinCostes = Math.max(...revCorridas.map(({ r: rr }) => medir(rr.senales, rr.porClave).porRiesgo ?? -9))
+  const peajeMasBarato = Math.min(sin.porRiesgo - a.porRiesgo, sin.porRiesgo - real.porRiesgo)
+  console.log(
+    `La MEJOR ventaja sin costes de estas reglas es ${mejorSinCostes.toFixed(3)} y el peaje ` +
+      `más barato es ${peajeMasBarato.toFixed(3)}: ` +
+      (peajeMasBarato > mejorSinCostes
+        ? `${(peajeMasBarato / mejorSinCostes).toFixed(1)} VECES MÁS. No hay bróker que la salve.`
+        : 'la ventaja sobrevive al peaje.')
+  )
 }
 
 // --------------------------------------------------------------------------
