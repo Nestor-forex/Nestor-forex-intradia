@@ -1,0 +1,114 @@
+name: Copia de seguridad del historial
+
+# Guarda una copia fechada de `historial/senales.jsonl` y
+# `historial/resultados.jsonl` en la rama `respaldos`.
+#
+# ⚠️ POR QUÉ EXISTE ESTO. Esos dos archivos son lo ÚNICO del proyecto que no se
+# puede volver a fabricar: dependen de lo que la app dijo CADA DÍA CONCRETO. El
+# código se reescribe en un día; una señal del 12 de agosto, no. Y son justo lo
+# que hace falta para saber si la reversión aguanta en la realidad, o sea el
+# único activo con futuro que hay aquí.
+#
+# Hasta que esto existió había UNA sola copia, en la rama `datos`, y el vigía
+# escribe encima de ella todos los días.
+#
+# No gasta créditos de Twelve Data ni toca la red: solo copia archivos que
+# GitHub ya descargó. Por eso puede correr sin miedo.
+
+on:
+  schedule:
+    # Domingos a las 04:20 UTC. En domingo el mercado está cerrado y el vigía
+    # (que corre de lunes a viernes) no está escribiendo, así que no se puede
+    # pillar el archivo a medio escribir.
+    #
+    # Ojo: el reloj de GitHub es impuntual y se salta horas. Para una copia
+    # semanal da igual que caiga un poco tarde; lo que no puede es no correr.
+    # Si un domingo se lo salta, el siguiente recoge todo igual — los archivos
+    # solo crecen, así que no se pierde nada por copiarlos tarde.
+    - cron: '20 4 * * 0'
+  workflow_dispatch:
+
+# Escribe en la rama `respaldos`: por defecto el token de Actions es de solo
+# lectura.
+permissions:
+  contents: write
+
+concurrency:
+  group: respaldo-historial
+  cancel-in-progress: false
+
+jobs:
+  respaldo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Traer el código
+        uses: actions/checkout@v4
+
+      - name: Traer los datos
+        uses: actions/checkout@v4
+        with:
+          ref: datos
+          path: datos
+
+      - name: Preparar la rama de respaldos
+        # `actions/checkout` no sirve aquí porque la primera vez la rama todavía
+        # no existe y fallaría. Se monta a mano, creándola vacía si hace falta.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p respaldos && cd respaldos
+          git init -q -b respaldos
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          if git fetch --depth 1 origin respaldos 2>/dev/null; then
+            git reset -q --hard FETCH_HEAD
+            echo 'La rama respaldos ya existía: se añade una copia más.'
+          else
+            echo 'La rama respaldos no existe todavía: esta será la primera copia.'
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Copiar y revisar
+        id: copiar
+        # Si el guion encuentra que algo encogió termina en error A PROPÓSITO,
+        # para que GitHub mande el correo de fallo. Pero la copia YA está hecha
+        # en el disco, así que hay que guardarla igual: de ahí el `continue-on-error`
+        # aquí y el paso final que vuelve a fallar al terminar.
+        continue-on-error: true
+        working-directory: app
+        env:
+          RESPALDO_DATOS: ${{ github.workspace }}/datos
+          RESPALDO_DESTINO: ${{ github.workspace }}/respaldos
+        run: node scripts/respaldo-historial.mjs
+
+      - name: Guardar la copia
+        working-directory: respaldos
+        run: |
+          git config user.name 'Respaldo Nestor Forex Intradía'
+          git config user.email 'noreply@anthropic.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'La copia de hoy es idéntica a la última: no hay nada que guardar.'
+            exit 0
+          fi
+          git commit -q -m "Copia del historial $(date -u +'%Y-%m-%d')"
+          for i in 1 2 3; do
+            git push origin HEAD:respaldos && exit 0
+            git fetch --depth 1 origin respaldos && git rebase FETCH_HEAD || true
+            sleep $((i * 5))
+          done
+          echo 'No se pudo guardar la copia tras 3 intentos.'
+          exit 1
+
+      - name: Terminar en rojo si algo no cuadraba
+        # Va DESPUÉS de guardar, para que una alarma nunca impida que la copia
+        # llegue a la rama. Lo que se pierde por no guardar no vuelve; un correo
+        # de fallo, sí.
+        if: steps.copiar.outcome == 'failure'
+        run: |
+          echo 'La copia se guardó, pero el guion encontró algo raro en el historial.'
+          echo 'Mira el paso «Copiar y revisar» de arriba: dice exactamente qué.'
+          exit 1
