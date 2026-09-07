@@ -11,7 +11,17 @@
 // restar. La tabla saldría mejor cuantos más costes se descuentan, que es
 // exactamente el autoengaño que este archivo intenta impedir.
 
-import { spreadDe, costeEnPips, nochesEntre, HORA_CORTE_UTC, SPREAD_PIPS, SPREAD_POR_DEFECTO, NIVELES_SWAP } from './lib/costes.mjs'
+import {
+  spreadDe,
+  costeEnPips,
+  nochesEntre,
+  HORA_CORTE_UTC,
+  SPREAD_PIPS,
+  SPREAD_POR_DEFECTO,
+  NIVELES_SWAP,
+  SPREAD_NESTOR_ASIA,
+  SPREAD_NESTOR_FINDE,
+} from './lib/costes.mjs'
 import { PAIRS } from '../src/lib/marketCalc.js'
 import { medir, barridoSwap } from './lib/backtest-nucleo.mjs'
 import { readFileSync } from 'node:fs'
@@ -490,6 +500,42 @@ console.log('\n12. Ninguna etiqueta «(hoy)» del banco de pruebas está escrita
   // `hoySi` dejaría la comprobación de arriba pasando en verde sobre un informe
   // que ya no marca nada.
   comprobar(/const hoySi = /.test(fuente), 'y `hoySi` sigue existiendo para ponerlas')
+}
+
+
+console.log('\n13. Los spreads REALES de la cuenta de Néstor')
+{
+  // Leídos con el mercado ABIERTO el 2026-09-07. Sirven para una cosa muy
+  // concreta: comprobar que la tabla del banco de pruebas no está midiendo
+  // MÁS BARATO que la realidad, que sería inflar los resultados a favor propio.
+  const media = (t) => Object.values(t).reduce((a, b) => a + b, 0) / Object.keys(t).length
+
+  comprobar(
+    media(SPREAD_PIPS) > media(SPREAD_NESTOR_ASIA),
+    `la tabla oficial (${media(SPREAD_PIPS).toFixed(2)}) es más cara que la real ` +
+      `(${media(SPREAD_NESTOR_ASIA).toFixed(2)}): mide del lado prudente`
+  )
+
+  // Y que la del mercado CERRADO siga siendo la más cara de las tres, que es
+  // la única razón por la que aquellos números no sirven.
+  comprobar(
+    media(SPREAD_NESTOR_FINDE) > media(SPREAD_PIPS),
+    `y la del mercado cerrado (${media(SPREAD_NESTOR_FINDE).toFixed(2)}) sigue siendo la más cara de las tres`
+  )
+
+  // Todos los pares que la app opera tienen que estar, o la comparación
+  // taparía los que faltan con el valor por defecto sin decir nada.
+  const nuestros = PAIRS.map(([b, q]) => `${b}/${q}`)
+  const faltan = nuestros.filter((p) => !(p in SPREAD_NESTOR_ASIA))
+  comprobar(faltan.length === 0, faltan.length ? `FALTAN: ${faltan.join(', ')}` : `están los ${nuestros.length} pares de la app`)
+
+  // ⚠️ Y que NO se haya colado como tabla por defecto. Es lo único que podría
+  // pasar en silencio: todas las mediciones saldrían un poco mejores y nadie
+  // lo notaría, que es justo el autoengaño que este archivo entero previene.
+  comprobar(
+    spreadDe('EUR/USD') === SPREAD_PIPS['EUR/USD'],
+    'y la tabla por defecto SIGUE siendo la oficial, no la de Néstor'
+  )
 }
 
 console.log('')
