@@ -249,6 +249,30 @@ export default {
     estadoPendiente: 'pendente',
   },
 
+  calendario: {
+    titulo: (v) => `Notícias que podem mover o preço (${v.n})`,
+    aviso: (v) => `${v.div}: dado importante em ${v.h} h`,
+    intro: 'Dados económicos que podem mover o preço de repente. Não mudam nenhum sinal da app: estão aqui para você saber a que horas não convém entrar às cegas.',
+    alto: 'Move muito',
+    medio: 'Move um pouco',
+    festivo: 'Feriado',
+    cat: {
+      tipos: 'Taxas de juro',
+      inflacion: 'Inflação',
+      empleo: 'Emprego',
+      crecimiento: 'Crescimento',
+      ventas: 'Vendas',
+      actividad: 'Atividade das empresas',
+      comercio: 'Comércio externo',
+      discurso: 'Fala um banqueiro central',
+      festivo: 'Feriado: menos movimento',
+    },
+    cuantos: (v) => `Mostram-se os ${v.n} das próximas 48 horas. Esta semana há ${v.total} no total.`,
+    previsto: 'previsto',
+    anterior: 'anterior',
+    viejo: 'Este calendário está há mais de um dia sem atualizar. Pode faltar algo do que vem.',
+    pie: 'Só se mostram os dados de impacto alto e médio das 8 moedas da varredura; os de impacto baixo ficam de fora porque encobririam os que importam. As horas são as do seu telemóvel. Fonte: ForexFactory.',
+  },
   glosario: {
     titulo: 'O que significam estes termos?',
     terminos: [
@@ -339,6 +363,19 @@ export default {
     soloExactas: 'Só pares contra o dólar',
   },
 
+  vivo: {
+    titulo: 'O que custa abrir a operação',
+    desc: (v) => `Preço de compra e de venda direto do MetaTrader 5. É a única coisa que mostra o spread REAL que o corretor cobra — a varredura acima trabalha com velas e não o sabe. ⚠️ São os de ${v.cuenta}: se o seu corretor for outro, os seus números serão diferentes.`,
+    cuentaGenerica: 'uma conta real',
+    cargando: 'A procurar os últimos preços…',
+    sinDatos: 'Ainda não há preços do corretor. A ponte só os publica enquanto o computador onde corre o MetaTrader 5 estiver ligado.',
+    vieja: (v) => `Estes preços foram tomados há mais de ${v.h} h. A ponte estava desligada; servem de referência, não como preço de agora.`,
+    par: 'Par',
+    bid: 'Compra',
+    ask: 'Venda',
+    spread: 'Spread',
+    pie: (v) => `Spread em pips, em âmbar se passar de 3. Tomado em ${v.hora}.`,
+  },
   errores: {
     'auth/email-already-in-use': 'Esse e-mail já tem uma conta. Tente em "Entrar".',
     'auth/invalid-email': 'Esse e-mail não parece válido.',

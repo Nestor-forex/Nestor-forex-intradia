@@ -244,6 +244,30 @@ export default {
     estadoPendiente: '대기 중',
   },
 
+  calendario: {
+    titulo: (v) => `가격을 움직일 수 있는 소식 (${v.n})`,
+    aviso: (v) => `${v.div}: ${v.h}시간 뒤 중요 지표`,
+    intro: '가격을 갑자기 움직일 수 있는 경제 지표입니다. 앱의 신호는 하나도 바꾸지 않습니다. 언제 무턱대고 들어가지 않는 것이 좋은지 알려주려고 있습니다.',
+    alto: '많이 움직임',
+    medio: '조금 움직임',
+    festivo: '휴장',
+    cat: {
+      tipos: '금리',
+      inflacion: '물가',
+      empleo: '고용',
+      crecimiento: '경제 성장',
+      ventas: '소매 판매',
+      actividad: '기업 활동',
+      comercio: '대외 무역',
+      discurso: '중앙은행 인사 발언',
+      festivo: '휴장: 움직임이 적음',
+    },
+    cuantos: (v) => `앞으로 48시간 안의 ${v.n}건을 보여줍니다. 이번 주에는 모두 ${v.total}건입니다.`,
+    previsto: '예상',
+    anterior: '이전',
+    viejo: '이 달력은 하루 넘게 갱신되지 않았습니다. 앞으로 나올 것 중 일부가 빠졌을 수 있습니다.',
+    pie: '스캔 대상 8개 통화의 고영향·중영향 지표만 표시합니다. 저영향은 정말 중요한 것을 묻어버리므로 제외합니다. 시각은 사용 중인 휴대폰 기준입니다. 출처: ForexFactory.',
+  },
   glosario: {
     titulo: '이 용어들은 무슨 뜻인가요?',
     terminos: [
@@ -333,6 +357,19 @@ export default {
     soloExactas: '달러 통화쌍만',
   },
 
+  vivo: {
+    titulo: '거래를 여는 데 드는 비용',
+    desc: (v) => `MetaTrader 5에서 바로 가져온 매수·매도 호가입니다. 중개사가 실제로 가져가는 진짜 스프레드는 여기서만 보입니다 — 위의 스캔은 캔들로 계산하므로 알 수 없습니다. ⚠️ ${v.cuenta}의 값입니다. 중개사가 다르면 숫자도 달라집니다.`,
+    cuentaGenerica: '실계좌',
+    cargando: '최신 가격을 가져오는 중…',
+    sinDatos: '아직 중개사 가격이 없습니다. MetaTrader 5가 돌아가는 컴퓨터가 켜져 있을 때만 다리가 게시합니다.',
+    vieja: (v) => `이 가격은 ${v.h}시간도 더 전의 것입니다. 다리가 꺼져 있었습니다. 지금 가격이 아니라 참고로 보세요.`,
+    par: '통화쌍',
+    bid: '매수',
+    ask: '매도',
+    spread: '스프레드',
+    pie: (v) => `스프레드는 pip 단위, 3을 넘으면 호박색. ${v.hora}에 수집.`,
+  },
   errores: {
     'auth/email-already-in-use': '이 이메일은 이미 계정이 있습니다. 「로그인」을 시도하세요.',
     'auth/invalid-email': '이메일 형식이 올바르지 않은 것 같습니다.',

@@ -98,6 +98,32 @@ export const GEMELOS = [
   'scripts/lib/respaldo.mjs',
   'scripts/respaldo-historial.mjs',
   'scripts/prueba-respaldo.mjs',
+  // El calendario economico. Identico a proposito y sin margen de duda: las 8
+  // divisas son las mismas en las dos apps, el feed es el mismo, y las
+  // divisas se sacan de `pairs.js` de cada app en vez de escribirse aqui.
+  //
+  // Lo que si podria haber divergido es el filtro de impacto bajo (en velas de
+  // una hora esos datos SI mueven algo) y las 48 horas de vista. Se dejo igual
+  // en las dos a proposito, con el motivo escrito dentro de `calendario.js`:
+  // ninguna de las dos decisiones es de trading —el calendario no apaga ni una
+  // senal—, son de que se ENSENA en un telefono.
+  'src/lib/calendario.js',
+  'src/components/Calendario.jsx',
+  'scripts/publicar-calendario.mjs',
+  'scripts/prueba-calendario.mjs',
+  // El spread real del broker, via el puente de MetaTrader 5. Identicos porque
+  // EL PUENTE ES UNO: `puente-mt5/bridge_mt5.py` vive en el repositorio de
+  // Swing y publica los 18 pares (los 14 de Swing mas los 4 que solo usa
+  // Intradia) en un solo archivo. Las dos apps leen esa MISMA direccion y cada
+  // una filtra sus pares con su propio `PAIR_NAMES`. Dos puentes serian dos
+  // programas que Nestor tendria que arrancar cada manana.
+  'src/lib/useMT5Quotes.js',
+  'src/components/CotizacionesVivo.jsx',
+  // Y este mismo archivo. Es el que dice que archivos no pueden separarse, asi
+  // que es el ULTIMO que puede permitirse separarse: si un dia se le anade un
+  // gemelo en una app y no en la otra, la comprobacion de cada repositorio
+  // estaria vigilando una lista distinta y ninguna de las dos lo diria.
+  'scripts/gemelos.mjs',
 ]
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -156,6 +182,20 @@ export const PRIMOS = {
     'advertencia sobra.',
   'src/lib/useMarketData.js':
     'Cada una lee el barrido de la rama `datos` de SU repositorio.',
+  'src/lib/useCalendario.js':
+    'Mismo motivo: cada app publica y lee SU propio calendario. El contenido ' +
+    'es el mismo —las 8 divisas coinciden— pero si Intradía leyera el archivo ' +
+    'de Swing, un fallo del workflow de Swing la dejaría sin calendario y ' +
+    'nadie sabría por dónde buscar. Bajar el feed no cuesta ni un crédito, ' +
+    'así que la independencia sale gratis. Y la clave de la caché lleva el ' +
+    'prefijo de cada app (`clave()`).',
+  'scripts/prueba-mt5.mjs':
+    'La de Swing tiene un bloque 7 que abre `puente-mt5/bridge_mt5.py` y ' +
+    'comprueba que sus símbolos sean exactamente los que usan las dos apps. ' +
+    'Aquí no puede estar: el puente vive en un solo sitio, el repositorio de ' +
+    'Swing. ⚠️ Si Intradía cambia sus pares, hay que tocar `SYMBOLS` en el ' +
+    'puente Y la lista escrita a mano de ese bloque — esta comprobación no lo ' +
+    'caza, y por eso queda dicho aquí.',
   'src/lib/useHistorial.js': 'Lo mismo: cada una lee su propio historial.',
   'src/lib/useTrades.js':
     'El diario guarda campos algo distintos según el horizonte de la operación.',

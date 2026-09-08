@@ -244,6 +244,30 @@ export default {
     estadoPendiente: 'beklemede',
   },
 
+  calendario: {
+    titulo: (v) => `Fiyatı hareketlendirebilecek haberler (${v.n})`,
+    aviso: (v) => `${v.div}: ${v.h} saat sonra önemli veri`,
+    intro: 'Fiyatı bir anda hareketlendirebilecek ekonomik veriler. Uygulamadaki hiçbir sinyali değiştirmezler: hangi saatte körlemesine girilmemesi gerektiğini bilmeniz için buradalar.',
+    alto: 'Çok oynatır',
+    medio: 'Biraz oynatır',
+    festivo: 'Tatil',
+    cat: {
+      tipos: 'Faiz oranları',
+      inflacion: 'Enflasyon',
+      empleo: 'İstihdam',
+      crecimiento: 'Büyüme',
+      ventas: 'Perakende satışlar',
+      actividad: 'Şirket faaliyeti',
+      comercio: 'Dış ticaret',
+      discurso: 'Merkez bankacısı konuşuyor',
+      festivo: 'Tatil: daha az hareket',
+    },
+    cuantos: (v) => `Önümüzdeki 48 saatteki ${v.n} tanesi gösteriliyor. Bu hafta toplam ${v.total} var.`,
+    previsto: 'beklenti',
+    anterior: 'önceki',
+    viejo: 'Bu takvim bir günden uzun süredir güncellenmedi. Gelecek olanlardan bazıları eksik olabilir.',
+    pie: 'Yalnızca taramadaki 8 para biriminin yüksek ve orta etkili verileri gösterilir; düşük etkili olanlar gerçekten önemli olanları gölgeleyecekleri için dışarıda bırakılır. Saatler telefonunuzun saatidir. Kaynak: ForexFactory.',
+  },
   glosario: {
     titulo: 'Bu terimler ne demek?',
     terminos: [
@@ -334,6 +358,19 @@ export default {
     soloExactas: 'Sadece dolar pariteleri',
   },
 
+  vivo: {
+    titulo: 'İşlemi açmanın maliyeti',
+    desc: (v) => `Doğrudan MetaTrader 5'ten alış ve satış fiyatı. Aracı kurumun aldığı GERÇEK spread'i gösteren tek yer burasıdır — yukarıdaki tarama mumlarla çalışır ve bunu bilemez. ⚠️ Bunlar ${v.cuenta} rakamları: aracı kurumunuz başkaysa sizin rakamlarınız farklı olur.`,
+    cuentaGenerica: 'gerçek bir hesabın',
+    cargando: 'Son fiyatlar alınıyor…',
+    sinDatos: 'Henüz aracı kurum fiyatı yok. Köprü bunları yalnızca MetaTrader 5’in çalıştığı bilgisayar açıkken yayımlar.',
+    vieja: (v) => `Bu fiyatların üzerinden ${v.h} saatten fazla geçti. Köprü kapalıydı; şu anki fiyat değil, referans sayın.`,
+    par: 'Parite',
+    bid: 'Alış',
+    ask: 'Satış',
+    spread: 'Spread',
+    pie: (v) => `Spread pip cinsinden, 3'ün üzerinde kehribar rengi. ${v.hora} tarihinde alındı.`,
+  },
   errores: {
     'auth/email-already-in-use': 'Bu e-postanın zaten bir hesabı var. «Giriş yap»ı dene.',
     'auth/invalid-email': 'Bu e-posta geçerli görünmüyor.',

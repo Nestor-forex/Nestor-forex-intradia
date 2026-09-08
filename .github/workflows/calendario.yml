@@ -1,0 +1,82 @@
+name: Calendario económico
+
+# Baja el calendario de ForexFactory y lo publica en `estado/calendario.json`
+# de la rama `datos`. Ver la cabecera de app/scripts/publicar-calendario.mjs
+# para el porqué de que esto NO viva dentro del vigía.
+#
+# ⚠️ NO GASTA CRÉDITOS DE TWELVE DATA ni necesita ningún secreto. El feed de
+# ForexFactory es público y no pide llave. Por eso puede correr varias veces
+# al día sin quitarle cuota al vigía ni al reporte diario.
+
+on:
+  schedule:
+    # Cada cuatro horas, TODOS LOS DÍAS — fines de semana incluidos.
+    #
+    # Lo de los fines de semana no sobra, y es el motivo por el que esto no
+    # está dentro del vigía: el feed cubre LA SEMANA EN CURSO y cambia de
+    # semana el domingo. Si solo corriera de lunes a viernes, el lunes por la
+    # mañana la app enseñaría la semana pasada entera — todo ya ocurrido y
+    # nada de lo que viene.
+    #
+    # Y son seis intentos al día por la misma razón que el vigía tiene tres:
+    # el reloj de GitHub se salta corridas (medidos huecos de 7,6 horas). Aquí
+    # saltarse una no cuesta nada irreparable —al contrario que el historial—,
+    # pero seis oportunidades hacen que un salto no se note.
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
+
+# Escribe en la rama `datos`: por defecto el token de Actions es de solo
+# lectura.
+permissions:
+  contents: write
+
+concurrency:
+  group: calendario
+  cancel-in-progress: false
+
+jobs:
+  calendario:
+    runs-on: ubuntu-latest
+    # Sin esto GitHub deja correr un trabajo hasta SEIS HORAS, y con
+    # `concurrency` sin cancelar, una corrida atascada bloquearía las
+    # siguientes media jornada. Lo normal aquí son segundos.
+    timeout-minutes: 5
+    steps:
+      - name: Traer el código
+        uses: actions/checkout@v4
+
+      - name: Traer los datos
+        uses: actions/checkout@v4
+        with:
+          ref: datos
+          path: datos
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # No hace falta `npm ci`: el publicador solo usa `fetch` y `node:fs`,
+      # que vienen con Node. Instalar dependencias sería medio minuto por nada.
+      - name: Bajar y preparar
+        working-directory: app
+        env:
+          VIGIA_DATOS: ${{ github.workspace }}/datos
+        run: node scripts/publicar-calendario.mjs
+
+      - name: Guardar
+        working-directory: datos
+        run: |
+          git config user.name 'Calendario Nestor Forex Swing'
+          git config user.email 'noreply@anthropic.com'
+          git add estado/calendario.json
+          if git diff --cached --quiet; then
+            echo 'El calendario no cambió desde la última vez.'
+            exit 0
+          fi
+          git commit -m "Calendario $(date -u +'%Y-%m-%d %H:%M UTC')"
+          for i in 1 2 3; do
+            git pull --rebase origin datos && git push origin HEAD:datos && exit 0
+            sleep $((i * 5))
+          done
+          echo 'No se pudo guardar tras 3 intentos.'
+          exit 1

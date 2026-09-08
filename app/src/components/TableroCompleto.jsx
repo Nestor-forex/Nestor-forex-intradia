@@ -7,6 +7,8 @@ import { generarReporteMd, descargarMd } from '../lib/reporte'
 import BarraFuerza from './BarraFuerza'
 import Sparkline from './Sparkline'
 import Glosario from './Glosario'
+import Calendario from './Calendario'
+import { useCalendario } from '../lib/useCalendario'
 
 function Chip({ children, color }) {
   return (
@@ -46,6 +48,7 @@ function RazonList({ items, emptyText }) {
 
 export default function TableroCompleto({ onVolver, onVerSetup, loading, error, sinConfigurar, stale, guardadoEl, monedas, pares, compras, ventas, vigilancia, rangos = [], setups, corte, sesion: sesionDatos }) {
   const { t, locale } = useIdioma()
+  const calendario = useCalendario()
   const fecha = useMemo(() => fmtFechaHoy(locale), [locale])
   // La sesión sale de la hora de la última vela (la calcula el barrido); si
   // todavía no hay datos, se cae al reloj del dispositivo.
@@ -96,6 +99,13 @@ export default function TableroCompleto({ onVolver, onVerSetup, loading, error, 
         </section>
 
         <Glosario />
+
+        {/* ARRIBA DEL TODO a proposito: es lo unico de esta pantalla que caduca
+            en horas. Si hay Fed en tres horas, eso cambia si conviene abrir
+            algo AHORA — y aqui pesa mas que en Swing, porque una operacion de
+            intradia empieza y termina dentro de esas horas. Hay que leerlo
+            antes de mirar ninguna tabla, no despues de haber elegido par. */}
+        <Calendario cal={calendario} />
 
         {sinConfigurar && (
           <div style={{ padding: '14px 18px', border: '1px solid var(--amber)', borderRadius: 6, color: 'var(--amber)', fontSize: 13.5, lineHeight: 1.5 }}>

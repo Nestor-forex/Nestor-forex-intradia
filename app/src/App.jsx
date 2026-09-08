@@ -7,6 +7,7 @@ import Header from './components/Header'
 import BottomNav from './components/BottomNav'
 import BarridoTab from './components/BarridoTab'
 import AvisosCard from './components/AvisosCard'
+import CotizacionesVivo from './components/CotizacionesVivo'
 import HistorialTab from './components/HistorialTab'
 import TableroCompleto from './components/TableroCompleto'
 import SetupDetalle from './components/SetupDetalle'
@@ -190,6 +191,10 @@ export default function App() {
                       aparecen las señales: el aviso es para no tener que
                       volver a esta pantalla a mirar. */}
                   <AvisosCard uid={authUser.uid} />
+                  {/* Debajo de los avisos y no arriba del barrido: el barrido
+                      es lo que se viene a mirar, y esto es una herramienta de
+                      apoyo para el momento de entrar. */}
+                  <CotizacionesVivo />
                 </>
               )}
               {tab === 'diario' && (

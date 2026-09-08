@@ -249,6 +249,30 @@ export default {
     estadoPendiente: 'pending',
   },
 
+  calendario: {
+    titulo: (v) => `News that can move price (${v.n})`,
+    aviso: (v) => `${v.div}: major release in ${v.h} h`,
+    intro: 'Economic releases that can move price sharply. They do not change any of the app signals: they are here so you know when not to be entering blind.',
+    alto: 'Moves a lot',
+    medio: 'Moves somewhat',
+    festivo: 'Holiday',
+    cat: {
+      tipos: 'Interest rates',
+      inflacion: 'Inflation',
+      empleo: 'Jobs',
+      crecimiento: 'Growth',
+      ventas: 'Retail sales',
+      actividad: 'Business activity',
+      comercio: 'Foreign trade',
+      discurso: 'A central banker speaks',
+      festivo: 'Holiday: less movement',
+    },
+    cuantos: (v) => `Showing the ${v.n} due in the next 48 hours. There are ${v.total} this week in total.`,
+    previsto: 'forecast',
+    anterior: 'previous',
+    viejo: 'This calendar has not been updated in over a day. Something upcoming may be missing.',
+    pie: 'Only high and medium impact releases for the 8 currencies of the scan are shown; low impact ones are left out because they would bury the ones that matter. Times are your phone’s. Source: ForexFactory.',
+  },
   glosario: {
     titulo: 'What do these terms mean?',
     terminos: [
@@ -339,6 +363,19 @@ export default {
     soloExactas: 'USD pairs only',
   },
 
+  vivo: {
+    titulo: 'What it costs to open the trade',
+    desc: (v) => `Bid and ask straight from MetaTrader 5. It is the only thing that shows the REAL spread the broker charges — the scan above works on candles and cannot know it. ⚠️ These are from ${v.cuenta}: if your broker is another one, your numbers will differ.`,
+    cuentaGenerica: 'a live account',
+    cargando: 'Fetching the latest prices…',
+    sinDatos: 'No broker prices yet. The bridge publishes them only while the computer running MetaTrader 5 is switched on.',
+    vieja: (v) => `These prices were taken over ${v.h} h ago. The bridge was off; treat them as a reference, not as the price right now.`,
+    par: 'Pair',
+    bid: 'Bid',
+    ask: 'Ask',
+    spread: 'Spread',
+    pie: (v) => `Spread in pips, amber above 3. Taken on ${v.hora}.`,
+  },
   errores: {
     'auth/email-already-in-use': 'That email already has an account. Try "Sign in".',
     'auth/invalid-email': 'That email does not look valid.',

@@ -244,6 +244,30 @@ export default {
     estadoPendiente: '保留中',
   },
 
+  calendario: {
+    titulo: (v) => `価格を動かしうるニュース（${v.n}）`,
+    aviso: (v) => `${v.div}：${v.h} 時間後に重要指標`,
+    intro: '価格が急に動く可能性のある経済指標です。アプリのシグナルは一切変わりません。何時に手探りで入らないほうがよいかを知るためにあります。',
+    alto: '大きく動く',
+    medio: 'やや動く',
+    festivo: '休場',
+    cat: {
+      tipos: '政策金利',
+      inflacion: '物価',
+      empleo: '雇用',
+      crecimiento: '経済成長',
+      ventas: '小売売上',
+      actividad: '企業活動',
+      comercio: '貿易',
+      discurso: '中央銀行関係者の発言',
+      festivo: '休場：値動きが薄い',
+    },
+    cuantos: (v) => `今後48時間の ${v.n} 件を表示しています。今週は全部で ${v.total} 件です。`,
+    previsto: '予想',
+    anterior: '前回',
+    viejo: 'このカレンダーは1日以上更新されていません。これから出るものが抜けている可能性があります。',
+    pie: 'スキャン対象8通貨の重要度「高」と「中」の指標だけを表示します。「低」は本当に重要なものを埋もれさせるので省いています。時刻はお使いの端末のものです。出典：ForexFactory。',
+  },
   glosario: {
     titulo: 'これらの用語の意味は？',
     terminos: [
@@ -333,6 +357,19 @@ export default {
     soloExactas: '米ドルのペアのみ',
   },
 
+  vivo: {
+    titulo: '取引を開くのにかかる費用',
+    desc: (v) => `MetaTrader 5 から直接取得した売値と買値です。ブローカーが実際に取るスプレッドがわかるのはここだけで、上のスキャンはローソク足を使うので知りようがありません。⚠️ ${v.cuenta}のものです。別のブローカーなら数字は変わります。`,
+    cuentaGenerica: 'リアル口座',
+    cargando: '最新の価格を取得中…',
+    sinDatos: 'まだブローカーの価格がありません。MetaTrader 5 を動かしているパソコンがついている間だけ、ブリッジが公開します。',
+    vieja: (v) => `この価格は ${v.h} 時間以上前のものです。ブリッジが止まっていました。参考値であって、今の価格ではありません。`,
+    par: '通貨ペア',
+    bid: 'Bid',
+    ask: 'Ask',
+    spread: 'スプレッド',
+    pie: (v) => `スプレッドは pip 表示、3 を超えると琥珀色。取得: ${v.hora}。`,
+  },
   errores: {
     'auth/email-already-in-use': 'このメールアドレスは既に登録されています。「ログイン」をお試しください。',
     'auth/invalid-email': 'このメールアドレスは正しくないようです。',

@@ -249,6 +249,30 @@ export default {
     estadoPendiente: 'offen',
   },
 
+  calendario: {
+    titulo: (v) => `Nachrichten, die den Kurs bewegen können (${v.n})`,
+    aviso: (v) => `${v.div}: wichtiger Termin in ${v.h} Std.`,
+    intro: 'Wirtschaftsdaten, die den Kurs schlagartig bewegen können. Sie ändern kein Signal der App: Sie stehen hier, damit Sie wissen, wann man nicht blind einsteigen sollte.',
+    alto: 'Bewegt stark',
+    medio: 'Bewegt etwas',
+    festivo: 'Feiertag',
+    cat: {
+      tipos: 'Zinsen',
+      inflacion: 'Inflation',
+      empleo: 'Arbeitsmarkt',
+      crecimiento: 'Wachstum',
+      ventas: 'Einzelhandel',
+      actividad: 'Unternehmensaktivität',
+      comercio: 'Außenhandel',
+      discurso: 'Ein Notenbanker spricht',
+      festivo: 'Feiertag: weniger Bewegung',
+    },
+    cuantos: (v) => `Gezeigt werden die ${v.n} der nächsten 48 Stunden. Diese Woche gibt es insgesamt ${v.total}.`,
+    previsto: 'Prognose',
+    anterior: 'zuvor',
+    viejo: 'Dieser Kalender wurde seit über einem Tag nicht aktualisiert. Es könnte etwas fehlen.',
+    pie: 'Gezeigt werden nur Termine mit hoher und mittlerer Wirkung für die 8 Währungen des Scans; geringe Wirkung bleibt außen vor, weil sie die wichtigen überdecken würde. Die Zeiten sind die Ihres Telefons. Quelle: ForexFactory.',
+  },
   glosario: {
     titulo: 'Was bedeuten diese Begriffe?',
     terminos: [
@@ -339,6 +363,19 @@ export default {
     soloExactas: 'Nur USD-Paare',
   },
 
+  vivo: {
+    titulo: 'Was die Eröffnung kostet',
+    desc: (v) => `Geld- und Briefkurs direkt aus MetaTrader 5. Nur das zeigt den ECHTEN Spread, den der Broker nimmt — der Scan oben arbeitet mit Kerzen und kennt ihn nicht. ⚠️ Sie stammen von ${v.cuenta}: bei einem anderen Broker sind Ihre Zahlen andere.`,
+    cuentaGenerica: 'einem Echtgeldkonto',
+    cargando: 'Aktuelle Kurse werden geholt…',
+    sinDatos: 'Noch keine Broker-Kurse. Die Brücke veröffentlicht sie nur, solange der Rechner mit MetaTrader 5 eingeschaltet ist.',
+    vieja: (v) => `Diese Kurse sind über ${v.h} Std. alt. Die Brücke war aus; nehmen Sie sie als Anhaltspunkt, nicht als aktuellen Kurs.`,
+    par: 'Paar',
+    bid: 'Geld',
+    ask: 'Brief',
+    spread: 'Spread',
+    pie: (v) => `Spread in Pips, ab 3 in Bernstein. Aufgenommen am ${v.hora}.`,
+  },
   errores: {
     'auth/email-already-in-use': 'Diese E-Mail hat bereits ein Konto. Versuche es mit "Anmelden".',
     'auth/invalid-email': 'Diese E-Mail sieht nicht gültig aus.',

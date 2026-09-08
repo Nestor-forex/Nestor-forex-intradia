@@ -249,6 +249,30 @@ export default {
     estadoPendiente: 'en attente',
   },
 
+  calendario: {
+    titulo: (v) => `Nouvelles qui peuvent bouger le prix (${v.n})`,
+    aviso: (v) => `${v.div} : donnée importante dans ${v.h} h`,
+    intro: 'Données économiques qui peuvent faire bouger le prix d\'un coup. Elles ne changent aucun signal de l\'application : elles sont là pour que vous sachiez à quelle heure il vaut mieux ne pas entrer à l\'aveugle.',
+    alto: 'Bouge beaucoup',
+    medio: 'Bouge un peu',
+    festivo: 'Férié',
+    cat: {
+      tipos: 'Taux d\'intérêt',
+      inflacion: 'Inflation',
+      empleo: 'Emploi',
+      crecimiento: 'Croissance',
+      ventas: 'Ventes au détail',
+      actividad: 'Activité des entreprises',
+      comercio: 'Commerce extérieur',
+      discurso: 'Un banquier central parle',
+      festivo: 'Férié : moins de mouvement',
+    },
+    cuantos: (v) => `On affiche les ${v.n} des 48 prochaines heures. Cette semaine il y en a ${v.total} au total.`,
+    previsto: 'prévu',
+    anterior: 'précédent',
+    viejo: 'Ce calendrier n\'a pas été mis à jour depuis plus d\'un jour. Il peut manquer quelque chose.',
+    pie: 'Seules les données à fort et moyen impact des 8 devises du balayage sont affichées ; celles à faible impact sont écartées car elles masqueraient celles qui comptent. Les heures sont celles de votre téléphone. Source : ForexFactory.',
+  },
   glosario: {
     titulo: 'Que veulent dire ces termes ?',
     terminos: [
@@ -339,6 +363,19 @@ export default {
     soloExactas: 'Paires en USD uniquement',
   },
 
+  vivo: {
+    titulo: 'Ce que coûte l\'ouverture',
+    desc: (v) => `Prix d'achat et de vente directement depuis MetaTrader 5. C'est la seule chose qui montre le spread RÉEL que prend le courtier — le balayage ci-dessus travaille sur des bougies et ne le sait pas. ⚠️ Ils viennent de ${v.cuenta} : si votre courtier est un autre, vos chiffres seront différents.`,
+    cuentaGenerica: 'un compte réel',
+    cargando: 'Récupération des derniers prix…',
+    sinDatos: 'Pas encore de prix du courtier. Le pont ne les publie que pendant que l\'ordinateur qui fait tourner MetaTrader 5 est allumé.',
+    vieja: (v) => `Ces prix ont été relevés il y a plus de ${v.h} h. Le pont était éteint ; à prendre comme référence, pas comme prix actuel.`,
+    par: 'Paire',
+    bid: 'Achat',
+    ask: 'Vente',
+    spread: 'Spread',
+    pie: (v) => `Spread en pips, en ambre au-dessus de 3. Relevé le ${v.hora}.`,
+  },
   errores: {
     'auth/email-already-in-use': 'Cet e-mail a déjà un compte. Essaie « Se connecter ».',
     'auth/invalid-email': "Cet e-mail ne semble pas valide.",
