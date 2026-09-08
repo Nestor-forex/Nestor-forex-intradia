@@ -241,6 +241,30 @@ export default {
     estadoPendiente: '待批准',
   },
 
+  calendario: {
+    titulo: (v) => `可能撼动价格的消息（${v.n}）`,
+    aviso: (v) => `${v.div}：${v.h} 小时后有重要数据`,
+    intro: '可能让价格突然波动的经济数据。它们不会改变应用里的任何信号：放在这里是让你知道什么时候不该盲目进场。',
+    alto: '波动大',
+    medio: '波动中等',
+    festivo: '假日',
+    cat: {
+      tipos: '利率',
+      inflacion: '通胀',
+      empleo: '就业',
+      crecimiento: '经济增长',
+      ventas: '零售销售',
+      actividad: '企业活动',
+      comercio: '对外贸易',
+      discurso: '央行官员讲话',
+      festivo: '假日：行情较淡',
+    },
+    cuantos: (v) => `显示未来 48 小时内的 ${v.n} 条。本周共有 ${v.total} 条。`,
+    previsto: '预期',
+    anterior: '前值',
+    viejo: '这份日历已经超过一天没有更新，可能漏掉了即将公布的内容。',
+    pie: '只显示扫描所涉 8 种货币的高影响和中影响数据；低影响的略去，因为它们会把真正重要的那几条埋掉。时间按你手机的时区显示。来源：ForexFactory。',
+  },
   glosario: {
     titulo: '这些术语是什么意思？',
     terminos: [
@@ -330,6 +354,19 @@ export default {
     soloExactas: '仅美元货币对',
   },
 
+  vivo: {
+    titulo: '开仓要花多少',
+    desc: (v) => `直接来自 MetaTrader 5 的买价和卖价。只有这里能看到经纪商实际收取的真实点差——上面的扫描用的是K线，看不到这个。⚠️ 这些来自${v.cuenta}：如果你用别的经纪商，你的数字会不一样。`,
+    cuentaGenerica: '一个真实账户',
+    cargando: '正在获取最新价格…',
+    sinDatos: '还没有经纪商的价格。只有运行 MetaTrader 5 的那台电脑开着时，桥才会发布。',
+    vieja: (v) => `这些价格是 ${v.h} 小时以前的。当时桥是关的；仅供参考，不是当前价。`,
+    par: '货币对',
+    bid: '买价',
+    ask: '卖价',
+    spread: '点差',
+    pie: (v) => `点差以点为单位，超过 3 显示为琥珀色。采集于 ${v.hora}。`,
+  },
   errores: {
     'auth/email-already-in-use': '该邮箱已注册。请尝试“登录”。',
     'auth/invalid-email': '该邮箱格式似乎不正确。',

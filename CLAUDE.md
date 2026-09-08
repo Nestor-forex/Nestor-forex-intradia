@@ -1570,3 +1570,91 @@ vigía ve la del día anterior cerrada más la de hoy a medias. Sigue siendo lo
 correcto —no juzgar con una vela sin terminar— pero por otro motivo.
 
 📌 Es el mismo patrón del día: **al cambiar algo, mirar también quién lo NOMBRA.**
+
+---
+
+# Calendario económico y spread real del bróker (2026-09-08)
+
+Las dos cosas se hicieron primero en Swing ese mismo día y se portan aquí.
+Néstor lo pidió al ver que el trabajo del día había ido solo a la app hermana.
+
+```
+src/lib/calendario.js            # las cuentas puras (GEMELO)
+src/components/Calendario.jsx    # la tarjeta, arriba del tablero (GEMELO)
+src/lib/useCalendario.js         # la baja de la rama `datos` de ESTE repo (PRIMO)
+scripts/publicar-calendario.mjs  # baja el feed y publica (GEMELO)
+scripts/prueba-calendario.mjs    # 55 comprobaciones, sin internet (GEMELO)
+.github/workflows/calendario.yml # cada 4 h, TODOS los días
+src/lib/useMT5Quotes.js          # lee el archivo del puente (GEMELO)
+src/components/CotizacionesVivo.jsx  # la tabla de bid/ask/spread (GEMELO)
+scripts/prueba-mt5.mjs           # (PRIMO: aquí sin el bloque del puente)
+```
+
+## Por qué el calendario importa MÁS aquí que en Swing
+
+En Swing una operación dura días y un dato de las 8:30 es un detalle del
+camino. Aquí una operación empieza y termina **dentro** de esas horas: si hay
+Fed en tres horas, eso cambia si conviene abrir algo ahora. La tarjeta va
+arriba del todo del tablero por eso.
+
+⚠️ **ES INFORMACIÓN, NO UN FILTRO.** No apaga ni una señal. Si algún día se
+quiere «no operar dos horas antes de una noticia», eso es un filtro y va al
+banco de pruebas primero — la misma distinción de la fase de información.
+
+## Las dos decisiones que se dejaron IGUALES que en Swing, a propósito
+
+Las dos podrían haber divergido, y por eso queda escrito por qué no lo hacen:
+
+1. **Se sigue tirando el impacto bajo.** En velas de una hora esos datos SÍ
+   mueven algo, así que la tentación era dejarlos. Pero el motivo de quitarlos
+   no es que no muevan el precio: es que **treinta líneas de ruido tapan las
+   dos que importan** en la pantalla de un teléfono. Eso vale igual aquí.
+2. **La vista sigue siendo de 48 horas.** No mide cuánto dura una operación:
+   mide hasta dónde se ve venir algo.
+
+Ninguna de las dos es una decisión de trading —el calendario no toca las
+señales—, son de qué se enseña. Por eso `calendario.js` puede ser gemelo.
+
+## ⚠️ EL PUENTE ES UNO, Y VIVE EN EL REPOSITORIO DE SWING
+
+`useMT5Quotes.js` lee
+`raw.githubusercontent.com/Nestor-forex/Nestor-forex/datos/estado/mt5.json`
+—la rama `datos` de **Swing**—, y eso no es un descuido: `puente-mt5/` está
+allí y publica **los 18 pares** (los 14 de Swing más los 4 que solo usa esta
+app) en un único archivo. Cada app filtra los suyos con su `PAIR_NAMES`. Dos
+puentes serían dos programas que Néstor tendría que arrancar cada mañana.
+
+⚠️ **Si algún día Intradía cambia sus pares, hay que tocar `SYMBOLS` en
+`puente-mt5/bridge_mt5.py` del repositorio de Swing.** No lo caza ninguna
+comprobación de aquí. En Swing sí hay una (`prueba-mt5.mjs`, bloque 7) que
+compara los símbolos del puente contra los pares de las dos apps — con los 4
+de esta escritos a mano, porque esa prueba corre sin red.
+
+📌 Ese bloque nació de un error real del mismo día: los 4 pares de Intradía se
+habían escrito de memoria en el puente y dos estaban mal (iban EUR/JPY y
+CAD/JPY, faltaban NZD/JPY y AUD/NZD). Nada falló — el puente publicaba 18
+pares con precios reales y la cuenta cuadraba.
+
+## Lo que NO se portó, y por qué
+
+- **La correlación entre pares.** Su ventana son 60 sesiones, que aquí son 60
+  HORAS: dos días y medio. Elegir la ventana de intradía pide mirar SUS datos,
+  no copiar el número de Swing. Es la regla de oro del proyecto.
+- **El clima del par** y **las mediciones en pantalla**: ya estaban decididos
+  como PRIMOS de solo-Swing, por los umbrales y porque los números son de cada
+  app.
+
+## Cómo se verificó
+
+Lint, build y las 18 pruebas sin internet (solo falla `prueba-aviso-real`, que
+pide el secreto VAPID). Comprobado por máquina que todas las claves de i18n que
+usan los dos componentes existen en los 13 diccionarios, incluidas las nueve
+categorías y los tres niveles de impacto: un `t()` sin clave no da error, sale
+en blanco.
+
+Y en **Chromium**, componente aislado (las dos tarjetas están detrás de
+Firebase), con el `calendario.json` y el `mt5.json` **reales de producción**, en
+cargas de página separadas: español y **árabe** (códigos de par y números en
+`ltr`, comprobado con el CSS calculado), calendario vacío y nulo (**no pintan
+absolutamente nada**), y puente apagado («Todavía no hay precios del bróker»,
+sin mensaje rojo). Cero errores de consola.

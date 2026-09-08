@@ -287,6 +287,30 @@ export default {
     estadoPendiente: 'pendiente',
   },
 
+  calendario: {
+    titulo: (v) => `Noticias que pueden mover el precio (${v.n})`,
+    aviso: (v) => `${v.div}: dato importante en ${v.h} h`,
+    intro: 'Datos económicos que pueden mover el precio de golpe. No cambian ninguna señal de la app: están aquí para que sepas a qué hora conviene no estar entrando a ciegas.',
+    alto: 'Mueve mucho',
+    medio: 'Mueve algo',
+    festivo: 'Festivo',
+    cat: {
+      tipos: 'Tipos de interés',
+      inflacion: 'Inflación',
+      empleo: 'Empleo',
+      crecimiento: 'Crecimiento',
+      ventas: 'Ventas',
+      actividad: 'Actividad de las empresas',
+      comercio: 'Comercio exterior',
+      discurso: 'Habla un banquero central',
+      festivo: 'Festivo: menos movimiento',
+    },
+    cuantos: (v) => `Se muestran los ${v.n} de las próximas 48 horas. Esta semana hay ${v.total} en total.`,
+    previsto: 'previsto',
+    anterior: 'anterior',
+    viejo: 'Este calendario lleva más de un día sin actualizarse. Puede que falte algo de lo que viene.',
+    pie: 'Solo se muestran los datos de impacto alto y medio de las 8 divisas del barrido; los de impacto bajo se omiten porque taparían los que sí importan. Las horas son las de tu teléfono. Fuente: ForexFactory.',
+  },
   glosario: {
     titulo: '¿Qué significan estos términos?',
     terminos: [
@@ -378,6 +402,22 @@ export default {
     soloExactas: 'Solo pares contra el dólar',
   },
 
+  // Precios en vivo del bróker (puente de MetaTrader 5). Ojo: Bid, Ask, Spread
+  // y Pip NO se traducen en ningún idioma — son los nombres que usa cualquier
+  // plataforma de trading, y cambiarlos confundiría más de lo que ayudaría.
+  vivo: {
+    titulo: 'Lo que cuesta abrir la operación',
+    desc: (v) => `Precio de compra y de venta directo de MetaTrader 5. Es lo único que muestra el spread REAL que cobra el bróker — el barrido de arriba trabaja con velas y no lo sabe. ⚠️ Son los de ${v.cuenta}: si tu bróker es otro, tus números serán distintos.`,
+    cuentaGenerica: 'una cuenta real',
+    cargando: 'Buscando los últimos precios…',
+    sinDatos: 'Todavía no hay precios del bróker. El puente los publica solo mientras el computador donde corre MetaTrader 5 está encendido.',
+    vieja: (v) => `Estos precios se tomaron hace más de ${v.h} h. El puente estaba apagado; sirven de referencia, no como precio de ahora.`,
+    par: 'Par',
+    bid: 'Compra',
+    ask: 'Venta',
+    spread: 'Spread',
+    pie: (v) => `Spread en pips, en ámbar si pasa de 3. Tomado el ${v.hora}.`,
+  },
   errores: {
     'auth/email-already-in-use': 'Ese correo ya tiene una cuenta. Prueba en "Ingresar".',
     'auth/invalid-email': 'Ese correo no parece válido.',

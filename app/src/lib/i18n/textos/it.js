@@ -245,6 +245,30 @@ export default {
     estadoPendiente: 'in attesa',
   },
 
+  calendario: {
+    titulo: (v) => `Notizie che possono muovere il prezzo (${v.n})`,
+    aviso: (v) => `${v.div}: dato importante tra ${v.h} h`,
+    intro: 'Dati economici che possono muovere il prezzo di colpo. Non cambiano nessun segnale dell\'app: stanno qui perché tu sappia a che ora conviene non entrare alla cieca.',
+    alto: 'Muove molto',
+    medio: 'Muove un po’',
+    festivo: 'Festivo',
+    cat: {
+      tipos: 'Tassi di interesse',
+      inflacion: 'Inflazione',
+      empleo: 'Occupazione',
+      crecimiento: 'Crescita',
+      ventas: 'Vendite al dettaglio',
+      actividad: 'Attività delle imprese',
+      comercio: 'Commercio estero',
+      discurso: 'Parla un banchiere centrale',
+      festivo: 'Festivo: meno movimento',
+    },
+    cuantos: (v) => `Si mostrano i ${v.n} delle prossime 48 ore. Questa settimana ce ne sono ${v.total} in tutto.`,
+    previsto: 'previsto',
+    anterior: 'precedente',
+    viejo: 'Questo calendario non si aggiorna da più di un giorno. Potrebbe mancare qualcosa.',
+    pie: 'Si mostrano solo i dati ad alto e medio impatto delle 8 valute della scansione; quelli a basso impatto restano fuori perché coprirebbero quelli che contano. Gli orari sono quelli del tuo telefono. Fonte: ForexFactory.',
+  },
   glosario: {
     titulo: 'Cosa significano questi termini?',
     terminos: [
@@ -335,6 +359,19 @@ export default {
     soloExactas: 'Solo coppie in USD',
   },
 
+  vivo: {
+    titulo: 'Quanto costa aprire l\'operazione',
+    desc: (v) => `Prezzo di acquisto e di vendita direttamente da MetaTrader 5. È l'unica cosa che mostra lo spread REALE che applica il broker — la scansione qui sopra lavora su candele e non lo sa. ⚠️ Sono quelli di ${v.cuenta}: se il tuo broker è un altro, i tuoi numeri saranno diversi.`,
+    cuentaGenerica: 'un conto reale',
+    cargando: 'Recupero degli ultimi prezzi…',
+    sinDatos: 'Ancora nessun prezzo del broker. Il ponte li pubblica solo mentre il computer su cui gira MetaTrader 5 è acceso.',
+    vieja: (v) => `Questi prezzi sono di oltre ${v.h} h fa. Il ponte era spento; valgono come riferimento, non come prezzo di adesso.`,
+    par: 'Coppia',
+    bid: 'Acquisto',
+    ask: 'Vendita',
+    spread: 'Spread',
+    pie: (v) => `Spread in pip, in ambra sopra 3. Rilevato il ${v.hora}.`,
+  },
   errores: {
     'auth/email-already-in-use': 'Questa e-mail ha già un account. Prova con "Accedi".',
     'auth/invalid-email': 'Questa e-mail non sembra valida.',
