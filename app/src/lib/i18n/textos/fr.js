@@ -379,6 +379,21 @@ export default {
       "Activité : combien de fois le prix a changé aujourd'hui, selon ce courtier. Elle ne dit NI dans quel sens NI de combien : une paire peut changer 8 000 fois et finir là où elle a commencé. Ce n'est pas non plus du volume — il n'en existe pas de réel sur le Forex, car aucune bourse centrale ne l'enregistre. Compare les paires entre elles à cet instant, pas les journées entre elles : la journée est à moitié faite.",
     pie: (v) => `Spread en pips, en ambre au-dessus de 3. Relevé le ${v.hora}.`,
   },
+  tasas: {
+    titulo: 'Ce que coûte de la garder ouverte',
+    aviso:
+      "⚠️ Ce n'est PAS le swap que ton courtier va te facturer. C'est l'écart entre les taux des banques centrales, d'où le swap PROVIENT. Ton courtier y ajoute une marge que personne ne publie, et elle est inégale : dans un sens tu paies, dans l'autre tu encaisses parfois, mais presque jamais autant. Cela donne le sens et l'ordre de grandeur, pas le montant.",
+    intro:
+      "La devise de gauche de la paire paie cet écart par an face à celle de droite. Plus c'est haut dans la liste, plus il pèse de garder cette position ouverte nuit après nuit.",
+    lado: {
+      compra: 'Joue en général en ta faveur si tu achètes',
+      venta: 'Joue en général en ta faveur si tu vends',
+      neutro: 'Presque le même taux : cela pèse à peine',
+    },
+    cabeceraSueltas: 'Taux de chaque banque centrale',
+    pie: (v) => `Source : BIS (Banque des règlements internationaux). Chaque ligne affiche la date de SA donnée : un taux directeur ne change que le jour où la banque centrale se réunit. La plus ancienne date de ${v.dias} jours.`,
+  },
+
   errores: {
     'auth/email-already-in-use': 'Cet e-mail a déjà un compte. Essaie « Se connecter ».',
     'auth/invalid-email': "Cet e-mail ne semble pas valide.",

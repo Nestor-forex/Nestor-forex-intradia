@@ -421,6 +421,21 @@ export default {
       'Actividad: cuántas veces cambió el precio hoy, según este bróker. NO dice hacia dónde ni cuánto: un par puede cambiar 8.000 veces y acabar donde empezó. Tampoco es volumen — en Forex no existe uno real, porque no hay bolsa central que lo apunte. Compara pares entre sí ahora mismo, no días entre sí: el día va a medias.',
     pie: (v) => `Spread en pips, en ámbar si pasa de 3. Tomado el ${v.hora}.`,
   },
+  tasas: {
+    titulo: 'Lo que cuesta mantenerla abierta',
+    aviso:
+      '⚠️ Esto NO es el swap que te va a cobrar tu bróker. Es la diferencia entre las tasas de los bancos centrales, que es de donde el swap SALE. Tu bróker le suma un margen que no publica nadie y que además es desigual: en una dirección pagas y en la otra a veces cobras, pero casi nunca lo mismo. Sirve para saber el sentido y el tamaño aproximado, no la cifra.',
+    intro:
+      'La divisa de la izquierda del par paga esta diferencia al año respecto a la de la derecha. Cuanto más arriba, más pesa mantener esa operación abierta noche tras noche.',
+    lado: {
+      compra: 'Suele jugar a favor si compras',
+      venta: 'Suele jugar a favor si vendes',
+      neutro: 'Casi la misma tasa: apenas pesa',
+    },
+    cabeceraSueltas: 'Tasa de cada banco central',
+    pie: (v) => `Fuente: BIS (Banco de Pagos Internacionales). Cada fila lleva la fecha de SU dato: una tasa de referencia solo cambia el día que se reúne el banco central. El más antiguo es de hace ${v.dias} días.`,
+  },
+
   errores: {
     'auth/email-already-in-use': 'Ese correo ya tiene una cuenta. Prueba en "Ingresar".',
     'auth/invalid-email': 'Ese correo no parece válido.',

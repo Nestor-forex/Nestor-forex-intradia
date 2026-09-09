@@ -8,6 +8,7 @@ import BottomNav from './components/BottomNav'
 import BarridoTab from './components/BarridoTab'
 import AvisosCard from './components/AvisosCard'
 import CotizacionesVivo from './components/CotizacionesVivo'
+import Tasas from './components/Tasas'
 import HistorialTab from './components/HistorialTab'
 import TableroCompleto from './components/TableroCompleto'
 import SetupDetalle from './components/SetupDetalle'
@@ -195,6 +196,16 @@ export default function App() {
                       es lo que se viene a mirar, y esto es una herramienta de
                       apoyo para el momento de entrar. */}
                   <CotizacionesVivo />
+                  {/* Justo DEBAJO de las cotizaciones, y no en el tablero:
+                      son las dos mitades del peaje. Aquella enseña el spread,
+                      que se paga UNA VEZ al entrar; ésta, de dónde sale lo que
+                      se paga (o se cobra) CADA NOCHE que siga abierta.
+
+                      ⚠️ Y aquí NO sobra por llamarse Intradía: está medido que
+                      el 52 % de las operaciones reales de esta app cruzaron al
+                      menos una noche (Fase 2, 2026-09-02). La intención era no
+                      pagar swap; lo que pasa de verdad es otra cosa. */}
+                  <Tasas />
                 </>
               )}
               {tab === 'diario' && (
