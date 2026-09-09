@@ -1791,3 +1791,13 @@ porque el suscriptor que se lo pregunte mañana no tiene a nadie al lado. Igual
 que con el calendario el 2026-09-08.
 
 📌 El texto largo para suscriptores está en el `CLAUDE.md` de Swing.
+
+📌 **La versión ampliada de esa explicación** —la comparación de la tienda, el
+matiz de que mucha actividad no es «mejor» (sostenida estrecha el spread, de
+golpe por una noticia lo abre), y el porqué de que el aviso vaya PRIMERO— está
+guardada en el `CLAUDE.md` de Swing, bajo «La actividad, versión ampliada para
+suscriptores». Vale igual para esta app.
+
+⚠️ Con una diferencia que aquí pesa MÁS: en velas de una hora, la actividad de
+golpe por una noticia cae dentro de la misma operación. Por eso la tarjeta del
+calendario está arriba del tablero en esta app y no es adorno.
