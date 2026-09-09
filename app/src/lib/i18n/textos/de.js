@@ -92,7 +92,7 @@ export default {
       '1-2 % des Kapitals pro Trade. Mehrere Positionen in derselben Währung sind keine unabhängigen Trades — sie sind eine einzige, größere Wette.',
     limitacionesTitulo: 'Einschränkungen:',
     limitaciones:
-      '1-Stunden-Kerzen mit echtem Hoch, Tief und Schlusskurs: der ATR ist ein echter Wilder-ATR und die Pivot-Punkte nutzen das reale Hoch und Tief der letzten 24 Stunden. Bei den Cross-Paaren (ohne Dollar) wird die Spanne aus den beiden Dollar-Paaren abgeleitet und fällt daher etwas weiter aus als die echte. Ohne MT5-Daten gibt es kein Tick Volume und keinen echten Broker-Spread — die Liquidität wird qualitativ geschätzt.',
+      '1-Stunden-Kerzen mit echtem Hoch, Tief und Schlusskurs: der ATR ist ein echter Wilder-ATR und die Pivot-Punkte nutzen das reale Hoch und Tief der letzten 24 Stunden. Bei den Cross-Paaren (ohne Dollar) wird die Spanne aus den beiden Dollar-Paaren abgeleitet und fällt daher etwas weiter aus als die echte. Der Scan nutzt weder Tick Volume noch den Broker-Spread — die Liquidität wird qualitativ geschätzt. Der ECHTE Broker-Spread wird separat angezeigt, solange die MT5-Brücke läuft.',
     educativo: 'Bildungsanalyse, keine persönliche Finanzberatung. Forex-Handel birgt Verlustrisiko.',
     descargarMd: '↓ Bericht als .md herunterladen',
     pieFuerza: 'Gewichteter Durchschnitt der prozentualen Veränderung jeder Währung gegenüber den anderen 7 (1h 20%, 4h 40%, 24h 40%), auf 0-10 skaliert.',

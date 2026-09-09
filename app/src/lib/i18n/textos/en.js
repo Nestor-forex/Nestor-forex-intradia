@@ -92,7 +92,7 @@ export default {
       '1-2% of capital per trade. Several positions in the same currency are not independent trades — they are a single, larger bet.',
     limitacionesTitulo: 'Limitations:',
     limitaciones:
-      '1-hour candles with real high, low and close: the ATR is a true Wilder ATR and the pivot points use the real high and low of the previous 24 hours. On crosses (the pairs without the dollar) the range is derived from the two dollar pairs, so it comes out slightly wider than the real one. Without MT5 data there is no tick volume or real broker spread — liquidity is estimated qualitatively.',
+      '1-hour candles with real high, low and close: the ATR is a true Wilder ATR and the pivot points use the real high and low of the previous 24 hours. On crosses (the pairs without the dollar) the range is derived from the two dollar pairs, so it comes out slightly wider than the real one. The scan does not use tick volume or the broker spread — liquidity is estimated qualitatively. The REAL broker spread is shown separately, while the MT5 bridge is running.',
     educativo: 'Educational analysis, not personalized financial advice. Trading Forex carries risk of loss.',
     descargarMd: '↓ Download .md report',
     pieFuerza: "Weighted average of each currency's % change against the other 7 (1h 20%, 4h 40%, 24h 40%), rescaled 0-10.",

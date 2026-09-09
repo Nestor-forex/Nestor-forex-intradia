@@ -92,7 +92,7 @@ export default {
       "1-2 % du capital par opération. Plusieurs positions sur la même devise ne sont pas des opérations indépendantes — c'est un seul pari, en plus gros.",
     limitacionesTitulo: 'Limites :',
     limitaciones:
-      "Bougies de 1 heure avec plus haut, plus bas et clôture réels : l'ATR est un véritable ATR de Wilder et les points pivots utilisent le plus haut et le plus bas réels des 24 heures précédentes. Sur les paires croisées (sans dollar), la plage est dérivée des deux paires en dollar, elle ressort donc un peu plus large que la vraie. Sans données MT5, il n'y a ni tick volume ni spread réel du courtier — la liquidité est estimée qualitativement.",
+      "Bougies de 1 heure avec plus haut, plus bas et clôture réels : l'ATR est un véritable ATR de Wilder et les points pivots utilisent le plus haut et le plus bas réels des 24 heures précédentes. Sur les paires croisées (sans dollar), la plage est dérivée des deux paires en dollar, elle ressort donc un peu plus large que la vraie. Le balayage n'utilise ni tick volume ni le spread du courtier — la liquidité est estimée qualitativement. Le spread RÉEL du courtier est affiché à part, tant que le pont MT5 est allumé.",
     educativo: 'Analyse éducative, pas un conseil financier personnalisé. Trader le Forex comporte un risque de perte.',
     descargarMd: '↓ Télécharger le rapport .md',
     pieFuerza: 'Moyenne pondérée de la variation en % de chaque devise face aux 7 autres (1h 20%, 4h 40%, 24h 40%), ramenée à 0-10.',
