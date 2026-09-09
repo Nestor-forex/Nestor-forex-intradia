@@ -374,6 +374,9 @@ export default {
     bid: 'Bid',
     ask: 'Ask',
     spread: 'Spread',
+    actividad: 'Activity',
+    actividadPie:
+      'Activity: how many times the price changed today, according to this broker. It does NOT say which way or how far: a pair can change 8,000 times and end where it started. Nor is it volume — no real volume exists in Forex, because there is no central exchange to record it. Compare pairs with each other right now, not days with each other: the day is only half done.',
     pie: (v) => `Spread in pips, amber above 3. Taken on ${v.hora}.`,
   },
   errores: {

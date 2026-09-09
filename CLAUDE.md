@@ -1702,3 +1702,102 @@ un `replace` a ciegas los habría dejado viejos en silencio.
 
 ⚠️ Estos archivos son PRIMOS (cada app tiene sus textos), así que **no hace
 falta que las dos frases sean idénticas** — pero sí que las dos sean verdad.
+
+---
+
+# La actividad (tick volume) ya se ve en pantalla (2026-09-09). En las dos apps
+
+Néstor: **«el tick volume se está publicando cada 15 minutos y no lo mira
+nadie… quiero que esto lo mostremos en las apps»**. Tenía razón: el puente lo
+publicaba desde el 2026-09-08 y no lo pintaba ninguna pantalla.
+
+Cambio **emparejado y GEMELO**: `CotizacionesVivo.jsx` idéntico en los dos
+repositorios y la misma rama en los dos, más `vivo.actividad` y
+`vivo.actividadPie` en los 13 diccionarios de cada app (los diccionarios son
+PRIMOS, así que cada uno lleva su propio texto).
+
+Una quinta columna en la tarjeta «Lo que cuesta abrir la operación»: el número
+y una barrita con la proporción respecto al par más activo de **esa misma
+lectura**, más el rótulo honesto debajo.
+
+## Las cuatro decisiones que no hay que ablandar
+
+⚠️ **No se llama «volumen» en ninguna parte.** Se llama ACTIVIDAD. En Forex no
+existe un volumen real —no hay bolsa central que apunte las operaciones—, así
+que nadie tiene el total. El dato no es basura; **el problema sería el rótulo**.
+
+⚠️ **Solo compara pares entre sí, nunca días entre sí.** Es el `tick_volume` de
+la vela diaria EN CURSO del bróker y crece hasta el cierre, así que la barra se
+mide contra el par más activo de esa lectura y no contra nada anterior.
+
+⚠️ **La barra va en color neutro.** Mucha actividad no es buena ni mala, y el
+color afirmaría lo contrario. Antes de pintar algo de color, preguntarse qué
+afirma ese color.
+
+⚠️ **Si NINGÚN par trae actividad, la columna entera desaparece**; si solo
+faltan algunos, sale `—` y no `0` (un cero diría «no se movió», que es una
+afirmación que no podemos hacer).
+
+## 📌 Dos fallos que solo se vieron en el navegador
+
+1. **El separador de miles hacía que el número pareciera un precio**
+   (`toLocaleString` agrupa con punto en español, junto a precios donde el
+   punto es el decimal), y en árabe sacaba cifras árabo-índicas mientras los
+   precios de la misma tabla iban en latinas. Se quitó el separador.
+2. **La barra se leía como un subrayado del número**: el riel iba del ancho del
+   número y casi invisible, así que no había contra qué comparar. Ahora mide
+   siempre 38 px y se ve.
+
+## Cómo se verificó
+
+Chromium, componente aislado, 390 px, con el `mt5.json` **real de producción**,
+en cuatro cargas: español · árabe (pares y números en `ltr`, comprobado con el
+CSS calculado) · sin ningún `ticks` (la columna no existe) · unos sí y otros no
+(salen `—`). Cero errores de consola y `scrollWidth == clientWidth` en los
+cuatro: la quinta columna no obliga a desplazar la pantalla de lado.
+
+⚠️ **La verificación en navegador se hizo en Swing**, porque el componente es
+gemelo exacto y el archivo que lee es el mismo (el puente es UNO y publica en la
+rama `datos` de Swing). Aquí se comprobó lint, build y las 16 pruebas sin
+internet, más que los 46 gemelos siguen idénticos.
+
+📌 **El texto largo para suscriptores explicando qué es la actividad y por qué
+NO es volumen está en el `CLAUDE.md` de Swing** («La actividad, explicada para
+suscriptores»). Es el mismo para las dos apps: vale igual con velas de una hora.
+
+## 📌 El pie ahora dice que la actividad NO tiene dirección (2026-09-09)
+
+Néstor leyó la columna nueva y preguntó: **«¿más para pérdidas o más para
+ganancias? ¿el que más se mueve es el mejor para operarlo?»**
+
+**La pregunta señalaba un error de redacción MÍO en el chat**, no de la app: la
+resumí como «qué par se está moviendo más», y eso suena a distancia y a
+dirección. La actividad no es ninguna de las dos: cuenta VECES. Un par puede
+cambiar 8.000 veces y cerrar donde abrió.
+
+El pie de la columna ahora lo dice **de frente y en primer lugar**, en los 13
+idiomas de las dos apps:
+
+> «NO dice hacia dónde ni cuánto: un par puede cambiar 8.000 veces y acabar
+> donde empezó.»
+
+⚠️ **Va ANTES de la parte del volumen, y el orden no es estético:** la confusión
+que más dinero cuesta es leer actividad como dirección, no confundirla con
+volumen. Lo primero que se lee es lo que se recuerda.
+
+📌 **La regla que deja el día:** cuando Néstor pregunta «¿esto qué me quiere
+decir?», la respuesta no es explicárselo en el chat — es meterlo EN LA PANTALLA,
+porque el suscriptor que se lo pregunte mañana no tiene a nadie al lado. Igual
+que con el calendario el 2026-09-08.
+
+📌 El texto largo para suscriptores está en el `CLAUDE.md` de Swing.
+
+📌 **La versión ampliada de esa explicación** —la comparación de la tienda, el
+matiz de que mucha actividad no es «mejor» (sostenida estrecha el spread, de
+golpe por una noticia lo abre), y el porqué de que el aviso vaya PRIMERO— está
+guardada en el `CLAUDE.md` de Swing, bajo «La actividad, versión ampliada para
+suscriptores». Vale igual para esta app.
+
+⚠️ Con una diferencia que aquí pesa MÁS: en velas de una hora, la actividad de
+golpe por una noticia cae dentro de la misma operación. Por eso la tarjeta del
+calendario está arriba del tablero en esta app y no es adorno.

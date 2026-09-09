@@ -374,6 +374,9 @@ export default {
     bid: 'Geld',
     ask: 'Brief',
     spread: 'Spread',
+    actividad: 'Aktivität',
+    actividadPie:
+      'Aktivität: wie oft sich der Kurs heute geändert hat, laut diesem Broker. Sie sagt NICHT, in welche Richtung oder wie weit: ein Paar kann sich 8.000 Mal ändern und dort enden, wo es angefangen hat. Volumen ist es auch nicht — im Forex gibt es kein echtes, weil keine zentrale Börse es erfasst. Vergleiche Paare jetzt untereinander, nicht Tage miteinander: der Tag ist erst halb vorbei.',
     pie: (v) => `Spread in Pips, ab 3 in Bernstein. Aufgenommen am ${v.hora}.`,
   },
   errores: {

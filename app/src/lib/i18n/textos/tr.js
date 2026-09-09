@@ -369,6 +369,9 @@ export default {
     bid: 'Alış',
     ask: 'Satış',
     spread: 'Spread',
+    actividad: 'Hareket',
+    actividadPie:
+      'Hareket: bu aracı kuruma göre fiyatın bugün kaç kez değiştiği. Yönü de mesafeyi de SÖYLEMEZ: bir parite 8.000 kez değişip başladığı yerde bitebilir. Hacim de değildir — Forex’te gerçek bir hacim yoktur, çünkü onu kaydeden merkezi bir borsa yoktur. Pariteleri şu anda birbiriyle karşılaştır, günleri birbiriyle değil: gün henüz yarısında.',
     pie: (v) => `Spread pip cinsinden, 3'ün üzerinde kehribar rengi. ${v.hora} tarihinde alındı.`,
   },
   errores: {
