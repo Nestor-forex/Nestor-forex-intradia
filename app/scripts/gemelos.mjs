@@ -111,6 +111,20 @@ export const GEMELOS = [
   'src/components/Calendario.jsx',
   'scripts/publicar-calendario.mjs',
   'scripts/prueba-calendario.mjs',
+  // Las tasas de referencia de los bancos centrales. Identicos por la misma
+  // razon que el calendario: son las MISMAS 8 divisas en las dos apps y la
+  // misma fuente (BIS, dataflow WS_CBPOL, en CSV — elegida con la sonda del
+  // 2026-09-09, no leyendo documentacion). Los pares de cada app salen de su
+  // propio `pairs.js`, asi que el archivo no necesita saber en cual esta.
+  //
+  // ⚠️ Y NO es un numero de trading disfrazado: `UMBRAL_NEUTRO` no filtra ni
+  // una senal, solo decide si la pantalla dice «apenas pesa» en vez de un
+  // lado. Sale del margen tipico que el broker suma a la tasa, que es el mismo
+  // broker en las dos apps.
+  'src/lib/tasas.js',
+  'src/components/Tasas.jsx',
+  'scripts/publicar-tasas.mjs',
+  'scripts/prueba-tasas.mjs',
   // El spread real del broker, via el puente de MetaTrader 5. Identicos porque
   // EL PUENTE ES UNO: `puente-mt5/bridge_mt5.py` vive en el repositorio de
   // Swing y publica los 18 pares (los 14 de Swing mas los 4 que solo usa
@@ -189,6 +203,13 @@ export const PRIMOS = {
     'nadie sabría por dónde buscar. Bajar el feed no cuesta ni un crédito, ' +
     'así que la independencia sale gratis. Y la clave de la caché lleva el ' +
     'prefijo de cada app (`clave()`).',
+  'src/lib/useTasas.js':
+    'Mismo motivo que `useCalendario.js`: cada app publica y lee SU propio ' +
+    'archivo de tasas. El contenido es idéntico —las 8 divisas son las ' +
+    'mismas— pero si Intradía leyera el de Swing, un fallo del workflow de ' +
+    'Swing la dejaría sin tasas y nadie sabría dónde buscar. Bajar el CSV del ' +
+    'BIS no cuesta ni un crédito de Twelve Data, así que la independencia ' +
+    'sale gratis. Y la clave de la caché lleva el prefijo de cada app.',
   'scripts/prueba-mt5.mjs':
     'La de Swing tiene un bloque 7 que abre `puente-mt5/bridge_mt5.py` y ' +
     'comprueba que sus símbolos sean exactamente los que usan las dos apps. ' +

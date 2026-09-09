@@ -375,6 +375,21 @@ export default {
       "Attività: quante volte è cambiato il prezzo oggi, secondo questo broker. NON dice in che direzione né di quanto: una coppia può cambiare 8.000 volte e finire dov'era. E non è volume — nel Forex non ne esiste uno reale, perché non c'è una borsa centrale che lo registri. Confronta le coppie fra loro adesso, non i giorni fra loro: la giornata è a metà.",
     pie: (v) => `Spread in pip, in ambra sopra 3. Rilevato il ${v.hora}.`,
   },
+  tasas: {
+    titulo: 'Quanto costa tenerla aperta',
+    aviso:
+      "⚠️ Questo NON è lo swap che ti addebiterà il broker. È la differenza fra i tassi delle banche centrali, da cui lo swap NASCE. Il tuo broker aggiunge un margine che nessuno pubblica ed è asimmetrico: in una direzione paghi e nell'altra a volte incassi, ma quasi mai lo stesso. Dà il verso e l'ordine di grandezza, non la cifra.",
+    intro:
+      "La valuta a sinistra della coppia paga questa differenza all'anno rispetto a quella a destra. Più in alto sta, più pesa tenere quella posizione aperta notte dopo notte.",
+    lado: {
+      compra: 'Di solito gioca a favore se compri',
+      venta: 'Di solito gioca a favore se vendi',
+      neutro: 'Quasi lo stesso tasso: pesa appena',
+    },
+    cabeceraSueltas: 'Tasso di ogni banca centrale',
+    pie: (v) => `Fonte: BIS (Banca dei Regolamenti Internazionali). Ogni riga porta la data del SUO dato: un tasso di riferimento cambia solo il giorno in cui la banca centrale si riunisce. Il più vecchio è di ${v.dias} giorni fa.`,
+  },
+
   errores: {
     'auth/email-already-in-use': 'Questa e-mail ha già un account. Prova con "Accedi".',
     'auth/invalid-email': 'Questa e-mail non sembra valida.',

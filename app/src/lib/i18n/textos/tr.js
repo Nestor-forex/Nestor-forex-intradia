@@ -374,6 +374,21 @@ export default {
       'Hareket: bu aracı kuruma göre fiyatın bugün kaç kez değiştiği. Yönü de mesafeyi de SÖYLEMEZ: bir parite 8.000 kez değişip başladığı yerde bitebilir. Hacim de değildir — Forex’te gerçek bir hacim yoktur, çünkü onu kaydeden merkezi bir borsa yoktur. Pariteleri şu anda birbiriyle karşılaştır, günleri birbiriyle değil: gün henüz yarısında.',
     pie: (v) => `Spread pip cinsinden, 3'ün üzerinde kehribar rengi. ${v.hora} tarihinde alındı.`,
   },
+  tasas: {
+    titulo: 'Açık tutmanın maliyeti',
+    aviso:
+      '⚠️ Bu, aracı kurumunun senden keseceği swap DEĞİLDİR. Merkez bankalarının faizleri arasındaki farktır; swap buradan doğar. Aracı kurum kimsenin yayımlamadığı bir marj ekler ve bu marj simetrik değildir: bir yönde ödersin, diğer yönde bazen alırsın, ama neredeyse hiçbir zaman aynı miktarda. Bu sana yönü ve kabaca büyüklüğü söyler, rakamı değil.',
+    intro:
+      'Paritenin solundaki para birimi, sağdakine göre yılda bu farkı öder. Listede ne kadar yukarıdaysa, o pozisyonu her gece açık tutmak o kadar ağır basar.',
+    lado: {
+      compra: 'Alırsan genellikle lehine çalışır',
+      venta: 'Satarsan genellikle lehine çalışır',
+      neutro: 'Faizler neredeyse aynı: etkisi çok az',
+    },
+    cabeceraSueltas: 'Her merkez bankasının faizi',
+    pie: (v) => `Kaynak: BIS (Uluslararası Ödemeler Bankası). Her satır KENDİ verisinin tarihini taşır: politika faizi yalnızca merkez bankasının toplandığı gün değişir. En eskisi ${v.dias} gün önceye ait.`,
+  },
+
   errores: {
     'auth/email-already-in-use': 'Bu e-postanın zaten bir hesabı var. «Giriş yap»ı dene.',
     'auth/invalid-email': 'Bu e-posta geçerli görünmüyor.',

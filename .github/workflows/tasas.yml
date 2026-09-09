@@ -1,0 +1,82 @@
+name: Tasas de los bancos centrales
+
+# Baja del BIS la tasa de referencia de las 8 divisas del barrido y la publica
+# en `estado/tasas.json` de la rama `datos`. La app la lee de ahí.
+#
+# Ver la cabecera de `app/scripts/publicar-tasas.mjs` para por qué esto NO vive
+# dentro del vigía (el mismo motivo que el calendario: el vigía escribe el
+# historial, y eso es lo único irreparable del proyecto).
+#
+# ⚠️ NO GASTA CRÉDITOS DE TWELVE DATA ni necesita ningún secreto: son datos
+# públicos de un organismo oficial. Por eso este workflow no lleva `env` con
+# `TWELVEDATA_KEY`.
+
+on:
+  schedule:
+    # UNA VEZ AL DÍA, y no es pereza: una tasa de referencia solo cambia el día
+    # que se reúne el banco central, o sea unas ocho veces al año por divisa.
+    # Pedirla cada cuatro horas como el calendario sería bajar seis veces al
+    # día un archivo idéntico. El calendario cambia solo; esto no.
+    #
+    # 06:20 UTC: antes del vigía (15:50) y antes de que empiece la jornada de
+    # Néstor, así que cuando abre la app el dato del día ya está publicado.
+    - cron: '20 6 * * *'
+  workflow_dispatch:
+
+# Escribe en la rama `datos`: por defecto el token de Actions es de solo
+# lectura.
+permissions:
+  contents: write
+
+concurrency:
+  group: tasas
+  cancel-in-progress: false
+
+jobs:
+  tasas:
+    runs-on: ubuntu-latest
+    # Sin esto GitHub deja correr un trabajo hasta SEIS HORAS, y con
+    # `concurrency` sin cancelar, una corrida atascada bloquearía las
+    # siguientes media jornada. Lo normal aquí son segundos.
+    timeout-minutes: 5
+    steps:
+      - name: Traer el código
+        uses: actions/checkout@v4
+
+      - name: Traer los datos
+        uses: actions/checkout@v4
+        with:
+          ref: datos
+          path: datos
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # No hace falta `npm ci`: el publicador solo usa `fetch` y `node:fs`, que
+      # vienen con Node, más funciones puras de `src/lib/`.
+      - name: Bajar y preparar
+        working-directory: app
+        env:
+          VIGIA_DATOS: ${{ github.workspace }}/datos
+        run: node scripts/publicar-tasas.mjs
+
+      - name: Guardar
+        working-directory: datos
+        run: |
+          git config user.name 'Tasas Nestor Forex Intradía'
+          git config user.email 'noreply@anthropic.com'
+          git add estado/tasas.json
+          # Lo NORMAL es que no cambie nada: estas tasas se mueven unas ocho
+          # veces al año por divisa. Un día sin commit no es un fallo.
+          if git diff --cached --quiet; then
+            echo 'Las tasas no cambiaron desde la última vez.'
+            exit 0
+          fi
+          git commit -m "Tasas $(date -u +'%Y-%m-%d')"
+          for i in 1 2 3; do
+            git pull --rebase origin datos && git push origin HEAD:datos && exit 0
+            sleep $((i * 5))
+          done
+          echo 'No se pudo guardar tras 3 intentos.'
+          exit 1

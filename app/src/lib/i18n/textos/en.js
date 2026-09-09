@@ -379,6 +379,21 @@ export default {
       'Activity: how many times the price changed today, according to this broker. It does NOT say which way or how far: a pair can change 8,000 times and end where it started. Nor is it volume — no real volume exists in Forex, because there is no central exchange to record it. Compare pairs with each other right now, not days with each other: the day is only half done.',
     pie: (v) => `Spread in pips, amber above 3. Taken on ${v.hora}.`,
   },
+  tasas: {
+    titulo: 'What it costs to keep it open',
+    aviso:
+      '⚠️ This is NOT the swap your broker will charge you. It is the gap between central bank rates, which is where the swap COMES FROM. Your broker adds a margin nobody publishes, and it is uneven: in one direction you pay and in the other you sometimes get paid, but almost never the same. It gives you the direction and rough size, not the figure.',
+    intro:
+      'The currency on the left of the pair pays this gap per year against the one on the right. The higher up the list, the more it weighs to keep that trade open night after night.',
+    lado: {
+      compra: 'Usually works in your favour if you buy',
+      venta: 'Usually works in your favour if you sell',
+      neutro: 'Almost the same rate: it barely weighs',
+    },
+    cabeceraSueltas: 'Rate of each central bank',
+    pie: (v) => `Source: BIS (Bank for International Settlements). Each row shows the date of ITS own figure: a policy rate only changes on the day the central bank meets. The oldest is ${v.dias} days old.`,
+  },
+
   errores: {
     'auth/email-already-in-use': 'That email already has an account. Try "Sign in".',
     'auth/invalid-email': 'That email does not look valid.',

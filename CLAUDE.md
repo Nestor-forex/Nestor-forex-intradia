@@ -1801,3 +1801,28 @@ suscriptores». Vale igual para esta app.
 ⚠️ Con una diferencia que aquí pesa MÁS: en velas de una hora, la actividad de
 golpe por una noticia cae dentro de la misma operación. Por eso la tarjeta del
 calendario está arriba del tablero en esta app y no es adorno.
+
+---
+
+# Las tasas de los bancos centrales, también aquí (2026-09-09)
+
+Portado de Swing el mismo día, como cambio emparejado. `tasas.js`, `Tasas.jsx`,
+`publicar-tasas.mjs` y `prueba-tasas.mjs` son **GEMELOS** (son las mismas 8
+divisas y la misma fuente: BIS, dataflow `WS_CBPOL`, en CSV); `useTasas.js` es
+**PRIMO**, porque cada app publica y lee SU propio archivo.
+
+La tarjeta va en la pestaña Barrido, **justo debajo de «Lo que cuesta abrir la
+operación»**: son las dos mitades del peaje — el spread se paga una vez al
+entrar, esto sale cada noche que la operación siga abierta.
+
+⚠️ **Y aquí NO sobra por llamarse Intradía.** Está medido: el **52 % de las
+operaciones reales de esta app cruzaron al menos una noche** (Fase 2,
+2026-09-02). La intención era no pagar swap; lo que pasa de verdad es otra cosa.
+
+⚠️ La decisión que no hay que ablandar es la misma: **el aviso de que esto NO
+es el swap va PRIMERO, antes de ningún número.** El bróker suma un margen que
+no publica nadie y que es asimétrico, así que esto da el signo y el orden de
+magnitud, no la cifra.
+
+📌 El detalle completo —incluidos los dos errores que cazaron las pruebas y lo
+que queda por contrastar con el BCE— está en el `CLAUDE.md` de Swing.

@@ -379,6 +379,21 @@ export default {
       'Atividade: quantas vezes o preço mudou hoje, segundo esta corretora. NÃO diz para onde nem quanto: um par pode mudar 8.000 vezes e terminar onde começou. Também não é volume — no Forex não existe um real, porque não há bolsa central que o registre. Compare pares entre si agora mesmo, não dias entre si: o dia está pela metade.',
     pie: (v) => `Spread em pips, em âmbar se passar de 3. Tomado em ${v.hora}.`,
   },
+  tasas: {
+    titulo: 'O que custa mantê-la aberta',
+    aviso:
+      '⚠️ Isto NÃO é o swap que a sua corretora vai cobrar. É a diferença entre as taxas dos bancos centrais, que é de onde o swap SAI. A sua corretora acrescenta uma margem que ninguém publica e que é desigual: numa direção você paga e na outra às vezes recebe, mas quase nunca o mesmo. Serve para saber o sentido e o tamanho aproximado, não a cifra.',
+    intro:
+      'A moeda da esquerda do par paga esta diferença por ano em relação à da direita. Quanto mais acima, mais pesa manter essa operação aberta noite após noite.',
+    lado: {
+      compra: 'Costuma jogar a favor se você comprar',
+      venta: 'Costuma jogar a favor se você vender',
+      neutro: 'Quase a mesma taxa: quase não pesa',
+    },
+    cabeceraSueltas: 'Taxa de cada banco central',
+    pie: (v) => `Fonte: BIS (Banco de Compensações Internacionais). Cada linha traz a data do SEU dado: uma taxa básica só muda no dia em que o banco central se reúne. O mais antigo é de ${v.dias} dias atrás.`,
+  },
+
   errores: {
     'auth/email-already-in-use': 'Esse e-mail já tem uma conta. Tente em "Entrar".',
     'auth/invalid-email': 'Esse e-mail não parece válido.',
