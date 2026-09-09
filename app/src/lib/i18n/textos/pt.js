@@ -92,7 +92,7 @@ export default {
       '1-2% do capital por operação. Várias posições na mesma moeda não são operações independentes — são uma única aposta, só que maior.',
     limitacionesTitulo: 'Limitações:',
     limitaciones:
-      'Velas de 1 hora com máxima, mínima e fechamento reais: o ATR é um ATR de Wilder verdadeiro e os pontos de pivô usam a máxima e a mínima reais das 24 horas anteriores. Nos cruzamentos (os pares sem dólar) a amplitude é derivada dos dois pares contra o dólar, por isso fica um pouco mais larga que a real. Sem dados do MT5 não há tick volume nem spread real da corretora — a liquidez é estimada qualitativamente.',
+      'Velas de 1 hora com máxima, mínima e fechamento reais: o ATR é um ATR de Wilder verdadeiro e os pontos de pivô usam a máxima e a mínima reais das 24 horas anteriores. Nos cruzamentos (os pares sem dólar) a amplitude é derivada dos dois pares contra o dólar, por isso fica um pouco mais larga que a real. A varredura não usa tick volume nem o spread da corretora — a liquidez é estimada qualitativamente. O spread REAL da corretora aparece à parte, enquanto a ponte MT5 estiver ligada.',
     educativo: 'Análise educativa, não é consultoria financeira personalizada. Operar Forex envolve risco de perda.',
     descargarMd: '↓ Baixar relatório .md',
     pieFuerza: 'Média ponderada da variação % de cada moeda contra as outras 7 (1h 20%, 4h 40%, 24h 40%), reescalada 0-10.',

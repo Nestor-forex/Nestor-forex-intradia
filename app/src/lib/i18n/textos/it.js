@@ -88,7 +88,7 @@ export default {
       "1-2% del capitale per operazione. Più posizioni sulla stessa valuta non sono operazioni indipendenti — sono un'unica scommessa, solo più grande.",
     limitacionesTitulo: 'Limiti:',
     limitaciones:
-      "Candele da 1 ora con massimo, minimo e chiusura reali: l'ATR è un vero ATR di Wilder e i punti pivot usano il massimo e il minimo reali delle 24 ore precedenti. Sui cross (le coppie senza dollaro) il range è derivato dalle due coppie contro il dollaro, quindi risulta un po' più ampio di quello reale. Senza dati MT5 non c'è tick volume né spread reale del broker — la liquidità è stimata qualitativamente.",
+      "Candele da 1 ora con massimo, minimo e chiusura reali: l'ATR è un vero ATR di Wilder e i punti pivot usano il massimo e il minimo reali delle 24 ore precedenti. Sui cross (le coppie senza dollaro) il range è derivato dalle due coppie contro il dollaro, quindi risulta un po' più ampio di quello reale. La scansione non usa il tick volume né lo spread del broker — la liquidità è stimata qualitativamente. Lo spread REALE del broker si vede a parte, finché il ponte MT5 è acceso.",
     educativo: 'Analisi didattica, non consulenza finanziaria personalizzata. Fare trading sul Forex comporta rischio di perdita.',
     descargarMd: '↓ Scarica il report .md',
     pieFuerza: 'Media ponderata della variazione % di ogni valuta contro le altre 7 (1h 20%, 4h 40%, 24h 40%), riscalata 0-10.',

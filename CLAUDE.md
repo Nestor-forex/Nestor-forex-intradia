@@ -1658,3 +1658,47 @@ cargas de página separadas: español y **árabe** (códigos de par y números e
 `ltr`, comprobado con el CSS calculado), calendario vacío y nulo (**no pintan
 absolutamente nada**), y puente apagado («Todavía no hay precios del bróker»,
 sin mensaje rojo). Cero errores de consola.
+
+---
+
+# «¿Por qué dice que no hay datos de MT5 si ya los recibe?» (2026-09-09)
+
+La preguntó Néstor leyendo la app, y **tenía razón**. Mismo patrón de siempre:
+**al cambiar algo, mirar también quién lo NOMBRA.** El puente empezó a publicar
+bid/ask el 2026-09-08, la tarjeta del spread llegó aquí ese mismo día, y el
+texto del pie se quedó como estaba.
+
+## El estado real, comprobado antes de contestar
+
+| dato | ¿llega de MT5? | ¿lo usa alguien? |
+|---|---|---|
+| bid, ask y **spread real** | ✅ 18 pares cada 15 min | ✅ **solo** la tarjeta «Lo que cuesta abrir la operación» |
+| **tick volume** | ✅ viaja en `estado/mt5.json` | ❌ **nadie lo pinta** |
+| el barrido | ❌ | velas H1 de Twelve Data, sin tocar MT5 |
+| el reporte diario | ❌ | no menciona MT5 |
+| el banco de pruebas | ❌ | `SPREAD_PIPS` sigue escrita a mano |
+
+📌 **La frase no era del todo falsa**, y esa es la parte interesante: describe
+**el barrido**, y el barrido efectivamente no usa ninguno de los dos. Lo que la
+volvía engañosa es que, en la app, está a pocos centímetros de una tarjeta que
+**sí** enseña el spread real.
+
+## Cómo quedó
+
+> «El barrido no usa tick volume ni el spread del bróker — la liquidez se
+> estima cualitativamente. El spread REAL del bróker se muestra aparte,
+> mientras el puente de MT5 esté encendido.»
+
+En los 13 idiomas, más `fakeData.js`. Lo mismo en Swing.
+
+⚠️ **A propósito NO se nombra la tarjeta.** Su título está traducido en cada
+idioma; citarlo obligaría a mantener dos textos en sintonía en trece sitios.
+
+📌 **Ocho idiomas de ESTA app tenían la frase redactada distinta a la de
+Swing** —hablan de velas de una hora y de pivotes— así que el reemplazo falló
+aquí en la primera pasada y hubo que traer el texto exacto de cada uno. Es
+justo para lo que el script exige encontrar el original **exactamente una vez**:
+un `replace` a ciegas los habría dejado viejos en silencio.
+
+⚠️ Estos archivos son PRIMOS (cada app tiene sus textos), así que **no hace
+falta que las dos frases sean idénticas** — pero sí que las dos sean verdad.

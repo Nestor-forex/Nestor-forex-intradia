@@ -130,7 +130,7 @@ export default {
       '1-2% del capital por operación. Varias posiciones en la misma divisa no son operaciones independientes — son una sola apuesta con más tamaño.',
     limitacionesTitulo: 'Limitaciones:',
     limitaciones:
-      'Velas de 1 hora con máximo, mínimo y cierre reales: el ATR es un ATR de Wilder verdadero y los puntos pivote usan el máximo y el mínimo reales de las 24 horas previas. En los cruces (los que no llevan dólar) el rango se deriva de los dos pares contra el dólar, así que queda algo más amplio que el real. Sin datos de MT5 no hay tick volume ni spread real del bróker — la liquidez se estima cualitativamente.',
+      'Velas de 1 hora con máximo, mínimo y cierre reales: el ATR es un ATR de Wilder verdadero y los puntos pivote usan el máximo y el mínimo reales de las 24 horas previas. En los cruces (los que no llevan dólar) el rango se deriva de los dos pares contra el dólar, así que queda algo más amplio que el real. El barrido no usa tick volume ni el spread del bróker — la liquidez se estima cualitativamente. El spread REAL del bróker se muestra aparte, mientras el puente de MT5 esté encendido.',
     educativo: 'Análisis educativo, no asesoría financiera personalizada. Operar Forex conlleva riesgo de pérdida.',
     descargarMd: '↓ Descargar reporte .md',
     pieFuerza: 'Promedio ponderado del cambio % de cada divisa contra las otras 7 (1h 20%, 4h 40%, 24h 40%), reescalado 0-10.',
