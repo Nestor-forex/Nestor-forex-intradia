@@ -376,7 +376,7 @@ export default {
     spread: 'Spread',
     actividad: 'Atividade',
     actividadPie:
-      'Atividade: quantas vezes o preço mudou hoje, segundo esta corretora. NÃO é volume — no Forex não existe um volume real, porque não há uma bolsa central que o registre. Serve para comparar pares entre si agora mesmo, não para comparar dias: o dia está pela metade.',
+      'Atividade: quantas vezes o preço mudou hoje, segundo esta corretora. NÃO diz para onde nem quanto: um par pode mudar 8.000 vezes e terminar onde começou. Também não é volume — no Forex não existe um real, porque não há bolsa central que o registre. Compare pares entre si agora mesmo, não dias entre si: o dia está pela metade.',
     pie: (v) => `Spread em pips, em âmbar se passar de 3. Tomado em ${v.hora}.`,
   },
   errores: {

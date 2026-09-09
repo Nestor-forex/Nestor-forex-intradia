@@ -1764,3 +1764,30 @@ internet, más que los 46 gemelos siguen idénticos.
 📌 **El texto largo para suscriptores explicando qué es la actividad y por qué
 NO es volumen está en el `CLAUDE.md` de Swing** («La actividad, explicada para
 suscriptores»). Es el mismo para las dos apps: vale igual con velas de una hora.
+
+## 📌 El pie ahora dice que la actividad NO tiene dirección (2026-09-09)
+
+Néstor leyó la columna nueva y preguntó: **«¿más para pérdidas o más para
+ganancias? ¿el que más se mueve es el mejor para operarlo?»**
+
+**La pregunta señalaba un error de redacción MÍO en el chat**, no de la app: la
+resumí como «qué par se está moviendo más», y eso suena a distancia y a
+dirección. La actividad no es ninguna de las dos: cuenta VECES. Un par puede
+cambiar 8.000 veces y cerrar donde abrió.
+
+El pie de la columna ahora lo dice **de frente y en primer lugar**, en los 13
+idiomas de las dos apps:
+
+> «NO dice hacia dónde ni cuánto: un par puede cambiar 8.000 veces y acabar
+> donde empezó.»
+
+⚠️ **Va ANTES de la parte del volumen, y el orden no es estético:** la confusión
+que más dinero cuesta es leer actividad como dirección, no confundirla con
+volumen. Lo primero que se lee es lo que se recuerda.
+
+📌 **La regla que deja el día:** cuando Néstor pregunta «¿esto qué me quiere
+decir?», la respuesta no es explicárselo en el chat — es meterlo EN LA PANTALLA,
+porque el suscriptor que se lo pregunte mañana no tiene a nadie al lado. Igual
+que con el calendario el 2026-09-08.
+
+📌 El texto largo para suscriptores está en el `CLAUDE.md` de Swing.

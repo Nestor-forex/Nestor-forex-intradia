@@ -372,7 +372,7 @@ export default {
     spread: 'Spread',
     actividad: 'Attività',
     actividadPie:
-      "Attività: quante volte è cambiato il prezzo oggi, secondo questo broker. NON è volume — nel Forex non esiste un volume reale, perché non c'è una borsa centrale che lo registri. Serve a confrontare le coppie fra loro adesso, non a confrontare giorni: la giornata è a metà.",
+      "Attività: quante volte è cambiato il prezzo oggi, secondo questo broker. NON dice in che direzione né di quanto: una coppia può cambiare 8.000 volte e finire dov'era. E non è volume — nel Forex non ne esiste uno reale, perché non c'è una borsa centrale che lo registri. Confronta le coppie fra loro adesso, non i giorni fra loro: la giornata è a metà.",
     pie: (v) => `Spread in pip, in ambra sopra 3. Rilevato il ${v.hora}.`,
   },
   errores: {
