@@ -374,6 +374,9 @@ export default {
     bid: 'Geld',
     ask: 'Brief',
     spread: 'Spread',
+    actividad: 'Aktivität',
+    actividadPie:
+      'Aktivität: wie oft sich der Kurs heute geändert hat, laut diesem Broker. Es ist KEIN Volumen — im Forex gibt es kein echtes Volumen, weil keine zentrale Börse es erfasst. Damit lassen sich Paare jetzt untereinander vergleichen, aber keine Tage miteinander: der Tag ist erst halb vorbei.',
     pie: (v) => `Spread in Pips, ab 3 in Bernstein. Aufgenommen am ${v.hora}.`,
   },
   errores: {

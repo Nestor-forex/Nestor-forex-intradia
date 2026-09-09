@@ -374,6 +374,9 @@ export default {
     bid: 'Compra',
     ask: 'Venda',
     spread: 'Spread',
+    actividad: 'Atividade',
+    actividadPie:
+      'Atividade: quantas vezes o preço mudou hoje, segundo esta corretora. NÃO é volume — no Forex não existe um volume real, porque não há uma bolsa central que o registre. Serve para comparar pares entre si agora mesmo, não para comparar dias: o dia está pela metade.',
     pie: (v) => `Spread em pips, em âmbar se passar de 3. Tomado em ${v.hora}.`,
   },
   errores: {

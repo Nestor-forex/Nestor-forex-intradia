@@ -374,6 +374,9 @@ export default {
     bid: 'Bid',
     ask: 'Ask',
     spread: 'Spread',
+    actividad: 'Activity',
+    actividadPie:
+      'Activity: how many times the price changed today, according to this broker. It is NOT volume — real volume does not exist in Forex, because there is no central exchange to record it. Use it to compare pairs with each other right now, not to compare days: the day is only half done.',
     pie: (v) => `Spread in pips, amber above 3. Taken on ${v.hora}.`,
   },
   errores: {
