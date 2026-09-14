@@ -185,6 +185,8 @@ export default {
     cargando: 'Loading trades…',
     abierta: 'Open',
     cerrar: 'Close',
+    borrar: 'Delete',
+    borrarSeguro: 'Delete?',
     loteSufijo: 'lot',
     vacioTitulo: 'Your journal is empty',
     vacioPorque: 'Logging what you do is what turns this app into something that tells you about YOU, not just about the market.',
@@ -201,6 +203,7 @@ export default {
       sinResultado: 'No result column was found: trades are added with 0.',
       saltadasPorPar: ({ n, pares }) => `Skipped ${n === 1 ? 'one trade' : `${n} trades`} on instruments this app does not analyse (gold, indices, shares, or pairs outside the ${pares} it follows).`,
       saltadasPorTipo: ({ n }) => `Skipped ${n === 1 ? 'one row that was not' : `${n} rows that were not`} a buy or a sell.`,
+      otrasTablas: ({ n }) => `Left out ${n} ${n === 1 ? 'row that was' : 'rows that were'} in other tables of the report (orders and deals): they are the same trade counted another way.`,
       nadaAprovechable: 'Rows were read, but none turned out to be a usable trade.',
     },
     titulo: "Import trades from your broker",
@@ -408,6 +411,7 @@ export default {
     pares: ({ n }) => `By pair (from ${n} trades)`,
     lote: ({ min, max, distintos }) => `Lot: from ${min} to ${max}, ${distintos} different sizes.`,
     pie: 'The ± is how much that percentage can move by chance alone. With few trades it is huge: with 10 it is ±31 points, so 40 % and 70 % are the same number.',
+    moneda: 'It is like tossing a coin: if you toss it 10 times and get 7 heads, it is not rigged — that happens all the time. If you toss it 400 times and get 280, then something really is going on. Your trades work the same way.',
   },
 
   errores: {

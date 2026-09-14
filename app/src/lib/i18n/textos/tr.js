@@ -181,6 +181,8 @@ export default {
     cargando: 'İşlemler yükleniyor…',
     abierta: 'Açık',
     cerrar: 'Kapat',
+    borrar: 'Sil',
+    borrarSeguro: 'Silinsin mi?',
     loteSufijo: 'lot',
     vacioTitulo: 'Günlüğün boş',
     vacioPorque: 'Yaptıklarını not etmek, bu uygulamayı sadece piyasa hakkında değil SENİN hakkında konuşan bir şeye dönüştürür.',
@@ -197,6 +199,7 @@ export default {
       sinResultado: 'Sonuç sütunu bulunamadı: işlemler 0 ile ekleniyor.',
       saltadasPorPar: ({ n, pares }) => `Bu uygulamanın analiz etmediği enstrümanlardaki ${n} işlem atlandı (altın, endeksler, hisseler veya takip ettiği ${pares} paritenin dışındakiler).`,
       saltadasPorTipo: ({ n }) => `Alış ya da satış olmayan ${n} satır atlandı.`,
+      otrasTablas: ({ n }) => `Raporun diğer tablolarındaki (emirler ve işlemler) ${n} satır dışarıda bırakıldı: bunlar aynı işlemin başka bir şekilde sayılmış hâli.`,
       nadaAprovechable: 'Satırlar okundu ama hiçbiri kullanılabilir bir işlem değildi.',
     },
     titulo: "Aracı kurumdan işlemleri içe aktar",
@@ -403,6 +406,7 @@ export default {
     pares: ({ n }) => `Pariteye göre (${n} işlemden itibaren)`,
     lote: ({ min, max, distintos }) => `Lot: ${min} ile ${max} arası, ${distintos} farklı büyüklük.`,
     pie: '± o yüzdenin yalnızca şansla ne kadar oynayabileceğidir. Az işlemde çok büyüktür: 10 işlemde ±31 puan, yani % 40 ile % 70 aynı sayıdır.',
+    moneda: 'Yazı tura gibi: 10 atışta 7 tura gelirse para hileli değildir — bu sürekli olur. Ama 400 atışta 280 tura gelirse, orada gerçekten bir şey vardır. Senin işlemlerin de aynı.',
   },
 
   errores: {

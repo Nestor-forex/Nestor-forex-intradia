@@ -178,6 +178,8 @@ export default {
     cargando: '正在加载交易…',
     abierta: '持仓中',
     cerrar: '平仓',
+    borrar: '删除',
+    borrarSeguro: '确认删除？',
     loteSufijo: '手',
     vacioTitulo: '你的交易日志是空的',
     vacioPorque: '记录你的操作，才能让这个应用告诉你关于"你"的事情，而不只是关于市场。',
@@ -194,6 +196,7 @@ export default {
       sinResultado: '未找到结果列：交易以 0 录入。',
       saltadasPorPar: ({ n, pares }) => `已跳过 ${n} 笔本应用不分析的品种交易（黄金、指数、股票，或不在所跟踪的 ${pares} 个货币对之内）。`,
       saltadasPorTipo: ({ n }) => `已跳过 ${n} 行既不是买入也不是卖出的记录。`,
+      otrasTablas: ({ n }) => `已排除报告中其他表格（订单和交易）里的 ${n} 行：它们是同一笔交易的另一种记法。`,
       nadaAprovechable: '读到了数据行，但没有一行是可用的交易。',
     },
     titulo: "从经纪商导入交易",
@@ -399,6 +402,7 @@ export default {
     pares: ({ n }) => `按货币对（至少 ${n} 笔）`,
     lote: ({ min, max, distintos }) => `Lot：从 ${min} 到 ${max}，共 ${distintos} 种不同手数。`,
     pie: '± 表示这个百分比仅凭偶然就可能变动的幅度。笔数少时非常大：10 笔时是 ±31 个百分点，也就是说 40 % 和 70 % 是同一个数字。',
+    moneda: '就像抛硬币：抛 10 次出现 7 次正面，并不说明硬币有问题——这经常发生。但抛 400 次出现 280 次正面，那就真有名堂了。你的交易也是一样。',
   },
 
   errores: {

@@ -185,6 +185,8 @@ export default {
     cargando: 'Carregando operações…',
     abierta: 'Aberta',
     cerrar: 'Fechar',
+    borrar: 'Apagar',
+    borrarSeguro: 'Apagar?',
     loteSufijo: 'lote',
     vacioTitulo: 'O teu diário está vazio',
     vacioPorque: 'Anotar o que fazes é o que transforma esta app em algo que te diz coisas sobre TI, e não só sobre o mercado.',
@@ -201,6 +203,7 @@ export default {
       sinResultado: 'Não se encontrou a coluna de resultado: as operações entram com 0.',
       saltadasPorPar: ({ n, pares }) => `${n === 1 ? 'Saltou-se uma operação' : `Saltaram-se ${n} operações`} de instrumentos que esta app não analisa (ouro, índices, ações ou pares fora dos ${pares} que segue).`,
       saltadasPorTipo: ({ n }) => `${n === 1 ? 'Saltou-se uma linha que não era' : `Saltaram-se ${n} linhas que não eram`} uma compra nem uma venda.`,
+      otrasTablas: ({ n }) => `Ficaram de fora ${n} ${n === 1 ? 'linha que estava' : 'linhas que estavam'} noutras tabelas do relatório (ordens e transações): são a mesma operação contada de outra forma.`,
       nadaAprovechable: 'Leram-se linhas, mas nenhuma era uma operação aproveitável.',
     },
     titulo: "Importar operações da corretora",
@@ -408,6 +411,7 @@ export default {
     pares: ({ n }) => `Por par (a partir de ${n} operações)`,
     lote: ({ min, max, distintos }) => `Lot: de ${min} a ${max}, ${distintos} tamanhos diferentes.`,
     pie: 'O ± é quanto essa percentagem pode mover-se só por acaso. Com poucas operações é enorme: com 10 são ±31 pontos, ou seja, 40 % e 70 % são o mesmo número.',
+    moneda: 'É como atirar uma moeda: se a atirares 10 vezes e saírem 7 caras, não está viciada — isso acontece a toda a hora. Se a atirares 400 vezes e saírem 280, aí sim passa-se mesmo alguma coisa. Com as tuas operações é igual.',
   },
 
   errores: {

@@ -181,6 +181,8 @@ export default {
     cargando: '거래를 불러오는 중…',
     abierta: '보유 중',
     cerrar: '청산',
+    borrar: '삭제',
+    borrarSeguro: '삭제할까요?',
     loteSufijo: '랏',
     vacioTitulo: '매매일지가 비어 있습니다',
     vacioPorque: '자신의 매매를 기록해야 이 앱이 시장뿐 아니라 «당신»에 대해 말해 주는 도구가 됩니다.',
@@ -197,6 +199,7 @@ export default {
       sinResultado: '결과 열을 찾지 못했습니다: 거래가 0으로 들어갑니다.',
       saltadasPorPar: ({ n, pares }) => `이 앱이 분석하지 않는 종목의 거래 ${n}건을 건너뛰었습니다(금, 지수, 주식 또는 추적 대상 ${pares}개 통화쌍 외).`,
       saltadasPorTipo: ({ n }) => `매수도 매도도 아닌 ${n}개 행을 건너뛰었습니다.`,
+      otrasTablas: ({ n }) => `보고서의 다른 표(주문과 체결)에 있던 ${n}개 행을 제외했습니다. 같은 거래를 다른 방식으로 센 것입니다.`,
       nadaAprovechable: '행은 읽었지만 사용할 수 있는 거래가 없었습니다.',
     },
     titulo: "브로커에서 거래 가져오기",
@@ -402,6 +405,7 @@ export default {
     pares: ({ n }) => `통화쌍별 (${n}건 이상)`,
     lote: ({ min, max, distintos }) => `Lot: ${min}부터 ${max}까지, ${distintos}가지 크기.`,
     pie: '±는 그 비율이 우연만으로 움직일 수 있는 폭입니다. 건수가 적으면 매우 큽니다: 10건이면 ±31포인트, 즉 40 %와 70 %는 같은 숫자입니다.',
+    moneda: '동전 던지기와 같습니다. 10번 던져 앞면이 7번 나와도 그 동전이 조작된 것은 아닙니다 — 흔히 있는 일입니다. 하지만 400번 던져 280번이 나오면 정말 뭔가 있는 것입니다. 당신의 거래도 마찬가지입니다.',
   },
 
   errores: {

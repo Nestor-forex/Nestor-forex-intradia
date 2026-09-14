@@ -223,6 +223,8 @@ export default {
     cargando: 'Cargando operaciones…',
     abierta: 'Abierta',
     cerrar: 'Cerrar',
+    borrar: 'Borrar',
+    borrarSeguro: '¿Borrar?',
     loteSufijo: 'lote',
     vacioTitulo: 'Tu diario está vacío',
     vacioPorque: 'Apuntar lo que haces es lo que convierte esta app en algo que te dice cosas sobre TI, y no solo sobre el mercado.',
@@ -239,6 +241,7 @@ export default {
       sinResultado: 'No se encontró la columna de resultado: las operaciones entran con 0.',
       saltadasPorPar: ({ n, pares }) => `Se saltó ${n === 1 ? 'una operación' : `${n} operaciones`} de instrumentos que esta app no analiza (oro, índices, acciones o pares fuera de los ${pares} que sigue).`,
       saltadasPorTipo: ({ n }) => `Se saltó ${n === 1 ? 'una fila que no era' : `${n} filas que no eran`} una compra ni una venta.`,
+      otrasTablas: ({ n }) => `Se dejaron fuera ${n} ${n === 1 ? 'fila que estaba' : 'filas que estaban'} en otras tablas del informe (órdenes y transacciones): son la misma operación contada de otra forma.`,
       nadaAprovechable: 'Se leyeron filas, pero ninguna resultó ser una operación aprovechable.',
     },
     titulo: "Importar operaciones del bróker",
@@ -450,6 +453,7 @@ export default {
     pares: ({ n }) => `Por par (desde ${n} operaciones)`,
     lote: ({ min, max, distintos }) => `Lot: del ${min} al ${max}, ${distintos} tamaños distintos.`,
     pie: 'El ± es cuánto puede moverse ese porcentaje solo por azar. Con pocas operaciones es enorme: con 10 es ±31 puntos, o sea que un 40 % y un 70 % son el mismo número.',
+    moneda: 'Es como tirar una moneda: si la tiras 10 veces y salen 7 caras, no está trucada — eso pasa todo el rato. Si la tiras 400 y salen 280, ahí sí pasa algo. Con tus operaciones es igual.',
   },
 
   errores: {

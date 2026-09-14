@@ -181,6 +181,8 @@ export default {
     cargando: 'Carico le operazioni…',
     abierta: 'Aperta',
     cerrar: 'Chiudi',
+    borrar: 'Elimina',
+    borrarSeguro: 'Eliminare?',
     loteSufijo: 'lotto',
     vacioTitulo: 'Il tuo diario è vuoto',
     vacioPorque: 'Annotare quello che fai è ciò che trasforma questa app in qualcosa che parla di TE, non solo del mercato.',
@@ -197,6 +199,7 @@ export default {
       sinResultado: 'Colonna del risultato non trovata: le operazioni entrano con 0.',
       saltadasPorPar: ({ n, pares }) => `${n === 1 ? 'Saltata una operazione' : `Saltate ${n} operazioni`} su strumenti che questa app non analizza (oro, indici, azioni o coppie fuori dalle ${pares} che segue).`,
       saltadasPorTipo: ({ n }) => `${n === 1 ? 'Saltata una riga che non era' : `Saltate ${n} righe che non erano`} né un acquisto né una vendita.`,
+      otrasTablas: ({ n }) => `${n} ${n === 1 ? 'riga presente' : 'righe presenti'} in altre tabelle del report (ordini e transazioni) sono state escluse: sono la stessa operazione contata in un altro modo.`,
       nadaAprovechable: 'Sono state lette delle righe, ma nessuna era un’operazione utilizzabile.',
     },
     titulo: "Importa le operazioni dal broker",
@@ -404,6 +407,7 @@ export default {
     pares: ({ n }) => `Per coppia (da ${n} operazioni)`,
     lote: ({ min, max, distintos }) => `Lot: da ${min} a ${max}, ${distintos} misure diverse.`,
     pie: 'Il ± è quanto quella percentuale può muoversi solo per caso. Con poche operazioni è enorme: con 10 sono ±31 punti, quindi 40 % e 70 % sono lo stesso numero.',
+    moneda: 'È come lanciare una moneta: se la lanci 10 volte ed escono 7 teste, non è truccata — succede di continuo. Se la lanci 400 volte e ne escono 280, lì sì che succede davvero qualcosa. Con le tue operazioni è uguale.',
   },
 
   errores: {

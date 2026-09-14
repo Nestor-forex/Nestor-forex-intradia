@@ -185,6 +185,8 @@ export default {
     cargando: 'Trades werden geladen…',
     abierta: 'Offen',
     cerrar: 'Schließen',
+    borrar: 'Löschen',
+    borrarSeguro: 'Löschen?',
     loteSufijo: 'Lot',
     vacioTitulo: 'Dein Journal ist leer',
     vacioPorque: 'Aufzuschreiben, was du tust, macht aus dieser App etwas, das dir über DICH etwas sagt und nicht nur über den Markt.',
@@ -201,6 +203,7 @@ export default {
       sinResultado: 'Keine Ergebnisspalte gefunden: Trades werden mit 0 übernommen.',
       saltadasPorPar: ({ n, pares }) => `${n === 1 ? 'Ein Trade' : `${n} Trades`} auf Instrumenten übersprungen, die diese App nicht analysiert (Gold, Indizes, Aktien oder Paare außerhalb der ${pares}, die sie verfolgt).`,
       saltadasPorTipo: ({ n }) => `${n === 1 ? 'Eine Zeile' : `${n} Zeilen`} übersprungen, die weder Kauf noch Verkauf war.`,
+      otrasTablas: ({ n }) => `${n} ${n === 1 ? 'Zeile aus anderen Tabellen' : 'Zeilen aus anderen Tabellen'} des Berichts (Aufträge und Transaktionen) wurden ausgelassen: Sie sind derselbe Trade, anders gezählt.`,
       nadaAprovechable: 'Zeilen wurden gelesen, aber keine war ein brauchbarer Trade.',
     },
     titulo: "Trades vom Broker importieren",
@@ -408,6 +411,7 @@ export default {
     pares: ({ n }) => `Nach Paar (ab ${n} Trades)`,
     lote: ({ min, max, distintos }) => `Lot: von ${min} bis ${max}, ${distintos} verschiedene Größen.`,
     pie: 'Das ± ist, wie stark sich dieser Prozentsatz allein durch Zufall bewegen kann. Bei wenigen Trades ist es riesig: bei 10 sind es ±31 Punkte, also sind 40 % und 70 % dieselbe Zahl.',
+    moneda: 'Es ist wie beim Münzwurf: 10 Würfe mit 7 Mal Kopf heißen nicht, dass die Münze gezinkt ist — das passiert ständig. 400 Würfe mit 280 Mal Kopf: da ist wirklich etwas los. Mit deinen Trades ist es genauso.',
   },
 
   errores: {
