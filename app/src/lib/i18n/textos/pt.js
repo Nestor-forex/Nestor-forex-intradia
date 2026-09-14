@@ -186,7 +186,10 @@ export default {
     abierta: 'Aberta',
     cerrar: 'Fechar',
     loteSufijo: 'lote',
-    vacio: 'Você ainda não registrou operações.',
+    vacioTitulo: 'O teu diário está vazio',
+    vacioPorque: 'Anotar o que fazes é o que transforma esta app em algo que te diz coisas sobre TI, e não só sobre o mercado.',
+    vacioImportar: 'Importar do broker',
+    vacioSenales: 'Ver os sinais de hoje',
     promptCerrar: ({ par }) => `Resultado final de ${par} (USD, use - para perda):`,
   },
 
@@ -392,6 +395,19 @@ export default {
     },
     cabeceraSueltas: 'Taxa de cada banco central',
     pie: (v) => `Fonte: BIS (Banco de Compensações Internacionais). Cada linha traz a data do SEU dado: uma taxa básica só muda no dia em que o banco central se reúne. O mais antigo é de ${v.dias} dias atrás.`,
+  },
+
+  diag: {
+    titulo: ({ n }) => `Os teus números por grupos (${n})`,
+    aviso: 'Isto conta o que TU fizeste, nada mais. Não é um conselho, não diz o que operar e não tem nada a ver com o que a app assinala.',
+    ops: 'ops',
+    tipo: 'Por tipo de par',
+    cruces: 'Crosses (sem dólar)',
+    dolar: 'Pares com dólar',
+    direccion: 'Por direção',
+    pares: ({ n }) => `Por par (a partir de ${n} operações)`,
+    lote: ({ min, max, distintos }) => `Lot: de ${min} a ${max}, ${distintos} tamanhos diferentes.`,
+    pie: 'O ± é quanto essa percentagem pode mover-se só por acaso. Com poucas operações é enorme: com 10 são ±31 pontos, ou seja, 40 % e 70 % são o mesmo número.',
   },
 
   errores: {

@@ -182,7 +182,10 @@ export default {
     abierta: 'Aperta',
     cerrar: 'Chiudi',
     loteSufijo: 'lotto',
-    vacio: 'Non hai ancora registrato operazioni.',
+    vacioTitulo: 'Il tuo diario è vuoto',
+    vacioPorque: 'Annotare quello che fai è ciò che trasforma questa app in qualcosa che parla di TE, non solo del mercato.',
+    vacioImportar: 'Importa dal broker',
+    vacioSenales: 'Vedi i segnali di oggi',
     promptCerrar: ({ par }) => `Risultato finale di ${par} (USD, usa - per la perdita):`,
   },
 
@@ -388,6 +391,19 @@ export default {
     },
     cabeceraSueltas: 'Tasso di ogni banca centrale',
     pie: (v) => `Fonte: BIS (Banca dei Regolamenti Internazionali). Ogni riga porta la data del SUO dato: un tasso di riferimento cambia solo il giorno in cui la banca centrale si riunisce. Il più vecchio è di ${v.dias} giorni fa.`,
+  },
+
+  diag: {
+    titulo: ({ n }) => `I tuoi numeri per gruppi (${n})`,
+    aviso: 'Questo conta quello che hai fatto TU, nient’altro. Non è un consiglio, non dice cosa operare e non ha nulla a che vedere con ciò che l’app segnala.',
+    ops: 'ops',
+    tipo: 'Per tipo di coppia',
+    cruces: 'Crosses (senza dollaro)',
+    dolar: 'Coppie con dollaro',
+    direccion: 'Per direzione',
+    pares: ({ n }) => `Per coppia (da ${n} operazioni)`,
+    lote: ({ min, max, distintos }) => `Lot: da ${min} a ${max}, ${distintos} misure diverse.`,
+    pie: 'Il ± è quanto quella percentuale può muoversi solo per caso. Con poche operazioni è enorme: con 10 sono ±31 punti, quindi 40 % e 70 % sono lo stesso numero.',
   },
 
   errores: {

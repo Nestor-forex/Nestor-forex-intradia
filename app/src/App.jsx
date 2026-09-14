@@ -217,6 +217,7 @@ export default function App() {
                   onCerrar={diario.cerrar}
                   prellenar={prellenarDiario}
                   onPrellenado={() => setPrellenarDiario(null)}
+                  onVerSenales={() => setTab('barrido')}
                 />
               )}
               {tab === 'historial' && <HistorialTab />}
