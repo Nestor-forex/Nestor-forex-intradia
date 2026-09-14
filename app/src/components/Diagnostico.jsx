@@ -121,9 +121,16 @@ export default function Diagnostico({ trades }) {
             </div>
           )}
 
+          {/* El ± explicado, y debajo la comparación con la moneda.
+              ⚠️ EN ESE ORDEN, y no es estético: primero qué es el número, y
+              después la imagen que lo hace entender. Al revés, la moneda se
+              lee como una curiosidad suelta y nadie la conecta con el ±.
+              Néstor lo pidió después de que se lo contara así por el chat —
+              y el suscriptor que lo lea mañana no me tiene a mí al lado. */}
           <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 12, lineHeight: 1.5, borderTop: '1px solid var(--border)', paddingTop: 8 }}>
             {tr('diag.pie')}
           </div>
+          <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 6, lineHeight: 1.5 }}>{tr('diag.moneda')}</div>
         </div>
       )}
     </div>

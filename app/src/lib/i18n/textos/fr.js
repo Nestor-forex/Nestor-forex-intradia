@@ -408,6 +408,7 @@ export default {
     pares: ({ n }) => `Par paire (à partir de ${n} trades)`,
     lote: ({ min, max, distintos }) => `Lot : de ${min} à ${max}, ${distintos} tailles différentes.`,
     pie: 'Le ± est de combien ce pourcentage peut bouger par pur hasard. Avec peu de trades c’est énorme : avec 10 c’est ±31 points, donc 40 % et 70 % sont le même nombre.',
+    moneda: 'C’est comme une pièce : si tu la lances 10 fois et que tu obtiens 7 faces, elle n’est pas truquée — cela arrive tout le temps. Si tu la lances 400 fois et que tu en obtiens 280, là il se passe vraiment quelque chose. Avec tes opérations, c’est pareil.',
   },
 
   errores: {

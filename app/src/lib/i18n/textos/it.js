@@ -404,6 +404,7 @@ export default {
     pares: ({ n }) => `Per coppia (da ${n} operazioni)`,
     lote: ({ min, max, distintos }) => `Lot: da ${min} a ${max}, ${distintos} misure diverse.`,
     pie: 'Il ± è quanto quella percentuale può muoversi solo per caso. Con poche operazioni è enorme: con 10 sono ±31 punti, quindi 40 % e 70 % sono lo stesso numero.',
+    moneda: 'È come lanciare una moneta: se la lanci 10 volte ed escono 7 teste, non è truccata — succede di continuo. Se la lanci 400 volte e ne escono 280, lì sì che succede davvero qualcosa. Con le tue operazioni è uguale.',
   },
 
   errores: {

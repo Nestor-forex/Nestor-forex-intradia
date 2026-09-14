@@ -408,6 +408,7 @@ export default {
     pares: ({ n }) => `Por par (a partir de ${n} operações)`,
     lote: ({ min, max, distintos }) => `Lot: de ${min} a ${max}, ${distintos} tamanhos diferentes.`,
     pie: 'O ± é quanto essa percentagem pode mover-se só por acaso. Com poucas operações é enorme: com 10 são ±31 pontos, ou seja, 40 % e 70 % são o mesmo número.',
+    moneda: 'É como atirar uma moeda: se a atirares 10 vezes e saírem 7 caras, não está viciada — isso acontece a toda a hora. Se a atirares 400 vezes e saírem 280, aí sim passa-se mesmo alguma coisa. Com as tuas operações é igual.',
   },
 
   errores: {

@@ -403,6 +403,7 @@ export default {
     pares: ({ n }) => `Pariteye göre (${n} işlemden itibaren)`,
     lote: ({ min, max, distintos }) => `Lot: ${min} ile ${max} arası, ${distintos} farklı büyüklük.`,
     pie: '± o yüzdenin yalnızca şansla ne kadar oynayabileceğidir. Az işlemde çok büyüktür: 10 işlemde ±31 puan, yani % 40 ile % 70 aynı sayıdır.',
+    moneda: 'Yazı tura gibi: 10 atışta 7 tura gelirse para hileli değildir — bu sürekli olur. Ama 400 atışta 280 tura gelirse, orada gerçekten bir şey vardır. Senin işlemlerin de aynı.',
   },
 
   errores: {

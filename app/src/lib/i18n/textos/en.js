@@ -408,6 +408,7 @@ export default {
     pares: ({ n }) => `By pair (from ${n} trades)`,
     lote: ({ min, max, distintos }) => `Lot: from ${min} to ${max}, ${distintos} different sizes.`,
     pie: 'The ± is how much that percentage can move by chance alone. With few trades it is huge: with 10 it is ±31 points, so 40 % and 70 % are the same number.',
+    moneda: 'It is like tossing a coin: if you toss it 10 times and get 7 heads, it is not rigged — that happens all the time. If you toss it 400 times and get 280, then something really is going on. Your trades work the same way.',
   },
 
   errores: {

@@ -408,6 +408,7 @@ export default {
     pares: ({ n }) => `Nach Paar (ab ${n} Trades)`,
     lote: ({ min, max, distintos }) => `Lot: von ${min} bis ${max}, ${distintos} verschiedene Größen.`,
     pie: 'Das ± ist, wie stark sich dieser Prozentsatz allein durch Zufall bewegen kann. Bei wenigen Trades ist es riesig: bei 10 sind es ±31 Punkte, also sind 40 % und 70 % dieselbe Zahl.',
+    moneda: 'Es ist wie beim Münzwurf: 10 Würfe mit 7 Mal Kopf heißen nicht, dass die Münze gezinkt ist — das passiert ständig. 400 Würfe mit 280 Mal Kopf: da ist wirklich etwas los. Mit deinen Trades ist es genauso.',
   },
 
   errores: {

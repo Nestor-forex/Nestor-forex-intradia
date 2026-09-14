@@ -6,7 +6,8 @@
 // Dos cosas que no se parecen en nada pero comparten la misma pregunta: **que
 // el historial del usuario no se pierda ni se lea mal.**
 
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import {
@@ -196,6 +197,29 @@ console.log('8. ⚠️ El diario NO se puede quedar encerrado al retirar a algui
   ok(!/deleteDoc/.test(fuente), '⚠️ `useMembers.js` NO usa deleteDoc fuera de comentarios: borrar la ficha encierra el diario')
   ok(/retirar\s*=\s*\(uid\)\s*=>\s*updateDoc/.test(fuente), '`retirar` usa updateDoc')
   ok(/estado:\s*'retirado'/.test(fuente), "y deja el estado en 'retirado'")
+}
+
+console.log('9. ⚠️ La explicación del ± va en la PANTALLA, y en su orden')
+{
+  // El ± sin explicar es un símbolo; explicado en el chat, se pierde en cuanto
+  // se cierra el chat. Tiene que estar donde lo lee quien mira el número.
+  //
+  // ⚠️ Y el ORDEN importa: primero `diag.pie` (qué es ese número) y después
+  // `diag.moneda` (la comparación que lo hace entender). Al revés, la moneda
+  // se lee como una curiosidad suelta y nadie la conecta con el ±.
+  const jsx = readFileSync(fileURLToPath(new URL('../src/components/Diagnostico.jsx', import.meta.url)), 'utf8')
+  const iPie = jsx.indexOf("tr('diag.pie')")
+  const iMoneda = jsx.indexOf("tr('diag.moneda')")
+  ok(iPie > 0, 'la tarjeta enseña `diag.pie`')
+  ok(iMoneda > 0, 'la tarjeta enseña `diag.moneda`')
+  ok(iPie > 0 && iMoneda > iPie, '⚠️ y `diag.moneda` va DESPUÉS de `diag.pie`, no antes')
+
+  // Los 13 idiomas tienen que traerla: una clave que falta cae a español y
+  // deja la mitad de la explicación en otro idioma, que es peor que nada.
+  const textos = fileURLToPath(new URL('../src/lib/i18n/textos/', import.meta.url))
+  for (const archivo of readdirSync(textos).filter((f) => f.endsWith('.js'))) {
+    ok(/\n\s*moneda: /.test(readFileSync(join(textos, archivo), 'utf8')), `${archivo} tiene diag.moneda`)
+  }
 }
 
 console.log('')
