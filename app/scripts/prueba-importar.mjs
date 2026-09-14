@@ -151,6 +151,121 @@ console.log('\nInforme de MT5 en español (columnas y números traducidos)')
   comprobar(b.par === 'NZD/CAD' && b.dir === 'Venta' && b.pl === -46.8, 'la venta de NZD/CAD sale neta también')
 }
 
+// ------------------------------------------- el informe REAL de MT5, entero
+//
+// Los dos bloques que siguen son el fallo del 2026-09-14, que salió al abrir el
+// informe de verdad de Néstor. Nada de esto daba error: daba 129 operaciones
+// con números creíbles y todos falsos, que es justo contra lo que avisa la
+// cabecera de este archivo.
+//
+// Se reproduce la FORMA del informe real, no sus datos: son las operaciones de
+// una persona y los dos repositorios son públicos.
+
+// Cabecera y filas tal como las escribe MT5 en español: la cabecera tiene 13
+// columnas y cada fila de datos mete una celda ESCONDIDA de más.
+const MT5_REAL = `<html><body><table>
+<tr><td colspan="13">Informe de historial</td></tr>
+<tr><td nowrap><b>Fecha/Hora</b></td><td nowrap><b>Posición</b></td><td nowrap><b>Símbolo</b></td><td nowrap><b>Tipo</b></td><td nowrap><b>Volumen </b></td><td nowrap><b>Precio</b></td><td nowrap><b>S / L</b></td><td nowrap><b>T / P</b></td><td nowrap><b>Fecha/Hora</b></td><td nowrap><b>Precio</b></td><td nowrap><b>Comisión</b></td><td nowrap><b>Swap</b></td><td nowrap colspan="2"><b>Beneficio</b></td></tr>
+<tr><td>2026.05.25 16:09:23</td><td>145097543</td><td>USDJPY</td><td>buy</td><td class="hidden" colspan="8">FIX:0:ATG-ImEIk-052516096</td><td class="">0.03</td><td class="">158.912</td><td class="">158.740</td><td class="">159.180</td><td class="">2026.05.25 20:42:57</td><td class="">158.933</td><td class="">0.00</td><td class="">0.00</td><td colspan="2">0.40</td></tr>
+<tr><td>2026.06.02 21:55:18</td><td>146315902</td><td>EURUSD</td><td>buy</td><td class="hidden" colspan="8">FIX:0:WA-cuSJX-671725924</td><td class="">0.04</td><td class="">1.16355</td><td class="">1.15066</td><td class=""></td><td class="">2026.07.31 03:40:11</td><td class="">1.15066</td><td class="">0.00</td><td class="">-23.09</td><td colspan="2">-51.56</td></tr>
+<tr><td colspan="13">Órdenes</td></tr>
+<tr><td nowrap><b>Hora de apertura</b></td><td nowrap><b>Orden</b></td><td nowrap><b>Símbolo</b></td><td nowrap><b>Tipo</b></td><td nowrap><b>Volumen</b></td><td nowrap><b>Precio</b></td><td nowrap><b>S / L</b></td><td nowrap><b>T / P</b></td><td nowrap><b>Fecha/Hora</b></td><td nowrap><b>Estado</b></td><td nowrap><b>Comentario</b></td></tr>
+<tr><td>2026.05.25 16:09:23</td><td>145097543</td><td>USDJPY</td><td>buy</td><td>0.03 / 0.03</td><td>158.912</td><td>158.740</td><td>159.180</td><td>2026.05.25 16:09:23</td><td>filled</td><td>FIX:0:ATG-ImEIk-052516096</td></tr>
+<tr><td>2026.06.02 21:55:18</td><td>146315902</td><td>EURUSD</td><td>buy</td><td>0.04 / 0.04</td><td>1.16355</td><td>1.15066</td><td></td><td>2026.06.02 21:55:18</td><td>filled</td><td>FIX:0:WA-cuSJX-671725924</td></tr>
+<tr><td colspan="15">Transacciones</td></tr>
+<tr><td nowrap><b>Fecha/Hora</b></td><td nowrap><b>Transacción</b></td><td nowrap><b>Símbolo</b></td><td nowrap><b>Tipo</b></td><td nowrap><b>Dirección</b></td><td nowrap><b>Volumen</b></td><td nowrap><b>Precio</b></td><td nowrap><b>Orden</b></td><td nowrap><b>Coste</b></td><td nowrap><b>Comisión</b></td><td nowrap><b>Tasa</b></td><td nowrap><b>Swap</b></td><td nowrap><b>Beneficio</b></td><td nowrap><b>Balance</b></td><td nowrap><b>Comentario</b></td></tr>
+<tr><td>2026.05.21 16:36:24</td><td>137861840</td><td></td><td>balance</td><td></td><td></td><td></td><td></td><td></td><td>0.00</td><td>0.00</td><td>0.00</td><td>100.00</td><td>100.00</td><td>Deposit</td></tr>
+<tr><td>2026.05.25 16:09:23</td><td>137861999</td><td>USDJPY</td><td>buy</td><td>in</td><td>0.03</td><td>158.912</td><td>145097543</td><td>0.00</td><td>0.00</td><td>0.00</td><td>0.00</td><td>0.00</td><td>100.00</td><td></td></tr>
+<tr><td>2026.05.25 20:42:57</td><td>137862100</td><td>USDJPY</td><td>sell</td><td>out</td><td>0.03</td><td>158.933</td><td>145097543</td><td>0.00</td><td>0.00</td><td>0.00</td><td>0.00</td><td>0.40</td><td>100.40</td><td></td></tr>
+<tr><td colspan="11">Órdenes activas</td></tr>
+<tr><td nowrap><b>Hora de apertura</b></td><td nowrap><b>Orden</b></td><td nowrap><b>Símbolo</b></td><td nowrap><b>Tipo</b></td><td nowrap><b>Volumen</b></td><td nowrap><b>Precio</b></td><td nowrap><b>S / L</b></td><td nowrap><b>T / P</b></td><td nowrap><b>Precio de mercado</b></td><td nowrap><b>Estado</b></td><td nowrap><b>Comentario</b></td></tr>
+<tr><td>2026.08.17 15:13:34</td><td>157426412</td><td>USDCAD</td><td>sell limit</td><td>0.01 / 0</td><td>1.39808</td><td>1.40608</td><td>1.38008</td><td>1.39004</td><td>placed</td><td>FIX:0:WA-MjBKz-829241867</td></tr>
+</table></body></html>`
+
+console.log('\n⚠️ La celda ESCONDIDA de MT5 no puede correr las columnas')
+{
+  const r = leerOperaciones(MT5_REAL, PAIR_NAMES)
+  const [a, b] = r.operaciones
+
+  // Con la celda oculta contada como columna, el lote salía de un texto (0), el
+  // resultado salía de la columna del PRECIO DE CIERRE y la fecha de un precio.
+  comprobar(a.lote === 0.03, `el lote es 0.03 y no 0 (salió ${a.lote})`)
+  comprobar(a.pl === 0.4, `el resultado es +0.40, NO el precio de cierre 158.93 (salió ${a.pl})`)
+  comprobar(a.fecha === '2026-05-25', `la fecha es la del cierre y no la de hoy (salió ${a.fecha})`)
+
+  // La que más duele: bruto −51,56 y swap −23,09. Si el swap no entrara, el
+  // Diario diría que se perdieron 51 cuando fueron 74.
+  comprobar(b.pl === -74.65, `el neto descuenta el swap: −51.56 − 23.09 = −74.65 (salió ${b.pl})`)
+  comprobar(b.fecha === '2026-07-31', 'una operación que cruza dos meses lleva la fecha de CIERRE')
+
+  // «Fecha/Hora» no coincidía con ningún sinónimo, así que no había columna de
+  // fecha y TODAS las operaciones entraban con la de hoy.
+  const hoy = new Date().toISOString().slice(0, 10)
+  comprobar(
+    !r.operaciones.some((o) => o.fecha === hoy),
+    'ninguna operación se queda con la fecha de hoy por no entender «Fecha/Hora»'
+  )
+}
+
+console.log('\n⚠️ De las cuatro tablas de MT5 solo entran las posiciones cerradas')
+{
+  const r = leerOperaciones(MT5_REAL, PAIR_NAMES)
+
+  // Antes se aprendía las columnas de la primera tabla y las usaba para las
+  // cuatro: la misma operación entraba tres veces bajo tres formas, más una
+  // orden pendiente que nunca se ejecutó.
+  comprobar(r.operaciones.length === 2, `entran 2 operaciones, no 6 (salieron ${r.operaciones.length})`)
+  comprobar(r.leidas === 2, `y solo se leen las filas de esa tabla (${r.leidas})`)
+
+  const tickets = r.operaciones.map((o) => o.ticket)
+  comprobar(new Set(tickets).size === 2, 'sin repetidas: cada operación una sola vez')
+  comprobar(!tickets.includes('157426412'), 'la orden PENDIENTE («sell limit», estado «placed») no entra')
+  comprobar(!r.operaciones.some((o) => o.pl === 0), 'no entra la media operación de «Transacciones» con resultado 0')
+
+  // Y se dice, que es lo que separa esto de un import que se come filas callado.
+  const aviso = r.avisos.find((a) => a.codigo === 'otrasTablas')
+  comprobar(Boolean(aviso), 'avisa de las filas que quedaron fuera por estar en otra tabla')
+  // 2 de «Órdenes» + 2 de «Transacciones» (la de balance no cuenta) + la
+  // pendiente de «Órdenes activas».
+  comprobar(aviso?.n === 5, `y dice cuántas: 5 (salió ${aviso?.n})`)
+}
+
+console.log('\n⚠️ La tabla buena se ELIGE; no vale con quedarse la primera')
+{
+  // En MT5 las posiciones cerradas van primero, así que quedarse con la
+  // primera acierta por casualidad — y una comprobación que pasa por
+  // casualidad no comprueba nada. Aquí las órdenes van DELANTE, que es como lo
+  // ordenan otros informes, y solo la segunda tabla tiene resultado.
+  const alReves = `<html><body><table>
+<tr><td><b>Hora de apertura</b></td><td><b>Orden</b></td><td><b>Símbolo</b></td><td><b>Tipo</b></td><td><b>Volumen</b></td><td><b>Estado</b></td></tr>
+<tr><td>2026.04.01 10:00:00</td><td>900</td><td>EURUSD</td><td>buy</td><td>0.10 / 0.10</td><td>filled</td></tr>
+<tr><td>2026.04.02 10:00:00</td><td>901</td><td>GBPUSD</td><td>sell limit</td><td>0.10 / 0</td><td>placed</td></tr>
+<tr><td><b>Fecha/Hora</b></td><td><b>Posición</b></td><td><b>Símbolo</b></td><td><b>Tipo</b></td><td><b>Volumen</b></td><td><b>Fecha/Hora</b></td><td><b>Comisión</b></td><td><b>Swap</b></td><td><b>Beneficio</b></td></tr>
+<tr><td>2026.04.01 10:00:00</td><td>900</td><td>EURUSD</td><td>buy</td><td>0.10</td><td>2026.04.05 18:00:00</td><td>-0.50</td><td>-1.00</td><td>30.00</td></tr>
+</table></body></html>`
+
+  const r = leerOperaciones(alReves, PAIR_NAMES)
+  comprobar(r.operaciones.length === 1, `entra 1 operación, no las órdenes (salieron ${r.operaciones.length})`)
+  const [o] = r.operaciones
+  comprobar(o.pl === 28.5, `con su neto 30 − 0.50 − 1.00 = 28.50 (salió ${o.pl})`)
+  comprobar(o.fecha === '2026-04-05', 'y la fecha de cierre, que solo existe en esa tabla')
+
+  // Sin elegir, la primera tabla no tiene columna de resultado: la operación
+  // habría entrado con pl 0 y con la orden pendiente al lado.
+  comprobar(!r.avisos.some((a) => a.codigo === 'sinResultado'), 'no avisa de «sin resultado»: la tabla elegida SÍ lo tiene')
+}
+
+console.log('\nUn archivo de UNA sola tabla no se ve afectado por lo anterior')
+{
+  // `elegirTabla` puntúa, y con una sola candidata gana esa aunque no tenga
+  // dos columnas de hora. Si no, se habría roto todo CSV con una sola fecha.
+  const csv = ['Ticket,Date,Symbol,Type,Lots,Profit', '1,2026-03-04,EURUSD,buy,0.50,12.25'].join('\n')
+  const r = leerOperaciones(csv, PAIR_NAMES)
+  comprobar(r.operaciones.length === 1, 'la única tabla se usa igual')
+  comprobar(r.operaciones[0].fecha === '2026-03-04', 'con su fecha')
+  comprobar(!r.avisos.some((a) => a.codigo === 'otrasTablas'), 'y no avisa de tablas que no existen')
+}
+
 // ---------------------------------------------------------------------- CSV
 
 console.log('\nCSV genérico, con punto y coma y campos entrecomillados')

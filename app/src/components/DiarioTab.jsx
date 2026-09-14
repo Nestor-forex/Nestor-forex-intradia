@@ -14,6 +14,9 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
   const [pl, setPl] = useState('')
   const [nota, setNota] = useState('')
   const [abierta, setAbierta] = useState(false)
+  // Qué operación está esperando el segundo toque para borrarse. Solo una a la
+  // vez: tocar la ✕ de otra cancela la anterior sola.
+  const [porBorrar, setPorBorrar] = useState(null)
 
   // Cuando se llega aquí desde el detalle de un setup, el formulario arranca
   // con el par, la dirección y la nota ya puestos. Falta el lote, que depende
@@ -245,12 +248,32 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
                 {(t.pl >= 0 ? '+' : '') + t.pl.toFixed(2)}
               </span>
             )}
-            <button
-              onClick={() => onBorrar(t.id)}
-              style={{ minWidth: 44, minHeight: 44, borderRadius: 8, border: '1px solid var(--border-strong)', background: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 15 }}
-            >
-              ✕
-            </button>
+            {/* ⚠️ BORRAR PIDE CONFIRMACIÓN, y no es por gusto. Antes bastaba
+                un toque: un dedo en el sitio equivocado de un teléfono y esa
+                operación desaparecía para siempre, sin deshacer. El Diario es
+                lo que Néstor tiene de su propio historial.
+                A propósito NO se usa `confirm()` del navegador: en una PWA
+                instalada sale un cuadro del sistema en inglés, fuera de los 13
+                idiomas de la app. El segundo toque es aquí mismo. */}
+            {porBorrar === t.id ? (
+              <button
+                onClick={() => {
+                  onBorrar(t.id)
+                  setPorBorrar(null)
+                }}
+                style={{ minHeight: 44, padding: '0 10px', borderRadius: 8, border: '1px solid var(--red)', background: 'none', color: 'var(--red)', cursor: 'pointer', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}
+              >
+                {tr('diario.borrarSeguro')}
+              </button>
+            ) : (
+              <button
+                onClick={() => setPorBorrar(t.id)}
+                aria-label={tr('diario.borrar')}
+                style={{ minWidth: 44, minHeight: 44, borderRadius: 8, border: '1px solid var(--border-strong)', background: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 15 }}
+              >
+                ✕
+              </button>
+            )}
           </div>
         ))}
       </div>

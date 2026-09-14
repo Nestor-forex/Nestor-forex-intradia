@@ -52,7 +52,15 @@ const COLUMNAS = {
   // MT5 pone dos columnas «Time» y dos «Price» (apertura y cierre) con el
   // MISMO nombre. Se resuelve más abajo quedándose con la PRIMERA aparición
   // para apertura y la SEGUNDA para cierre.
-  hora: ['time', 'hora', 'fecha', 'date'],
+  //
+  // ⚠️ «Fecha/Hora» va aquí, y hacía falta: es como se llama esa columna en el
+  // informe de MT5 en español, y NO coincidía con ninguno de los sinónimos de
+  // arriba («fecha/hora» no es «fecha» ni empieza por «fecha »). Sin ella el
+  // lector no encontraba ninguna columna de fecha y `fechaDe('')` caía al
+  // valor por defecto: **todas las operaciones importadas con la fecha de
+  // HOY**. No fallaba nada; simplemente el historial entero quedaba plano en
+  // un solo día y el Diario no servía para ver la evolución.
+  hora: ['time', 'hora', 'fecha', 'date', 'fecha/hora', 'hora/fecha', 'date/time', 'time/date'],
 }
 
 const sinAcentos = (s) =>
@@ -83,18 +91,40 @@ const NO_ES_OPERACION = [
 // Saca las filas de un informe HTML de MetaTrader. No usa DOMParser a
 // propósito: así esta función se puede probar en Node sin navegador, que es lo
 // que permite tener comprobaciones de verdad sobre los formatos raros.
+// ⚠️⚠️ LAS CELDAS CON `class="hidden"` SE TIRAN, Y ESTO NO ES UN DETALLE.
+//
+// El informe de MT5 mete DENTRO de cada fila de posiciones una celda que el
+// navegador no enseña, con el identificador interno de la operación:
+//
+//     <td>buy</td>
+//     <td class="hidden" colspan="8">FIX:0:ATG-ImEIk-052516096</td>
+//     <td>0.03</td>          ← el volumen de verdad
+//
+// La cabecera NO tiene esa columna. Contarla corre **todo lo que viene
+// después un puesto**, y el desastre es silencioso: el lote sale de un texto
+// (0), el resultado en dólares sale de la columna del PRECIO DE CIERRE, y la
+// fecha de cierre sale de un precio, que no se entiende y cae a la de hoy.
+//
+// Pasó de verdad, con el informe real de Néstor: 129 operaciones con fecha de
+// hoy y un «resultado total» de +1754,43 que era la SUMA DE LOS PRECIOS DE
+// CIERRE. Cada número era plausible y ninguno era verdad — exactamente el
+// fallo que este archivo dice en su cabecera que hay que evitar.
+const ES_OCULTA = /class\s*=\s*["'][^"']*\bhidden\b/i
+
 function filasDeHtml(texto) {
   const filas = []
   const trs = texto.match(/<tr[^>]*>[\s\S]*?<\/tr>/gi) || []
   for (const tr of trs) {
-    const celdas = (tr.match(/<t[dh][^>]*>[\s\S]*?<\/t[dh]>/gi) || []).map((c) =>
-      c
-        .replace(/<[^>]*>/g, ' ')
-        .replace(/&nbsp;/gi, ' ')
-        .replace(/&amp;/gi, '&')
-        .replace(/\s+/g, ' ')
-        .trim()
-    )
+    const celdas = (tr.match(/<t[dh][^>]*>[\s\S]*?<\/t[dh]>/gi) || [])
+      .filter((c) => !ES_OCULTA.test(c.slice(0, c.indexOf('>') + 1)))
+      .map((c) =>
+        c
+          .replace(/<[^>]*>/g, ' ')
+          .replace(/&nbsp;/gi, ' ')
+          .replace(/&amp;/gi, '&')
+          .replace(/\s+/g, ' ')
+          .trim()
+      )
     if (celdas.length) filas.push(celdas)
   }
   return filas
@@ -216,24 +246,46 @@ export function leerOperaciones(texto, conocidos) {
     return { operaciones: [], avisos: [{ codigo: 'sinTabla' }], leidas: 0 }
   }
 
-  // La fila de encabezados es la primera que nombre a la vez un símbolo y un
-  // tipo. Se busca en vez de darla por hecha porque los informes de MetaTrader
-  // empiezan con varias filas de título, cuenta y fechas.
-  let iCabecera = -1
-  let mapa = null
+  // ⚠️⚠️ UN INFORME DE MT5 TRAE CUATRO TABLAS, NO UNA, Y CADA UNA CON SUS
+  // PROPIAS COLUMNAS: Posiciones, Órdenes, Transacciones y Órdenes activas.
+  //
+  // Antes esto se aprendía las columnas de la PRIMERA y las usaba para todas.
+  // Las otras tres se leían con el plano equivocado, y encima la misma
+  // operación entraba tres veces bajo tres formas distintas. En el informe real
+  // de Néstor: 36 posiciones cerradas de verdad y 129 filas a punto de
+  // guardarse, contando órdenes, transacciones y hasta una orden PENDIENTE que
+  // nunca se ejecutó.
+  //
+  // Ahora se localizan todas las cabeceras y se importa de UNA SOLA tabla: la
+  // que de verdad son operaciones cerradas. Ver `elegirTabla`.
+  const tablas = []
   for (let i = 0; i < filas.length; i++) {
-    const m = mapear(filas[i])
-    if (m && m.simbolo !== undefined && m.tipo !== undefined) {
-      iCabecera = i
-      mapa = m
-      break
+    const t = mapear(filas[i])
+    if (t && t.mapa.simbolo !== undefined && t.mapa.tipo !== undefined) {
+      if (tablas.length) tablas[tablas.length - 1].fin = i
+      tablas.push({ cabecera: i, fin: filas.length, ...t })
     }
   }
-  if (iCabecera === -1) {
+  if (!tablas.length) {
     return { operaciones: [], avisos: [{ codigo: 'sinColumnas' }], leidas: 0 }
   }
+
+  const elegida = elegirTabla(tablas)
+  const mapa = elegida.mapa
   if (mapa.beneficio === undefined) {
     avisos.push({ codigo: 'sinResultado' })
+  }
+
+  // Filas con pinta de operación que quedan FUERA de la tabla elegida. Se
+  // cuentan para decirlo: saltarse tres tablas en silencio es justo el import
+  // callado que la cabecera de este archivo dice que es peor que uno que falla.
+  let deOtrasTablas = 0
+  for (const t of tablas) {
+    if (t === elegida) continue
+    for (let i = t.cabecera + 1; i < t.fin; i++) {
+      const v = sinAcentos(filas[i][t.mapa.tipo] ?? '')
+      if (v && !COLUMNAS.tipo.includes(v) && /^(buy|compra|long|larga|sell|venta|short|corta)/.test(v)) deOtrasTablas++
+    }
   }
 
   const operaciones = []
@@ -241,7 +293,7 @@ export function leerOperaciones(texto, conocidos) {
   let descartadasPorTipo = 0
   let leidas = 0
 
-  for (let i = iCabecera + 1; i < filas.length; i++) {
+  for (let i = elegida.cabecera + 1; i < elegida.fin; i++) {
     const fila = filas[i]
     const celda = (k) => (mapa[k] === undefined ? '' : (fila[mapa[k]] ?? ''))
 
@@ -306,24 +358,53 @@ export function leerOperaciones(texto, conocidos) {
     avisos.push({ codigo: 'saltadasPorPar', n: descartadasPorPar, pares: conocidos.length })
   }
   if (descartadasPorTipo) avisos.push({ codigo: 'saltadasPorTipo', n: descartadasPorTipo })
+  if (deOtrasTablas) avisos.push({ codigo: 'otrasTablas', n: deOtrasTablas })
   if (!operaciones.length && leidas) avisos.push({ codigo: 'nadaAprovechable' })
 
   return { operaciones, avisos, leidas }
 }
 
-// Empareja los encabezados con las columnas que hacen falta.
+/**
+ * De todas las tablas del archivo, ¿cuál son las operaciones CERRADAS?
+ *
+ * Se puntúa, no se adivina por el título: los títulos están traducidos y
+ * cambian entre MT4 y MT5, pero la FORMA de la tabla no.
+ *
+ *  · +2 si tiene columna de resultado. Sin ella no es una operación cerrada:
+ *    así se caen «Órdenes» y «Órdenes activas», que solo dicen qué se pidió.
+ *  · +1 si tiene DOS columnas de hora. Una operación cerrada tiene apertura y
+ *    cierre; la tabla de «Transacciones» de MT5 tiene una sola, porque cada
+ *    fila es media operación (la entrada o la salida). Importar esa tabla
+ *    contaría cada operación dos veces, una de ellas con resultado 0.
+ *
+ * En un CSV normal, que trae una sola tabla, esto no hace nada: gana la única
+ * que hay. A igualdad de puntos gana la PRIMERA, que en MT4 y MT5 es siempre
+ * la de posiciones cerradas.
+ */
+function elegirTabla(tablas) {
+  const punto = (t) => (t.mapa.beneficio !== undefined ? 2 : 0) + (t.nHoras >= 2 ? 1 : 0)
+  let mejor = tablas[0]
+  for (const t of tablas) if (punto(t) > punto(mejor)) mejor = t
+  return mejor
+}
+
+// Empareja los encabezados con las columnas que hacen falta. Devuelve también
+// cuántas columnas de hora tiene la tabla, que es lo que distingue una
+// operación cerrada (apertura y cierre) de media operación (ver `elegirTabla`).
 function mapear(fila) {
   if (!fila || fila.length < 3) return null
   const mapa = {}
-  const vistos = {}
+  let nHoras = 0
   fila.forEach((celda, i) => {
-    const txt = sinAcentos(celda)
+    // Los espacios alrededor de la barra se quitan: MetaTrader escribe «S / L»
+    // y «Fecha/Hora» sin criterio fijo, y son la misma clase de encabezado.
+    const txt = sinAcentos(celda).replace(/\s*\/\s*/g, '/')
     if (!txt) return
     for (const [clave, nombres] of Object.entries(COLUMNAS)) {
       // Coincidencia exacta primero y "empieza por" después: «Profit» y
       // «Profit/Loss» son la misma columna, pero «Open Price» NO es «Price».
       if (nombres.includes(txt) || nombres.some((n) => txt === n || txt.startsWith(n + ' '))) {
-        vistos[clave] = (vistos[clave] || 0) + 1
+        if (clave === 'hora' || clave === 'apertura' || clave === 'cierre') nHoras++
         // MT5 repite «Time» y «Price» para apertura y cierre. La PRIMERA es la
         // apertura y la SEGUNDA el cierre; para el Diario interesa la de
         // cierre, así que la repetición pisa a la anterior a propósito.
@@ -332,7 +413,7 @@ function mapear(fila) {
       }
     }
   })
-  return Object.keys(mapa).length ? mapa : null
+  return Object.keys(mapa).length ? { mapa, nHoras } : null
 }
 
 // Deja la fecha en 'AAAA-MM-DD', que es como la guarda el Diario. Acepta
