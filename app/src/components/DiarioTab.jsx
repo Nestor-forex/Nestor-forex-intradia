@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { PAIR_NAMES, monedasDe } from '../lib/pairs'
 import { useT } from '../lib/i18n'
+import Diagnostico from './Diagnostico'
 import ImportarBroker from './ImportarBroker'
 
 const esAbierta = (t) => t.estado === 'abierta'
 
-export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCerrar, prellenar, onPrellenado }) {
+export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCerrar, prellenar, onPrellenado, onVerSenales }) {
   const tr = useT()
   const [par, setPar] = useState(PAIR_NAMES[0])
   const [dir, setDir] = useState('Compra')
@@ -73,9 +74,16 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
     onCerrar(t.id, plNum)
   }
 
+  // ⚠️ `dir="ltr"` en los NÚMEROS, no en la etiqueta. En árabe toda esta
+  // pantalla heredaba `rtl` y los números salían al revés: «51%» se dibujaba
+  // con el signo delante y «+280» con el más al final. Es el mismo error que
+  // ya mordió cuatro veces en este repo (el gráfico, el clima, la correlación
+  // y el calendario) y aquí llevaba desde siempre, porque el Diario nunca se
+  // había mirado en árabe. La regla, la de siempre: se fija la dirección solo
+  // de lo que NO es idioma.
   const stat = (valor, label, color) => (
     <div className="card" style={{ textAlign: 'center', padding: 10 }}>
-      <div className="mono" style={{ fontSize: 20, fontWeight: 700, color }}>
+      <div className="mono" dir="ltr" style={{ fontSize: 20, fontWeight: 700, color }}>
         {valor}
       </div>
       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{label}</div>
@@ -91,6 +99,36 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
         {stat(statWin === '—' ? '—' : statWin + '%', tr('diario.ganadas'), 'var(--text)')}
         {stat(statPl, tr('diario.pl'), plTot >= 0 ? 'var(--green)' : 'var(--red)')}
       </div>
+
+      {/* ⚠️ EL ESTADO VACÍO VA ARRIBA DEL FORMULARIO, no debajo de la lista.
+          Antes era una línea gris al final de la pantalla («Aún no has
+          registrado operaciones»), o sea que quien abría el Diario por primera
+          vez veía un muro de campos sin saber para qué sirve ni por dónde
+          empezar — y el aviso llegaba después de todo, donde ya no orienta.
+
+          Las dos puertas son las que ya existían y están probadas: importar el
+          informe del bróker, o entrar por una señal (que precarga par,
+          dirección y nota desde el detalle). No se inventa un camino nuevo. */}
+      {!cargando && trades.length === 0 && (
+        <div className="card" style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ fontSize: 14, fontWeight: 600 }}>{tr('diario.vacioTitulo')}</div>
+          <div style={{ fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{tr('diario.vacioPorque')}</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button
+              className="btn"
+              style={{ flex: '1 1 150px', minHeight: 44 }}
+              onClick={() => document.getElementById('importar-broker')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+            >
+              {tr('diario.vacioImportar')}
+            </button>
+            {onVerSenales && (
+              <button className="btn" style={{ flex: '1 1 150px', minHeight: 44 }} onClick={onVerSenales}>
+                {tr('diario.vacioSenales')}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
@@ -143,7 +181,13 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
       {/* Debajo del formulario a mano y no encima: quien apunta una operación
           suelta es el caso de todos los días; importar el informe del bróker
           es algo que se hace de vez en cuando. */}
-      <ImportarBroker trades={trades} onImportar={onGuardar} />
+      <div id="importar-broker">
+        <ImportarBroker trades={trades} onImportar={onGuardar} />
+      </div>
+
+      {/* Debajo del importador y encima de la lista: es el resumen de lo que
+          hay en esa lista. No se pinta si no hay operaciones cerradas. */}
+      <Diagnostico trades={trades} />
 
       {avisoRiesgo.length > 0 && (
         <div style={{ padding: 12, border: '1px solid oklch(0.4 0.06 85)', borderRadius: 8, background: 'oklch(0.22 0.03 85)' }}>
@@ -171,10 +215,18 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
           <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, border: '1px solid var(--border)', borderRadius: 8 }}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div className="mono" style={{ display: 'flex', gap: 8, alignItems: 'baseline', fontSize: 13, flexWrap: 'wrap' }}>
-                <span style={{ fontWeight: 700 }}>{t.par}</span>
-                <span style={{ color: t.dir === 'Compra' ? 'var(--green)' : 'var(--red)', fontWeight: 600 }}>{t.dir}</span>
+                {/* El código de par va en `ltr` fijo: no es idioma. */}
+                <span dir="ltr" style={{ fontWeight: 700 }}>
+                  {t.par}
+                </span>
+                {/* La dirección SÍ es idioma (Compra/Buy/…): no se le toca. */}
+                <span style={{ color: t.dir === 'Compra' ? 'var(--green)' : 'var(--red)', fontWeight: 600 }}>{tr('direccion.' + t.dir)}</span>
+                {/* Aquí se mezclan número y palabra traducida, así que se
+                    aísla solo el número con `bdi` en vez de forzar el renglón
+                    entero — el mismo arreglo que en el calendario, donde
+                    ponerle `ltr` a toda la línea partía «24.5K» en dos. */}
                 <span style={{ color: 'var(--text-muted)' }}>
-                  {t.lote} {tr('diario.loteSufijo')} · {t.fecha}
+                  <bdi dir="ltr">{t.lote}</bdi> {tr('diario.loteSufijo')} · <bdi dir="ltr">{t.fecha}</bdi>
                 </span>
                 {esAbierta(t) && <span style={{ color: 'var(--amber)', fontWeight: 600 }}>{tr('diario.abierta')}</span>}
               </div>
@@ -189,7 +241,7 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
                 {tr('diario.cerrar')}
               </button>
             ) : (
-              <span className="mono" style={{ fontWeight: 700, fontSize: 14, color: t.pl >= 0 ? 'var(--green)' : 'var(--red)' }}>
+              <span className="mono" dir="ltr" style={{ fontWeight: 700, fontSize: 14, color: t.pl >= 0 ? 'var(--green)' : 'var(--red)' }}>
                 {(t.pl >= 0 ? '+' : '') + t.pl.toFixed(2)}
               </span>
             )}
@@ -203,7 +255,8 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
         ))}
       </div>
 
-      {!cargando && trades.length === 0 && <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{tr('diario.vacio')}</div>}
+      {/* La línea gris del final ya no hace falta: el estado vacío está arriba,
+          que es donde orienta. */}
     </div>
   )
 }

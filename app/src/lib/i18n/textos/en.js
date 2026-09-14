@@ -186,7 +186,10 @@ export default {
     abierta: 'Open',
     cerrar: 'Close',
     loteSufijo: 'lot',
-    vacio: 'You have not logged any trades yet.',
+    vacioTitulo: 'Your journal is empty',
+    vacioPorque: 'Logging what you do is what turns this app into something that tells you about YOU, not just about the market.',
+    vacioImportar: 'Import from broker',
+    vacioSenales: 'See today’s signals',
     promptCerrar: ({ par }) => `Final result for ${par} (USD, use - for a loss):`,
   },
 
@@ -392,6 +395,19 @@ export default {
     },
     cabeceraSueltas: 'Rate of each central bank',
     pie: (v) => `Source: BIS (Bank for International Settlements). Each row shows the date of ITS own figure: a policy rate only changes on the day the central bank meets. The oldest is ${v.dias} days old.`,
+  },
+
+  diag: {
+    titulo: ({ n }) => `Your numbers by group (${n})`,
+    aviso: 'This counts what YOU did, nothing else. It is not advice, it does not say what to trade, and it has nothing to do with what the app flags.',
+    ops: 'ops',
+    tipo: 'By pair type',
+    cruces: 'Crosses (no dollar)',
+    dolar: 'Dollar pairs',
+    direccion: 'By direction',
+    pares: ({ n }) => `By pair (from ${n} trades)`,
+    lote: ({ min, max, distintos }) => `Lot: from ${min} to ${max}, ${distintos} different sizes.`,
+    pie: 'The ± is how much that percentage can move by chance alone. With few trades it is huge: with 10 it is ±31 points, so 40 % and 70 % are the same number.',
   },
 
   errores: {

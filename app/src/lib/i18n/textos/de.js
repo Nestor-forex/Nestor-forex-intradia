@@ -186,7 +186,10 @@ export default {
     abierta: 'Offen',
     cerrar: 'Schließen',
     loteSufijo: 'Lot',
-    vacio: 'Du hast noch keine Trades eingetragen.',
+    vacioTitulo: 'Dein Journal ist leer',
+    vacioPorque: 'Aufzuschreiben, was du tust, macht aus dieser App etwas, das dir über DICH etwas sagt und nicht nur über den Markt.',
+    vacioImportar: 'Vom Broker importieren',
+    vacioSenales: 'Heutige Signale ansehen',
     promptCerrar: ({ par }) => `Endergebnis für ${par} (USD, mit - für Verlust):`,
   },
 
@@ -392,6 +395,19 @@ export default {
     },
     cabeceraSueltas: 'Zins jeder Zentralbank',
     pie: (v) => `Quelle: BIS (Bank für Internationalen Zahlungsausgleich). Jede Zeile zeigt das Datum IHRER Angabe: ein Leitzins ändert sich nur an dem Tag, an dem die Zentralbank tagt. Die älteste ist ${v.dias} Tage alt.`,
+  },
+
+  diag: {
+    titulo: ({ n }) => `Deine Zahlen nach Gruppen (${n})`,
+    aviso: 'Das zählt nur, was DU getan hast. Es ist kein Rat, sagt nicht, was zu handeln ist, und hat nichts mit dem zu tun, was die App anzeigt.',
+    ops: 'Ops',
+    tipo: 'Nach Paartyp',
+    cruces: 'Crosses (ohne Dollar)',
+    dolar: 'Dollar-Paare',
+    direccion: 'Nach Richtung',
+    pares: ({ n }) => `Nach Paar (ab ${n} Trades)`,
+    lote: ({ min, max, distintos }) => `Lot: von ${min} bis ${max}, ${distintos} verschiedene Größen.`,
+    pie: 'Das ± ist, wie stark sich dieser Prozentsatz allein durch Zufall bewegen kann. Bei wenigen Trades ist es riesig: bei 10 sind es ±31 Punkte, also sind 40 % und 70 % dieselbe Zahl.',
   },
 
   errores: {

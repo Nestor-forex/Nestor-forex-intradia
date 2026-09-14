@@ -50,6 +50,13 @@ export const GEMELOS = [
   'src/components/CalculadoraTab.jsx',
   'src/components/CargandoApp.jsx',
   'src/components/DiarioTab.jsx',
+  // Tus propios numeros partidos en grupos, y el aviso de que no son un
+  // consejo. Es identico en las dos apps a proposito: el margen de una
+  // proporcion es estadistica, no un umbral de mercado, y los cortes (cruce o
+  // par con dolar, compra o venta) los da `pairs.js` de cada app.
+  'src/lib/diagnostico.js',
+  'src/components/Diagnostico.jsx',
+  'scripts/prueba-diario.mjs',
   'src/components/Glosario.jsx',
   // Leer el informe del broker y meterlo en el Diario. Es identico en las dos
   // apps a proposito: el formato de MT4/MT5 no sabe nada de si se opera en

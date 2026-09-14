@@ -182,7 +182,10 @@ export default {
     abierta: '보유 중',
     cerrar: '청산',
     loteSufijo: '랏',
-    vacio: '아직 기록한 거래가 없습니다.',
+    vacioTitulo: '매매일지가 비어 있습니다',
+    vacioPorque: '자신의 매매를 기록해야 이 앱이 시장뿐 아니라 «당신»에 대해 말해 주는 도구가 됩니다.',
+    vacioImportar: '브로커에서 가져오기',
+    vacioSenales: '오늘의 시그널 보기',
     promptCerrar: ({ par }) => `${par}의 최종 결과 (USD, 손실은 -를 사용):`,
   },
 
@@ -386,6 +389,19 @@ export default {
     },
     cabeceraSueltas: '각 중앙은행의 금리',
     pie: (v) => `출처: BIS(국제결제은행). 각 줄에는 그 수치 자체의 날짜가 있습니다. 정책금리는 중앙은행이 회의를 여는 날에만 바뀝니다. 가장 오래된 것은 ${v.dias}일 전 자료입니다.`,
+  },
+
+  diag: {
+    titulo: ({ n }) => `그룹별 내 숫자 (${n})`,
+    aviso: '여기서 세는 것은 «당신»이 한 것뿐입니다. 조언이 아니며, 무엇을 매매하라고 말하지 않고, 앱이 표시하는 시그널과도 관계가 없습니다.',
+    ops: '건',
+    tipo: '통화쌍 유형별',
+    cruces: 'Crosses (달러 제외)',
+    dolar: '달러 통화쌍',
+    direccion: '방향별',
+    pares: ({ n }) => `통화쌍별 (${n}건 이상)`,
+    lote: ({ min, max, distintos }) => `Lot: ${min}부터 ${max}까지, ${distintos}가지 크기.`,
+    pie: '±는 그 비율이 우연만으로 움직일 수 있는 폭입니다. 건수가 적으면 매우 큽니다: 10건이면 ±31포인트, 즉 40 %와 70 %는 같은 숫자입니다.',
   },
 
   errores: {

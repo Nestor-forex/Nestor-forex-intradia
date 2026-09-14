@@ -179,7 +179,10 @@ export default {
     abierta: '持仓中',
     cerrar: '平仓',
     loteSufijo: '手',
-    vacio: '你还没有记录任何交易。',
+    vacioTitulo: '你的交易日志是空的',
+    vacioPorque: '记录你的操作，才能让这个应用告诉你关于"你"的事情，而不只是关于市场。',
+    vacioImportar: '从经纪商导入',
+    vacioSenales: '查看今天的信号',
     promptCerrar: ({ par }) => `${par} 的最终结果（USD，亏损请用 -）：`,
   },
 
@@ -383,6 +386,19 @@ export default {
     },
     cabeceraSueltas: '各国央行的利率',
     pie: (v) => `来源：BIS（国际清算银行）。每一行都标着它自己那条数据的日期：政策利率只在央行开会的当天才会变。最旧的一条是 ${v.dias} 天前的。`,
+  },
+
+  diag: {
+    titulo: ({ n }) => `按分组看你的数字（${n}）`,
+    aviso: '这里统计的只是"你"做过的事。这不是建议，不会告诉你该做哪个品种，也和应用标出的信号无关。',
+    ops: '笔',
+    tipo: '按货币对类型',
+    cruces: 'Crosses（不含美元）',
+    dolar: '含美元的货币对',
+    direccion: '按方向',
+    pares: ({ n }) => `按货币对（至少 ${n} 笔）`,
+    lote: ({ min, max, distintos }) => `Lot：从 ${min} 到 ${max}，共 ${distintos} 种不同手数。`,
+    pie: '± 表示这个百分比仅凭偶然就可能变动的幅度。笔数少时非常大：10 笔时是 ±31 个百分点，也就是说 40 % 和 70 % 是同一个数字。',
   },
 
   errores: {

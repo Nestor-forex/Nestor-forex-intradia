@@ -186,7 +186,10 @@ export default {
     abierta: 'Ouverte',
     cerrar: 'Clôturer',
     loteSufijo: 'lot',
-    vacio: "Tu n'as encore enregistré aucune opération.",
+    vacioTitulo: 'Ton journal est vide',
+    vacioPorque: 'Noter ce que tu fais transforme cette app en quelque chose qui parle de TOI, pas seulement du marché.',
+    vacioImportar: 'Importer du broker',
+    vacioSenales: 'Voir les signaux du jour',
     promptCerrar: ({ par }) => `Résultat final de ${par} (USD, utilise - pour une perte) :`,
   },
 
@@ -392,6 +395,19 @@ export default {
     },
     cabeceraSueltas: 'Taux de chaque banque centrale',
     pie: (v) => `Source : BIS (Banque des règlements internationaux). Chaque ligne affiche la date de SA donnée : un taux directeur ne change que le jour où la banque centrale se réunit. La plus ancienne date de ${v.dias} jours.`,
+  },
+
+  diag: {
+    titulo: ({ n }) => `Tes chiffres par groupe (${n})`,
+    aviso: 'Ceci compte ce que TU as fait, rien de plus. Ce n’est pas un conseil, cela ne dit pas quoi trader, et cela n’a rien à voir avec ce que l’app signale.',
+    ops: 'ops',
+    tipo: 'Par type de paire',
+    cruces: 'Crosses (sans dollar)',
+    dolar: 'Paires en dollar',
+    direccion: 'Par direction',
+    pares: ({ n }) => `Par paire (à partir de ${n} trades)`,
+    lote: ({ min, max, distintos }) => `Lot : de ${min} à ${max}, ${distintos} tailles différentes.`,
+    pie: 'Le ± est de combien ce pourcentage peut bouger par pur hasard. Avec peu de trades c’est énorme : avec 10 c’est ±31 points, donc 40 % et 70 % sont le même nombre.',
   },
 
   errores: {
