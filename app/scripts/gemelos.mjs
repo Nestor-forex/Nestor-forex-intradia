@@ -40,6 +40,23 @@
 // GEMELOS: idénticos carácter por carácter, en los dos repositorios.
 // ─────────────────────────────────────────────────────────────────────────
 export const GEMELOS = [
+  // ⚠️ LAS REGLAS DE SEGURIDAD DE FIRESTORE, y son el gemelo más importante
+  // de la lista.
+  //
+  // Hay UN solo proyecto de Firebase y UNAS solas reglas en vigor, pero el
+  // archivo está guardado en los dos repositorios para que quien lea
+  // cualquiera de los dos vea las reglas completas. Eso es cómodo y es una
+  // trampa: el 2026-09-15 se apretó una regla en Swing —la que impedía que un
+  // suscriptor se escribiera su propia fecha de vencimiento— y la copia de
+  // Intradía se quedó con la versión vieja **diciendo en su propia cabecera
+  // que era idéntica**. Quien la leyera creería que rigen unas reglas que ya
+  // no rigen.
+  //
+  // Publicarlas las publica `scripts/publicar-reglas.mjs`, que vive solo en
+  // Swing y lee SOLO la copia de Swing. Esta comprobación es lo único que
+  // impide que la otra se quede atrás en silencio.
+  '../firestore.rules',
+
   // El armazón de la app: sesión, miembros, idioma, avisos, calculadora.
   // Nada de esto depende de si se opera en velas de un día o de una hora.
   'src/main.jsx',
