@@ -1,10 +1,10 @@
 rules_version = '2';
 
 // Reglas de seguridad de Firestore compartidas por Nestor Forex y su app
-// hermana Nestor Forex Intradía (mismo proyecto de Firebase, mismas cuentas
-// de usuarios/administrador — la fuente de la verdad de este archivo vive en
-// el repositorio de Nestor Forex; esta es una copia idéntica para que quien
-// lea este repo vea las reglas completas sin tener que cruzar repos).
+// hermana Nestor Forex Intradía (nestor-forex-intradia) — mismo proyecto de
+// Firebase, mismas cuentas de usuarios/administrador, pero cada app guarda
+// su diario de operaciones en su propia colección para no mezclar
+// estadísticas de swing con las de intradía.
 //
 // Cómo funciona el acceso:
 // - Cada persona solo puede leer y crear SU PROPIO documento en `users`.
@@ -13,10 +13,9 @@ rules_version = '2';
 // - Nadie puede aprobarse a sí mismo: al crear su solicitud, el estado
 //   queda forzado a 'pendiente', y un usuario normal no puede cambiar su
 //   propio campo `estado`.
-// - Las operaciones del diario de swing (`trades`) y las de intradía
-//   (`trades_intradia`) de cada usuario solo son visibles para ese mismo
-//   usuario, y solo si su cuenta está aprobada. Van en colecciones
-//   separadas para no mezclar las estadísticas de una app con la otra.
+// - Las operaciones del diario de swing (`trades`, esta app) y las de
+//   intradía (`trades_intradia`, la app hermana) de cada usuario solo son
+//   visibles para ese mismo usuario, y solo si su cuenta está aprobada.
 //
 // Para cambiar quién es el administrador, actualiza el correo en
 // ADMIN_EMAIL abajo y vuelve a publicar estas reglas (Firebase Console →
@@ -45,10 +44,28 @@ service cloud.firestore {
         && request.resource.data.estado == 'pendiente'
         && request.resource.data.email == request.auth.token.email;
 
+      // ⚠️ UN USUARIO NORMAL SOLO PUEDE CAMBIAR SU NOMBRE. NADA MÁS.
+      //
+      // Antes la regla decía «puede cambiar lo que quiera mientras no toque
+      // `estado` ni `email`». Mientras la ficha solo guardaba el nombre eso
+      // era inofensivo. Dejó de serlo el día que apareció `venceEl`: con la
+      // regla vieja, cualquier miembro aprobado podía escribir su propia
+      // fecha de vencimiento en el año 2099 —sin pasar por la app, hablando
+      // con Firestore directamente— y no volver a pagar nunca. Y la
+      // configuración de Firebase es pública, porque los dos repositorios lo
+      // son.
+      //
+      // Se escribe con una LISTA DE LO PERMITIDO y no de lo prohibido, a
+      // propósito: así el campo que se invente mañana nace protegido. Es la
+      // misma forma de escribir que `esSombra` (una regla nueva nace apagada)
+      // y por la misma razón — olvidarse de proteger algo cuesta caro,
+      // olvidarse de permitir algo solo cuesta un aviso.
+      //
+      // Hoy ninguna de las dos apps escribe en su propia ficha: se comprobó
+      // buscando en `src/` de las dos antes de apretar la regla.
       allow update: if esAdmin()
         || (esPropio(uid)
-            && request.resource.data.estado == resource.data.estado
-            && request.resource.data.email == resource.data.email);
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nombre']));
 
       allow delete: if esAdmin();
 
@@ -63,23 +80,27 @@ service cloud.firestore {
       }
     }
 
-    // Suscripciones a los avisos push (fase 3).
+    // Suscripciones a los avisos push del celular. Hoy las usa solo la app
+    // hermana de intradía (su vigía es el que manda los avisos), pero las
+    // reglas son una sola para todo el proyecto de Firebase, así que viven
+    // aquí, que es donde está la copia buena de este archivo.
     //
-    // Una por APARATO, no por persona: alguien puede tener los avisos activos
-    // en el celular y en el computador a la vez. Por eso es una colección
-    // plana y cada documento lleva el `uid` de su dueño, en vez de colgar de
-    // users/{uid} como el diario.
+    // Una por APARATO, no por persona: alguien puede tener los avisos
+    // activos en el celular y en el computador a la vez. Por eso es una
+    // colección plana y cada documento lleva el `uid` de su dueño, en vez
+    // de colgar de users/{uid} como el diario.
     //
-    // Desde la app nadie las lista: quien las lee todas es el vigía, con una
-    // cuenta de servicio que no pasa por estas reglas. Por eso no hay `list`.
+    // Desde la app nadie las lista: quien las lee todas es el vigía, con
+    // una cuenta de servicio que no pasa por estas reglas. Por eso no hay
+    // `list`.
     match /pushSubs/{subId} {
       allow get: if esPropio(resource.data.uid);
 
       allow create: if esPropio(request.resource.data.uid)
         && estaAprobado(request.auth.uid);
 
-      // El identificador del documento sale de la dirección de envío, así que
-      // reactivar los avisos en el mismo aparato sobrescribe en vez de
+      // El identificador del documento sale de la dirección de envío, así
+      // que reactivar los avisos en el mismo aparato sobrescribe en vez de
       // duplicar. Se exige ser dueño del documento que ya está Y del que
       // queda, para que nadie pueda apropiarse de la suscripción de otro.
       allow update: if esPropio(resource.data.uid)

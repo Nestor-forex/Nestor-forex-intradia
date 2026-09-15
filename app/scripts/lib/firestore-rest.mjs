@@ -64,13 +64,19 @@ const base64url = (x) =>
 
 // Un token de acceso dura una hora; el vigía corre y se muere en segundos,
 // así que se pide uno nuevo en cada corrida y no hace falta cachearlo.
-async function pedirToken(cuenta) {
+//
+// El ÁMBITO se puede cambiar porque no todo lo que hace falta aquí es leer
+// datos: publicar las reglas de seguridad es otra API de Google y pide otro
+// permiso. Va como argumento con el valor de siempre por defecto, así que
+// quien no lo pase sigue pidiendo exactamente lo de antes — un token pedido
+// con más permiso del necesario es permiso regalado.
+export async function pedirToken(cuenta, ambito = AMBITO) {
   const ahora = Math.floor(Date.now() / 1000)
   const cabecera = base64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }))
   const cuerpo = base64url(
     JSON.stringify({
       iss: cuenta.client_email,
-      scope: AMBITO,
+      scope: ambito,
       aud: URL_TOKEN,
       iat: ahora,
       exp: ahora + 3600,
