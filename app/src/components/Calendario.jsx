@@ -1,5 +1,5 @@
-import { useState } from 'react'
 import { useIdioma } from '../lib/i18n'
+import TarjetaPlegable from './TarjetaPlegable'
 import {
   ALTO,
   FERIADO,
@@ -57,7 +57,6 @@ const IMPACTO = {
 
 export default function Calendario({ cal, ahora = new Date() }) {
   const { t, locale } = useIdioma()
-  const [abierto, setAbierto] = useState(false)
 
   const eventos = proximos(cal, ahora)
 
@@ -75,42 +74,28 @@ export default function Calendario({ cal, ahora = new Date() }) {
     new Date(iso).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
 
   return (
-    <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-      <button
-        onClick={() => setAbierto((v) => !v)}
-        style={{
-          width: '100%',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: 10,
-          padding: '12px 14px',
-          background: 'none',
-          border: 'none',
-          color: 'var(--text)',
-          cursor: 'pointer',
-          fontSize: 13.5,
-          fontWeight: 600,
-          minHeight: 44,
-          textAlign: 'left',
-        }}
-      >
-        <span style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
-          <span>{t('calendario.titulo', { n: eventos.length })}</span>
-          {/* El aviso, visible SIN abrir. Solo aparece si de verdad viene algo
-              de alto impacto: si saltara por cualquier cosa, dejaría de
-              leerse a la semana. */}
-          {urgente && (
-            <span style={{ fontSize: 11.5, fontWeight: 500, color: IMPACTO[ALTO].color }}>
-              {t('calendario.aviso', { h: horas, div: urgente.c })}
-            </span>
-          )}
-        </span>
-        <span style={{ color: 'var(--text-muted)', flexShrink: 0 }}>{abierto ? '▲' : '▼'}</span>
-      </button>
-
-      {abierto && (
-        <div style={{ padding: '0 14px 14px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+    <TarjetaPlegable
+      titulo={t('calendario.titulo', { n: eventos.length })}
+      desc={t('calendario.desc')}
+      // ⚠️ EL AVISO DE NOTICIA URGENTE TIENE QUE VERSE SIN ABRIR, y por eso
+      // existe la ranura `avance` de la tarjeta compartida. Solo sale si de
+      // verdad viene algo de alto impacto: si saltara por cualquier cosa,
+      // dejaría de leerse a la semana.
+      //
+      // 📌 Esto se perdió al extraer la tarjeta común y hay que dejarlo dicho:
+      // el guion que sustituyó las ocho cabeceras dio «✓» en ésta **mientras
+      // se llevaba por delante el aviso y el número del título**. Comprobó que
+      // sus anclas coincidían, no que no se perdiera nada — y las siete
+      // cabeceras iguales hicieron creer que la octava también lo era. Lo cazó
+      // el linter, avisando de que `horas` se había quedado sin usar.
+      avance={
+        urgente ? (
+          <span style={{ color: IMPACTO[ALTO].color, fontWeight: 500 }}>
+            {t('calendario.aviso', { h: horas, div: urgente.c })}
+          </span>
+        ) : null
+      }
+    >
           <p style={{ margin: 0, fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
             {t('calendario.intro')}
           </p>
@@ -254,8 +239,6 @@ export default function Calendario({ cal, ahora = new Date() }) {
           <p style={{ margin: 0, fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.5 }}>
             {t('calendario.pie')}
           </p>
-        </div>
-      )}
-    </div>
+    </TarjetaPlegable>
   )
 }

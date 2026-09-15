@@ -207,6 +207,7 @@ export default {
       nadaAprovechable: 'Leram-se linhas, mas nenhuma era uma operação aproveitável.',
     },
     titulo: "Importar operações da corretora",
+    desc: 'Carregue o relatório de MT4 ou MT5 e as suas operações entram sozinhas, já com o resultado líquido.',
     explicacion: "Exporta o teu histórico do MT4 («Guardar como relatório detalhado») ou do MT5 («Relatório») e carrega-o aqui. Um CSV também serve. Nada é guardado até confirmares.",
     elegir: "Escolher ficheiro…",
     errorLeer: "Não foi possível ler o ficheiro.",
@@ -265,7 +266,8 @@ export default {
   },
 
   calendario: {
-    titulo: (v) => `Notícias que podem mover o preço (${v.n})`,
+    titulo: ({ n }) => `Calendário económico (${n})`,
+    desc: 'Notícias que podem mover o preço',
     aviso: (v) => `${v.div}: dado importante em ${v.h} h`,
     intro: 'Dados económicos que podem mover o preço de repente. Não mudam nenhum sinal da app: estão aqui para você saber a que horas não convém entrar às cegas.',
     alto: 'Move muito',
@@ -289,7 +291,8 @@ export default {
     pie: 'Só se mostram os dados de impacto alto e médio das 8 moedas da varredura; os de impacto baixo ficam de fora porque encobririam os que importam. As horas são as do seu telemóvel. Fonte: ForexFactory.',
   },
   glosario: {
-    titulo: 'O que significam estes termos?',
+    titulo: 'Glossário',
+    desc: 'O que significam estes termos?',
     terminos: [
       ['Força relativa', 'Quão forte ou fraca está uma moeda comparada com as outras 7, fazendo a média da variação recente de preço. Mais alto = mais forte.'],
       ['Viés', 'Para onde um par pende agora: se vale mais procurar compras ou vendas, conforme qual moeda está mais forte.'],
@@ -359,9 +362,15 @@ export default {
     soloEsteAparato: 'Os avisos são por aparelho: se você usa o app no celular e no computador, ative em cada um.',
   },
 
+  plegable: {
+    ver: 'Ver',
+    cerrar: 'Fechar',
+  },
+
   historial: {
     titulo: 'Histórico de sinais',
     intro: 'Cada sinal que o vigia encontrou e o que aconteceu depois.',
+    pie: 'Os pips saem do objetivo e do stop que a app definiu: NÃO incluem spread nem swap, por isso numa conta real o resultado é pior. E aqui pesa mais do que na app de swing, porque o stop é muito mais curto: os mesmos 2 pips de spread são 7 % do risco em vez de 1,8 %. Se a mesma vela toca o stop e o objetivo conta como perdida, porque a vela não diz qual aconteceu primeiro. A vela em que aparece o sinal não conta: a entrada é no seu fecho.',
     cargando: 'Carregando o histórico…',
     error: 'Não foi possível carregar o histórico. Verifique a conexão.',
     vacio: 'Ainda não há nenhum sinal.',
@@ -395,7 +404,8 @@ export default {
     pie: (v) => `Spread em pips, em âmbar se passar de 3. Tomado em ${v.hora}.`,
   },
   tasas: {
-    titulo: 'O que custa mantê-la aberta',
+    titulo: 'Taxas de juro e swap',
+    desc: 'O que custa mantê-la aberta',
     aviso:
       '⚠️ Isto NÃO é o swap que a sua corretora vai cobrar. É a diferença entre as taxas dos bancos centrais, que é de onde o swap SAI. A sua corretora acrescenta uma margem que ninguém publica e que é desigual: numa direção você paga e na outra às vezes recebe, mas quase nunca o mesmo. Serve para saber o sentido e o tamanho aproximado, não a cifra.',
     intro:
@@ -411,6 +421,7 @@ export default {
 
   diag: {
     titulo: ({ n }) => `Os teus números por grupos (${n})`,
+    desc: 'As suas operações separadas por tipo de par, por direção e por par.',
     aviso: 'Isto conta o que TU fizeste, nada mais. Não é um conselho, não diz o que operar e não tem nada a ver com o que a app assinala.',
     ops: 'ops',
     tipo: 'Por tipo de par',

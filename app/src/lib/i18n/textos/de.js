@@ -207,6 +207,7 @@ export default {
       nadaAprovechable: 'Zeilen wurden gelesen, aber keine war ein brauchbarer Trade.',
     },
     titulo: "Trades vom Broker importieren",
+    desc: 'Laden Sie Ihren MT4- oder MT5-Bericht hoch und die Trades kommen von selbst herein, inklusive Nettoergebnis.',
     explicacion: "Exportiere deine Historie aus MT4 („Als detaillierten Bericht speichern\") oder MT5 („Bericht\") und lade sie hier hoch. Eine CSV funktioniert auch. Nichts wird gespeichert, bis du bestätigst.",
     elegir: "Datei wählen…",
     errorLeer: "Die Datei konnte nicht gelesen werden.",
@@ -265,7 +266,8 @@ export default {
   },
 
   calendario: {
-    titulo: (v) => `Nachrichten, die den Kurs bewegen können (${v.n})`,
+    titulo: ({ n }) => `Wirtschaftskalender (${n})`,
+    desc: 'Nachrichten, die den Kurs bewegen können',
     aviso: (v) => `${v.div}: wichtiger Termin in ${v.h} Std.`,
     intro: 'Wirtschaftsdaten, die den Kurs schlagartig bewegen können. Sie ändern kein Signal der App: Sie stehen hier, damit Sie wissen, wann man nicht blind einsteigen sollte.',
     alto: 'Bewegt stark',
@@ -289,7 +291,8 @@ export default {
     pie: 'Gezeigt werden nur Termine mit hoher und mittlerer Wirkung für die 8 Währungen des Scans; geringe Wirkung bleibt außen vor, weil sie die wichtigen überdecken würde. Die Zeiten sind die Ihres Telefons. Quelle: ForexFactory.',
   },
   glosario: {
-    titulo: 'Was bedeuten diese Begriffe?',
+    titulo: 'Glossar',
+    desc: 'Was bedeuten diese Begriffe?',
     terminos: [
       ['Relative Stärke', 'Wie stark oder schwach eine Währung im Vergleich zu den anderen 7 ist, gemittelt über ihre jüngste Kursveränderung. Höher = stärker.'],
       ['Bias', 'Wohin ein Paar gerade neigt: ob eher Käufe oder Verkäufe zu suchen sind, je nachdem welche Währung stärker ist.'],
@@ -359,9 +362,15 @@ export default {
     soloEsteAparato: 'Benachrichtigungen gelten pro Gerät: Wenn du die App auf Handy und Computer nutzt, aktiviere sie auf beiden.',
   },
 
+  plegable: {
+    ver: 'Ansehen',
+    cerrar: 'Schließen',
+  },
+
   historial: {
     titulo: 'Signalverlauf',
     intro: 'Jedes Signal des Wächters und was danach passierte.',
+    pie: 'Die Pips stammen aus Ziel und Stop, die die App gesetzt hat: Spread und Swap sind NICHT enthalten, auf einem echten Konto fällt das Ergebnis also schlechter aus. Und hier wiegt das schwerer als in der Swing-App, weil der Stop viel kürzer ist: dieselben 2 Pips Spread sind 7 % des Risikos statt 1,8 %. Berührt dieselbe Kerze Stop und Ziel, zählt es als Verlust, denn die Kerze sagt nicht, was zuerst kam. Die Kerze, in der das Signal erscheint, zählt nicht: der Einstieg ist zu ihrem Schluss.',
     cargando: 'Verlauf wird geladen…',
     error: 'Verlauf konnte nicht geladen werden. Prüfe die Verbindung.',
     vacio: 'Noch keine Signale.',
@@ -395,7 +404,8 @@ export default {
     pie: (v) => `Spread in Pips, ab 3 in Bernstein. Aufgenommen am ${v.hora}.`,
   },
   tasas: {
-    titulo: 'Was es kostet, sie offen zu halten',
+    titulo: 'Zinssätze und Swap',
+    desc: 'Was es kostet, sie offen zu halten',
     aviso:
       '⚠️ Das ist NICHT der Swap, den dein Broker dir berechnet. Es ist die Differenz zwischen den Leitzinsen der Zentralbanken, aus der der Swap ENTSTEHT. Dein Broker schlägt eine Marge auf, die niemand veröffentlicht, und sie ist ungleich: in einer Richtung zahlst du, in der anderen bekommst du manchmal etwas, aber fast nie gleich viel. Es zeigt Richtung und ungefähre Größe, nicht den Betrag.',
     intro:
@@ -411,6 +421,7 @@ export default {
 
   diag: {
     titulo: ({ n }) => `Deine Zahlen nach Gruppen (${n})`,
+    desc: 'Ihre Trades getrennt nach Paartyp, nach Richtung und nach Paar.',
     aviso: 'Das zählt nur, was DU getan hast. Es ist kein Rat, sagt nicht, was zu handeln ist, und hat nichts mit dem zu tun, was die App anzeigt.',
     ops: 'Ops',
     tipo: 'Nach Paartyp',
