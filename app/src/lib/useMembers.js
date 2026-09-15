@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { collection, doc, onSnapshot, orderBy, query, updateDoc } from 'firebase/firestore'
+import { collection, deleteField, doc, onSnapshot, orderBy, query, updateDoc } from 'firebase/firestore'
 import { db } from './firebase'
+import { esFechaISO } from './vencimientos'
 
 // Lista en vivo de solicitudes/miembros, solo utilizable por el admin
 // (las reglas de Firestore igual lo exigen del lado del servidor).
@@ -44,5 +45,23 @@ export function useMembers(activo) {
   // que falla si alguien devuelve el `deleteDoc`.
   const retirar = (uid) => updateDoc(doc(db, 'users', uid), { estado: 'retirado' })
 
-  return { usuarios, cargando, aprobar, retirar }
+  // La fecha hasta la que esa persona tiene acceso, en texto 'AAAA-MM-DD'.
+  //
+  // De aquí come el robot que cierra puertas cada noche
+  // (`scripts/cerrar-vencidos.mjs`). Quitar la fecha —pasando vacío— deja la
+  // cuenta SIN vencimiento, o sea abierta indefinidamente: es lo que tienen
+  // hoy todos los miembros y lo que hay que dejarle a quien no se cobra.
+  //
+  // ⚠️ Vale para LAS DOS APPS a la vez: comparten la colección `users`.
+  const fijarVence = (uid, fecha) => {
+    const limpio = String(fecha ?? '').trim()
+    if (!limpio) return updateDoc(doc(db, 'users', uid), { venceEl: deleteField() })
+    // Se rechaza aquí y no solo en el robot: una fecha mal escrita que llegue
+    // a Firestore deja esa ficha marcada como «ilegible» y sin cerrar hasta
+    // que alguien la arregle a mano. Mejor no dejarla entrar.
+    if (!esFechaISO(limpio)) throw new Error(`Fecha inválida: ${limpio}`)
+    return updateDoc(doc(db, 'users', uid), { venceEl: limpio })
+  }
+
+  return { usuarios, cargando, aprobar, retirar, fijarVence }
 }

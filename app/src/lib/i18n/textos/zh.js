@@ -245,6 +245,15 @@ export default {
     vacio: '暂无申请。分享这个应用让别人注册。',
     estadoAprobado: '已批准',
     estadoPendiente: '待批准',
+    estadoRetirado: '已移除',
+    reactivar: '重新启用',
+    fechaVence: '到期日',
+    sinVence: '无到期日',
+    venceHoy: '今天到期',
+    venceEn: ({ dias }) => `还剩 ${dias} 天`,
+    vencioHace: ({ dias }) => `已过期 ${dias} 天`,
+    masCiclo: ({ dias }) => `+${dias} 天`,
+    venceAyuda: '到期日表示这个人可以使用到什么时候。每天夜里，机器人会把已过期的人关在门外（留有一天的宽限）。没有日期＝不限期开放，这也是目前所有人的状态。「+30 天」按钮是在原有日期上累加，所以提前续期不会损失天数。两个应用通用：它们共用同一份成员名单。',
   },
 
   calendario: {

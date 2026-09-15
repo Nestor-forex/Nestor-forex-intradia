@@ -253,6 +253,15 @@ export default {
     vacio: 'No requests yet. Share the app so people can sign up.',
     estadoAprobado: 'approved',
     estadoPendiente: 'pending',
+    estadoRetirado: 'removed',
+    reactivar: 'Reactivate',
+    fechaVence: 'Expiry date',
+    sinVence: 'no expiry',
+    venceHoy: 'expires today',
+    venceEn: ({ dias }) => `${dias} days left`,
+    vencioHace: ({ dias }) => `expired ${dias} days ago`,
+    masCiclo: ({ dias }) => `+${dias} days`,
+    venceAyuda: 'The expiry date is how long this person can get in. Every night a robot closes the door on anyone past it (with one day of margin). No date = open access, which is what everyone has today. The +30 days button adds to the date they already had, so renewing early does not cost days. It applies to both apps: they share the same member list.',
   },
 
   calendario: {

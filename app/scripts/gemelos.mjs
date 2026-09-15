@@ -83,6 +83,7 @@ export const GEMELOS = [
   'src/lib/push/vapid.js',
   'src/lib/useAuthUser.js',
   'src/lib/useMembers.js',
+  'src/lib/vencimientos.js',
   'scripts/lib/firestore-rest.mjs',
   'scripts/prueba-aviso-real.mjs',
   'scripts/prueba-importar.mjs',

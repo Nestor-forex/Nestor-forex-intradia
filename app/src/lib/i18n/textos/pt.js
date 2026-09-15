@@ -253,6 +253,15 @@ export default {
     vacio: 'Nenhuma solicitação ainda. Compartilhe o app para que se cadastrem.',
     estadoAprobado: 'aprovado',
     estadoPendiente: 'pendente',
+    estadoRetirado: 'retirado',
+    reactivar: 'Reativar',
+    fechaVence: 'Data de vencimento',
+    sinVence: 'sem vencimento',
+    venceHoy: 'vence hoje',
+    venceEn: ({ dias }) => `faltam ${dias} dias`,
+    vencioHace: ({ dias }) => `venceu há ${dias} dias`,
+    masCiclo: ({ dias }) => `+${dias} dias`,
+    venceAyuda: 'A data de vencimento diz até quando essa pessoa pode entrar. Todas as noites um robô fecha a porta a quem já passou dela (com um dia de margem). Sem data = acesso aberto, que é o que todos têm hoje. O botão de +30 dias soma a partir da data que já existia, por isso renovar antes não custa dias. Vale para os dois aplicativos: partilham a mesma lista de membros.',
   },
 
   calendario: {

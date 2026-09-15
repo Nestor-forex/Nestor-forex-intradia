@@ -253,6 +253,15 @@ export default {
     vacio: "Aucune demande pour l'instant. Partage l'app pour que des gens s'inscrivent.",
     estadoAprobado: 'validé',
     estadoPendiente: 'en attente',
+    estadoRetirado: 'retiré',
+    reactivar: 'Réactiver',
+    fechaVence: 'Date d’expiration',
+    sinVence: 'sans expiration',
+    venceHoy: 'expire aujourd’hui',
+    venceEn: ({ dias }) => `${dias} jours restants`,
+    vencioHace: ({ dias }) => `expiré il y a ${dias} jours`,
+    masCiclo: ({ dias }) => `+${dias} jours`,
+    venceAyuda: 'La date d’expiration indique jusqu’à quand cette personne peut entrer. Chaque nuit, un robot ferme la porte à ceux dont la date est passée (avec un jour de marge). Sans date = accès ouvert, ce qu’ont tous aujourd’hui. Le bouton +30 jours s’ajoute à la date déjà présente : renouveler en avance ne coûte donc aucun jour. Cela vaut pour les deux applis : elles partagent la même liste de membres.',
   },
 
   calendario: {

@@ -248,6 +248,15 @@ export default {
     vacio: '아직 신청이 없습니다. 앱을 공유해 가입하게 하세요.',
     estadoAprobado: '승인됨',
     estadoPendiente: '대기 중',
+    estadoRetirado: '해지됨',
+    reactivar: '다시 활성화',
+    fechaVence: '만료일',
+    sinVence: '만료 없음',
+    venceHoy: '오늘 만료',
+    venceEn: ({ dias }) => `${dias}일 남음`,
+    vencioHace: ({ dias }) => `${dias}일 전 만료`,
+    masCiclo: ({ dias }) => `+${dias}일`,
+    venceAyuda: '만료일은 이 사람이 언제까지 들어올 수 있는지를 나타냅니다. 매일 밤 로봇이 만료일이 지난 사람의 문을 닫습니다(하루의 여유를 둡니다). 날짜가 없으면 기한 없는 접근이며, 지금은 모두가 그 상태입니다. +30일 버튼은 기존 날짜에 더하므로 미리 갱신해도 날짜를 손해 보지 않습니다. 두 앱 모두에 적용됩니다. 같은 회원 목록을 함께 쓰기 때문입니다.',
   },
 
   calendario: {
