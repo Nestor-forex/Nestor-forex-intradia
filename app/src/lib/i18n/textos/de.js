@@ -253,6 +253,15 @@ export default {
     vacio: 'Noch keine Anfragen. Teile die App, damit sich Leute registrieren.',
     estadoAprobado: 'freigegeben',
     estadoPendiente: 'offen',
+    estadoRetirado: 'entfernt',
+    reactivar: 'Reaktivieren',
+    fechaVence: 'Ablaufdatum',
+    sinVence: 'ohne Ablauf',
+    venceHoy: 'läuft heute ab',
+    venceEn: ({ dias }) => `noch ${dias} Tage`,
+    vencioHace: ({ dias }) => `vor ${dias} Tagen abgelaufen`,
+    masCiclo: ({ dias }) => `+${dias} Tage`,
+    venceAyuda: 'Das Ablaufdatum sagt, bis wann diese Person hineinkommt. Jede Nacht schließt ein Roboter die Tür für alle, deren Datum vorbei ist (mit einem Tag Puffer). Kein Datum = offener Zugang, was heute alle haben. Die Schaltfläche +30 Tage rechnet ab dem bereits vorhandenen Datum, frühes Verlängern kostet also keine Tage. Gilt für beide Apps: sie teilen sich dieselbe Mitgliederliste.',
   },
 
   calendario: {

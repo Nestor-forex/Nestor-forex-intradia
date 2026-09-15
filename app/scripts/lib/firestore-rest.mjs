@@ -103,7 +103,7 @@ async function pedirToken(cuenta) {
 // Firestore devuelve cada campo etiquetado con su tipo
 // ({ stringValue: 'x' }). Solo guardamos texto en pushSubs, pero el número y
 // el booleano van por si acaso: un campo inesperado no debe reventar el envío.
-function planchar(campos = {}) {
+export function planchar(campos = {}) {
   const salida = {}
   for (const [k, v] of Object.entries(campos)) {
     if ('stringValue' in v) salida[k] = v.stringValue
@@ -111,6 +111,26 @@ function planchar(campos = {}) {
     else if ('doubleValue' in v) salida[k] = v.doubleValue
     else if ('booleanValue' in v) salida[k] = v.booleanValue
     else if ('timestampValue' in v) salida[k] = v.timestampValue
+  }
+  return salida
+}
+
+// El camino de vuelta de `planchar`: de valores normales a los sobres con
+// etiqueta de tipo que Firestore exige al escribir.
+//
+// ⚠️ `integerValue` viaja como TEXTO, no como número — lo pide así la API. Un
+// entero mandado como número se rechaza con un error que no dice por qué.
+// Y los enteros van antes que los decimales porque `1` mandado como
+// `doubleValue` vuelve leído como `1.0`.
+export function etiquetar(campos = {}) {
+  const salida = {}
+  for (const [k, v] of Object.entries(campos)) {
+    if (v === null || v === undefined) salida[k] = { nullValue: null }
+    else if (typeof v === 'boolean') salida[k] = { booleanValue: v }
+    else if (typeof v === 'number') {
+      salida[k] = Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v }
+    } else if (v instanceof Date) salida[k] = { timestampValue: v.toISOString() }
+    else salida[k] = { stringValue: String(v) }
   }
   return salida
 }
@@ -165,6 +185,39 @@ export async function abrir(cuenta) {
       } catch {
         return false
       }
+    },
+
+    // Cambia UNOS CUANTOS campos de un documento, dejando los demás como
+    // estaban. Devuelve true solo si Firestore confirmó la escritura.
+    //
+    // ⚠️ LOS CAMPOS A TOCAR VAN EN LA DIRECCIÓN (`updateMask`), Y NO ES UN
+    // DETALLE. Sin esa lista, Firestore entiende «esto es el documento
+    // entero» y BORRA todo lo que no venga: el nombre, el correo, la fecha de
+    // alta. Un robot que solo quería cerrar una puerta dejaría la ficha
+    // vacía, y con el correo fuera ni el administrador sabría de quién era.
+    //
+    // ⚠️ Y aquí NO se traga el error, al revés que en `borrar`. Allí lo peor
+    // que pasa es que una suscripción muerta viva una hora más. Aquí lo que
+    // se escribe es quién entra y quién no: si la escritura falla hay que
+    // enterarse, no seguir como si nada.
+    async actualizar(ruta, campos) {
+      const claves = Object.keys(campos ?? {})
+      if (!claves.length) return false
+
+      const url = new URL(`https://firestore.googleapis.com/v1/${ruta}`)
+      for (const k of claves) url.searchParams.append('updateMask.fieldPaths', k)
+
+      const r = await pedir(
+        url,
+        {
+          method: 'PATCH',
+          headers: { ...cabeceras, 'content-type': 'application/json' },
+          body: JSON.stringify({ fields: etiquetar(campos) }),
+        },
+        'Firestore (actualizar)'
+      )
+      if (!r.ok) throw new Error(`No se pudo actualizar ${ruta} (${r.status}): ${await r.text()}`)
+      return true
     },
   }
 }

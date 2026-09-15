@@ -249,6 +249,15 @@ export default {
     vacio: "Nessuna richiesta per ora. Condividi l'app perché si registrino.",
     estadoAprobado: 'approvato',
     estadoPendiente: 'in attesa',
+    estadoRetirado: 'rimosso',
+    reactivar: 'Riattiva',
+    fechaVence: 'Data di scadenza',
+    sinVence: 'senza scadenza',
+    venceHoy: 'scade oggi',
+    venceEn: ({ dias }) => `mancano ${dias} giorni`,
+    vencioHace: ({ dias }) => `scaduto ${dias} giorni fa`,
+    masCiclo: ({ dias }) => `+${dias} giorni`,
+    venceAyuda: 'La data di scadenza dice fino a quando questa persona può entrare. Ogni notte un robot chiude la porta a chi l’ha superata (con un giorno di margine). Senza data = accesso aperto, che è ciò che hanno tutti oggi. Il pulsante +30 giorni somma alla data già presente, quindi rinnovare in anticipo non costa giorni. Vale per entrambe le app: condividono la stessa lista di membri.',
   },
 
   calendario: {

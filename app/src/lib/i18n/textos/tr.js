@@ -248,6 +248,15 @@ export default {
     vacio: 'Henüz talep yok. Kayıt olsunlar diye uygulamayı paylaş.',
     estadoAprobado: 'onaylı',
     estadoPendiente: 'beklemede',
+    estadoRetirado: 'çıkarıldı',
+    reactivar: 'Yeniden aç',
+    fechaVence: 'Bitiş tarihi',
+    sinVence: 'bitiş tarihi yok',
+    venceHoy: 'bugün doluyor',
+    venceEn: ({ dias }) => `${dias} gün kaldı`,
+    vencioHace: ({ dias }) => `${dias} gün önce doldu`,
+    masCiclo: ({ dias }) => `+${dias} gün`,
+    venceAyuda: 'Bitiş tarihi, bu kişinin ne zamana kadar girebileceğini söyler. Her gece bir robot, tarihi geçenlerin kapısını kapatır (bir günlük payla). Tarih yoksa erişim süresizdir; bugün herkes böyledir. +30 gün düğmesi mevcut tarihin üzerine ekler, bu yüzden erken yenilemek gün kaybettirmez. İki uygulama için de geçerlidir: aynı üye listesini paylaşırlar.',
   },
 
   calendario: {

@@ -229,7 +229,7 @@ export default function App() {
                 />
               )}
               {tab === 'admin' && esAdmin && (
-                <MiembrosTab usuarios={miembros.usuarios} cargando={miembros.cargando} onAprobar={miembros.aprobar} onRetirar={miembros.retirar} />
+                <MiembrosTab usuarios={miembros.usuarios} cargando={miembros.cargando} onAprobar={miembros.aprobar} onRetirar={miembros.retirar} onFijarVence={miembros.fijarVence} />
               )}
             </main>
             <BottomNav tab={tab} onTab={setTab} esAdmin={esAdmin} />

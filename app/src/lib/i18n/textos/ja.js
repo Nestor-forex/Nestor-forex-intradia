@@ -248,6 +248,15 @@ export default {
     vacio: 'まだ申請はありません。アプリを共有して登録してもらいましょう。',
     estadoAprobado: '承認済み',
     estadoPendiente: '保留中',
+    estadoRetirado: '解除済み',
+    reactivar: '再開する',
+    fechaVence: '有効期限',
+    sinVence: '期限なし',
+    venceHoy: '本日で期限切れ',
+    venceEn: ({ dias }) => `残り ${dias} 日`,
+    vencioHace: ({ dias }) => `${dias} 日前に期限切れ`,
+    masCiclo: ({ dias }) => `+${dias} 日`,
+    venceAyuda: '有効期限は、その人がいつまで入れるかを示します。毎晩ロボットが期限を過ぎた人の扉を閉じます（1 日の猶予あり）。期限なし＝無期限のアクセスで、今は全員がこの状態です。「+30 日」ボタンは元の期限に加算するので、早めの更新で日数を損することはありません。2 つのアプリ共通です。同じメンバー一覧を使っています。',
   },
 
   calendario: {
