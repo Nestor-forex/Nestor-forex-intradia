@@ -1826,3 +1826,38 @@ magnitud, no la cifra.
 
 📌 El detalle completo —incluidos los dos errores que cazaron las pruebas y lo
 que queda por contrastar con el BCE— está en el `CLAUDE.md` de Swing.
+
+---
+
+# El acceso lo gobierna un robot que vive en Swing (2026-09-15)
+
+⚠️ **LAS DOS APPS COMPARTEN LA COLECCIÓN `users`** (mismo proyecto de Firebase).
+Desde hoy, cada miembro puede llevar una fecha de vencimiento (`venceEl`) y un
+robot diario le pone `estado: 'retirado'` a quien se le pasó. **Eso cierra la
+puerta de Intradía igual que la de Swing.**
+
+📌 **El robot vive SOLO en el repositorio de Swing, a propósito**: dos robots
+sobre la misma lista serían dos programas peleándose por la misma puerta. Si
+algún día alguien no puede entrar aquí sin motivo aparente, **el sitio donde
+mirar es `cerrar-vencidos.mjs` del otro repositorio**, no este.
+
+Lo que SÍ cambió aquí, por ser gemelo o compartido:
+
+- **`src/lib/vencimientos.js`** (GEMELO nuevo): las cuentas de fechas.
+- **`MiembrosTab.jsx` y `useMembers.js`**: el campo de fecha, el botón
+  «+30 días» y `Reactivar` para readmitir a un retirado (antes `Aprobar` solo
+  se pintaba para `pendiente`, así que **a un retirado no se le podía volver a
+  admitir desde la app** — inofensivo hasta que un robot empieza a retirar).
+- **`firestore.rules`** pasa a ser **GEMELO**. Su cabecera decía *«copia
+  idéntica»* **y ya no lo era**: le faltaba el arreglo de seguridad que impedía
+  que un miembro se escribiera su propia fecha de vencimiento. Hay **unas solas
+  reglas en vigor**; tenerlas en los dos repos era cómodo y era una trampa.
+
+⚠️ **Las reglas se publican desde el repositorio de Swing** (Actions →
+«Publicar las reglas de Firestore»). No hay botón aquí, y no debe haberlo: dos
+botones publicando el mismo archivo es la forma de que un día se publiquen dos
+versiones distintas.
+
+📌 El detalle completo —los dos agujeros que aparecieron, por qué el robot solo
+cierra y nunca abre, y cómo se comprobó en producción— está en el `CLAUDE.md`
+de Swing.
