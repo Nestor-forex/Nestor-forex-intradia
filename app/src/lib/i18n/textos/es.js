@@ -411,6 +411,10 @@ export default {
   },
 
   historial: {
+    modoTendencia: 'Modo tendencia',
+    modoRango: 'Modo rango',
+    modoOtros: 'Otro tipo',
+    ops: 'ops',
     appTitulo: 'Las señales de la app',
     sombraTitulo: 'Historial del retroceso',
     esSombra: 'RETROCESO',

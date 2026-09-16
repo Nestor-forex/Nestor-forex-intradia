@@ -372,6 +372,10 @@ export default {
   },
 
   historial: {
+    modoTendencia: 'Modo tendência',
+    modoRango: 'Modo range',
+    modoOtros: 'Outro tipo',
+    ops: 'ops',
     appTitulo: 'Os sinais da própria app',
     sombraTitulo: 'Histórico da regra de recuo',
     esSombra: 'RECUO',

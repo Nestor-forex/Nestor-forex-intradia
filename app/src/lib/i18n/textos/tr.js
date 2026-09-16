@@ -367,6 +367,10 @@ export default {
   },
 
   historial: {
+    modoTendencia: 'Trend modu',
+    modoRango: 'Range modu',
+    modoOtros: 'Diğer tür',
+    ops: 'işlem',
     appTitulo: 'Uygulamanın kendi sinyalleri',
     sombraTitulo: 'Geri çekilme kuralının geçmişi',
     esSombra: 'GERİ ÇEKİLME',

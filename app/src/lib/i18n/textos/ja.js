@@ -366,6 +366,10 @@ export default {
   },
 
   historial: {
+    modoTendencia: 'トレンドモード',
+    modoRango: 'レンジモード',
+    modoOtros: 'その他',
+    ops: '件',
     appTitulo: 'このアプリ自身のシグナル',
     sombraTitulo: '押し目ルールの履歴',
     esSombra: '押し目',

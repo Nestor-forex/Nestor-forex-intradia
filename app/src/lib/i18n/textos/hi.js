@@ -367,6 +367,10 @@ export default {
   },
 
   historial: {
+    modoTendencia: 'ट्रेंड मोड',
+    modoRango: 'रेंज मोड',
+    modoOtros: 'अन्य प्रकार',
+    ops: 'सौदे',
     appTitulo: 'ऐप के अपने सिग्नल',
     sombraTitulo: 'पुलबैक नियम का इतिहास',
     esSombra: 'पुलबैक',

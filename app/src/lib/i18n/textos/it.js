@@ -368,6 +368,10 @@ export default {
   },
 
   historial: {
+    modoTendencia: 'Modo tendenza',
+    modoRango: 'Modo range',
+    modoOtros: 'Altro tipo',
+    ops: 'ops',
     appTitulo: 'I segnali propri dell\'app',
     sombraTitulo: 'Storico della regola di ritracciamento',
     esSombra: 'RITRACCIAMENTO',

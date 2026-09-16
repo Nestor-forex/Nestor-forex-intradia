@@ -366,6 +366,10 @@ export default {
   },
 
   historial: {
+    modoTendencia: '추세 모드',
+    modoRango: '박스권 모드',
+    modoOtros: '기타 유형',
+    ops: '건',
     appTitulo: '앱 자체의 신호',
     sombraTitulo: '눌림목 규칙의 기록',
     esSombra: '눌림목',

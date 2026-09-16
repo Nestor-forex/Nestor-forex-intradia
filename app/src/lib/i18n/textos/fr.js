@@ -372,6 +372,10 @@ export default {
   },
 
   historial: {
+    modoTendencia: 'Mode tendance',
+    modoRango: 'Mode range',
+    modoOtros: 'Autre type',
+    ops: 'ops',
     appTitulo: 'Les signaux propres à l\'app',
     sombraTitulo: 'Historique de la règle de repli',
     esSombra: 'REPLI',

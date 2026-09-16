@@ -363,6 +363,10 @@ export default {
   },
 
   historial: {
+    modoTendencia: '趋势模式',
+    modoRango: '区间模式',
+    modoOtros: '其他类型',
+    ops: '笔',
     appTitulo: '这个应用自己的信号',
     sombraTitulo: '回调规则的历史记录',
     esSombra: '回调',

@@ -372,6 +372,10 @@ export default {
   },
 
   historial: {
+    modoTendencia: 'Trend-Modus',
+    modoRango: 'Range-Modus',
+    modoOtros: 'Anderer Typ',
+    ops: 'Ops',
     appTitulo: 'Die eigenen Signale der App',
     sombraTitulo: 'Verlauf der Pullback-Regel',
     esSombra: 'PULLBACK',

@@ -368,6 +368,10 @@ export default {
   },
 
   historial: {
+    modoTendencia: 'Режим тренда',
+    modoRango: 'Режим диапазона',
+    modoOtros: 'Другой тип',
+    ops: 'сд.',
     appTitulo: 'Собственные сигналы приложения',
     sombraTitulo: 'История правила отката',
     esSombra: 'ОТКАТ',

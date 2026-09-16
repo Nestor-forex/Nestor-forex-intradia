@@ -47,6 +47,27 @@ export default function HistorialTab() {
           <div style={{ fontSize: 12.5, fontWeight: 600 }}>{t('historial.appTitulo')}</div>
           <Resumen resumen={resumen} t={t} />
 
+          {/* ⚠️ EL DESGLOSE POR MODO, QUE NO ES UN ADORNO (2026-09-16).
+              Néstor lo pidió, y los números reales de producción dicen por qué
+              hacía falta: la app tiene DOS comportamientos opuestos escondidos
+              dentro del promedio de arriba — tendencia 6 de 27 con −629 pips,
+              rango 10 de 24 con +43. Ese promedio no describe a ninguno.
+
+              ⚠️ Estos dos SÍ suman al número de arriba (son las dos mitades de
+              lo mismo), al revés que el retroceso. Por eso van pegados y en
+              filas compactas, y la sombra va separada con su raya: la forma
+              tiene que decir cuál suma y cuál no. */}
+          <Desglose
+            filas={[
+              ['historial.modoTendencia', resumen.tendencia],
+              ['historial.modoRango', resumen.rango],
+              // Solo si existe. Es el cajón de un `tipo` que nadie ha visto
+              // todavía: mejor que salga raro a que desaparezca en silencio.
+              ...(resumen.otros?.total ? [['historial.modoOtros', resumen.otros]] : []),
+            ]}
+            t={t}
+          />
+
           {/* ⚠️ LO QUE CORRE EN LA SOMBRA, QUE HASTA HOY NO SE VEÍA.
               Néstor: «noté que en Intradía no tengo los experimentos». Tenía
               razón a medias, y la mitad que faltaba es la que importa:
@@ -155,7 +176,7 @@ function Resumen({ resumen, t }) {
 function Dato({ valor, etiqueta, color }) {
   return (
     <div style={{ flex: 1 }}>
-      <div className="mono" style={{ fontSize: 20, fontWeight: 700, color: color || 'var(--text)' }}>
+      <div className="mono" dir="ltr" style={{ fontSize: 20, fontWeight: 700, color: color || 'var(--text)' }}>
         {valor}
       </div>
       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{etiqueta}</div>
@@ -175,13 +196,13 @@ function Fila({ f, t, locale }) {
   return (
     <div className="card" style={{ padding: '10px 12px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
-        <div className="mono" style={{ fontSize: 13.5, fontWeight: 700 }}>
+        <div className="mono" dir="ltr" style={{ fontSize: 13.5, fontWeight: 700 }}>
           {f.par} {t('lado.' + f.lado)}
         </div>
         <div style={{ fontSize: 12, fontWeight: 700, color: COLOR[estado] }}>
           {t('historial.' + estado)}
           {typeof f.pips === 'number' && (
-            <span className="mono" style={{ marginInlineStart: 6 }}>
+            <span className="mono" dir="ltr" style={{ marginInlineStart: 6 }}>
               {f.pips >= 0 ? '+' : ''}
               {f.pips}
             </span>
@@ -194,6 +215,60 @@ function Fila({ f, t, locale }) {
             mira una fila suelta también tiene que saber si es aproximada. */}
         {f.exacto === false && ' ·  ~'}
       </div>
+    </div>
+  )
+}
+
+// Las dos mitades de la app, una línea cada una: operaciones, acertadas y
+// pips. Compacto a propósito — son partes del número de arriba, no bloques
+// independientes, y darles el mismo tamaño que aquél haría pensar que son
+// tres reglas distintas.
+//
+// ⚠️ El acierto NO se pinta de color y los pips SÍ, que es la regla de toda la
+// app: está medido aquí mismo que se puede acertar más y perder dinero, así
+// que pintar el porcentaje de verde afirmaría algo que el número no dice. El
+// dinero sí significa algo en plata.
+//
+// ⚠️ Un grupo con CERO operaciones se sigue enseñando. Esconderlo dejaría en
+// pantalla solo lo que parece significar algo, que es cómo se fabrica un
+// espejismo — la misma decisión que en `Diagnostico`.
+function Desglose({ filas, t }) {
+  return (
+    <div className="card" style={{ padding: '4px 12px' }}>
+      {filas.map(([clave, c]) => (
+        <div
+          key={clave}
+          style={{
+            display: 'flex',
+            alignItems: 'baseline',
+            gap: 8,
+            padding: '8px 0',
+            borderTop: '1px solid var(--border)',
+          }}
+        >
+          <span style={{ fontSize: 12.5, flex: 1, minWidth: 0 }}>{t(clave)}</span>
+          {/* ⚠️ El total NO se repite: «6/27» ya lleva las 27 operaciones
+              dentro. La primera versión ponía «27 ops» al lado y el mismo
+              número salía dos veces en la misma fila — se vio en la captura,
+              no compilando. */}
+          <span className="mono" dir="ltr" style={{ fontSize: 12.5, fontWeight: 700, minWidth: 96, textAlign: 'end' }}>
+            {c.acierto === null ? `0 ${t('historial.ops')}` : `${c.ganadas}/${c.total} · ${c.acierto}%`}
+          </span>
+          <span
+            className="mono"
+            dir="ltr"
+            style={{
+              fontSize: 12.5,
+              fontWeight: 700,
+              minWidth: 46,
+              textAlign: 'end',
+              color: !c.total ? 'var(--text-muted)' : c.pips >= 0 ? 'var(--green)' : 'var(--red)',
+            }}
+          >
+            {c.total ? `${c.pips >= 0 ? '+' : ''}${c.pips}` : '—'}
+          </span>
+        </div>
+      ))}
     </div>
   )
 }

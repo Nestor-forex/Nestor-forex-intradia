@@ -368,6 +368,10 @@ export default {
   },
 
   historial: {
+    modoTendencia: 'وضع الاتجاه',
+    modoRango: 'وضع النطاق',
+    modoOtros: 'نوع آخر',
+    ops: 'صفقة',
     appTitulo: 'إشارات التطبيق نفسه',
     sombraTitulo: 'سجل قاعدة الارتداد',
     esSombra: 'ارتداد',
