@@ -411,6 +411,10 @@ export default {
   },
 
   historial: {
+    appTitulo: 'Las señales de la app',
+    sombraTitulo: 'Historial del retroceso',
+    esSombra: 'RETROCESO',
+    sombraIntro: 'Una regla distinta que todavía se está probando: entra cuando el precio se devuelve hasta la EMA9 sin romper la EMA21. El vigía la anota para ir juntando operaciones reales, pero NO se propone y nunca te llegó un aviso de ninguna. Sus números van aparte y no se suman a los de arriba: son reglas distintas y un promedio no describiría a ninguna.',
     titulo: 'Historial de señales',
     intro: 'Cada señal que encontró el vigía y qué pasó después.',
     pie: 'Los pips salen del objetivo y el stop que puso la app: NO incluyen el spread ni el swap, así que en una cuenta real el resultado es peor. Y aquí pesa más que en la app de swing, porque el stop es mucho más corto: los mismos 2 pips de spread son el 7 % del riesgo en vez del 1,8 %. Si una misma vela toca el stop y el objetivo cuenta como perdida, porque la vela no dice cuál pasó primero. La vela en que aparece la señal no cuenta: la entrada es a su cierre.',

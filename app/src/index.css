@@ -21,6 +21,19 @@
      distingue esta app de la de swing, que usa cian. */
   --accent: #d4af37;
 
+  /* ⚠️ EL COLOR DE LOS BOTONES DE «VER» — y aquí es DORADO, no cian.
+     Néstor pidió (2026-09-16) que el recuadro llevara color y dejó la
+     elección. En una app de trading el VERDE y el ROJO ya significan dinero,
+     así que un botón verde al lado de esos números se leería como «esto es lo
+     bueno» — la regla de la casa: antes de pintar algo de color, preguntarse
+     qué afirma ese color. El acento de la marca no afirma nada en plata.
+     ⚠️ Y por eso NO es gemelo con el de Swing: allá el acento es cian y aquí
+     dorado, que es justo lo que distingue una app de la otra de un vistazo.
+     Copiar el `index.css` de Swing encima de éste borraría esa identidad —
+     estuvo a punto de pasar el día que se escribió esto. */
+  --cta: var(--accent);
+  --cta-tinta: oklch(0.16 0.03 90);
+
   --radius-control: 8px;
   --radius-card: 10px;
   --tap-min: 44px;

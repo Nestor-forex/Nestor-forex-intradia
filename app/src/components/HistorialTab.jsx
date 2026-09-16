@@ -39,7 +39,47 @@ export default function HistorialTab() {
         </div>
       ) : (
         <>
+          {/* ⚠️ EL TÍTULO NO ES UN ADORNO (2026-09-16). Sin él, este
+              porcentaje se lee como «el total de todo lo que hay abajo», y no
+              lo es: cuenta SOLO lo que la app propuso de verdad. Ya pasó en
+              Swing — un lector externo y yo mismo leímos mal la misma captura
+              justo por esto. */}
+          <div style={{ fontSize: 12.5, fontWeight: 600 }}>{t('historial.appTitulo')}</div>
           <Resumen resumen={resumen} t={t} />
+
+          {/* ⚠️ LO QUE CORRE EN LA SOMBRA, QUE HASTA HOY NO SE VEÍA.
+              Néstor: «noté que en Intradía no tengo los experimentos». Tenía
+              razón a medias, y la mitad que faltaba es la que importa:
+
+              · La REVERSIÓN y COMPRAR LA CAÍDA no están aquí a propósito —
+                están medidas en ESTA app y pierden (la caída, −0,08 plano en
+                los tres tamaños). No es un olvido: portarlas sería traer una
+                regla que ya se sabe que no funciona con velas de una hora.
+              · Pero Intradía SÍ tiene su propio experimento, el RETROCESO, y
+                `resumir()` devuelve su cubo desde siempre — **sin que nadie lo
+                pintara**. Un experimento acumulando operaciones reales durante
+                semanas sin que se pudiera ver ni una. Es exactamente el mismo
+                descuido que se arregló en Swing el 2026-09-07 con `filasTodas`.
+
+              ⚠️ Sus números NUNCA se suman a los de arriba. Son reglas
+              distintas y un promedio no describiría a ninguna.
+
+              ⚠️ Y solo sale cuando hay algo resuelto que enseñar: un bloque
+              permanente en cero se volvería decorado y dejaría de leerse. */}
+          {resumen.sombra.total > 0 && (
+            <div style={BLOQUE_EXPERIMENTO}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 12.5, fontWeight: 600 }}>{t('historial.sombraTitulo')}</span>
+                <Etiqueta>{t('historial.esSombra')}</Etiqueta>
+              </div>
+              {/* `aproximadas: 0` a propósito: el aviso de los cruces lo pone
+                  el bloque de arriba una vez, y repetirlo aquí sería la misma
+                  advertencia dos veces en la misma pantalla. */}
+              <Resumen resumen={{ todas: resumen.sombra, exactas: resumen.sombra, aproximadas: 0 }} t={t} />
+              <p style={{ ...TEXTO, margin: 0 }}>{t('historial.sombraIntro')}</p>
+            </div>
+          )}
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {filas.map((f) => (
               <Fila key={`${f.id}@${f.vistoEl}`} f={f} t={t} locale={locale} />
@@ -156,6 +196,40 @@ function Fila({ f, t, locale }) {
       </div>
     </div>
   )
+}
+
+// La etiqueta ámbar que marca un experimento. Ámbar y no verde ni rojo: no
+// dice si va bien o mal, dice «esto está en pruebas».
+function Etiqueta({ children }) {
+  return (
+    <span
+      className="mono"
+      dir="ltr"
+      style={{
+        fontSize: 9.5,
+        fontWeight: 600,
+        letterSpacing: '.06em',
+        padding: '1px 5px',
+        borderRadius: 3,
+        color: 'var(--amber)',
+        border: '1px solid var(--amber)',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {children}
+    </span>
+  )
+}
+
+// ⚠️ La raya de arriba separa el experimento de los números de la app. Sin
+// algo que los separe se leen como una lista corrida y deja de verse de quién
+// es cada número — que es el único error grave posible en esta pantalla.
+const BLOQUE_EXPERIMENTO = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 10,
+  paddingTop: 14,
+  borderTop: '1px solid rgba(255,255,255,.10)',
 }
 
 function Aviso({ children, ambar }) {

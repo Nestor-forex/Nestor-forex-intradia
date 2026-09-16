@@ -372,6 +372,10 @@ export default {
   },
 
   historial: {
+    appTitulo: 'Die eigenen Signale der App',
+    sombraTitulo: 'Verlauf der Pullback-Regel',
+    esSombra: 'PULLBACK',
+    sombraIntro: 'Eine andere Regel, die noch getestet wird: Sie steigt ein, wenn der Kurs bis zur EMA9 zurückkommt, ohne die EMA21 zu brechen. Der Wächter notiert sie, um echte Trades zu sammeln, aber sie wird NICHT vorgeschlagen und du hast nie eine Benachrichtigung dazu bekommen. Ihre Zahlen bleiben getrennt und werden nie zu denen oben addiert: es sind verschiedene Regeln, und ein Mittelwert würde keine von beiden beschreiben.',
     titulo: 'Signalverlauf',
     intro: 'Jedes Signal des Wächters und was danach passierte.',
     pie: 'Die Pips stammen aus Ziel und Stop, die die App gesetzt hat: Spread und Swap sind NICHT enthalten, auf einem echten Konto fällt das Ergebnis also schlechter aus. Und hier wiegt das schwerer als in der Swing-App, weil der Stop viel kürzer ist: dieselben 2 Pips Spread sind 7 % des Risikos statt 1,8 %. Berührt dieselbe Kerze Stop und Ziel, zählt es als Verlust, denn die Kerze sagt nicht, was zuerst kam. Die Kerze, in der das Signal erscheint, zählt nicht: der Einstieg ist zu ihrem Schluss.',

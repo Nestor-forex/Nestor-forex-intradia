@@ -367,6 +367,10 @@ export default {
   },
 
   historial: {
+    appTitulo: 'Uygulamanın kendi sinyalleri',
+    sombraTitulo: 'Geri çekilme kuralının geçmişi',
+    esSombra: 'GERİ ÇEKİLME',
+    sombraIntro: 'Hâlâ denenen farklı bir kural: fiyat EMA21’i kırmadan EMA9’a kadar geri geldiğinde giriyor. Gözcü, gerçek işlem sayısı biriktirmek için kaydediyor; ama bu kural size ÖNERİLMİYOR ve hiçbiri için bildirim almadınız. Rakamları ayrı duruyor ve asla yukarıdakilere eklenmiyor: bunlar farklı kurallar ve bir ortalama hiçbirini anlatmaz.',
     titulo: 'Sinyal geçmişi',
     intro: 'Gözcünün bulduğu her sinyal ve sonrasında olanlar.',
     pie: 'Pip’ler uygulamanın koyduğu hedef ve stoptan çıkıyor: Spread de Swap da dahil DEĞİL, yani gerçek bir hesapta sonuç daha kötü. Ve burada swing uygulamasından daha ağır basıyor, çünkü stop çok daha kısa: aynı 2 pip Spread, riskin 1,8 %’i yerine 7 %’i ediyor. Aynı mum hem stopa hem hedefe değerse kayıp sayılır, çünkü mum hangisinin önce olduğunu söylemez. Sinyalin çıktığı mum sayılmaz: giriş onun kapanışındadır.',

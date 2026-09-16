@@ -372,6 +372,10 @@ export default {
   },
 
   historial: {
+    appTitulo: 'The app\'s own signals',
+    sombraTitulo: 'Pullback rule history',
+    esSombra: 'PULLBACK',
+    sombraIntro: 'A different rule still being tested: it enters when the price falls back to the EMA9 without breaking the EMA21. The watcher records it to build up real trades, but it is NOT proposed and you never got an alert for any of them. Its numbers stay separate and are never added to the ones above: they are different rules and an average would describe neither.',
     titulo: 'Signal history',
     intro: 'Every signal the watcher found, and what happened next.',
     pie: 'The pips come from the target and stop the app set: they do NOT include spread or swap, so in a real account the result is worse. And it weighs more here than in the swing app, because the stop is much shorter: the same 2 pips of spread are 7 % of the risk instead of 1.8 %. If one candle touches both the stop and the target it counts as a loss, because the candle does not say which came first. The candle the signal appears on does not count: entry is at its close.',

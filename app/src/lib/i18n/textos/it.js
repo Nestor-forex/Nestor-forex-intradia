@@ -368,6 +368,10 @@ export default {
   },
 
   historial: {
+    appTitulo: 'I segnali propri dell\'app',
+    sombraTitulo: 'Storico della regola di ritracciamento',
+    esSombra: 'RITRACCIAMENTO',
+    sombraIntro: 'Una regola diversa ancora in prova: entra quando il prezzo torna fino alla EMA9 senza rompere la EMA21. La sentinella la annota per accumulare operazioni reali, ma NON viene proposta e non hai mai ricevuto un avviso per nessuna. I suoi numeri restano a parte e non si sommano mai a quelli sopra: sono regole diverse e una media non descriverebbe nessuna delle due.',
     titulo: 'Storico dei segnali',
     intro: 'Ogni segnale trovato dalla vedetta e cosa è successo dopo.',
     pie: 'I pip vengono dall’obiettivo e dallo stop messi dall’app: NON includono spread né swap, quindi su un conto reale il risultato è peggiore. E qui pesa più che nell’app swing, perché lo stop è molto più corto: gli stessi 2 pip di spread sono il 7 % del rischio invece dell’1,8 %. Se una stessa candela tocca stop e obiettivo conta come persa, perché la candela non dice quale sia arrivato prima. La candela in cui appare il segnale non conta: l’ingresso è alla sua chiusura.',

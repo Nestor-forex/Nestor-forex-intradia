@@ -130,37 +130,51 @@ export default function TarjetaPlegable({
           )}
         </span>
 
-        {/* ⚠️ LA PASTILLA CON PALABRA, que es el cambio de verdad. No se
-            reduce a la flecha ni cuando hay poco sitio: `flexShrink: 0`.
+        {/* ⚠️ EL RECUADRO DE «VER». Tercera versión, y las dos anteriores
+            fallaron por el mismo sitio.
 
-            ⚠️ VA EN EL VERDE DE LA APP, no en gris (2026-09-16). La primera
-            versión la pintaba en `--text-secondary` sobre `--bg-input`, o sea
-            gris sobre gris: seguía siendo del color de lo que no se toca, que
-            es exactamente de lo que Néstor se quejaba. El verde es el acento
-            de la marca (el ícono, la pantalla de carga), y aquí NO afirma nada
-            sobre ningún dato — es un control, no un valor. Es la diferencia
-            con la regla de «antes de pintar algo de color, preguntarse qué
-            afirma ese color»: un botón solo afirma que es un botón. */}
+            1ª — solo una flechita ▸ de 12 px en `--text-muted`. Un triángulo
+                 del color del texto apagado no dice «tócame», dice «adorno».
+            2ª — la palabra dentro de una pastilla, pero en gris sobre gris
+                 (`--text-secondary` sobre `--bg-input`). Seguía siendo del
+                 color de lo que NO se toca, y Néstor lo dijo igual: «los
+                 botones tienen el mismo triángulo invertido gris».
+            3ª — ésta. Él la describió exactamente: «en vez de tener el
+                 triángulo invertido le colocas un recuadro allí mismo con la
+                 palabra VER dentro, y que el recuadro tenga color».
+
+            ⚠️ SIN FLECHA, a propósito y porque él lo pidió así. La palabra
+            sola basta y no hay que interpretar ningún glifo. Al abrir cambia
+            a «CERRAR», que dice lo mismo sin un símbolo que traducir.
+
+            ⚠️ CERRADO VA RELLENO, ABIERTO VA HUECO. No es estético: cerrado
+            tiene que llamar, y abierto ya cumplió su trabajo — ocho botones
+            rellenos a la vez serían ocho cosas gritando y ninguna se leería.
+
+            ⚠️ Y EL COLOR ES CIAN, NO VERDE. Ver el porqué en `index.css`
+            (`--cta`): aquí el verde y el rojo ya significan dinero. */}
         <span
           style={{
             flexShrink: 0,
             display: 'inline-flex',
             alignItems: 'center',
-            gap: 5,
-            padding: '6px 11px',
-            borderRadius: 999,
-            border: '1px solid var(--green)',
-            background: 'color-mix(in oklab, var(--green) 14%, transparent)',
-            color: 'var(--green-strong)',
+            padding: '7px 14px',
+            borderRadius: 'var(--radius-control)',
+            border: `1px solid ${abierto ? 'var(--border-strong)' : 'var(--cta)'}`,
+            background: abierto ? 'transparent' : 'var(--cta)',
+            color: abierto ? 'var(--text-secondary)' : 'var(--cta-tinta)',
             fontSize: 12,
             fontWeight: 700,
+            letterSpacing: '.04em',
             whiteSpace: 'nowrap',
+            // Néstor lo escribió en mayúsculas («la palabra VER»), y en un
+            // botón ayuda. Se hace por CSS y no en los diccionarios: en árabe,
+            // chino, japonés, coreano e hindi no existen las mayúsculas y
+            // `uppercase` simplemente no hace nada, que es lo correcto.
+            textTransform: 'uppercase',
           }}
         >
           {abierto ? t('plegable.cerrar') : t('plegable.ver')}
-          <span aria-hidden="true" style={{ fontSize: 9 }}>
-            {abierto ? '▲' : '▼'}
-          </span>
         </span>
       </button>
 

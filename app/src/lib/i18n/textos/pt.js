@@ -372,6 +372,10 @@ export default {
   },
 
   historial: {
+    appTitulo: 'Os sinais da própria app',
+    sombraTitulo: 'Histórico da regra de recuo',
+    esSombra: 'RECUO',
+    sombraIntro: 'Uma regra diferente que ainda está a ser testada: entra quando o preço volta até à EMA9 sem romper a EMA21. O vigia anota-a para ir juntando operações reais, mas NÃO é proposta e nunca recebeste um aviso de nenhuma. Os seus números vão à parte e nunca se somam aos de cima: são regras distintas e uma média não descreveria nenhuma.',
     titulo: 'Histórico de sinais',
     intro: 'Cada sinal que o vigia encontrou e o que aconteceu depois.',
     pie: 'Os pips saem do objetivo e do stop que a app definiu: NÃO incluem spread nem swap, por isso numa conta real o resultado é pior. E aqui pesa mais do que na app de swing, porque o stop é muito mais curto: os mesmos 2 pips de spread são 7 % do risco em vez de 1,8 %. Se a mesma vela toca o stop e o objetivo conta como perdida, porque a vela não diz qual aconteceu primeiro. A vela em que aparece o sinal não conta: a entrada é no seu fecho.',

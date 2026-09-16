@@ -372,6 +372,10 @@ export default {
   },
 
   historial: {
+    appTitulo: 'Les signaux propres à l\'app',
+    sombraTitulo: 'Historique de la règle de repli',
+    esSombra: 'REPLI',
+    sombraIntro: 'Une règle différente encore à l\'essai : elle entre quand le prix revient jusqu\'à l\'EMA9 sans casser l\'EMA21. Le veilleur la note pour accumuler des opérations réelles, mais elle n\'est PAS proposée et tu n\'as jamais reçu d\'alerte pour aucune. Ses chiffres restent à part et ne s\'ajoutent jamais à ceux du haut : ce sont des règles différentes et une moyenne n\'en décrirait aucune.',
     titulo: 'Historique des signaux',
     intro: 'Chaque signal trouvé par la vigie, et ce qui a suivi.',
     pie: 'Les pips viennent de l’objectif et du stop posés par l’app : ils n’incluent NI le spread NI le swap, donc sur un compte réel le résultat est moins bon. Et cela pèse plus ici que dans l’app swing, car le stop est bien plus court : les mêmes 2 pips de spread font 7 % du risque au lieu de 1,8 %. Si une même bougie touche le stop et l’objectif, cela compte comme une perte, car la bougie ne dit pas lequel est arrivé en premier. La bougie où apparaît le signal ne compte pas : l’entrée se fait à sa clôture.',
