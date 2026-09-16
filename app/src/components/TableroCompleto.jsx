@@ -34,7 +34,7 @@ function RazonList({ items, emptyText }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       {items.map((it) => (
         <div key={it.name} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <span className="mono" style={{ fontWeight: 600 }}>
+          <span className="mono" dir="ltr" style={{ fontWeight: 600 }}>
             {it.name}
           </span>
           <span style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.45 }}>{it.razon}</span>
@@ -140,7 +140,7 @@ export default function TableroCompleto({ onVolver, onVerSetup, loading, error, 
             {pares.map((p) => (
               <div key={p.name} className="card" style={{ padding: 12 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                  <span className="mono" style={{ fontWeight: 600, fontSize: 14 }}>
+                  <span className="mono" dir="ltr" style={{ fontWeight: 600, fontSize: 14 }}>
                     {p.name}
                   </span>
                   <span className="mono" style={{ fontSize: 11.5, fontWeight: 700, color: sesgoColor(p.sesgo) }}>
@@ -150,10 +150,10 @@ export default function TableroCompleto({ onVolver, onVerSetup, loading, error, 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                   <Sparkline values={p.serie20} />
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <span className="mono" style={{ fontSize: 16, fontWeight: 700 }}>
+                    <span className="mono" dir="ltr" style={{ fontSize: 16, fontWeight: 700 }}>
                       {p.precio.toFixed(p.dec)}
                     </span>
-                    <span className="mono" style={{ fontSize: 12, fontWeight: 600, color: p.cambio20 >= 0 ? 'var(--green)' : 'var(--red)' }}>
+                    <span className="mono" dir="ltr" style={{ fontSize: 12, fontWeight: 600, color: p.cambio20 >= 0 ? 'var(--green)' : 'var(--red)' }}>
                       {p.cambio20 >= 0 ? '+' : ''}
                       {p.cambio20.toFixed(2)}% · {t('tablero.sufijoVelas')}
                     </span>
@@ -161,11 +161,11 @@ export default function TableroCompleto({ onVolver, onVerSetup, loading, error, 
                 </div>
                 <div className="mono" style={{ marginTop: 10, fontSize: 11.5, color: 'var(--text-secondary)', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                   <span>
-                    {t('tablero.dif')} <span>{fmtDif(p.dif)}</span>
+                    {t('tablero.dif')} <bdi dir="ltr">{fmtDif(p.dif)}</bdi>
                   </span>
                   <span style={{ color: tendColor(p.tend) }}>{t(`tend.${p.tend}`)}</span>
-                  <span style={{ color: rsiColor(p.rsi) }}>RSI {p.rsi}</span>
-                  <span>{t('tablero.atrPorHora', { v: p.atr.toFixed(2) })}</span>
+                  <span dir="ltr" style={{ color: rsiColor(p.rsi) }}>RSI {p.rsi}</span>
+                  <span dir="ltr">{t('tablero.atrPorHora', { v: p.atr.toFixed(2) })}</span>
                 </div>
                 <div className="mono" style={{ marginTop: 6, fontSize: 11, color: 'var(--text-muted)' }}>
                   {t('tablero.pivoteLinea', { p: p.pivots.p.toFixed(p.dec), s1: p.pivots.s1.toFixed(p.dec), r1: p.pivots.r1.toFixed(p.dec) })}
@@ -223,7 +223,7 @@ export default function TableroCompleto({ onVolver, onVerSetup, loading, error, 
               <div key={s.name + s.lado + s.tipo} className="card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                   <span className="mono" style={{ fontWeight: 600, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-                    {s.name}
+                    <span dir="ltr">{s.name}</span>
                     {s.tipo === 'rango' && (
                       <span style={{ fontSize: 10, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'oklch(0.72 0.11 255)', border: '1px solid oklch(0.36 0.06 255)', borderRadius: 5, padding: '1px 6px' }}>
                         {t('setup.badgeRango')}
@@ -234,17 +234,17 @@ export default function TableroCompleto({ onVolver, onVerSetup, loading, error, 
                 </div>
                 <div className="mono" style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '6px 12px', fontSize: 12.5 }}>
                   <span style={{ color: 'var(--text-muted)' }}>{t('setup.soporte')}</span>
-                  <span>{s.sup}</span>
+                  <span dir="ltr">{s.sup}</span>
                   <span style={{ color: 'var(--text-muted)' }}>{t('setup.resistencia')}</span>
-                  <span>{s.res}</span>
+                  <span dir="ltr">{s.res}</span>
                   <span style={{ color: 'var(--text-muted)' }}>{t('setup.entrada')}</span>
-                  <span>{s.entrada}</span>
+                  <span dir="ltr">{s.entrada}</span>
                   <span style={{ color: 'var(--text-muted)' }}>{t('setup.stopLoss')}</span>
-                  <span>{s.sl}</span>
+                  <span dir="ltr">{s.sl}</span>
                   <span style={{ color: 'var(--text-muted)' }}>{t('setup.takeProfit')}</span>
-                  <span>{s.tp}</span>
+                  <span dir="ltr">{s.tp}</span>
                   <span style={{ color: 'var(--text-muted)' }}>{t('setup.rb')}</span>
-                  <span style={{ color: s.rrOk ? 'var(--green)' : 'var(--amber)' }}>{s.rr}</span>
+                  <span dir="ltr" style={{ color: s.rrOk ? 'var(--green)' : 'var(--amber)' }}>{s.rr}</span>
                 </div>
                 <div className="mono" style={{ marginTop: 10, fontSize: 11.5, color: 'var(--text-muted)' }}>
                   {t('setup.pivotes', { s2: s.pivots.s2, s1: s.pivots.s1, p: s.pivots.p, r1: s.pivots.r1, r2: s.pivots.r2 })}
