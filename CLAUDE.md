@@ -1861,3 +1861,82 @@ versiones distintas.
 📌 El detalle completo —los dos agujeros que aparecieron, por qué el robot solo
 cierra y nunca abre, y cómo se comprobó en producción— está en el `CLAUDE.md`
 de Swing.
+
+---
+
+# El retroceso NO sirve, y el rango es la única fila no negativa (2026-09-16)
+
+Néstor vio en su Historial que el rango va 42 % con +43 pips y el retroceso
+56 % con +74, y preguntó si cada uno tiene sus propias fórmulas. Al contestarle
+apareció que **el resultado del retroceso no estaba anotado en ninguna parte**
+—la medición existía en `backtest.mjs` desde hacía tiempo y su número vivía
+solo dentro del log de un workflow—, así que se lanzó la corrida (#20,
+35127950454, 35 minutos, 72 créditos) y esto es lo que dijo.
+
+## El retroceso: pierde, y no de poco
+
+587 operaciones, vara neutra 1:1. **Con 1:1 hay que acertar más del 50 % solo
+para empatar**, y esto acierta 44 %.
+
+| | ops | acierto | por 1R |
+|---|---:|---:|---:|
+| Retrocesos, todos | 587 | 44 % | −0,118 |
+| **descontando el spread** | 587 | 44 % | **−0,170** |
+| solo COMPRA | 276 | 43 % | −0,14 |
+| solo VENTA | 311 | 45 % | −0,10 |
+| con la geometría de la app | 587 | 39 % | −0,17 con spread |
+
+El barrido de swap ni hace falta y el propio informe lo dice: **«pierde ya solo
+con el spread»**. De 0,118 a 0,192 según el nivel, siempre negativo.
+
+Se comprobó también que **no se pisa con lo que ya existe**: 587 retrocesos, 0
+repetidos de otra lista, en 18 pares distintos. O sea que es una regla propia
+que pierde por su cuenta, no un reetiquetado de las señales de la app.
+
+⚠️ **SIGUE EN LA SOMBRA Y NO SE ENCIENDE.** Era la única candidata a salir, y
+el listón estaba escrito antes: aquí no llega ni cerca, así que no hay ninguna
+decisión difícil que tomar.
+
+📌 **Y las 9 operaciones reales con 56 % y +74 pips no lo contradicen: 9 no
+dicen nada.** Con 9 operaciones el margen es de ±33 puntos, o sea que un 56 % y
+un 44 % son el mismo número. Es exactamente para lo que existe el `±` de
+`margen()` en la pantalla de «tus números», y es el mismo error que el 89 % de
+Néstor sobre 9 operaciones en Swing.
+
+## El rango: la única fila no negativa del informe
+
+| | ops | acierto | pips | por 1R |
+|---|---:|---:|---:|---:|
+| **Solo las de RANGO** | 2.243 | 51 % | +1.960 | **+0,02** |
+| Solo las de TENDENCIA | 5.626 | 48 % | −16.522 | −0,05 |
+
+Los dos modos se comportan distinto de verdad, y eso confirma lo que ya se veía
+en el historial real (tendencia 6/27 con −629 pips, rango 10/24 con +43).
+
+## ⚠️⚠️ PERO ESE +0,02 ES SIN COSTES, Y FALTA LA FILA QUE LO DECIDE
+
+Esa tabla —«CON LA REGLA DE MEDIR NEUTRA: ¿HAY INFORMACIÓN?»— **no descuenta
+nada**. Se comprueba dentro del mismo log: las MISMAS 5.626 operaciones de
+tendencia salen −0,05 ahí y **−0,11** en la sección que sí dice «spread
+descontado». El peaje se lleva unos 0,06.
+
+Aplicado al rango, el +0,02 se iría a **alrededor de −0,04**.
+
+⚠️ **Ese −0,04 es una ESTIMACIÓN, no una medición**, y la diferencia importa:
+el peaje depende de lo ancho que sea el stop de cada regla, y las señales de
+rango no tienen por qué tener el mismo stop que las de tendencia. **El informe
+no tiene una fila de «rango con costes»** y hace falta antes de sacar cualquier
+conclusión. Es barato: una fila más, sin datos nuevos.
+
+📌 Queda escrito así a propósito, antes de que alguien cite el +0,02 como «el
+rango gana dinero». Es el mismo cuidado que con el COT en Swing, donde un
+filtro medía positivo con la geometría de la app y negativo con la vara neutra
+— y la vara neutra era la que mandaba.
+
+## Lo que esto NO autoriza
+
+⚠️ **No encender nada.** El retroceso pierde y el rango no está medido con
+costes. Y aunque el rango saliera positivo, sería una **fracción de lo que la
+app ya da**, no una regla nueva: la app seguiría dando también las de
+tendencia, que pierden −0,05. Reducir la app a solo rango es una decisión
+distinta y tendría que medirse como tal, con su listón escrito antes.
