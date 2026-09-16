@@ -75,6 +75,12 @@ export const GEMELOS = [
   'src/components/Diagnostico.jsx',
   'scripts/prueba-diario.mjs',
   'src/components/Glosario.jsx',
+  // La cabecera de TODAS las tarjetas que se abren. Es gemela por el mismo
+  // motivo por el que se extrajo: había ocho copias de la misma cabecera y
+  // cada una terminaba en una flechita gris que nadie leía como un botón. Si
+  // las dos apps volvieran a tener cada una la suya, volverían a separarse —
+  // que es exactamente lo que este archivo existe para impedir.
+  'src/components/TarjetaPlegable.jsx',
   // Leer el informe del broker y meterlo en el Diario. Es identico en las dos
   // apps a proposito: el formato de MT4/MT5 no sabe nada de si se opera en
   // velas de un dia o de una hora, y los pares que cada app acepta se le pasan

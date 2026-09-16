@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { PAIR_NAMES } from '../lib/pairs'
 import { leerOperaciones, quitarRepetidas } from '../lib/importarOperaciones'
 import { useT } from '../lib/i18n'
+import TarjetaPlegable from './TarjetaPlegable'
 
 // Subir el informe del bróker y meter las operaciones en el Diario.
 //
@@ -16,7 +17,6 @@ import { useT } from '../lib/i18n'
 export default function ImportarBroker({ trades, onImportar }) {
   const tr = useT()
   const archivoRef = useRef(null)
-  const [abierto, setAbierto] = useState(false)
   const [previo, setPrevio] = useState(null)
   const [error, setError] = useState(null)
   const [guardando, setGuardando] = useState(false)
@@ -61,33 +61,8 @@ export default function ImportarBroker({ trades, onImportar }) {
   const totalPrevio = previo?.nuevas.reduce((a, o) => a + o.pl, 0) ?? 0
 
   return (
-    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <button
-        onClick={() => setAbierto((v) => !v)}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 8,
-          background: 'none',
-          border: 'none',
-          padding: 0,
-          minHeight: 32,
-          cursor: 'pointer',
-          color: 'var(--text)',
-          fontSize: 14,
-          fontWeight: 600,
-          textAlign: 'left',
-        }}
-        aria-expanded={abierto}
-      >
-        <span>{tr('importar.titulo')}</span>
-        <span className="mono" style={{ color: 'var(--text-muted)', fontSize: 12 }}>
-          {abierto ? '▾' : '▸'}
-        </span>
-      </button>
+    <TarjetaPlegable titulo={tr('importar.titulo')} desc={tr('importar.desc')}>
 
-      {abierto && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
             {tr('importar.explicacion')}
@@ -216,7 +191,6 @@ export default function ImportarBroker({ trades, onImportar }) {
             </div>
           )}
         </div>
-      )}
-    </div>
+    </TarjetaPlegable>
   )
 }

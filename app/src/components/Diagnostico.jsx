@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useMemo} from 'react'
 import { MINIMO_PARA_ENSEÑAR, diagnostico } from '../lib/diagnostico'
 import { useT } from '../lib/i18n'
+import TarjetaPlegable from './TarjetaPlegable'
 
 // TUS números, partidos en grupos. Tarjeta plegable en el Diario.
 //
@@ -20,7 +21,6 @@ import { useT } from '../lib/i18n'
 // misma decisión que en `SetupDetalle`.
 export default function Diagnostico({ trades }) {
   const tr = useT()
-  const [abierto, setAbierto] = useState(false)
   const d = useMemo(() => diagnostico(trades), [trades])
 
   // Sin operaciones cerradas no hay nada que partir. No se pinta una tarjeta
@@ -79,31 +79,8 @@ export default function Diagnostico({ trades }) {
   )
 
   return (
-    <div className="card" style={{ padding: 12 }}>
-      <button
-        onClick={() => setAbierto((v) => !v)}
-        style={{
-          width: '100%',
-          minHeight: 44,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 8,
-          background: 'none',
-          border: 'none',
-          color: 'var(--text)',
-          cursor: 'pointer',
-          padding: 0,
-          fontSize: 14,
-          fontWeight: 600,
-          textAlign: 'start',
-        }}
-      >
-        <span>{tr('diag.titulo', { n: d.total.n })}</span>
-        <span style={{ color: 'var(--text-muted)' }}>{abierto ? '▲' : '▼'}</span>
-      </button>
+    <TarjetaPlegable titulo={tr('diag.titulo', { n: d.total.n })} desc={tr('diag.desc')}>
 
-      {abierto && (
         <div>
           {/* ⚠️ PRIMERO, antes de cualquier número. */}
           <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginTop: 8 }}>{tr('diag.aviso')}</div>
@@ -132,7 +109,6 @@ export default function Diagnostico({ trades }) {
           </div>
           <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 6, lineHeight: 1.5 }}>{tr('diag.moneda')}</div>
         </div>
-      )}
-    </div>
+    </TarjetaPlegable>
   )
 }

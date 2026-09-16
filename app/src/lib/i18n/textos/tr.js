@@ -203,6 +203,7 @@ export default {
       nadaAprovechable: 'Satırlar okundu ama hiçbiri kullanılabilir bir işlem değildi.',
     },
     titulo: "Aracı kurumdan işlemleri içe aktar",
+    desc: 'MT4 veya MT5 raporunuzu yükleyin, işlemleriniz net sonucuyla birlikte kendiliğinden girsin.',
     explicacion: "Geçmişini MT4 (\"Ayrıntılı rapor olarak kaydet\") veya MT5 (\"Rapor\") üzerinden dışa aktar ve buraya yükle. CSV de olur. Sen onaylayana kadar hiçbir şey kaydedilmez.",
     elegir: "Dosya seç…",
     errorLeer: "Dosya okunamadı.",
@@ -260,7 +261,8 @@ export default {
   },
 
   calendario: {
-    titulo: (v) => `Fiyatı hareketlendirebilecek haberler (${v.n})`,
+    titulo: ({ n }) => `Ekonomik takvim (${n})`,
+    desc: 'Fiyatı hareketlendirebilecek haberler',
     aviso: (v) => `${v.div}: ${v.h} saat sonra önemli veri`,
     intro: 'Fiyatı bir anda hareketlendirebilecek ekonomik veriler. Uygulamadaki hiçbir sinyali değiştirmezler: hangi saatte körlemesine girilmemesi gerektiğini bilmeniz için buradalar.',
     alto: 'Çok oynatır',
@@ -284,7 +286,8 @@ export default {
     pie: 'Yalnızca taramadaki 8 para biriminin yüksek ve orta etkili verileri gösterilir; düşük etkili olanlar gerçekten önemli olanları gölgeleyecekleri için dışarıda bırakılır. Saatler telefonunuzun saatidir. Kaynak: ForexFactory.',
   },
   glosario: {
-    titulo: 'Bu terimler ne demek?',
+    titulo: 'Sözlük',
+    desc: 'Bu terimler ne demek?',
     terminos: [
       ['Göreli güç', 'Bir para biriminin diğer 7 tanesine kıyasla ne kadar güçlü ya da zayıf olduğu; son fiyat değişiminin ortalaması alınır. Yüksek = güçlü.'],
       ['Eğilim', 'Bir paritenin şu an hangi tarafa meylettiği: hangi para birimi daha güçlüyse ona göre alım mı satım mı aramak daha mantıklı.'],
@@ -354,9 +357,15 @@ export default {
     soloEsteAparato: 'Bildirimler cihaz başına ayarlanır: uygulamayı hem telefonda hem bilgisayarda kullanıyorsan, her birinde aç.',
   },
 
+  plegable: {
+    ver: 'Gör',
+    cerrar: 'Kapat',
+  },
+
   historial: {
     titulo: 'Sinyal geçmişi',
     intro: 'Gözcünün bulduğu her sinyal ve sonrasında olanlar.',
+    pie: 'Pip’ler uygulamanın koyduğu hedef ve stoptan çıkıyor: Spread de Swap da dahil DEĞİL, yani gerçek bir hesapta sonuç daha kötü. Ve burada swing uygulamasından daha ağır basıyor, çünkü stop çok daha kısa: aynı 2 pip Spread, riskin 1,8 %’i yerine 7 %’i ediyor. Aynı mum hem stopa hem hedefe değerse kayıp sayılır, çünkü mum hangisinin önce olduğunu söylemez. Sinyalin çıktığı mum sayılmaz: giriş onun kapanışındadır.',
     cargando: 'Geçmiş yükleniyor…',
     error: 'Geçmiş yüklenemedi. Bağlantını kontrol et.',
     vacio: 'Henüz sinyal yok.',
@@ -390,7 +399,8 @@ export default {
     pie: (v) => `Spread pip cinsinden, 3'ün üzerinde kehribar rengi. ${v.hora} tarihinde alındı.`,
   },
   tasas: {
-    titulo: 'Açık tutmanın maliyeti',
+    titulo: 'Faiz oranları ve Swap',
+    desc: 'Açık tutmanın maliyeti',
     aviso:
       '⚠️ Bu, aracı kurumunun senden keseceği swap DEĞİLDİR. Merkez bankalarının faizleri arasındaki farktır; swap buradan doğar. Aracı kurum kimsenin yayımlamadığı bir marj ekler ve bu marj simetrik değildir: bir yönde ödersin, diğer yönde bazen alırsın, ama neredeyse hiçbir zaman aynı miktarda. Bu sana yönü ve kabaca büyüklüğü söyler, rakamı değil.',
     intro:
@@ -406,6 +416,7 @@ export default {
 
   diag: {
     titulo: ({ n }) => `Gruplara göre rakamların (${n})`,
+    desc: 'İşlemleriniz parite tipine, yöne ve pariteye göre ayrılmış.',
     aviso: 'Burada yalnızca SENİN yaptıkların sayılıyor. Bu bir tavsiye değil, neyi işlem edeceğini söylemez ve uygulamanın işaret ettikleriyle ilgisi yoktur.',
     ops: 'işlem',
     tipo: 'Parite tipine göre',

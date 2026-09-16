@@ -207,6 +207,7 @@ export default {
       nadaAprovechable: 'Rows were read, but none turned out to be a usable trade.',
     },
     titulo: "Import trades from your broker",
+    desc: 'Upload your MT4 or MT5 report and your trades come in on their own, net result included.',
     explicacion: "Export your history from MT4 (\"Save as Detailed Report\") or MT5 (\"Report\") and upload it here. A CSV works too. Nothing is saved until you confirm.",
     elegir: "Choose file…",
     errorLeer: "The file could not be read.",
@@ -265,7 +266,8 @@ export default {
   },
 
   calendario: {
-    titulo: (v) => `News that can move price (${v.n})`,
+    titulo: ({ n }) => `Economic calendar (${n})`,
+    desc: 'News that can move price',
     aviso: (v) => `${v.div}: major release in ${v.h} h`,
     intro: 'Economic releases that can move price sharply. They do not change any of the app signals: they are here so you know when not to be entering blind.',
     alto: 'Moves a lot',
@@ -289,7 +291,8 @@ export default {
     pie: 'Only high and medium impact releases for the 8 currencies of the scan are shown; low impact ones are left out because they would bury the ones that matter. Times are your phone’s. Source: ForexFactory.',
   },
   glosario: {
-    titulo: 'What do these terms mean?',
+    titulo: 'Glossary',
+    desc: 'What do these terms mean?',
     terminos: [
       ['Relative strength', 'How strong or weak a currency is compared with the other 7, averaging its recent price change. Higher = stronger.'],
       ['Bias', 'Which way a pair leans right now: whether it is better to look for buys or sells, based on which currency is stronger.'],
@@ -359,9 +362,15 @@ export default {
     soloEsteAparato: 'Alerts are set per device: if you use the app on your phone and your computer, turn them on in each one.',
   },
 
+  plegable: {
+    ver: 'View',
+    cerrar: 'Close',
+  },
+
   historial: {
     titulo: 'Signal history',
     intro: 'Every signal the watcher found, and what happened next.',
+    pie: 'The pips come from the target and stop the app set: they do NOT include spread or swap, so in a real account the result is worse. And it weighs more here than in the swing app, because the stop is much shorter: the same 2 pips of spread are 7 % of the risk instead of 1.8 %. If one candle touches both the stop and the target it counts as a loss, because the candle does not say which came first. The candle the signal appears on does not count: entry is at its close.',
     cargando: 'Loading history…',
     error: 'Could not load the history. Check your connection.',
     vacio: 'No signals yet.',
@@ -395,7 +404,8 @@ export default {
     pie: (v) => `Spread in pips, amber above 3. Taken on ${v.hora}.`,
   },
   tasas: {
-    titulo: 'What it costs to keep it open',
+    titulo: 'Interest rates and swap',
+    desc: 'What it costs to keep it open',
     aviso:
       '⚠️ This is NOT the swap your broker will charge you. It is the gap between central bank rates, which is where the swap COMES FROM. Your broker adds a margin nobody publishes, and it is uneven: in one direction you pay and in the other you sometimes get paid, but almost never the same. It gives you the direction and rough size, not the figure.',
     intro:
@@ -411,6 +421,7 @@ export default {
 
   diag: {
     titulo: ({ n }) => `Your numbers by group (${n})`,
+    desc: 'Your trades split by pair type, by direction and by pair.',
     aviso: 'This counts what YOU did, nothing else. It is not advice, it does not say what to trade, and it has nothing to do with what the app flags.',
     ops: 'ops',
     tipo: 'By pair type',

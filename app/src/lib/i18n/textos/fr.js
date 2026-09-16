@@ -207,6 +207,7 @@ export default {
       nadaAprovechable: 'Des lignes ont été lues, mais aucune n’était une opération exploitable.',
     },
     titulo: "Importer les opérations du courtier",
+    desc: 'Téléversez votre rapport MT4 ou MT5 et vos opérations entrent toutes seules, résultat net compris.',
     explicacion: "Exporte ton historique depuis MT4 (« Enregistrer comme rapport détaillé ») ou MT5 (« Rapport ») et dépose-le ici. Un CSV convient aussi. Rien n’est enregistré tant que tu ne confirmes pas.",
     elegir: "Choisir un fichier…",
     errorLeer: "Le fichier n’a pas pu être lu.",
@@ -265,7 +266,8 @@ export default {
   },
 
   calendario: {
-    titulo: (v) => `Nouvelles qui peuvent bouger le prix (${v.n})`,
+    titulo: ({ n }) => `Calendrier économique (${n})`,
+    desc: 'Nouvelles qui peuvent bouger le prix',
     aviso: (v) => `${v.div} : donnée importante dans ${v.h} h`,
     intro: 'Données économiques qui peuvent faire bouger le prix d\'un coup. Elles ne changent aucun signal de l\'application : elles sont là pour que vous sachiez à quelle heure il vaut mieux ne pas entrer à l\'aveugle.',
     alto: 'Bouge beaucoup',
@@ -289,7 +291,8 @@ export default {
     pie: 'Seules les données à fort et moyen impact des 8 devises du balayage sont affichées ; celles à faible impact sont écartées car elles masqueraient celles qui comptent. Les heures sont celles de votre téléphone. Source : ForexFactory.',
   },
   glosario: {
-    titulo: 'Que veulent dire ces termes ?',
+    titulo: 'Glossaire',
+    desc: 'Que veulent dire ces termes ?',
     terminos: [
       ['Force relative', 'À quel point une devise est forte ou faible par rapport aux 7 autres, en moyennant sa variation de prix récente. Plus haut = plus fort.'],
       ['Biais', "L'inclinaison d'une paire en ce moment : s'il vaut mieux chercher des achats ou des ventes, selon la devise la plus forte."],
@@ -359,9 +362,15 @@ export default {
     soloEsteAparato: 'Les alertes se règlent par appareil : si tu utilises l’app sur le téléphone et l’ordinateur, active-les sur chacun.',
   },
 
+  plegable: {
+    ver: 'Voir',
+    cerrar: 'Fermer',
+  },
+
   historial: {
     titulo: 'Historique des signaux',
     intro: 'Chaque signal trouvé par la vigie, et ce qui a suivi.',
+    pie: 'Les pips viennent de l’objectif et du stop posés par l’app : ils n’incluent NI le spread NI le swap, donc sur un compte réel le résultat est moins bon. Et cela pèse plus ici que dans l’app swing, car le stop est bien plus court : les mêmes 2 pips de spread font 7 % du risque au lieu de 1,8 %. Si une même bougie touche le stop et l’objectif, cela compte comme une perte, car la bougie ne dit pas lequel est arrivé en premier. La bougie où apparaît le signal ne compte pas : l’entrée se fait à sa clôture.',
     cargando: 'Chargement de l’historique…',
     error: 'Impossible de charger l’historique. Vérifie ta connexion.',
     vacio: 'Aucun signal pour l’instant.',
@@ -395,7 +404,8 @@ export default {
     pie: (v) => `Spread en pips, en ambre au-dessus de 3. Relevé le ${v.hora}.`,
   },
   tasas: {
-    titulo: 'Ce que coûte de la garder ouverte',
+    titulo: "Taux d'intérêt et swap",
+    desc: 'Ce que coûte de la garder ouverte',
     aviso:
       "⚠️ Ce n'est PAS le swap que ton courtier va te facturer. C'est l'écart entre les taux des banques centrales, d'où le swap PROVIENT. Ton courtier y ajoute une marge que personne ne publie, et elle est inégale : dans un sens tu paies, dans l'autre tu encaisses parfois, mais presque jamais autant. Cela donne le sens et l'ordre de grandeur, pas le montant.",
     intro:
@@ -411,6 +421,7 @@ export default {
 
   diag: {
     titulo: ({ n }) => `Tes chiffres par groupe (${n})`,
+    desc: 'Vos opérations séparées par type de paire, par direction et par paire.',
     aviso: 'Ceci compte ce que TU as fait, rien de plus. Ce n’est pas un conseil, cela ne dit pas quoi trader, et cela n’a rien à voir avec ce que l’app signale.',
     ops: 'ops',
     tipo: 'Par type de paire',

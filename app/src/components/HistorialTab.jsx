@@ -45,6 +45,30 @@ export default function HistorialTab() {
               <Fila key={`${f.id}@${f.vistoEl}`} f={f} t={t} locale={locale} />
             ))}
           </div>
+
+          {/* ⚠️⚠️ ESTE PIE NO ES UN ADORNO LEGAL: dice por dónde cojea el
+              número que se acaba de leer, y cojea por los DOS lados.
+
+              · OPTIMISTA en los costes. Los pips salen del objetivo y el stop
+                que puso la app (`resolver.mjs`: «pips: ganada ? pipBeneficio :
+                −pipRiesgo»), sin restar spread ni swap. Y aquí eso pesa MÁS
+                que en Swing, con la causa medida el 2026-09-07: el stop típico
+                es de ~30 pips contra los ~120 de allá, así que los mismos 2
+                pips de spread son el 7 % del riesgo en vez del 1,8 %.
+              · PESIMISTA en el orden. Si una misma vela toca el stop y el
+                objetivo se cuenta como PERDIDA, porque la vela no guarda cuál
+                de los dos pasó primero.
+
+              Portado de Swing el 2026-09-15 con texto propio. Allí es PRIMO, no
+              gemelo, justo porque estas dos razones no se escriben igual en las
+              dos apps.
+
+              ⚠️ Va DESPUÉS de los números y no antes — al revés que en las
+              tasas o el COT. Allí el aviso previene de LEER MAL el dato y lo
+              caro es leerlo tarde; esto es la letra pequeña de cómo está
+              calculado, y delante de una tabla que todavía no se ha visto no
+              orienta a nadie. */}
+          <p style={{ ...TEXTO, margin: 0 }}>{t('historial.pie')}</p>
         </>
       )}
     </>

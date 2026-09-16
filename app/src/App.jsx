@@ -8,6 +8,7 @@ import BottomNav from './components/BottomNav'
 import BarridoTab from './components/BarridoTab'
 import AvisosCard from './components/AvisosCard'
 import CotizacionesVivo from './components/CotizacionesVivo'
+import Calendario from './components/Calendario'
 import Tasas from './components/Tasas'
 import HistorialTab from './components/HistorialTab'
 import TableroCompleto from './components/TableroCompleto'
@@ -21,6 +22,7 @@ import { useAuthUser } from './lib/useAuthUser'
 import { useMembers } from './lib/useMembers'
 import { useTrades } from './lib/useTrades'
 import { useMarketData } from './lib/useMarketData'
+import { useCalendario } from './lib/useCalendario'
 
 const NOMBRE_APP = 'NESTOR FOREX INTRADÍA'
 
@@ -45,6 +47,10 @@ export default function App() {
   const t = useT()
   const { authUser, cargandoAuth, perfilEstado, esAdmin, registrar, ingresar, salir } = useAuthUser()
   const mercado = useMarketData()
+  // El calendario va en su propio archivo y con su propio horario: el barrido
+  // se publica cada 30 minutos y el calendario cada cuatro horas TODOS los
+  // días, porque el feed cubre la semana en curso y cambia de semana el domingo.
+  const calendario = useCalendario()
   const miembros = useMembers(esAdmin)
   const diario = useTrades(authUser?.uid)
 
@@ -192,6 +198,18 @@ export default function App() {
                       aparecen las señales: el aviso es para no tener que
                       volver a esta pantalla a mirar. */}
                   <AvisosCard uid={authUser.uid} />
+                  {/* ⚠️ EL CALENDARIO SE MUDÓ AQUÍ DESDE EL TABLERO COMPLETO
+                      (2026-09-15). Néstor, en Swing, preguntó «¿dónde está el
+                      calendario?» — estaba detrás de «Ver tablero completo →»
+                      mientras el spread y las tasas vivían en esta pestaña. El
+                      dueño de la app no lo encontraba; nadie más iba a hacerlo.
+
+                      Y aquí pesa MÁS que en Swing, con la causa medida: una
+                      operación de intradía empieza y termina dentro de esas
+                      horas, así que saber que hay Fed a las 18:00 decide si se
+                      abre algo AHORA. Un aviso que hay que ir a buscar dos
+                      pantallas más adentro no es un aviso. */}
+                  <Calendario cal={calendario} />
                   {/* Debajo de los avisos y no arriba del barrido: el barrido
                       es lo que se viene a mirar, y esto es una herramienta de
                       apoyo para el momento de entrar. */}
