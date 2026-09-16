@@ -192,18 +192,68 @@ console.log('')
 console.log('CON LA REGLA DE MEDIR NEUTRA: ¿HAY INFORMACIÓN?')
 console.log('Con 1 a 1, más del 50% es señal, menos del 50% es señal al revés,')
 console.log('y el 50% clavado es una moneda al aire.')
+// ⚠️ EL RÓTULO DICE QUE ESTA TABLA NO DESCUENTA NADA, Y NO ES UN ADORNO.
+// El 2026-09-16 hubo que ESTIMAR a mano cuánto le quitaría el peaje a la fila
+// del rango (+0,02) porque en ninguna parte decía que estos números fueran
+// sin costes — y una fila no negativa sin ese aviso se cita como «el rango
+// gana dinero». La tabla de abajo ya trae el número de verdad; ésta se queda
+// porque separa «¿acierta la dirección?» de «¿sobrevive al bróker?», que son
+// dos preguntas distintas.
+console.log('⚠️ SIN descontar nada. El peaje va en la tabla siguiente.')
 console.log('')
 console.log(`qué se hizo${CAB.slice(11)}`)
 console.log(RAYA)
-fila('COMPRAS del barrido', medir(neutra.senales.filter((s) => s.lado === 'COMPRA'), neutra.porClave))
-fila('VENTAS del barrido', medir(neutra.senales.filter((s) => s.lado === 'VENTA'), neutra.porClave))
-fila(
-  'COMPRAR lo que manda vender (al revés)',
-  medir(neutraInv.senales.filter((s) => s.ladoOriginal === 'VENTA'), neutraInv.porClave)
-)
-fila('Solo las de RANGO', medir(neutra.senales.filter((s) => s.tipo === 'rango'), neutra.porClave))
-fila('Solo las de TENDENCIA', medir(neutra.senales.filter((s) => s.tipo === 'tendencia'), neutra.porClave))
+// Cada entrada mide LO MISMO con los costes que se le pidan, para que la
+// tabla de abajo no pueda medir otras operaciones que ésta. El peaje entra
+// por parámetro y no por una variable de fuera: así no hay forma de que una
+// fila se mida con los costes que dejó puestos la anterior.
+const NEUTRAS = [
+  ['COMPRAS del barrido', (o) => medir(neutra.senales.filter((s) => s.lado === 'COMPRA'), neutra.porClave, o)],
+  ['VENTAS del barrido', (o) => medir(neutra.senales.filter((s) => s.lado === 'VENTA'), neutra.porClave, o)],
+  [
+    'COMPRAR lo que manda vender (al revés)',
+    (o) => medir(neutraInv.senales.filter((s) => s.ladoOriginal === 'VENTA'), neutraInv.porClave, o),
+  ],
+  ['Solo las de RANGO', (o) => medir(neutra.senales.filter((s) => s.tipo === 'rango'), neutra.porClave, o)],
+  ['Solo las de TENDENCIA', (o) => medir(neutra.senales.filter((s) => s.tipo === 'tendencia'), neutra.porClave, o)],
+]
+for (const [nombre, f] of NEUTRAS) fila(nombre, f({}))
 console.log(RAYA)
+
+// --------------------------------------------------------------------------
+// 3b. LAS MISMAS, YA PAGANDO LO QUE CUESTA OPERAR.
+//
+//     ⚠️ ESTA TABLA FALTABA, y su ausencia costó una estimación a mano el
+//     2026-09-16: la única fila no negativa del informe entero era «Solo las
+//     de RANGO» con +0,02, y no había forma de saber desde el informe si eso
+//     sobrevivía al bróker. Hubo que deducirlo comparando dos tablas lejanas
+//     —las mismas operaciones de tendencia salen −0,05 arriba y −0,11 en la
+//     sección que sí descuenta spread— y aun así el resultado era una
+//     estimación, porque el peaje depende de lo ancho que sea el stop de cada
+//     regla y las de rango no tienen por qué tener el mismo que las de
+//     tendencia.
+//
+//     Ahora se mide, y va pegada a la de arriba para que nadie tenga que
+//     buscar en otra pantalla el número que decide.
+// --------------------------------------------------------------------------
+
+console.log('')
+console.log('LAS MISMAS, PERO PAGANDO LO QUE CUESTA OPERAR')
+console.log('spread por par, y aparte con medio pip de swap por noche encima.')
+console.log('')
+console.log(`qué se hizo${'                                  por 1R sin nada   con spread   con todo'}`)
+console.log(RAYA)
+for (const [nombre, f] of NEUTRAS) {
+  const n = (m) => (m.porRiesgo === null ? '    —' : `${m.porRiesgo >= 0 ? '+' : ''}${m.porRiesgo.toFixed(3)}`)
+  const limpio = n(f({}))
+  const conSpread = n(f({ conSpread: true }))
+  const conTodo = n(f({ conSpread: true, swapPipsNoche: 0.5 }))
+  console.log(`${nombre.padEnd(46)} ${limpio.padStart(12)} ${conSpread.padStart(12)} ${conTodo.padStart(10)}`)
+}
+console.log(RAYA)
+console.log('⚠️ La columna que decide es «con spread» como mínimo: ese peaje se')
+console.log('   paga SIEMPRE, en todas las operaciones y desde el primer segundo.')
+console.log('   Una regla que solo gana en la primera columna no gana.')
 
 // --------------------------------------------------------------------------
 // 4. El RSI. En el historial real, cinco de las seis señales perdedoras eran
