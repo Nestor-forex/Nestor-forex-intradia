@@ -196,6 +196,7 @@ export default {
   },
 
   importar: {
+    paraQue: 'Serve para não copiares à mão o que o teu bróker já tem apontado. Entra o resultado LÍQUIDO, com o swap e a comissão já descontados, que é a única coisa que diz mesmo se ganhaste ou perdeste.',
     aviso: {
       vacio: 'O ficheiro está vazio.',
       sinTabla: 'Não se encontrou nenhuma tabela no ficheiro.',
@@ -266,6 +267,7 @@ export default {
   },
 
   calendario: {
+    paraQue: 'Os traders olham para escolher a HORA de entrar: minutos antes de um dado forte o preço dá saltos e o spread abre, por isso é quando errar sai mais caro. Não diz para onde o preço vai, só quando vai sacudir.',
     titulo: ({ n }) => `Calendário económico (${n})`,
     desc: 'Notícias que podem mover o preço',
     aviso: (v) => `${v.div}: dado importante em ${v.h} h`,
@@ -291,6 +293,7 @@ export default {
     pie: 'Só se mostram os dados de impacto alto e médio das 8 moedas da varredura; os de impacto baixo ficam de fora porque encobririam os que importam. As horas são as do seu telemóvel. Fonte: ForexFactory.',
   },
   glosario: {
+    paraQue: 'Se houver uma palavra das tabelas que não reconheces, procura-a aqui. São os termos que vais encontrar em qualquer plataforma de trading, não invenções desta app: aprendê-los serve-te aqui e fora daqui.',
     titulo: 'Glossário',
     desc: 'O que significam estes termos?',
     terminos: [
@@ -363,11 +366,20 @@ export default {
   },
 
   plegable: {
+    paraQue: 'Para que serve',
     ver: 'Ver',
     cerrar: 'Fechar',
   },
 
   historial: {
+    modoTendencia: 'Modo tendência',
+    modoRango: 'Modo range',
+    modoOtros: 'Outro tipo',
+    ops: 'ops',
+    appTitulo: 'Os sinais da própria app',
+    sombraTitulo: 'Histórico da regra de recuo',
+    esSombra: 'RECUO',
+    sombraIntro: 'Uma regra diferente que ainda está a ser testada: entra quando o preço volta até à EMA9 sem romper a EMA21. O vigia anota-a para ir juntando operações reais, mas NÃO é proposta e nunca recebeste um aviso de nenhuma. Os seus números vão à parte e nunca se somam aos de cima: são regras distintas e uma média não descreveria nenhuma.',
     titulo: 'Histórico de sinais',
     intro: 'Cada sinal que o vigia encontrou e o que aconteceu depois.',
     pie: 'Os pips saem do objetivo e do stop que a app definiu: NÃO incluem spread nem swap, por isso numa conta real o resultado é pior. E aqui pesa mais do que na app de swing, porque o stop é muito mais curto: os mesmos 2 pips de spread são 7 % do risco em vez de 1,8 %. Se a mesma vela toca o stop e o objetivo conta como perdida, porque a vela não diz qual aconteceu primeiro. A vela em que aparece o sinal não conta: a entrada é no seu fecho.',
@@ -404,6 +416,7 @@ export default {
     pie: (v) => `Spread em pips, em âmbar se passar de 3. Tomado em ${v.hora}.`,
   },
   tasas: {
+    paraQue: 'Os traders olham quando uma operação vai ficar aberta de um dia para o outro: dizem em que pares os juros jogam a teu favor noite após noite e em quais jogam contra. Não é o valor exato que o teu bróker vai cobrar.',
     titulo: 'Taxas de juro e swap',
     desc: 'O que custa mantê-la aberta',
     aviso:
@@ -420,6 +433,7 @@ export default {
   },
 
   diag: {
+    paraQue: 'Os traders revêem os próprios números para encontrar onde perdem sem dar por isso: um tipo de par, uma direção ou um par concreto. Com poucas operações não significa nada, e por isso cada percentagem leva a sua margem ao lado.',
     titulo: ({ n }) => `Os teus números por grupos (${n})`,
     desc: 'As suas operações separadas por tipo de par, por direção e por par.',
     aviso: 'Isto conta o que TU fizeste, nada mais. Não é um conselho, não diz o que operar e não tem nada a ver com o que a app assinala.',

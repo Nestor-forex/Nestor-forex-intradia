@@ -196,6 +196,7 @@ export default {
   },
 
   importar: {
+    paraQue: 'Damit musst du nicht von Hand abschreiben, was dein Broker längst notiert hat. Es kommt das NETTO-Ergebnis an, Swap und Kommission bereits abgezogen — das Einzige, was wirklich sagt, ob du gewonnen oder verloren hast.',
     aviso: {
       vacio: 'Die Datei ist leer.',
       sinTabla: 'In der Datei wurde keine Tabelle gefunden.',
@@ -266,6 +267,7 @@ export default {
   },
 
   calendario: {
+    paraQue: 'Trader schauen darauf, um die UHRZEIT für den Einstieg zu wählen: Minuten vor einer wichtigen Veröffentlichung springt der Kurs und der Spread weitet sich, dann kostet ein Fehler am meisten. Es sagt nicht, wohin der Kurs geht, nur wann es ruckelt.',
     titulo: ({ n }) => `Wirtschaftskalender (${n})`,
     desc: 'Nachrichten, die den Kurs bewegen können',
     aviso: (v) => `${v.div}: wichtiger Termin in ${v.h} Std.`,
@@ -291,6 +293,7 @@ export default {
     pie: 'Gezeigt werden nur Termine mit hoher und mittlerer Wirkung für die 8 Währungen des Scans; geringe Wirkung bleibt außen vor, weil sie die wichtigen überdecken würde. Die Zeiten sind die Ihres Telefons. Quelle: ForexFactory.',
   },
   glosario: {
+    paraQue: 'Wenn du ein Wort aus den Tabellen nicht kennst, schlag es hier nach. Das sind die Begriffe, die dir auf jeder Trading-Plattform begegnen, keine Erfindungen dieser App: Sie zu lernen hilft dir auch außerhalb.',
     titulo: 'Glossar',
     desc: 'Was bedeuten diese Begriffe?',
     terminos: [
@@ -363,11 +366,20 @@ export default {
   },
 
   plegable: {
+    paraQue: 'Wofür es gut ist',
     ver: 'Ansehen',
     cerrar: 'Schließen',
   },
 
   historial: {
+    modoTendencia: 'Trend-Modus',
+    modoRango: 'Range-Modus',
+    modoOtros: 'Anderer Typ',
+    ops: 'Ops',
+    appTitulo: 'Die eigenen Signale der App',
+    sombraTitulo: 'Verlauf der Pullback-Regel',
+    esSombra: 'PULLBACK',
+    sombraIntro: 'Eine andere Regel, die noch getestet wird: Sie steigt ein, wenn der Kurs bis zur EMA9 zurückkommt, ohne die EMA21 zu brechen. Der Wächter notiert sie, um echte Trades zu sammeln, aber sie wird NICHT vorgeschlagen und du hast nie eine Benachrichtigung dazu bekommen. Ihre Zahlen bleiben getrennt und werden nie zu denen oben addiert: es sind verschiedene Regeln, und ein Mittelwert würde keine von beiden beschreiben.',
     titulo: 'Signalverlauf',
     intro: 'Jedes Signal des Wächters und was danach passierte.',
     pie: 'Die Pips stammen aus Ziel und Stop, die die App gesetzt hat: Spread und Swap sind NICHT enthalten, auf einem echten Konto fällt das Ergebnis also schlechter aus. Und hier wiegt das schwerer als in der Swing-App, weil der Stop viel kürzer ist: dieselben 2 Pips Spread sind 7 % des Risikos statt 1,8 %. Berührt dieselbe Kerze Stop und Ziel, zählt es als Verlust, denn die Kerze sagt nicht, was zuerst kam. Die Kerze, in der das Signal erscheint, zählt nicht: der Einstieg ist zu ihrem Schluss.',
@@ -404,6 +416,7 @@ export default {
     pie: (v) => `Spread in Pips, ab 3 in Bernstein. Aufgenommen am ${v.hora}.`,
   },
   tasas: {
+    paraQue: 'Trader schauen darauf, wenn eine Position über Nacht offen bleibt: Sie zeigen, in welchen Paaren der Zins Nacht für Nacht für dich arbeitet und in welchen gegen dich. Es ist nicht der genaue Betrag, den dein Broker berechnet.',
     titulo: 'Zinssätze und Swap',
     desc: 'Was es kostet, sie offen zu halten',
     aviso:
@@ -420,6 +433,7 @@ export default {
   },
 
   diag: {
+    paraQue: 'Trader gehen ihre eigenen Zahlen durch, um zu finden, wo sie unbemerkt verlieren: eine Art von Paar, eine Richtung oder ein bestimmtes Paar. Bei wenigen Trades bedeutet es nichts, deshalb steht neben jeder Prozentzahl ihre Fehlerspanne.',
     titulo: ({ n }) => `Deine Zahlen nach Gruppen (${n})`,
     desc: 'Ihre Trades getrennt nach Paartyp, nach Richtung und nach Paar.',
     aviso: 'Das zählt nur, was DU getan hast. Es ist kein Rat, sagt nicht, was zu handeln ist, und hat nichts mit dem zu tun, was die App anzeigt.',

@@ -77,6 +77,7 @@ export default function Calendario({ cal, ahora = new Date() }) {
     <TarjetaPlegable
       titulo={t('calendario.titulo', { n: eventos.length })}
       desc={t('calendario.desc')}
+      paraQue={t('calendario.paraQue')}
       // ⚠️ EL AVISO DE NOTICIA URGENTE TIENE QUE VERSE SIN ABRIR, y por eso
       // existe la ranura `avance` de la tarjeta compartida. Solo sale si de
       // verdad viene algo de alto impacto: si saltara por cualquier cosa,

@@ -196,6 +196,7 @@ export default {
   },
 
   importar: {
+    paraQue: 'It saves you copying by hand what your broker has already written down. The NET result comes in, with swap and commission already deducted, which is the only thing that really says whether you won or lost.',
     aviso: {
       vacio: 'The file is empty.',
       sinTabla: 'No table was found in the file.',
@@ -266,6 +267,7 @@ export default {
   },
 
   calendario: {
+    paraQue: 'Traders check it to pick the HOUR to enter: minutes before a big release the price jumps and the spread widens, so that is when being wrong costs the most. It does not say which way the price will go, only when the shaking is coming.',
     titulo: ({ n }) => `Economic calendar (${n})`,
     desc: 'News that can move price',
     aviso: (v) => `${v.div}: major release in ${v.h} h`,
@@ -291,6 +293,7 @@ export default {
     pie: 'Only high and medium impact releases for the 8 currencies of the scan are shown; low impact ones are left out because they would bury the ones that matter. Times are your phone’s. Source: ForexFactory.',
   },
   glosario: {
+    paraQue: 'If there is a word in the tables you do not recognise, look it up here. These are the terms you will meet on any trading platform, not inventions of this app: learning them helps you inside and outside of here.',
     titulo: 'Glossary',
     desc: 'What do these terms mean?',
     terminos: [
@@ -363,11 +366,20 @@ export default {
   },
 
   plegable: {
+    paraQue: 'What it is for',
     ver: 'View',
     cerrar: 'Close',
   },
 
   historial: {
+    modoTendencia: 'Trend mode',
+    modoRango: 'Range mode',
+    modoOtros: 'Other type',
+    ops: 'ops',
+    appTitulo: 'The app\'s own signals',
+    sombraTitulo: 'Pullback rule history',
+    esSombra: 'PULLBACK',
+    sombraIntro: 'A different rule still being tested: it enters when the price falls back to the EMA9 without breaking the EMA21. The watcher records it to build up real trades, but it is NOT proposed and you never got an alert for any of them. Its numbers stay separate and are never added to the ones above: they are different rules and an average would describe neither.',
     titulo: 'Signal history',
     intro: 'Every signal the watcher found, and what happened next.',
     pie: 'The pips come from the target and stop the app set: they do NOT include spread or swap, so in a real account the result is worse. And it weighs more here than in the swing app, because the stop is much shorter: the same 2 pips of spread are 7 % of the risk instead of 1.8 %. If one candle touches both the stop and the target it counts as a loss, because the candle does not say which came first. The candle the signal appears on does not count: entry is at its close.',
@@ -404,6 +416,7 @@ export default {
     pie: (v) => `Spread in pips, amber above 3. Taken on ${v.hora}.`,
   },
   tasas: {
+    paraQue: 'Traders check them when a trade will stay open overnight: they tell you in which pairs the interest works in your favour night after night and in which it works against you. It is not the exact figure your broker will charge.',
     titulo: 'Interest rates and swap',
     desc: 'What it costs to keep it open',
     aviso:
@@ -420,6 +433,7 @@ export default {
   },
 
   diag: {
+    paraQue: 'Traders go over their own numbers to find where they lose without noticing: a type of pair, a direction, or one specific pair. With few trades it means nothing, which is why every percentage carries its margin right next to it.',
     titulo: ({ n }) => `Your numbers by group (${n})`,
     desc: 'Your trades split by pair type, by direction and by pair.',
     aviso: 'This counts what YOU did, nothing else. It is not advice, it does not say what to trade, and it has nothing to do with what the app flags.',

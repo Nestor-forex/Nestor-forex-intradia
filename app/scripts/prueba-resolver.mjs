@@ -266,5 +266,47 @@ console.log('\n15. Una señal anterior a todas las velas sí caduca')
   )
 }
 
+console.log('\nEl desglose por modo: cada cubo cuenta lo suyo y nada más')
+{
+  // ⚠️ POR QUÉ EXISTE (2026-09-16)
+  //
+  // Néstor pidió ver los tres por separado —tendencia, rango y el retroceso en
+  // pruebas— y eso solo vale si cada número cuenta lo que dice contar. El
+  // fallo que vigila esto ya mordió CUATRO veces en este proyecto: un cubo
+  // definido por DESCARTE se traga en silencio lo que se añada mañana
+  // (`esSombra`, `ventasPausadas`, `esDeLaApp`, la regla de Firestore).
+  const g = (tipo, extra = {}) => ({ resultado: 'ganada', pips: 10, exacto: true, tipo, ...extra })
+  const p = (tipo, extra = {}) => ({ resultado: 'perdida', pips: -6, exacto: true, tipo, ...extra })
+
+  const r = resumir([
+    g('tendencia'), p('tendencia'),
+    g('rango'),
+    g('retroceso', { sombra: true }), p('retroceso', { sombra: true }),
+    // Un tipo que nadie ha inventado todavía. Es el caso que de verdad importa.
+    g('vientoSolar'),
+  ])
+
+  comprobar(r.tendencia.total === 2 && r.tendencia.ganadas === 1, 'tendencia cuenta solo las suyas')
+  comprobar(r.rango.total === 1 && r.rango.pips === 10, 'rango cuenta solo las suyas')
+  comprobar(r.sombra.total === 2, 'la sombra cuenta las suyas')
+
+  // ⚠️ LA QUE DE VERDAD IMPORTA: un tipo nuevo NO puede disfrazarse de
+  // tendencia ni de rango, y tampoco puede desaparecer de la vista.
+  comprobar(r.tendencia.total === 2, 'un tipo nuevo NO se cuela en tendencia')
+  comprobar(r.rango.total === 1, 'un tipo nuevo NO se cuela en rango')
+  comprobar(r.otros.total === 1, 'un tipo nuevo cae en «otros» y se sigue viendo')
+
+  // Las partes de la app suman su total, y la sombra NUNCA entra.
+  comprobar(
+    r.tendencia.total + r.rango.total + r.otros.total === r.todas.total,
+    `el desglose suma el total de la app (${r.tendencia.total}+${r.rango.total}+${r.otros.total} vs ${r.todas.total})`
+  )
+  comprobar(r.todas.total === 4, 'la sombra queda FUERA del total de la app')
+
+  // Historial viejo sin `tipo`: cae en «otros», no en tendencia.
+  const v = resumir([{ resultado: 'ganada', pips: 5, exacto: true }])
+  comprobar(v.tendencia.total === 0 && v.otros.total === 1, 'una señal sin tipo cae en «otros», no en tendencia')
+}
+
 console.log(fallos ? `\n✗ ${fallos} comprobaciones fallaron\n` : '\n✓ todo bien\n')
 process.exit(fallos ? 1 : 0)

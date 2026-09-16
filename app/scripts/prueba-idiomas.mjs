@@ -27,7 +27,7 @@
 //    usa da una frase sin el número. Compila, se ve, y está mal.
 //  · NADA DE OTRO ALFABETO. El error que ya pasó.
 
-import { readdirSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { IDIOMAS } from '../src/lib/i18n/idiomas.js'
 
 let fallos = 0
@@ -186,6 +186,43 @@ console.log('\nNada quedó sin traducir por copia literal del español')
       console.log(`  ✓ ${c} (${pct.toFixed(0)}% coincide, normal para jerga de trading)`)
     }
   }
+}
+
+console.log('\nCada tarjeta plegable explica para qué sirve')
+{
+  // ⚠️ POR QUÉ ESTA COMPROBACIÓN EXISTE (2026-09-16)
+  //
+  // Néstor pidió que cada herramienta dijera, DENTRO, para qué sirve y para
+  // qué la usan los traders. Eso se hizo en las ocho tarjetas de hoy — y la
+  // forma de perderlo no es que alguien lo borre, sino que **alguien añada la
+  // novena tarjeta y no le ponga `paraQue`**. No fallaría nada: la tarjeta se
+  // abriría igual, sin la explicación, y nadie se enteraría.
+  //
+  // Lo mismo con el nombre de la clave. Un `t('x.paraQue')` que no existe en
+  // el diccionario **no da error: sale en blanco**, que es el fallo silencioso
+  // de siempre en esta app.
+  //
+  // Por eso se comprueban las dos cosas contra el CÓDIGO, no contra una lista
+  // escrita a mano: la lista se adaptaría a lo que encuentre, y una prueba que
+  // se adapta a lo que encuentra no comprueba nada.
+  const dirComponentes = new URL('../src/components/', import.meta.url)
+  const archivos = readdirSync(dirComponentes).filter((f) => f.endsWith('.jsx'))
+  const usuarias = []
+  for (const f of archivos) {
+    const src = readFileSync(new URL(f, dirComponentes), 'utf8')
+    if (f === 'TarjetaPlegable.jsx') continue
+    if (!/<TarjetaPlegable[\s>]/.test(src)) continue
+    usuarias.push(f)
+    const claves = [...src.matchAll(/paraQue=\{tr?\('([^']+)'\)\}/g)].map((m) => m[1])
+    if (!comprobar(claves.length === 1, `${f}: usa TarjetaPlegable y pasa ${claves.length} paraQue (debe ser 1)`)) continue
+    if (comprobar(claves[0] in base, `${f}: paraQue apunta a «${claves[0]}», que no existe en es.js`)) {
+      console.log(`  ✓ ${f} → ${claves[0]}`)
+    }
+  }
+  // Y que de verdad se hayan mirado tarjetas: si un día alguien renombra el
+  // componente, el bucle de arriba no entraría nunca y esto quedaría en verde
+  // sin haber comprobado ni una.
+  comprobar(usuarias.length >= 5, `solo ${usuarias.length} componentes usan TarjetaPlegable: ¿se renombró?`)
 }
 
 console.log(fallos ? `\n✗ ${fallos} comprobaciones fallaron\n` : '\n✓ todo bien\n')

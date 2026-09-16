@@ -49,12 +49,39 @@ export function resumir(resultados) {
   // cuentas de abajo. Su sitio es `sombra`, y solo lo lee el vigía.
   const juzgadas = todasJuzgadas.filter((r) => !r.sombra)
 
+  // ⚠️ LOS DOS MODOS DE LA APP, CONTADOS APARTE (2026-09-16).
+  //
+  // Néstor: «quiero que se vean todos —la app (tendencia), la app (rango),
+  // retroceso (en pruebas)— con operaciones, acertadas y pips».
+  //
+  // Y no es solo comodidad: con los números reales de producción **la app
+  // tiene dos comportamientos opuestos escondidos dentro de un promedio**.
+  // Tendencia va 6 de 27 con −629 pips; rango va 10 de 24 con +43. Juntos dan
+  // un 31 % que no describe a ninguno de los dos. Es la MISMA razón por la que
+  // la sombra nunca se suma a la app: un promedio entre cosas distintas no es
+  // un resumen, es un número que no significa nada.
+  //
+  // ⚠️ CADA CUBO SE DEFINE POR LO QUE ES, nunca por descarte. Ese fallo ya
+  // mordió cuatro veces en este proyecto (`esSombra`, `ventasPausadas`,
+  // `esDeLaApp` y la regla de Firestore): lo que se añada mañana caería dentro
+  // en silencio. Si el vigía empieza a anotar un `tipo` nuevo, aparecerá en
+  // `todas` y en `otros` — nunca disfrazado de tendencia ni de rango.
+  const deTipo = (t) => juzgadas.filter((r) => r.tipo === t)
+  const CONOCIDOS = ['tendencia', 'rango']
+
   return {
     todas: cuenta(juzgadas),
     exactas: cuenta(juzgadas.filter((r) => r.exacto)),
     // Cuántas de las juzgadas son aproximadas, para poder avisar solo cuando
     // de verdad hay alguna.
     aproximadas: juzgadas.filter((r) => !r.exacto).length,
+    tendencia: cuenta(deTipo('tendencia')),
+    rango: cuenta(deTipo('rango')),
+    // El cajón de lo que no encaja. No se pinta si está vacío, pero existe
+    // para que un tipo nuevo NO desaparezca de la vista: sumaría en `todas` y
+    // no saldría en ningún desglose, que es justo el fallo silencioso de
+    // siempre. Aquí entra también el historial viejo sin `tipo`.
+    otros: cuenta(juzgadas.filter((r) => !CONOCIDOS.includes(r.tipo))),
     sombra: cuenta(todasJuzgadas.filter((r) => r.sombra)),
   }
 }

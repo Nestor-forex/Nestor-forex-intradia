@@ -41,10 +41,32 @@ import { useT } from '../lib/i18n'
 // cambia. Antes, para saber qué era el COT había que abrirlo; quien no supiera
 // qué son esas tres letras no tenía motivo para tocarlas. Ahora el motivo está
 // fuera.
+// ─────────────────────────────────────────────────────────────────────────
+// Y LO DE DENTRO: PARA QUÉ SIRVE (2026-09-16)
+// ─────────────────────────────────────────────────────────────────────────
+// Néstor volvió a pedirlo, y lo que faltaba era la cuarta cosa: «adentro para
+// qué sirve o para qué lo utilizan los traders, en una explicación abreviada
+// pero con un mensaje claro preciso y conciso».
+//
+// La descripción de fuera dice QUÉ ES («Lo que tienen comprado los grandes»).
+// Eso no es lo mismo que PARA QUÉ SE USA, y sin la segunda la herramienta se
+// entiende y no se sabe qué hacer con ella.
+//
+// ⚠️ SE ESCRIBEN SIN DIRECCIÓN, TODAS. La tentación al redactar un «para qué
+// sirve» es acabar la frase con un consejo («…así sabes cuándo comprar»), y
+// eso convertiría en filtro lo que es información — que es justo la línea que
+// este proyecto no cruza sin pasar por el banco de pruebas. Varias llevan por
+// eso una frase de lo que NO dicen.
+//
+// ⚠️ Y VA ANTES DEL AVISO ROJO de cada tarjeta, no después, sin romper la
+// regla de «el aviso va antes de NINGÚN NÚMERO»: esto no es un número. El
+// orden queda: para qué sirve → aviso → datos.
 export default function TarjetaPlegable({
   sigla,
   titulo,
   desc,
+  // Lo primero que se lee al abrir: para qué se usa esto de verdad.
+  paraQue = null,
   // Se pinta SOLO con la tarjeta cerrada: es el adelanto que convence de
   // abrirla (el número de las mediciones, por ejemplo). Opcional a propósito
   // — la mayoría de las tarjetas no tienen nada que adelantar, y rellenarlo
@@ -108,28 +130,51 @@ export default function TarjetaPlegable({
           )}
         </span>
 
-        {/* ⚠️ LA PASTILLA CON PALABRA, que es el cambio de verdad. No se
-            reduce a la flecha ni cuando hay poco sitio: `flexShrink: 0`. */}
+        {/* ⚠️ EL RECUADRO DE «VER». Tercera versión, y las dos anteriores
+            fallaron por el mismo sitio.
+
+            1ª — solo una flechita ▸ de 12 px en `--text-muted`. Un triángulo
+                 del color del texto apagado no dice «tócame», dice «adorno».
+            2ª — la palabra dentro de una pastilla, pero en gris sobre gris
+                 (`--text-secondary` sobre `--bg-input`). Seguía siendo del
+                 color de lo que NO se toca, y Néstor lo dijo igual: «los
+                 botones tienen el mismo triángulo invertido gris».
+            3ª — ésta. Él la describió exactamente: «en vez de tener el
+                 triángulo invertido le colocas un recuadro allí mismo con la
+                 palabra VER dentro, y que el recuadro tenga color».
+
+            ⚠️ SIN FLECHA, a propósito y porque él lo pidió así. La palabra
+            sola basta y no hay que interpretar ningún glifo. Al abrir cambia
+            a «CERRAR», que dice lo mismo sin un símbolo que traducir.
+
+            ⚠️ CERRADO VA RELLENO, ABIERTO VA HUECO. No es estético: cerrado
+            tiene que llamar, y abierto ya cumplió su trabajo — ocho botones
+            rellenos a la vez serían ocho cosas gritando y ninguna se leería.
+
+            ⚠️ Y EL COLOR ES CIAN, NO VERDE. Ver el porqué en `index.css`
+            (`--cta`): aquí el verde y el rojo ya significan dinero. */}
         <span
           style={{
             flexShrink: 0,
             display: 'inline-flex',
             alignItems: 'center',
-            gap: 5,
-            padding: '5px 9px',
-            borderRadius: 999,
-            border: '1px solid var(--border-strong)',
-            background: 'var(--bg-input)',
-            color: 'var(--text-secondary)',
-            fontSize: 11.5,
-            fontWeight: 600,
+            padding: '7px 14px',
+            borderRadius: 'var(--radius-control)',
+            border: `1px solid ${abierto ? 'var(--border-strong)' : 'var(--cta)'}`,
+            background: abierto ? 'transparent' : 'var(--cta)',
+            color: abierto ? 'var(--text-secondary)' : 'var(--cta-tinta)',
+            fontSize: 12,
+            fontWeight: 700,
+            letterSpacing: '.04em',
             whiteSpace: 'nowrap',
+            // Néstor lo escribió en mayúsculas («la palabra VER»), y en un
+            // botón ayuda. Se hace por CSS y no en los diccionarios: en árabe,
+            // chino, japonés, coreano e hindi no existen las mayúsculas y
+            // `uppercase` simplemente no hace nada, que es lo correcto.
+            textTransform: 'uppercase',
           }}
         >
           {abierto ? t('plegable.cerrar') : t('plegable.ver')}
-          <span aria-hidden="true" style={{ fontSize: 9 }}>
-            {abierto ? '▲' : '▼'}
-          </span>
         </span>
       </button>
 
@@ -144,6 +189,27 @@ export default function TarjetaPlegable({
 
       {abierto && (
         <div id={id} style={{ padding: '0 14px 14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {paraQue && (
+            // Bloque propio y no un párrafo más: lo que sigue dentro de cada
+            // tarjeta son avisos y tablas, y un renglón suelto arriba se
+            // leería como parte del aviso. La raya del costado lo separa sin
+            // gritar. Va en `--text-secondary`, no en el verde de la pastilla:
+            // esto se lee, no se toca.
+            <div
+              style={{
+                borderInlineStart: '2px solid var(--border-strong)',
+                paddingInlineStart: 10,
+                fontSize: 12.5,
+                color: 'var(--text-secondary)',
+                lineHeight: 1.55,
+              }}
+            >
+              <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.06em', color: 'var(--text-muted)', marginBottom: 3, textTransform: 'uppercase' }}>
+                {t('plegable.paraQue')}
+              </div>
+              {paraQue}
+            </div>
+          )}
           {children}
         </div>
       )}
