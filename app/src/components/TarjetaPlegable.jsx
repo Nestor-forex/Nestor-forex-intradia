@@ -41,10 +41,32 @@ import { useT } from '../lib/i18n'
 // cambia. Antes, para saber qué era el COT había que abrirlo; quien no supiera
 // qué son esas tres letras no tenía motivo para tocarlas. Ahora el motivo está
 // fuera.
+// ─────────────────────────────────────────────────────────────────────────
+// Y LO DE DENTRO: PARA QUÉ SIRVE (2026-09-16)
+// ─────────────────────────────────────────────────────────────────────────
+// Néstor volvió a pedirlo, y lo que faltaba era la cuarta cosa: «adentro para
+// qué sirve o para qué lo utilizan los traders, en una explicación abreviada
+// pero con un mensaje claro preciso y conciso».
+//
+// La descripción de fuera dice QUÉ ES («Lo que tienen comprado los grandes»).
+// Eso no es lo mismo que PARA QUÉ SE USA, y sin la segunda la herramienta se
+// entiende y no se sabe qué hacer con ella.
+//
+// ⚠️ SE ESCRIBEN SIN DIRECCIÓN, TODAS. La tentación al redactar un «para qué
+// sirve» es acabar la frase con un consejo («…así sabes cuándo comprar»), y
+// eso convertiría en filtro lo que es información — que es justo la línea que
+// este proyecto no cruza sin pasar por el banco de pruebas. Varias llevan por
+// eso una frase de lo que NO dicen.
+//
+// ⚠️ Y VA ANTES DEL AVISO ROJO de cada tarjeta, no después, sin romper la
+// regla de «el aviso va antes de NINGÚN NÚMERO»: esto no es un número. El
+// orden queda: para qué sirve → aviso → datos.
 export default function TarjetaPlegable({
   sigla,
   titulo,
   desc,
+  // Lo primero que se lee al abrir: para qué se usa esto de verdad.
+  paraQue = null,
   // Se pinta SOLO con la tarjeta cerrada: es el adelanto que convence de
   // abrirla (el número de las mediciones, por ejemplo). Opcional a propósito
   // — la mayoría de las tarjetas no tienen nada que adelantar, y rellenarlo
@@ -109,20 +131,29 @@ export default function TarjetaPlegable({
         </span>
 
         {/* ⚠️ LA PASTILLA CON PALABRA, que es el cambio de verdad. No se
-            reduce a la flecha ni cuando hay poco sitio: `flexShrink: 0`. */}
+            reduce a la flecha ni cuando hay poco sitio: `flexShrink: 0`.
+
+            ⚠️ VA EN EL VERDE DE LA APP, no en gris (2026-09-16). La primera
+            versión la pintaba en `--text-secondary` sobre `--bg-input`, o sea
+            gris sobre gris: seguía siendo del color de lo que no se toca, que
+            es exactamente de lo que Néstor se quejaba. El verde es el acento
+            de la marca (el ícono, la pantalla de carga), y aquí NO afirma nada
+            sobre ningún dato — es un control, no un valor. Es la diferencia
+            con la regla de «antes de pintar algo de color, preguntarse qué
+            afirma ese color»: un botón solo afirma que es un botón. */}
         <span
           style={{
             flexShrink: 0,
             display: 'inline-flex',
             alignItems: 'center',
             gap: 5,
-            padding: '5px 9px',
+            padding: '6px 11px',
             borderRadius: 999,
-            border: '1px solid var(--border-strong)',
-            background: 'var(--bg-input)',
-            color: 'var(--text-secondary)',
-            fontSize: 11.5,
-            fontWeight: 600,
+            border: '1px solid var(--green)',
+            background: 'color-mix(in oklab, var(--green) 14%, transparent)',
+            color: 'var(--green-strong)',
+            fontSize: 12,
+            fontWeight: 700,
             whiteSpace: 'nowrap',
           }}
         >
@@ -144,6 +175,27 @@ export default function TarjetaPlegable({
 
       {abierto && (
         <div id={id} style={{ padding: '0 14px 14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {paraQue && (
+            // Bloque propio y no un párrafo más: lo que sigue dentro de cada
+            // tarjeta son avisos y tablas, y un renglón suelto arriba se
+            // leería como parte del aviso. La raya del costado lo separa sin
+            // gritar. Va en `--text-secondary`, no en el verde de la pastilla:
+            // esto se lee, no se toca.
+            <div
+              style={{
+                borderInlineStart: '2px solid var(--border-strong)',
+                paddingInlineStart: 10,
+                fontSize: 12.5,
+                color: 'var(--text-secondary)',
+                lineHeight: 1.55,
+              }}
+            >
+              <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.06em', color: 'var(--text-muted)', marginBottom: 3, textTransform: 'uppercase' }}>
+                {t('plegable.paraQue')}
+              </div>
+              {paraQue}
+            </div>
+          )}
           {children}
         </div>
       )}

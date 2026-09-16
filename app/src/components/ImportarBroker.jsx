@@ -61,7 +61,7 @@ export default function ImportarBroker({ trades, onImportar }) {
   const totalPrevio = previo?.nuevas.reduce((a, o) => a + o.pl, 0) ?? 0
 
   return (
-    <TarjetaPlegable titulo={tr('importar.titulo')} desc={tr('importar.desc')}>
+    <TarjetaPlegable titulo={tr('importar.titulo')} desc={tr('importar.desc')} paraQue={tr('importar.paraQue')}>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.55 }}>

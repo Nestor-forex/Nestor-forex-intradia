@@ -192,6 +192,7 @@ export default {
   },
 
   importar: {
+    paraQue: 'Aracı kurumunuzun zaten kaydettiğini elle kopyalamaktan kurtarır. NET sonuç girer, swap ve komisyon düşülmüş olarak — kazanıp kaybettiğinizi gerçekten söyleyen tek şey odur.',
     aviso: {
       vacio: 'Dosya boş.',
       sinTabla: 'Dosyada tablo bulunamadı.',
@@ -261,6 +262,7 @@ export default {
   },
 
   calendario: {
+    paraQue: 'Yatırımcılar giriş SAATİNİ seçmek için bakar: önemli bir veri açıklanmadan dakikalar önce fiyat sıçrar ve spread açılır, yani yanılmanın en pahalı olduğu andır. Fiyatın nereye gideceğini söylemez, sadece ne zaman sarsıntı olacağını.',
     titulo: ({ n }) => `Ekonomik takvim (${n})`,
     desc: 'Fiyatı hareketlendirebilecek haberler',
     aviso: (v) => `${v.div}: ${v.h} saat sonra önemli veri`,
@@ -286,6 +288,7 @@ export default {
     pie: 'Yalnızca taramadaki 8 para biriminin yüksek ve orta etkili verileri gösterilir; düşük etkili olanlar gerçekten önemli olanları gölgeleyecekleri için dışarıda bırakılır. Saatler telefonunuzun saatidir. Kaynak: ForexFactory.',
   },
   glosario: {
+    paraQue: 'Tablolarda tanımadığınız bir kelime varsa buradan bakın. Bunlar herhangi bir işlem platformunda karşınıza çıkacak terimler, bu uygulamanın uydurmaları değil: öğrenmek burada da dışarıda da işinize yarar.',
     titulo: 'Sözlük',
     desc: 'Bu terimler ne demek?',
     terminos: [
@@ -358,6 +361,7 @@ export default {
   },
 
   plegable: {
+    paraQue: 'Ne işe yarar',
     ver: 'Gör',
     cerrar: 'Kapat',
   },
@@ -399,6 +403,7 @@ export default {
     pie: (v) => `Spread pip cinsinden, 3'ün üzerinde kehribar rengi. ${v.hora} tarihinde alındı.`,
   },
   tasas: {
+    paraQue: 'Bir işlem gecelemek üzereyse yatırımcılar buna bakar: hangi paritelerde faizin her gece lehinize, hangilerinde aleyhinize çalıştığını gösterir. Aracı kurumunuzun keseceği kesin tutar değildir.',
     titulo: 'Faiz oranları ve Swap',
     desc: 'Açık tutmanın maliyeti',
     aviso:
@@ -415,6 +420,7 @@ export default {
   },
 
   diag: {
+    paraQue: 'Yatırımcılar kendi rakamlarını, fark etmeden nerede kaybettiklerini bulmak için gözden geçirir: bir parite türü, bir yön ya da belirli bir parite. Az işlemle hiçbir şey ifade etmez, bu yüzden her yüzdenin yanında hata payı yazar.',
     titulo: ({ n }) => `Gruplara göre rakamların (${n})`,
     desc: 'İşlemleriniz parite tipine, yöne ve pariteye göre ayrılmış.',
     aviso: 'Burada yalnızca SENİN yaptıkların sayılıyor. Bu bir tavsiye değil, neyi işlem edeceğini söylemez ve uygulamanın işaret ettikleriyle ilgisi yoktur.',

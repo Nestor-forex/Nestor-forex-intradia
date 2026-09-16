@@ -234,6 +234,7 @@ export default {
   },
 
   importar: {
+    paraQue: 'Sirve para no copiar a mano lo que tu bróker ya tiene apuntado. Entra el resultado NETO, con el swap y la comisión ya descontados, que es lo único que dice de verdad si ganaste o perdiste.',
     aviso: {
       vacio: 'El archivo está vacío.',
       sinTabla: 'No se encontró ninguna tabla en el archivo.',
@@ -304,6 +305,7 @@ export default {
   },
 
   calendario: {
+    paraQue: 'Los traders lo miran para elegir la HORA de entrar: minutos antes de un dato fuerte el precio pega saltos y el spread se abre, así que es cuando más caro sale equivocarse. No dice hacia dónde se va a mover, solo cuándo va a haber sacudida.',
     titulo: ({ n }) => `Calendario económico (${n})`,
     desc: 'Noticias que pueden mover el precio',
     aviso: (v) => `${v.div}: dato importante en ${v.h} h`,
@@ -329,6 +331,7 @@ export default {
     pie: 'Solo se muestran los datos de impacto alto y medio de las 8 divisas del barrido; los de impacto bajo se omiten porque taparían los que sí importan. Las horas son las de tu teléfono. Fuente: ForexFactory.',
   },
   glosario: {
+    paraQue: 'Si hay una palabra de las tablas que no reconoces, búscala aquí. Son los términos que vas a encontrar en cualquier plataforma de trading, no inventos de esta app: aprenderlos te sirve dentro y fuera de aquí.',
     titulo: 'Glosario',
     desc: '¿Qué significan estos términos?',
     terminos: [
@@ -402,6 +405,7 @@ export default {
   },
 
   plegable: {
+    paraQue: 'Para qué sirve',
     ver: 'Ver',
     cerrar: 'Cerrar',
   },
@@ -446,6 +450,7 @@ export default {
     pie: (v) => `Spread en pips, en ámbar si pasa de 3. Tomado el ${v.hora}.`,
   },
   tasas: {
+    paraQue: 'Los traders las miran cuando una operación va a quedar abierta de un día para otro: dicen en qué pares el interés juega a tu favor noche tras noche y en cuáles en tu contra. No es la cifra exacta que te cobrará el bróker.',
     titulo: 'Tasas de interés y swap',
     desc: 'Lo que cuesta mantenerla abierta',
     aviso:
@@ -462,6 +467,7 @@ export default {
   },
 
   diag: {
+    paraQue: 'Los traders revisan sus propios números para encontrar dónde pierden sin darse cuenta: un tipo de par, una dirección o un par concreto. Con pocas operaciones no significa nada, y por eso cada porcentaje lleva su margen pegado.',
     titulo: ({ n }) => `Tus números por grupos (${n})`,
     desc: 'Tus operaciones separadas por tipo de par, por dirección y por par.',
     aviso: 'Esto cuenta lo que TÚ hiciste, nada más. No es un consejo, no dice qué operar y no tiene nada que ver con lo que la app señala.',

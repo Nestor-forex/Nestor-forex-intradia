@@ -6,7 +6,7 @@ export default function Glosario() {
   const terminos = t('glosario.terminos')
 
   return (
-    <TarjetaPlegable titulo={t('glosario.titulo')} desc={t('glosario.desc')}>
+    <TarjetaPlegable titulo={t('glosario.titulo')} desc={t('glosario.desc')} paraQue={t('glosario.paraQue')}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {terminos.map(([term, def]) => (
           <div key={term}>

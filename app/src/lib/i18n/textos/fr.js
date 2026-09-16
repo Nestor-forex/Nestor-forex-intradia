@@ -196,6 +196,7 @@ export default {
   },
 
   importar: {
+    paraQue: 'Cela évite de recopier à la main ce que ton broker a déjà noté. C\'est le résultat NET qui entre, swap et commission déjà déduits, la seule chose qui dit vraiment si tu as gagné ou perdu.',
     aviso: {
       vacio: 'Le fichier est vide.',
       sinTabla: 'Aucun tableau trouvé dans le fichier.',
@@ -266,6 +267,7 @@ export default {
   },
 
   calendario: {
+    paraQue: 'Les traders le consultent pour choisir l\'HEURE d\'entrer : quelques minutes avant une publication importante, le prix saute et le spread s\'élargit, c\'est donc là que se tromper coûte le plus cher. Il ne dit pas dans quel sens le prix ira, seulement quand ça va secouer.',
     titulo: ({ n }) => `Calendrier économique (${n})`,
     desc: 'Nouvelles qui peuvent bouger le prix',
     aviso: (v) => `${v.div} : donnée importante dans ${v.h} h`,
@@ -291,6 +293,7 @@ export default {
     pie: 'Seules les données à fort et moyen impact des 8 devises du balayage sont affichées ; celles à faible impact sont écartées car elles masqueraient celles qui comptent. Les heures sont celles de votre téléphone. Source : ForexFactory.',
   },
   glosario: {
+    paraQue: 'S\'il y a un mot des tableaux que tu ne reconnais pas, cherche-le ici. Ce sont les termes que tu retrouveras sur n\'importe quelle plateforme de trading, pas des inventions de cette app : les apprendre te sert ici et ailleurs.',
     titulo: 'Glossaire',
     desc: 'Que veulent dire ces termes ?',
     terminos: [
@@ -363,6 +366,7 @@ export default {
   },
 
   plegable: {
+    paraQue: 'À quoi ça sert',
     ver: 'Voir',
     cerrar: 'Fermer',
   },
@@ -404,6 +408,7 @@ export default {
     pie: (v) => `Spread en pips, en ambre au-dessus de 3. Relevé le ${v.hora}.`,
   },
   tasas: {
+    paraQue: 'Les traders les regardent quand une position va rester ouverte d\'un jour à l\'autre : elles indiquent dans quelles paires l\'intérêt joue en ta faveur nuit après nuit et dans lesquelles il joue contre toi. Ce n\'est pas le montant exact que ton broker te facturera.',
     titulo: "Taux d'intérêt et swap",
     desc: 'Ce que coûte de la garder ouverte',
     aviso:
@@ -420,6 +425,7 @@ export default {
   },
 
   diag: {
+    paraQue: 'Les traders relisent leurs propres chiffres pour trouver où ils perdent sans s\'en rendre compte : un type de paire, un sens, ou une paire précise. Avec peu d\'opérations cela ne veut rien dire, et c\'est pourquoi chaque pourcentage porte sa marge à côté.',
     titulo: ({ n }) => `Tes chiffres par groupe (${n})`,
     desc: 'Vos opérations séparées par type de paire, par direction et par paire.',
     aviso: 'Ceci compte ce que TU as fait, rien de plus. Ce n’est pas un conseil, cela ne dit pas quoi trader, et cela n’a rien à voir avec ce que l’app signale.',

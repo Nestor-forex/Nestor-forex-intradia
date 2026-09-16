@@ -196,6 +196,7 @@ export default {
   },
 
   importar: {
+    paraQue: 'Serve para não copiares à mão o que o teu bróker já tem apontado. Entra o resultado LÍQUIDO, com o swap e a comissão já descontados, que é a única coisa que diz mesmo se ganhaste ou perdeste.',
     aviso: {
       vacio: 'O ficheiro está vazio.',
       sinTabla: 'Não se encontrou nenhuma tabela no ficheiro.',
@@ -266,6 +267,7 @@ export default {
   },
 
   calendario: {
+    paraQue: 'Os traders olham para escolher a HORA de entrar: minutos antes de um dado forte o preço dá saltos e o spread abre, por isso é quando errar sai mais caro. Não diz para onde o preço vai, só quando vai sacudir.',
     titulo: ({ n }) => `Calendário económico (${n})`,
     desc: 'Notícias que podem mover o preço',
     aviso: (v) => `${v.div}: dado importante em ${v.h} h`,
@@ -291,6 +293,7 @@ export default {
     pie: 'Só se mostram os dados de impacto alto e médio das 8 moedas da varredura; os de impacto baixo ficam de fora porque encobririam os que importam. As horas são as do seu telemóvel. Fonte: ForexFactory.',
   },
   glosario: {
+    paraQue: 'Se houver uma palavra das tabelas que não reconheces, procura-a aqui. São os termos que vais encontrar em qualquer plataforma de trading, não invenções desta app: aprendê-los serve-te aqui e fora daqui.',
     titulo: 'Glossário',
     desc: 'O que significam estes termos?',
     terminos: [
@@ -363,6 +366,7 @@ export default {
   },
 
   plegable: {
+    paraQue: 'Para que serve',
     ver: 'Ver',
     cerrar: 'Fechar',
   },
@@ -404,6 +408,7 @@ export default {
     pie: (v) => `Spread em pips, em âmbar se passar de 3. Tomado em ${v.hora}.`,
   },
   tasas: {
+    paraQue: 'Os traders olham quando uma operação vai ficar aberta de um dia para o outro: dizem em que pares os juros jogam a teu favor noite após noite e em quais jogam contra. Não é o valor exato que o teu bróker vai cobrar.',
     titulo: 'Taxas de juro e swap',
     desc: 'O que custa mantê-la aberta',
     aviso:
@@ -420,6 +425,7 @@ export default {
   },
 
   diag: {
+    paraQue: 'Os traders revêem os próprios números para encontrar onde perdem sem dar por isso: um tipo de par, uma direção ou um par concreto. Com poucas operações não significa nada, e por isso cada percentagem leva a sua margem ao lado.',
     titulo: ({ n }) => `Os teus números por grupos (${n})`,
     desc: 'As suas operações separadas por tipo de par, por direção e por par.',
     aviso: 'Isto conta o que TU fizeste, nada mais. Não é um conselho, não diz o que operar e não tem nada a ver com o que a app assinala.',

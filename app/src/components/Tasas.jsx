@@ -58,7 +58,7 @@ export default function Tasas() {
   const dias = diasDelDatoMasViejo(tasas)
 
   return (
-    <TarjetaPlegable titulo={t('tasas.titulo')} desc={t('tasas.desc')}>
+    <TarjetaPlegable titulo={t('tasas.titulo')} desc={t('tasas.desc')} paraQue={t('tasas.paraQue')}>
           {/* ⚠️ EL AVISO VA PRIMERO. Ver la cabecera del archivo: no es
               maquetación, es la única forma de que se lea. */}
           <div

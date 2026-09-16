@@ -79,7 +79,7 @@ export default function Diagnostico({ trades }) {
   )
 
   return (
-    <TarjetaPlegable titulo={tr('diag.titulo', { n: d.total.n })} desc={tr('diag.desc')}>
+    <TarjetaPlegable titulo={tr('diag.titulo', { n: d.total.n })} desc={tr('diag.desc')} paraQue={tr('diag.paraQue')}>
 
         <div>
           {/* ⚠️ PRIMERO, antes de cualquier número. */}
