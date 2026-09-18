@@ -461,4 +461,22 @@ export default {
     'auth/network-request-failed': 'Keine Internetverbindung. Prüfe dein Signal und versuche es erneut.',
     generico: 'Etwas ist schiefgelaufen. Versuche es erneut.',
   },
+  medicion: {
+    paraQue: 'Ein Backtest bedeutet, die Regeln erneut über den vergangenen Markt laufen zu lassen. Trader nutzen ihn, um zu erkennen, ob eine Strategie einen Vorteil hat, BEVOR sie Geld riskieren. Hier ist unserer, wie er auch ausfällt.',
+    titulo: 'Geprüft über 3 Jahre echten Markt',
+    desc: 'Was diese App ergeben hätte, wenn es sie seit 2023 gäbe.',
+    conSpread: 'Alle Zahlen hier haben den Spread jedes Paares BEREITS abgezogen. Das ist nicht «vor Kosten»: das ist, was übrig geblieben wäre.',
+    avance: ({ acierto, valor }) => `Sie liegt in ${acierto}% der Fälle richtig und verliert trotzdem ${valor} je riskiertem Dollar, Spread bereits abgezogen.`,
+    intro: ({ velas, desde, hasta }) => `Wir haben den Scan Kerze für Kerze über ${velas} Stundenkerzen echten Marktes neu berechnet (${desde} bis ${hasta}), als hätte die App die ganze Zeit gelaufen.`,
+    laApp: 'Die App, wie sie ist, mit ihren Niveaus',
+    varaNeutra: 'Dieselbe App, neutraler Maßstab (Stop und Ziel gleich weit)',
+    tendencia: 'Nur der Trendmodus (neutraler Maßstab)',
+    rango: 'Nur der Range-Modus (neutraler Maßstab)',
+    retroceso: 'Der Rücksetzer (aus, läuft im Schatten)',
+    pieLinea: ({ ops, acierto }) => `${ops} Trades · ${acierto}% richtig`,
+    queSignifica: ({ acierto }) => `Die große Zahl ist, was je riskiertem Dollar gewonnen oder verloren wird. Sieh dir die ersten beiden Zeilen an: Die App liegt mit ihren eigenen Niveaus in ${acierto}% der Fälle richtig und verliert trotzdem. Das liegt daran, dass das Ziel näher liegt als der Stop: oft wenig gewinnen, selten viel verlieren. Deshalb sagt die Trefferquote allein nichts.`,
+    porQueLoContamos: 'Wir zeigen es dir, weil es dein Geld ist. Andere Apps prahlen mit einer Engine dafür und veröffentlichen das Ergebnis nie; wäre es gut, stünde es ganz oben auf ihrer Seite. Nutze den Scan, um den Markt schneller zu lesen und selbst zu entscheiden, nicht als Kaufbefehl.',
+    fechado: ({ fecha }) => `Gemessen am ${fecha}. Ein anderer Markt kann diese Zahlen ändern.`,
+  },
+
 }

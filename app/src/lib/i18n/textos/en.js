@@ -461,4 +461,22 @@ export default {
     'auth/network-request-failed': 'No internet connection. Check your signal and try again.',
     generico: 'Something went wrong. Try again.',
   },
+  medicion: {
+    paraQue: 'A backtest means running the rules over past market data to see what they would have produced. Traders use it to find out whether a strategy has an edge BEFORE risking money on it. Here is ours, whatever it says.',
+    titulo: 'Tested over 3 years of real market',
+    desc: 'What this app would have produced had it existed since 2023.',
+    conSpread: 'Every number here ALREADY has each pair’s spread deducted. These are not «before costs»: this is what would have been left.',
+    avance: ({ acierto, valor }) => `It is right ${acierto}% of the time and still loses ${valor} for every dollar risked, with the spread already deducted.`,
+    intro: ({ velas, desde, hasta }) => `We recomputed the sweep candle by candle over ${velas} one-hour candles of real market (${desde} to ${hasta}), as if the app had been running the whole time.`,
+    laApp: 'The app as it is, with its own levels',
+    varaNeutra: 'The same app, neutral yardstick (stop and target equally far)',
+    tendencia: 'Trend mode only (neutral yardstick)',
+    rango: 'Range mode only (neutral yardstick)',
+    retroceso: 'The pullback rule (off, running in the shadows)',
+    pieLinea: ({ ops, acierto }) => `${ops} trades · ${acierto}% correct`,
+    queSignifica: ({ acierto }) => `The big number is what is gained or lost for every dollar risked. Look at the first two rows: the app is right ${acierto}% of the time with its own levels and still loses. That happens because the target sits closer than the stop, so you win often and small and lose rarely and big. That is why the hit rate alone says nothing.`,
+    porQueLoContamos: 'We show you because it is your money. Other apps boast about having an engine to measure this and never publish the result; if it were good, it would be the first thing on their page. Use the sweep to read the market faster and decide yourself, not as a buy order.',
+    fechado: ({ fecha }) => `Measured on ${fecha}. A different market can change these numbers.`,
+  },
+
 }

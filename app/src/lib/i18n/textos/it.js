@@ -457,4 +457,22 @@ export default {
     'auth/network-request-failed': 'Nessuna connessione a internet. Controlla il segnale e riprova.',
     generico: 'Qualcosa è andato storto. Riprova.',
   },
+  medicion: {
+    paraQue: 'Un backtest significa rifar passare le regole sul mercato del passato per vedere cosa avrebbero dato. I trader lo usano per capire se una strategia ha un vantaggio PRIMA di rischiarci dei soldi. Ecco il nostro, qualunque cosa dica.',
+    titulo: 'Provata su 3 anni di mercato reale',
+    desc: 'Cosa avrebbe dato questa app se fosse esistita dal 2023.',
+    conSpread: 'Tutti i numeri qui hanno GIÀ lo spread di ogni coppia scontato. Non sono «al lordo dei costi»: è quello che sarebbe rimasto.',
+    avance: ({ acierto, valor }) => `Ci azzecca il ${acierto}% delle volte e perde comunque ${valor} per ogni dollaro rischiato, con lo spread già scontato.`,
+    intro: ({ velas, desde, hasta }) => `Abbiamo ricalcolato la scansione candela per candela su ${velas} candele orarie di mercato reale (${desde} a ${hasta}), come se l’app avesse funzionato per tutto quel tempo.`,
+    laApp: 'L’app così com’è, con i suoi livelli',
+    varaNeutra: 'La stessa app, metro neutro (stop e obiettivo alla stessa distanza)',
+    tendencia: 'Solo la modalità tendenza (metro neutro)',
+    rango: 'Solo la modalità range (metro neutro)',
+    retroceso: 'Il ritracciamento (spento, gira nell’ombra)',
+    pieLinea: ({ ops, acierto }) => `${ops} operazioni · ${acierto}% azzeccate`,
+    queSignifica: ({ acierto }) => `Il numero grande è quanto si guadagna o si perde per ogni dollaro rischiato. Guarda le prime due righe: l’app ci azzecca il ${acierto}% con i suoi livelli e perde comunque. Succede perché l’obiettivo è più vicino dello stop: si vince spesso poco e si perde di rado tanto. Per questo la percentuale da sola non dice nulla.`,
+    porQueLoContamos: 'Te lo mostriamo perché sono soldi tuoi. Altre app si vantano di avere un motore per misurarlo e non pubblicano mai il risultato; se fosse buono sarebbe la prima cosa sulla loro pagina. Usa la scansione per leggere il mercato più in fretta e decidere tu, non come un ordine di acquisto.',
+    fechado: ({ fecha }) => `Misurato il ${fecha}. Un mercato diverso può cambiare questi numeri.`,
+  },
+
 }

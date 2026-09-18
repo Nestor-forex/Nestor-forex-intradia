@@ -503,4 +503,22 @@ export default {
     'auth/network-request-failed': 'No hay conexión a internet. Revisa tu señal y vuelve a intentar.',
     generico: 'Algo salió mal. Inténtalo de nuevo.',
   },
+  medicion: {
+    paraQue: 'Un backtest es volver a pasar las reglas por el mercado del pasado para ver qué habrían dado. Los traders lo usan para saber si una estrategia tiene ventaja ANTES de arriesgar dinero en ella. Aquí está el nuestro, salga como salga.',
+    titulo: 'Prueba sobre 3 años de mercado real',
+    desc: 'Qué habría dado esta app si hubiera existido desde 2023.',
+    conSpread: 'Todos los números de aquí llevan YA descontado el spread de cada par. No son «antes de gastos»: es lo que habría quedado.',
+    avance: ({ acierto, valor }) => `Acierta el ${acierto}% de las veces y aun así pierde ${valor} por cada dólar arriesgado, con el spread ya descontado.`,
+    intro: ({ velas, desde, hasta }) => `Recalculamos el barrido vela a vela sobre ${velas} velas de una hora de mercado real (${desde} a ${hasta}), como si la app hubiera estado funcionando todo ese tiempo.`,
+    laApp: 'La app tal cual, con sus niveles',
+    varaNeutra: 'La misma app, con vara neutra (stop y objetivo a igual distancia)',
+    tendencia: 'Solo el modo tendencia (vara neutra)',
+    rango: 'Solo el modo rango (vara neutra)',
+    retroceso: 'El retroceso (apagado, corriendo en la sombra)',
+    pieLinea: ({ ops, acierto }) => `${ops} operaciones · ${acierto}% acertadas`,
+    queSignifica: ({ acierto }) => `El número grande es lo que se gana o se pierde por cada dólar arriesgado. Fíjate en las dos primeras filas: la app acierta el ${acierto}% con sus propios niveles y aun así pierde. Eso pasa porque el objetivo está más cerca que el stop, así que se acierta muchas veces poco y se falla pocas veces mucho. Por eso el porcentaje de acierto, solo, no dice nada.`,
+    porQueLoContamos: 'Te lo enseñamos porque es tu dinero. Otras apps presumen de tener un motor para medir esto y no publican el resultado; si fuera bueno, sería lo primero de su página. Usa el barrido para mirar el mercado más rápido y decidir tú, no como una orden de compra.',
+    fechado: ({ fecha }) => `Medido el ${fecha}. Un mercado distinto puede cambiar estos números.`,
+  },
+
 }

@@ -461,4 +461,22 @@ export default {
     'auth/network-request-failed': 'Pas de connexion internet. Vérifie ton signal et réessaie.',
     generico: "Quelque chose s'est mal passé. Réessaie.",
   },
+  medicion: {
+    paraQue: 'Un backtest consiste à repasser les règles sur le marché du passé pour voir ce qu’elles auraient donné. Les traders s’en servent pour savoir si une stratégie a un avantage AVANT d’y risquer de l’argent. Voici le nôtre, quel qu’il soit.',
+    titulo: 'Testée sur 3 ans de marché réel',
+    desc: 'Ce que cette app aurait donné si elle existait depuis 2023.',
+    conSpread: 'Tous les chiffres ici ont DÉJÀ le spread de chaque paire déduit. Ce n’est pas «avant frais» : c’est ce qui serait resté.',
+    avance: ({ acierto, valor }) => `Elle a raison ${acierto}% du temps et perd quand même ${valor} par dollar risqué, spread déjà déduit.`,
+    intro: ({ velas, desde, hasta }) => `Nous avons recalculé le balayage bougie par bougie sur ${velas} bougies d’une heure de marché réel (${desde} à ${hasta}), comme si l’app avait tourné tout ce temps.`,
+    laApp: 'L’app telle quelle, avec ses niveaux',
+    varaNeutra: 'La même app, étalon neutre (stop et objectif à égale distance)',
+    tendencia: 'Seulement le mode tendance (étalon neutre)',
+    rango: 'Seulement le mode range (étalon neutre)',
+    retroceso: 'Le repli (éteint, tourne dans l’ombre)',
+    pieLinea: ({ ops, acierto }) => `${ops} opérations · ${acierto}% réussies`,
+    queSignifica: ({ acierto }) => `Le grand chiffre est ce que l’on gagne ou perd par dollar risqué. Regarde les deux premières lignes : l’app a raison ${acierto}% du temps avec ses propres niveaux et perd quand même. C’est parce que l’objectif est plus proche que le stop : on gagne souvent peu et on perd rarement beaucoup. Voilà pourquoi le taux de réussite seul ne dit rien.`,
+    porQueLoContamos: 'On te le montre parce que c’est ton argent. D’autres apps se vantent d’avoir un moteur pour mesurer ça et ne publient jamais le résultat ; s’il était bon, ce serait la première chose sur leur page. Sers-toi du balayage pour lire le marché plus vite et décider toi-même, pas comme un ordre d’achat.',
+    fechado: ({ fecha }) => `Mesuré le ${fecha}. Un marché différent peut changer ces chiffres.`,
+  },
+
 }
