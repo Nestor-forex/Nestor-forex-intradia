@@ -1,5 +1,8 @@
 {
-  "actualizadoEl": "2026-09-18T19:43:44.288Z",
-  "vela": "2026-09-18 19:00:00",
-  "senales": []
+  "actualizadoEl": "2026-09-18T22:39:37.251Z",
+  "vela": "2026-09-18 22:00:00",
+  "senales": [
+    "AUD/JPY|COMPRA|tendencia",
+    "GBP/JPY|COMPRA|tendencia"
+  ]
 }
