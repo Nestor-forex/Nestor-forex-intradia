@@ -456,4 +456,22 @@ export default {
     'auth/network-request-failed': 'İnternet bağlantısı yok. Sinyalini kontrol edip tekrar dene.',
     generico: 'Bir şeyler ters gitti. Tekrar dene.',
   },
+  medicion: {
+    paraQue: 'Backtest, kuralları geçmiş piyasada yeniden çalıştırıp ne vereceklerini görmektir. Yatırımcılar bunu, bir stratejiye para yatırmadan ÖNCE avantajı olup olmadığını anlamak için kullanır. İşte bizimki, sonucu ne olursa olsun.',
+    titulo: '3 yıllık gerçek piyasada test',
+    desc: 'Bu uygulama 2023’ten beri var olsaydı ne verirdi.',
+    conSpread: 'Buradaki bütün sayılardan her paritenin spread’i ZATEN düşülmüştür. «Masraflardan önce» değil: geriye kalacak olan budur.',
+    avance: ({ acierto, valor }) => `Zamanın ${acierto}%’inde tutturuyor ve yine de riske attığın her dolar için ${valor} kaybediyor, spread düşülmüş hâliyle.`,
+    intro: ({ velas, desde, hasta }) => `Taramayı, gerçek piyasanın ${velas} adet bir saatlik mumu üzerinde mum mum yeniden hesapladık (${desde} – ${hasta}); sanki uygulama o süre boyunca çalışıyormuş gibi.`,
+    laApp: 'Uygulama olduğu gibi, kendi seviyeleriyle',
+    varaNeutra: 'Aynı uygulama, nötr ölçü (stop ve hedef eşit uzaklıkta)',
+    tendencia: 'Sadece trend modu (nötr ölçü)',
+    rango: 'Sadece range modu (nötr ölçü)',
+    retroceso: 'Geri çekilme (kapalı, gölgede çalışıyor)',
+    pieLinea: ({ ops, acierto }) => `${ops} işlem · ${acierto}% doğru`,
+    queSignifica: ({ acierto }) => `Büyük sayı, riske atılan her dolar için kazanılan ya da kaybedilendir. İlk iki satıra bak: uygulama kendi seviyeleriyle ${acierto}% tutturuyor ve yine de kaybediyor. Bunun nedeni hedefin stop’tan daha yakın olması: sık sık az kazanıyor, seyrek ama çok kaybediyorsun. Bu yüzden isabet oranı tek başına hiçbir şey söylemez.`,
+    porQueLoContamos: 'Bunu sana gösteriyoruz çünkü para senin. Başka uygulamalar bunu ölçecek bir motorları olduğuyla övünür ama sonucu hiç yayımlamaz; iyi olsa sayfalarının en başında dururdu. Taramayı piyasayı daha hızlı okumak ve kendin karar vermek için kullan, bir alım emri olarak değil.',
+    fechado: ({ fecha }) => `${fecha} tarihinde ölçüldü. Farklı bir piyasa bu sayıları değiştirebilir.`,
+  },
+
 }

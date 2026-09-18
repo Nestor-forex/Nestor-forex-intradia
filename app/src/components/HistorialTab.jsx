@@ -1,4 +1,7 @@
+import TarjetaPlegable from './TarjetaPlegable'
 import { useIdioma } from '../lib/i18n'
+import { fmtFecha } from '../lib/format'
+import { MEDICION } from '../lib/medicion'
 import { useHistorial } from '../lib/useHistorial'
 
 // La pantalla que responde la única pregunta que importa: ¿esto acierta?
@@ -130,9 +133,128 @@ export default function HistorialTab() {
               calculado, y delante de una tabla que todavía no se ha visto no
               orienta a nadie. */}
           <p style={{ ...TEXTO, margin: 0 }}>{t('historial.pie')}</p>
+
+          <Mediciones t={t} locale={locale} />
         </>
       )}
     </>
+  )
+}
+
+// EL BACKTEST, DENTRO DE LA APP.
+//
+// Hasta el 2026-09-16 esta app no tenía esta pantalla y Swing sí, así que sus
+// números vivían solo en el registro de un workflow, donde no los ve nadie.
+// Néstor lo preguntó de frente y la respuesta honesta era que aquí no estaban.
+//
+// La sigla va arriba porque quien opera conoce la palabra BACKTEST —probar una
+// regla sobre el pasado— y esa palabra le dice de una vez qué es esto.
+function Mediciones({ t, locale }) {
+  const { app, neutra, tendencia, rango, retroceso } = MEDICION
+  // Sin signo: la frase ya dice «pierde», así que pasarle el valor con el suyo
+  // daría «pierde −0.14», un doble negativo que se lee como lo contrario.
+  const signo = (v) => `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(3)}`
+  const color = (v) => (v >= 0 ? 'var(--green)' : 'var(--red)')
+
+  return (
+    <TarjetaPlegable
+      sigla="BACKTEST"
+      titulo={t('medicion.titulo')}
+      desc={t('medicion.desc')}
+      paraQue={t('medicion.paraQue')}
+      // ⚠️ EL ADELANTO VA SIN SIGNO Y SOLO SI SE PIERDE. Si algún día midiera
+      // POSITIVO la frase sería falsa, así que entonces no se pinta:
+      // equivocarse hacia «falta un adelanto» cuesta un adelanto; hacia «se
+      // afirma que pierde cuando gana» cuesta la credibilidad, que es lo único
+      // que este proyecto vende. Misma asimetría que `esSombra`.
+      avance={
+        app.porRiesgoConSpread < 0
+          ? t('medicion.avance', {
+              acierto: app.acierto,
+              valor: Math.abs(app.porRiesgoConSpread).toFixed(2),
+            })
+          : null
+      }
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <p style={{ ...TEXTO, margin: 0 }}>
+          {t('medicion.intro', {
+            velas: MEDICION.velas,
+            desde: fmtFecha(MEDICION.desde, locale),
+            hasta: fmtFecha(MEDICION.hasta, locale),
+          })}
+        </p>
+
+        {/* ⚠️ QUE LOS GASTOS YA ESTÁN DENTRO SE DICE ANTES DE LOS NÚMEROS.
+            Néstor lo pidió con estas palabras el 2026-09-16 («que ya están
+            incluidos los gastos de spread»), y tiene razón: un número sin
+            decir si lleva los gastos dentro se lee mal en las dos direcciones
+            —o se cree mejor de lo que es, o se descuenta el peaje dos veces—.
+            Va en ámbar y arriba porque es la condición para leer la tabla, no
+            una nota al pie de ella. */}
+        <p style={{ ...TEXTO, margin: 0, color: 'var(--amber)' }}>{t('medicion.conSpread')}</p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {[
+            [t('medicion.laApp'), app],
+            [t('medicion.varaNeutra'), neutra],
+            [t('medicion.tendencia'), tendencia],
+            [t('medicion.rango'), rango],
+            [t('medicion.retroceso'), retroceso],
+          ].map(([nombre, m]) => (
+            <Linea
+              key={nombre}
+              t={t}
+              nombre={nombre}
+              ops={m.operaciones}
+              acierto={m.acierto}
+              valor={signo(m.porRiesgoConSpread)}
+              color={color(m.porRiesgoConSpread)}
+            />
+          ))}
+        </div>
+
+        {/* Lee el acierto de MEDICION en vez de llevarlo escrito: cambiar la
+            medición mueve la frase sola. En Swing esta misma frase se quedó
+            diciendo un número que ya no era el de la app. */}
+        <p style={{ ...TEXTO, margin: 0 }}>{t('medicion.queSignifica', { acierto: app.acierto })}</p>
+        <p style={{ ...TEXTO, margin: 0 }}>{t('medicion.porQueLoContamos')}</p>
+        <p style={{ ...TEXTO, margin: 0, color: 'var(--text-muted)', fontSize: 11.5 }}>
+          {t('medicion.fechado', { fecha: fmtFecha(MEDICION.fecha, locale) })}
+        </p>
+      </div>
+    </TarjetaPlegable>
+  )
+}
+
+function Linea({ t, nombre, ops, acierto, valor, color }) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'baseline',
+        justifyContent: 'space-between',
+        gap: 10,
+        paddingBottom: 6,
+        borderBottom: '1px solid var(--border)',
+      }}
+    >
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: 12.5, fontWeight: 600 }}>{nombre}</div>
+        {/* ⚠️ SIN `dir`: esto es una FRASE TRADUCIDA («7861 operaciones · 38%
+            acertadas»), no un dato suelto, así que debe seguir al idioma. Se
+            le había puesto `ltr` y en árabe reordenaba los trozos de la frase
+            — el error contrario al que este repo arregla una y otra vez. No lo
+            cazó ninguna comprobación (las de dirección se saltan a propósito
+            lo que lleva letras árabes); salió mirando la captura. */}
+        <div className="mono" style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+          {t('medicion.pieLinea', { ops, acierto })}
+        </div>
+      </div>
+      <div className="mono" dir="ltr" style={{ fontSize: 15, fontWeight: 700, color, whiteSpace: 'nowrap' }}>
+        {valor}
+      </div>
+    </div>
   )
 }
 
@@ -276,10 +398,15 @@ function Desglose({ filas, t }) {
 // La etiqueta ámbar que marca un experimento. Ámbar y no verde ni rojo: no
 // dice si va bien o mal, dice «esto está en pruebas».
 function Etiqueta({ children }) {
+  // ⚠️ SIN `dir`: lo que va dentro es una palabra TRADUCIDA («retroceso»,
+  // «ارتداد»), no jerga invariante, así que sigue al idioma. Llevaba `ltr`
+  // forzado desde que se portó este bloque; en Swing, que es PRIMO, estaba
+  // bien. No lo cazó ninguna comprobación: las de dirección se saltan a
+  // propósito lo que lleva letras árabes, así que hizo falta la comprobación
+  // CONTRARIA — que una frase traducida no esté forzada a ltr.
   return (
     <span
       className="mono"
-      dir="ltr"
       style={{
         fontSize: 9.5,
         fontWeight: 600,

@@ -461,4 +461,22 @@ export default {
     'auth/network-request-failed': 'Sem conexão com a internet. Verifique seu sinal e tente de novo.',
     generico: 'Algo deu errado. Tente de novo.',
   },
+  medicion: {
+    paraQue: 'Um backtest é passar as regras de novo pelo mercado do passado para ver o que teriam dado. Os traders usam isso para saber se uma estratégia tem vantagem ANTES de arriscar dinheiro nela. Aqui está o nosso, dê no que der.',
+    titulo: 'Testada sobre 3 anos de mercado real',
+    desc: 'O que esta app teria dado se existisse desde 2023.',
+    conSpread: 'Todos os números aqui JÁ têm o spread de cada par descontado. Não são «antes dos custos»: é o que teria sobrado.',
+    avance: ({ acierto, valor }) => `Acerta ${acierto}% das vezes e mesmo assim perde ${valor} por cada dólar arriscado, com o spread já descontado.`,
+    intro: ({ velas, desde, hasta }) => `Recalculamos a varredura vela a vela sobre ${velas} velas de uma hora de mercado real (${desde} a ${hasta}), como se a app estivesse funcionando esse tempo todo.`,
+    laApp: 'A app tal como é, com os seus níveis',
+    varaNeutra: 'A mesma app, com régua neutra (stop e alvo à mesma distância)',
+    tendencia: 'Só o modo tendência (régua neutra)',
+    rango: 'Só o modo range (régua neutra)',
+    retroceso: 'O recuo (desligado, correndo na sombra)',
+    pieLinea: ({ ops, acierto }) => `${ops} operações · ${acierto}% certas`,
+    queSignifica: ({ acierto }) => `O número grande é o que se ganha ou se perde por cada dólar arriscado. Repara nas duas primeiras linhas: a app acerta ${acierto}% com os seus próprios níveis e mesmo assim perde. Isso acontece porque o alvo está mais perto que o stop: ganha-se muitas vezes pouco e perde-se poucas vezes muito. Por isso a taxa de acerto, sozinha, não diz nada.`,
+    porQueLoContamos: 'Mostramos porque o dinheiro é teu. Outras apps gabam-se de ter um motor para medir isto e nunca publicam o resultado; se fosse bom, seria a primeira coisa da página. Usa a varredura para ler o mercado mais depressa e decidir tu, não como uma ordem de compra.',
+    fechado: ({ fecha }) => `Medido em ${fecha}. Um mercado diferente pode mudar estes números.`,
+  },
+
 }
