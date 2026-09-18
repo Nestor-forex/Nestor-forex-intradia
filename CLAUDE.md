@@ -1913,7 +1913,49 @@ Néstor sobre 9 operaciones en Swing.
 Los dos modos se comportan distinto de verdad, y eso confirma lo que ya se veía
 en el historial real (tendencia 6/27 con −629 pips, rango 10/24 con +43).
 
-## ⚠️⚠️ PERO ESE +0,02 ES SIN COSTES, Y FALTA LA FILA QUE LO DECIDE
+## ⚠️⚠️ Y ESE +0,02 ERA SIN COSTES. MEDIDO, EL RANGO TAMBIÉN PIERDE
+
+**Corregido el 2026-09-16 con la medición de verdad** (corrida #21). Lo que
+sigue debajo se deja escrito porque explica de dónde venía la duda, pero el
+número bueno es éste:
+
+| | sin nada | **con spread** | con spread + swap |
+|---|---:|---:|---:|
+| COMPRAS del barrido | −0,032 | −0,099 | −0,108 |
+| VENTAS del barrido | −0,027 | −0,093 | −0,102 |
+| **Solo las de RANGO** | **+0,021** | **−0,062** | −0,070 |
+| Solo las de TENDENCIA | −0,049 | −0,109 | −0,118 |
+
+**El rango es el menos malo del informe y aun así pierde.** Acierta más que
+tendencia (51 % contra 48 %), pero con la vara 1:1 hay que pasar del 50 % solo
+para empatar y el spread se lleva más de lo que ese 51 % da.
+
+📌 **Y MI ESTIMACIÓN ERA OPTIMISTA.** Estimé −0,04 y salió **−0,062**. El fallo
+está en el supuesto: di por hecho que el peaje del rango sería el mismo que el
+de tendencia (0,060), y es **0,083**. El motivo es el de siempre en este
+proyecto, con la causa a la vista: el spread es una cantidad FIJA, así que pesa
+más cuanto más estrecho sea el stop — y las señales de rango tienen el stop más
+estrecho, porque va al otro borde de un rango angosto. Es el mismo mecanismo
+que hace que 2 pips pesen el 7 % aquí y el 1,8 % en Swing.
+
+⚠️ **Nada se enciende con esto.** Aunque el rango midiera positivo, sería una
+FRACCIÓN de lo que la app ya da —la app seguiría dando también las de
+tendencia—, así que reducir la app a solo rango es otra decisión, con su propio
+listón escrito antes.
+
+✅ **Y la causa de fondo está arreglada, no solo el número:** la tabla que daba
+el +0,02 ahora DICE que no descuenta nada, y debajo va una tabla nueva donde
+cada fila se mide tres veces (sin nada · con spread · con todo). Ya no hace
+falta deducir nada comparando tablas lejanas.
+
+✅ **Los números están en pantalla**, en la pestaña Historial de Intradía,
+tarjeta `BACKTEST` — con un aviso en ámbar, ANTES de los números, diciendo que
+el spread ya está descontado. Néstor lo pidió con esas palabras.
+
+---
+
+### Lo que se escribió ANTES de medirlo, y de dónde venía la duda
+
 
 Esa tabla —«CON LA REGLA DE MEDIR NEUTRA: ¿HAY INFORMACIÓN?»— **no descuenta
 nada**. Se comprueba dentro del mismo log: las MISMAS 5.626 operaciones de
