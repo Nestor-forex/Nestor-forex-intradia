@@ -1,0 +1,64 @@
+name: Medir el NFX-LSS en velas de 15 minutos
+
+# Mide el indicador del concurso (barrido de liquidez + ruptura de estructura)
+# sobre velas de 15 minutos, que es el marco que recomienda su propia guía.
+#
+# NO cambia nada ni publica nada: solo imprime números. Ninguna señal de la app
+# se toca.
+#
+# ⚠️ SOLO A MANO, Y A PROPÓSITO. Bajar el M15 cuesta 7 créditos por tanda y por
+# defecto son 16 tandas = 112 créditos de los 800 del día. El proyecto ya gasta
+# 343 solo (vigía, publicador y reporte), así que caben — pero no todos los
+# días y no sin querer. Por eso no hay cron.
+#
+# 📌 Si un día falla con «429» o «límite», es que se lanzó el mismo día que
+# otra cosa grande. No es un fallo del guion: se espera a mañana.
+
+on:
+  workflow_dispatch:
+    inputs:
+      paginas:
+        description: 'Cuántas tandas de 5000 velas (7 créditos cada una). 16 ≈ 2 años y medio.'
+        required: false
+        default: '16'
+
+jobs:
+  medir:
+    runs-on: ubuntu-latest
+    # La descarga sola son ~16 minutos (una pausa de 65 s entre tandas, porque
+    # el plan gratuito da 8 créditos por minuto y cada tanda gasta 7). Después
+    # hay que recorrer ~78.000 velas varias veces por cada fila de la tabla.
+    # Quedarse corto aquí significa gastar los 112 créditos y no ver ni un
+    # número, así que se prefiere sobrar tiempo.
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # El lint va primero y no es un adorno: los scripts corren sin
+      # compilador, así que un import que falta no se nota hasta que el guion
+      # ya va por la mitad — o sea, con los créditos ya gastados. Ya pasó.
+      - name: Comprobar que no falta ningún import
+        working-directory: app
+        run: npm install --silent && npm run lint
+      # Y las pruebas sin internet, por lo mismo: si la lógica está rota, mejor
+      # saberlo antes de gastar 112 créditos.
+      - name: Comprobar el NFX-LSS
+        working-directory: app
+        run: node scripts/prueba-lss.mjs
+      - name: Comprobar el adaptador al banco
+        working-directory: app
+        run: node scripts/prueba-lss-banco.mjs
+      - name: Comprobar el modelo de costes
+        working-directory: app
+        run: node scripts/prueba-costes.mjs
+
+      - name: Medir
+        working-directory: app
+        env:
+          # ⚠️ Sin esto el guion falla: la llave ya no está en el repositorio
+          # (se borró el 2026-09-03 y vive solo en este secreto).
+          TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}
+          LSS_M15_PAGINAS: ${{ github.event.inputs.paginas }}
+        run: node scripts/medir-lss-m15.mjs
