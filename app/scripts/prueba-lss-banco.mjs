@@ -14,7 +14,7 @@
 // velas salen con el máximo por debajo del mínimo, TODOS los barridos se
 // detectan al revés y el número final es basura creíble.
 
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { DIRECTOS, velasDe, datosExactos, senalesLSSBanco } from './lib/lss-banco.mjs'
 import { medir, barridoSwap } from './lib/backtest-nucleo.mjs'
 import { resolver } from './lib/resolver.mjs'
@@ -199,32 +199,48 @@ titulo('3. Las mismas llamadas que hace el banco')
 }
 
 // ───────────────────────────────────────────────────────────────────────────
-titulo('4. Que el guion del M15 no use los nombres de la app hermana')
+titulo('4. Que NINGÚN guion use los nombres de `barridoSwap` de la app hermana')
 
 // ⚠️ Las comprobaciones de arriba guardan lo que `barridoSwap` DEVUELVE, y eso
-// no basta: el guion podía seguir pidiéndole `b.mediana` y reventar igual.
-// Es justo lo que pasó, y no falló hasta el último bloque de la tabla — con
-// los 112 créditos ya gastados.
+// no basta: un guion puede seguir pidiéndole `b.mediana` y reventar igual.
+// Es justo lo que pasó, DOS VECES el mismo día y en DOS archivos distintos:
+// primero tumbó la tabla del M15 (112 créditos) y después la del banco normal
+// (28 créditos y 37 minutos). Las dos veces se imprimió entera y murió en el
+// último bloque.
 //
-// Así que aquí se lee el guion COMO TEXTO y se exige que no nombre los campos
-// de Swing. Es la misma forma que `prueba-costes.mjs` usa para cazar las
-// etiquetas «(hoy)» que envejecen solas: comprobar lo que el archivo DICE, no
-// solo lo que la librería devuelve.
+// 📌 Y la primera versión de esta comprobación miraba UN SOLO archivo, así que
+// no habría cazado la segunda. Por eso ahora recorre TODOS los guiones: un
+// error que se acaba de cometer en un sitio es exactamente el que se va a
+// cometer en el de al lado.
+//
+// Se lee cada guion COMO TEXTO, igual que `prueba-costes.mjs` hace con las
+// etiquetas «(hoy)»: comprobar lo que el archivo DICE, no solo lo que la
+// librería devuelve.
 {
-  const fuente = readFileSync(new URL('./medir-lss-m15.mjs', import.meta.url), 'utf8')
+  const dir = new URL('./', import.meta.url)
+  // Este mismo archivo queda fuera, y no por comodidad: lleva `b.mediana` y
+  // `b.media` escritos DENTRO, en el propio patrón que busca. Sin excluirlo se
+  // marcaría a sí mismo y la prueba fallaría siempre, que es la forma más
+  // rápida de que alguien la desactive por pesada.
+  const YO = 'prueba-lss-banco.mjs'
+  const guiones = readdirSync(dir)
+    .filter((f) => f.endsWith('.mjs') && f !== YO)
+    .map((f) => [f, readFileSync(new URL(f, dir), 'utf8')])
+    .filter(([, src]) => src.includes('barridoSwap('))
 
-  // Guarda contra una prueba que se adapta a lo que encuentra: si el guion se
-  // renombra o deja de usar el barrido, esto quedaría en verde sin mirar nada.
-  ok(fuente.includes('barridoSwap('), 'el guion del M15 sigue llamando a `barridoSwap` (si no, esta prueba no comprueba nada)')
+  // Guarda contra una prueba que se adapta a lo que encuentra: si nadie llama
+  // ya a `barridoSwap`, el bucle no entraría y esto quedaría en verde sin
+  // haber mirado ni un archivo.
+  ok(guiones.length >= 2, `hay guiones que llaman a \`barridoSwap\` (${guiones.length}); si no, esta prueba no comprueba nada`)
 
-  for (const campo of ['mediana', 'media']) {
-    ok(
-      !new RegExp(`\\bb\\.${campo}\\b`).test(fuente),
-      `el guion NO usa \`b.${campo}\` — ése es el nombre de Swing y aquí sale undefined`,
-    )
+  for (const [nombre, src] of guiones) {
+    for (const campo of ['mediana', 'media']) {
+      ok(
+        !new RegExp(`\\bb\\.${campo}\\b`).test(src),
+        `${nombre} NO usa \`b.${campo}\` — ése es el nombre de Swing y aquí sale undefined`,
+      )
+    }
   }
-  ok(fuente.includes('b.cruzaron'), 'usa `b.cruzaron`, que es el de esta app')
-  ok(fuente.includes('b.mediaNoches'), 'y `b.mediaNoches`')
 }
 
 console.log(`\n${mal ? `✗ ${mal} de ${n} MAL` : `✓ las ${n} comprobaciones pasan`}\n`)

@@ -1551,7 +1551,15 @@ for (const { nombre, r } of revCorridas) {
     if (!b.total) {
       console.log('  (sin operaciones resueltas)')
     } else {
-      console.log(`  ${b.total} ops · duran ${b.mediana} velas de mediana, ${b.media.toFixed(1)} de media`)
+      // ⚠️ `barridoSwap` NO devuelve lo mismo en las dos apps. Aquí NO hay
+      // `mediana` ni `media` —ésos son de Swing, donde cada vela ES un día y
+      // las noches se deducen de la duración—. Aquí las noches se cuentan por
+      // los cortes reales de las 22:00 UTC, así que lo que hay es `cruzaron` y
+      // `mediaNoches`. Escribir los nombres de allá tumbó esta tabla entera.
+      console.log(
+        `  ${b.total} ops · ${b.cruzaron} cruzaron alguna noche ` +
+          `(${Math.round((b.cruzaron / b.total) * 100)} %), ${b.mediaNoches.toFixed(2)} noches de media`
+      )
       console.log('     swap/noche      acierto   por 1R   coste medio')
       const sinNada = medir(neutraLSS.senales, neutraLSS.porClave)
       console.log(`     sin costes      ${ac(sinNada.acierto)}   ${pr(sinNada.porRiesgo)}         —`)
