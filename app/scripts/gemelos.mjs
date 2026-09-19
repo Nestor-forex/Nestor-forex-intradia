@@ -164,6 +164,14 @@ export const GEMELOS = [
   // programas que Nestor tendria que arrancar cada manana.
   'src/lib/useMT5Quotes.js',
   'src/components/CotizacionesVivo.jsx',
+  // El NFX-LSS: el indicador que Nestor escribio en Pine para el concurso de
+  // TradingView, traducido a JavaScript. La LOGICA es la misma en las dos apps
+  // —pivotes, barrido, ruptura, stop y objetivo— y por eso es gemela; lo que
+  // cambia son los NUMEROS (pivote, ventana, objetivo), y esos no viven aqui
+  // dentro: se le pasan desde fuera. Es la unica forma de que la matematica
+  // sea una sola sin unificar ni un umbral de trading.
+  'src/lib/lss.js',
+  'scripts/prueba-lss.mjs',
   // Y este mismo archivo. Es el que dice que archivos no pueden separarse, asi
   // que es el ULTIMO que puede permitirse separarse: si un dia se le anade un
   // gemelo en una app y no en la otra, la comprobacion de cada repositorio
@@ -186,6 +194,24 @@ export const GEMELOS = [
 // empeora en Swing; está medido. Unificar umbrales sería el peor error posible
 // aquí.
 export const PRIMOS = {
+  'scripts/lib/lss-banco.mjs':
+    'El adaptador que lleva las senales del NFX-LSS al banco de pruebas. La ' +
+    'logica es gemela; ESTO no puede serlo por dos razones de peso. Primera: ' +
+    'cada app guarda las velas distinto —Swing por PAR y ya exactas, Intradia ' +
+    'por DIVISA y hay que reconstruir los pares, cuatro de ellos invirtiendo—. ' +
+    'Segunda, y es la que decide el numero: Intradia DERIVA los once cruces, y ' +
+    'una mecha derivada sale mas ancha de lo real, asi que fabricaria barridos ' +
+    'que nunca ocurrieron. Por eso alli se miden solo los 7 pares directos. ' +
+    'Ademas el resolver de cada app espera un campo distinto: `cierre` en ' +
+    'Swing y `vela` en Intradia.',
+
+  'scripts/prueba-lss-banco.mjs':
+    'La comprobacion del adaptador, que por lo de arriba tampoco puede ser ' +
+    'gemela. En Intradia prueba ademas algo que en Swing no existe: que al ' +
+    'INVERTIR una cotizacion el maximo pase a ser el inverso del minimo. Si ' +
+    'eso se confunde, las velas quedan del reves, todos los barridos se ' +
+    'detectan al reves y el resultado es basura creible.',
+
   'src/components/ClimaMercado.jsx':
     'El clima del par (idea tomada de Visual Trader). El DIBUJO es el mismo, ' +
     'pero los umbrales NO pueden serlo: un ATR del 1.2% es tormenta en velas ' +

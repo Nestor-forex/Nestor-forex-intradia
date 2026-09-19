@@ -80,8 +80,19 @@ async function pedir(url, reintentos = 2) {
 // los mismos 7 créditos porque se cobra por consulta, no por vela). Con 300
 // horas no se puede medir nada: son doce días.
 /**
- * @param velas   cuántas horas se piden POR TANDA. El tope de la API son 5000.
- * @param paginas cuántas tandas encadenadas hacia atrás. Ver abajo.
+ * @param velas     cuántas velas se piden POR TANDA. El tope de la API son 5000.
+ * @param paginas   cuántas tandas encadenadas hacia atrás. Ver abajo.
+ * @param intervalo el tamaño de la vela, como lo nombra Twelve Data ('1h',
+ *                  '15min', …). Por defecto '1h', que es lo que usan el vigía,
+ *                  el reporte y el publicador — o sea que para todos ellos
+ *                  esto no cambia absolutamente nada.
+ *
+ *                  ⚠️ Existe SOLO para el banco de pruebas, y lo que se mida
+ *                  con otro intervalo NO se puede comparar con lo medido en
+ *                  H1 sin decirlo: un pivote de 4 velas son 4 horas en H1 y
+ *                  una hora en M15. Es la misma regla de siempre —lo medido
+ *                  en un sitio no vale en otro— dentro de una sola app.
+ *
  *
  * EL LÍMITE QUE OBLIGA A PAGINAR
  * ------------------------------
@@ -101,7 +112,7 @@ async function pedir(url, reintentos = 2) {
  * el precio de nada. Con `paginas = 1` se comporta EXACTAMENTE como antes,
  * que es lo que usan el vigía y el reporte diario.
  */
-export async function obtenerVelas(apiKey, { minBarras = 60, velas = 300, paginas = 1 } = {}) {
+export async function obtenerVelas(apiKey, { minBarras = 60, velas = 300, paginas = 1, intervalo = '1h' } = {}) {
   const porSimbolo = {}
   for (const sym of SYMBOLS) porSimbolo[sym] = new Map()
 
@@ -114,7 +125,7 @@ export async function obtenerVelas(apiKey, { minBarras = 60, velas = 300, pagina
 
     const r = await pedir(
       `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(SYMBOLS.join(','))}` +
-        `&interval=1h&outputsize=${velas}&timezone=UTC` +
+        `&interval=${encodeURIComponent(intervalo)}&outputsize=${velas}&timezone=UTC` +
         (hasta ? `&end_date=${encodeURIComponent(hasta)}` : '') +
         `&apikey=${apiKey}`
     )
