@@ -14,6 +14,7 @@
 // velas salen con el máximo por debajo del mínimo, TODOS los barridos se
 // detectan al revés y el número final es basura creíble.
 
+import { readFileSync } from 'node:fs'
 import { DIRECTOS, velasDe, datosExactos, senalesLSSBanco } from './lib/lss-banco.mjs'
 import { medir, barridoSwap } from './lib/backtest-nucleo.mjs'
 import { resolver } from './lib/resolver.mjs'
@@ -166,15 +167,64 @@ titulo('3. Las mismas llamadas que hace el banco')
   ok(Number.isFinite(m.porRiesgo ?? 0), '`medir` devuelve un número, no basura')
   ok(m.total === juzgadas.length, 'el total de `medir` cuadra con lo que juzgó el resolver')
 
-  // ⚠️ La llamada que en Swing estuve escribiendo mal. Se comprueban los
-  // campos EXACTOS que devuelve, no los que yo recordaba.
+  // ⚠️⚠️ LA LLAMADA QUE YA SE ESCRIBIÓ MAL DOS VECES, y la segunda costó los
+  // 112 créditos de una corrida de M15: la tabla se imprimió entera y reventó
+  // en el último bloque con «Cannot read properties of undefined».
+  //
+  // Este bloque decía comprobar «los campos EXACTOS que devuelve» y solo
+  // miraba `total` y `filas`, así que no mordió. Ahora se comprueban TODOS,
+  // incluidos los dos que faltaban.
+  //
+  // 📌 Y el motivo de que sea tan fácil equivocarse aquí importa: en SWING
+  // devuelve `mediana` y `media` (cuánto duró la operación, porque allá cada
+  // vela ES un día y la duración son las noches). Aquí devuelve `cruzaron` y
+  // `mediaNoches`, porque las noches NO se deducen de la duración: una
+  // operación de 6 horas abierta a las 20:00 cruza el corte de las 22:00 UTC y
+  // una de 20 horas abierta a las 23:00 no cruza ninguno.
+  //
+  // O sea que copiar la línea de la app hermana no es un descuido de
+  // escritura: es traerse una suposición sobre el mercado que aquí es falsa.
   const b = barridoSwap(senales, porClave)
   ok(typeof b.total === 'number', '`barridoSwap` devuelve `total`')
   ok(Array.isArray(b.filas) && b.filas.length > 0, 'y `filas` (NO `niveles`)')
+  ok(typeof b.cruzaron === 'number', 'y `cruzaron` — cuántas pasaron por el corte de las 22:00')
+  ok(typeof b.mediaNoches === 'number', 'y `mediaNoches` (NO `media`, que es de Swing)')
+  ok(b.mediana === undefined, 'y NO trae `mediana`: ése es el nombre de Swing, aquí no existe')
+  ok(b.media === undefined, 'ni `media`, por lo mismo')
+  ok(b.cruzaron <= b.total, 'no pueden cruzar la noche más operaciones de las que hay')
   ok(
     b.filas.every((f) => typeof f.nivel === 'number' && f.medicion && typeof f.costeMedio === 'number'),
     'cada fila trae `nivel`, `medicion` y `costeMedio`',
   )
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+titulo('4. Que el guion del M15 no use los nombres de la app hermana')
+
+// ⚠️ Las comprobaciones de arriba guardan lo que `barridoSwap` DEVUELVE, y eso
+// no basta: el guion podía seguir pidiéndole `b.mediana` y reventar igual.
+// Es justo lo que pasó, y no falló hasta el último bloque de la tabla — con
+// los 112 créditos ya gastados.
+//
+// Así que aquí se lee el guion COMO TEXTO y se exige que no nombre los campos
+// de Swing. Es la misma forma que `prueba-costes.mjs` usa para cazar las
+// etiquetas «(hoy)» que envejecen solas: comprobar lo que el archivo DICE, no
+// solo lo que la librería devuelve.
+{
+  const fuente = readFileSync(new URL('./medir-lss-m15.mjs', import.meta.url), 'utf8')
+
+  // Guarda contra una prueba que se adapta a lo que encuentra: si el guion se
+  // renombra o deja de usar el barrido, esto quedaría en verde sin mirar nada.
+  ok(fuente.includes('barridoSwap('), 'el guion del M15 sigue llamando a `barridoSwap` (si no, esta prueba no comprueba nada)')
+
+  for (const campo of ['mediana', 'media']) {
+    ok(
+      !new RegExp(`\\bb\\.${campo}\\b`).test(fuente),
+      `el guion NO usa \`b.${campo}\` — ése es el nombre de Swing y aquí sale undefined`,
+    )
+  }
+  ok(fuente.includes('b.cruzaron'), 'usa `b.cruzaron`, que es el de esta app')
+  ok(fuente.includes('b.mediaNoches'), 'y `b.mediaNoches`')
 }
 
 console.log(`\n${mal ? `✗ ${mal} de ${n} MAL` : `✓ las ${n} comprobaciones pasan`}\n`)

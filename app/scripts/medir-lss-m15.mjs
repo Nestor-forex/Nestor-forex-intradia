@@ -185,7 +185,19 @@ async function main() {
     if (!b.total) {
       console.log('  (sin operaciones resueltas)')
     } else {
-      console.log(`  ${b.total} ops · duran ${b.mediana} velas M15 de mediana (${((b.mediana * 15) / 60).toFixed(1)} h), ${b.media.toFixed(1)} de media`)
+      // ⚠️ `barridoSwap` NO devuelve lo mismo en las dos apps, y por escribir
+      // aquí los nombres de Swing (`mediana`, `media`) esta tabla reventó en
+      // su primera corrida — después de gastar los 112 créditos.
+      //
+      // El motivo es real y no un capricho: en Swing cada vela ES un día, así
+      // que las noches salen de cuánto duró la operación. Aquí NO — una de 6
+      // horas abierta a las 20:00 cruza el corte y una de 20 horas abierta a
+      // las 23:00 no cruza ninguno. Por eso allá informa de la DURACIÓN y aquí
+      // de cuántas cruzaron y cuántas noches de media.
+      console.log(
+        `  ${b.total} ops · ${b.cruzaron} cruzaron alguna noche ` +
+          `(${Math.round((b.cruzaron / b.total) * 100)} %), ${b.mediaNoches.toFixed(2)} noches de media`
+      )
       console.log('     swap/noche      acierto   por 1R   coste medio')
       const sinNada = medir(mismaForma.senales, mismaForma.porClave)
       console.log(`     sin costes      ${ac(sinNada.acierto)}   ${pr(sinNada.porRiesgo)}         —`)
