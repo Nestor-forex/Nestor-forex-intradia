@@ -39,6 +39,36 @@
 // gemelos.
 
 /**
+ * El ATR de Wilder de una serie de velas.
+ *
+ * Existe aquí, y no se reutiliza el de `marketCalc.js`, porque aquél trabaja
+ * sobre la forma de datos de la app (por divisa, por fecha) y esto solo sabe
+ * de una lista de velas. Es la misma cuenta.
+ *
+ * Devuelve `null` en las posiciones donde todavía no hay suficientes velas:
+ * sin ATR no se puede poner el colchón del stop, y **inventarle un valor sería
+ * poner el stop a una distancia que nadie calculó**.
+ */
+export function atrWilder(velas, periodo) {
+  const n = velas.length
+  const fuera = new Array(n).fill(null)
+  if (n < 2 || periodo < 1) return fuera
+
+  let suma = 0
+  for (let i = 1; i < n; i++) {
+    const prev = velas[i - 1].c
+    const tr = Math.max(velas[i].h - velas[i].l, Math.abs(velas[i].h - prev), Math.abs(velas[i].l - prev))
+    if (i <= periodo) {
+      suma += tr
+      if (i === periodo) fuera[i] = suma / periodo
+    } else {
+      fuera[i] = (fuera[i - 1] * (periodo - 1) + tr) / periodo
+    }
+  }
+  return fuera
+}
+
+/**
  * Los pivotes confirmados de una serie.
  *
  * Devuelve, para cada índice, qué pivote era el ÚLTIMO conocido en ese
@@ -98,11 +128,24 @@ export function pivotesConocidos(velas, n) {
  *   sweepWindow   cuántas velas después del barrido sigue valiendo la ruptura
  *   rr            ratio riesgo:beneficio para el objetivo
  *   exigirSweep   si false, señala solo con la ruptura (más señales, sin filtrar)
- * @returns [{ i, lado, evento, entrada, sl, tp, iSweep, nivel }]
+ *   slBufferAtr   colchón del stop más allá del punto, en veces el ATR (v1.1)
+ *   atrLen        periodo de ese ATR
+ * @returns [{ i, lado, evento, entrada, sl, tp, iSweep, iSalida, nivel, huboSweep }]
  */
-export function senalesLSS(velas, { swingLen = 5, sweepWindow = 10, rr = 2, exigirSweep = true } = {}) {
+export function senalesLSS(
+  velas,
+  { swingLen = 5, sweepWindow = 10, rr = 2, exigirSweep = true, slBufferAtr = 0, atrLen = 14 } = {}
+) {
   const { altos, bajos } = pivotesConocidos(velas, swingLen)
+  // Solo se calcula si hace falta: sin colchón no se toca nada y el resultado
+  // es idéntico al de antes de la v1.1, que es lo que permite comparar.
+  const atr = slBufferAtr > 0 ? atrWilder(velas, atrLen) : null
   const fuera = []
+  // TODAS las rupturas, incluidas las que el filtro del barrido descarta como
+  // señal. Hacen falta enteras para la salida por estructura: una operación se
+  // cierra cuando el mercado rompe en contra, haya o no habido barrido antes
+  // de esa ruptura. Es lo que hace el `structureExit` del Pine.
+  const rupturas = []
 
   let tendencia = 'neutral'
   // Dónde ocurrió el último barrido de cada lado, y con qué mínimo/máximo.
@@ -148,6 +191,9 @@ export function senalesLSS(velas, { swingLen = 5, sweepWindow = 10, rr = 2, exig
 
     if (!rompeArriba && !rompeAbajo) continue
 
+    // Se anota ANTES de cualquier filtro, a propósito (ver `rupturas` arriba).
+    rupturas.push({ i, arriba: rompeArriba })
+
     const lado = rompeArriba ? 'COMPRA' : 'VENTA'
     const evento = (rompeArriba ? tendencia === 'bear' : tendencia === 'bull') ? 'CHoCH' : 'BOS'
     tendencia = rompeArriba ? 'bull' : 'bear'
@@ -166,8 +212,26 @@ export function senalesLSS(velas, { swingLen = 5, sweepWindow = 10, rr = 2, exig
     // Sin barrido no hay mecha que usar, así que se cae al pivote. Solo pasa
     // con `exigirSweep: false`, que es la fila de control.
     const entrada = v.c
-    const sl = iSweep >= 0 ? (rompeArriba ? velas[iSweep].l : velas[iSweep].h) : rompeArriba ? nivelBajo : nivelAlto
+    let sl = iSweep >= 0 ? (rompeArriba ? velas[iSweep].l : velas[iSweep].h) : rompeArriba ? nivelBajo : nivelAlto
     if (sl === null || sl === undefined) continue
+
+    // ── EL COLCHÓN DEL STOP (v1.1) ─────────────────────────────────────────
+    // Néstor lo pidió con este razonamiento, que es bueno: ese punto YA
+    // demostró ser alcanzable por el precio —por eso hubo barrido ahí—, así
+    // que dejar el stop justo encima invita a que un simple retest lo toque.
+    //
+    // ⚠️ Pero no es gratis, y conviene tenerlo escrito antes de ver el
+    // resultado: separar el stop ensancha el riesgo, así que la MISMA
+    // operación ganadora pasa a valer menos veces el riesgo. Cambia las dos
+    // cosas a la vez —menos stops tocados y menos premio por cada acierto— y
+    // cuál pesa más es justo lo que hay que medir, no suponerlo.
+    if (atr) {
+      const a = atr[i]
+      // Sin ATR no hay colchón que calcular. Se descarta la señal en vez de
+      // ponerle un stop a una distancia inventada.
+      if (a === null) continue
+      sl = rompeArriba ? sl - a * slBufferAtr : sl + a * slBufferAtr
+    }
 
     const riesgo = rompeArriba ? entrada - sl : sl - entrada
     // Un riesgo nulo o negativo significa que el stop quedó del lado
@@ -183,8 +247,27 @@ export function senalesLSS(velas, { swingLen = 5, sweepWindow = 10, rr = 2, exig
       sl,
       tp: rompeArriba ? entrada + riesgo * rr : entrada - riesgo * rr,
       iSweep: exigirSweep ? iSweep : iSweep >= 0 && i - iSweep <= sweepWindow ? iSweep : -1,
+      // Si hubo barrido reciente o no. Con `exigirSweep: false` TODAS las
+      // señales salen, y esto es lo que permite separarlas después sin volver
+      // a correr nada — es el «⚡» del Pine.
+      huboSweep: iSweep >= 0 && i - iSweep <= sweepWindow,
       nivel: rompeArriba ? nivelAlto : nivelBajo,
     })
+  }
+
+  // ── LA SALIDA POR ESTRUCTURA CONTRARIA (v1.1) ────────────────────────────
+  // Para cada señal, en qué vela el mercado rompe estructura EN CONTRA. Es el
+  // `structureExit` del Pine, y se calcula aquí porque aquí están todas las
+  // rupturas: quien mide no tiene por qué volver a detectarlas.
+  //
+  // `-1` significa que no llegó a romper en contra dentro de la serie. Quien
+  // mida decide qué hacer con eso —dejarla sin juzgar es lo honesto— y NO
+  // puede leerse como «no se cerró nunca»: puede ser que la serie se acabó.
+  for (const s of fuera) {
+    // Para una COMPRA, la contraria es una ruptura hacia ABAJO.
+    const contraria = s.lado !== 'COMPRA'
+    const r = rupturas.find((x) => x.i > s.i && x.arriba === contraria)
+    s.iSalida = r ? r.i : -1
   }
 
   return fuera

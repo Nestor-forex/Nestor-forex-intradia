@@ -14,6 +14,7 @@
 // velas salen con el máximo por debajo del mínimo, TODOS los barridos se
 // detectan al revés y el número final es basura creíble.
 
+import { readFileSync, readdirSync } from 'node:fs'
 import { DIRECTOS, velasDe, datosExactos, senalesLSSBanco } from './lib/lss-banco.mjs'
 import { medir, barridoSwap } from './lib/backtest-nucleo.mjs'
 import { resolver } from './lib/resolver.mjs'
@@ -166,15 +167,80 @@ titulo('3. Las mismas llamadas que hace el banco')
   ok(Number.isFinite(m.porRiesgo ?? 0), '`medir` devuelve un número, no basura')
   ok(m.total === juzgadas.length, 'el total de `medir` cuadra con lo que juzgó el resolver')
 
-  // ⚠️ La llamada que en Swing estuve escribiendo mal. Se comprueban los
-  // campos EXACTOS que devuelve, no los que yo recordaba.
+  // ⚠️⚠️ LA LLAMADA QUE YA SE ESCRIBIÓ MAL DOS VECES, y la segunda costó los
+  // 112 créditos de una corrida de M15: la tabla se imprimió entera y reventó
+  // en el último bloque con «Cannot read properties of undefined».
+  //
+  // Este bloque decía comprobar «los campos EXACTOS que devuelve» y solo
+  // miraba `total` y `filas`, así que no mordió. Ahora se comprueban TODOS,
+  // incluidos los dos que faltaban.
+  //
+  // 📌 Y el motivo de que sea tan fácil equivocarse aquí importa: en SWING
+  // devuelve `mediana` y `media` (cuánto duró la operación, porque allá cada
+  // vela ES un día y la duración son las noches). Aquí devuelve `cruzaron` y
+  // `mediaNoches`, porque las noches NO se deducen de la duración: una
+  // operación de 6 horas abierta a las 20:00 cruza el corte de las 22:00 UTC y
+  // una de 20 horas abierta a las 23:00 no cruza ninguno.
+  //
+  // O sea que copiar la línea de la app hermana no es un descuido de
+  // escritura: es traerse una suposición sobre el mercado que aquí es falsa.
   const b = barridoSwap(senales, porClave)
   ok(typeof b.total === 'number', '`barridoSwap` devuelve `total`')
   ok(Array.isArray(b.filas) && b.filas.length > 0, 'y `filas` (NO `niveles`)')
+  ok(typeof b.cruzaron === 'number', 'y `cruzaron` — cuántas pasaron por el corte de las 22:00')
+  ok(typeof b.mediaNoches === 'number', 'y `mediaNoches` (NO `media`, que es de Swing)')
+  ok(b.mediana === undefined, 'y NO trae `mediana`: ése es el nombre de Swing, aquí no existe')
+  ok(b.media === undefined, 'ni `media`, por lo mismo')
+  ok(b.cruzaron <= b.total, 'no pueden cruzar la noche más operaciones de las que hay')
   ok(
     b.filas.every((f) => typeof f.nivel === 'number' && f.medicion && typeof f.costeMedio === 'number'),
     'cada fila trae `nivel`, `medicion` y `costeMedio`',
   )
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+titulo('4. Que NINGÚN guion use los nombres de `barridoSwap` de la app hermana')
+
+// ⚠️ Las comprobaciones de arriba guardan lo que `barridoSwap` DEVUELVE, y eso
+// no basta: un guion puede seguir pidiéndole `b.mediana` y reventar igual.
+// Es justo lo que pasó, DOS VECES el mismo día y en DOS archivos distintos:
+// primero tumbó la tabla del M15 (112 créditos) y después la del banco normal
+// (28 créditos y 37 minutos). Las dos veces se imprimió entera y murió en el
+// último bloque.
+//
+// 📌 Y la primera versión de esta comprobación miraba UN SOLO archivo, así que
+// no habría cazado la segunda. Por eso ahora recorre TODOS los guiones: un
+// error que se acaba de cometer en un sitio es exactamente el que se va a
+// cometer en el de al lado.
+//
+// Se lee cada guion COMO TEXTO, igual que `prueba-costes.mjs` hace con las
+// etiquetas «(hoy)»: comprobar lo que el archivo DICE, no solo lo que la
+// librería devuelve.
+{
+  const dir = new URL('./', import.meta.url)
+  // Este mismo archivo queda fuera, y no por comodidad: lleva `b.mediana` y
+  // `b.media` escritos DENTRO, en el propio patrón que busca. Sin excluirlo se
+  // marcaría a sí mismo y la prueba fallaría siempre, que es la forma más
+  // rápida de que alguien la desactive por pesada.
+  const YO = 'prueba-lss-banco.mjs'
+  const guiones = readdirSync(dir)
+    .filter((f) => f.endsWith('.mjs') && f !== YO)
+    .map((f) => [f, readFileSync(new URL(f, dir), 'utf8')])
+    .filter(([, src]) => src.includes('barridoSwap('))
+
+  // Guarda contra una prueba que se adapta a lo que encuentra: si nadie llama
+  // ya a `barridoSwap`, el bucle no entraría y esto quedaría en verde sin
+  // haber mirado ni un archivo.
+  ok(guiones.length >= 2, `hay guiones que llaman a \`barridoSwap\` (${guiones.length}); si no, esta prueba no comprueba nada`)
+
+  for (const [nombre, src] of guiones) {
+    for (const campo of ['mediana', 'media']) {
+      ok(
+        !new RegExp(`\\bb\\.${campo}\\b`).test(src),
+        `${nombre} NO usa \`b.${campo}\` — ése es el nombre de Swing y aquí sale undefined`,
+      )
+    }
+  }
 }
 
 console.log(`\n${mal ? `✗ ${mal} de ${n} MAL` : `✓ las ${n} comprobaciones pasan`}\n`)

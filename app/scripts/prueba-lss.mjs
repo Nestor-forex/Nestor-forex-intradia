@@ -7,7 +7,7 @@
 // fallos que tenía el Pine original y que NO se portaron. Si alguien
 // «simplifica» esta lógica hacia el original, tienen que ponerse rojas.
 
-import { pivotesConocidos, senalesLSS } from '../src/lib/lss.js'
+import { pivotesConocidos, senalesLSS, atrWilder } from '../src/lib/lss.js'
 
 let mal = 0
 let n = 0
@@ -309,6 +309,207 @@ titulo('5. Cosas que no pueden pasar nunca')
   const corto = senalesLSS(velas, { swingLen: 2, sweepWindow: 10 }).length
   const largo = senalesLSS(velas, { swingLen: 8, sweepWindow: 10 }).length
   ok(largo <= corto, 'con pivotes más exigentes no salen más señales que con pivotes sensibles')
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+titulo('6. Los tres cambios de la v1.1')
+
+// ⚠️ ANTES QUE NADA: que los tres sean ADITIVOS. Sin pedirlos, el indicador
+// tiene que dar EXACTAMENTE lo mismo que antes de la v1.1 — si no, ninguna
+// tabla vieja se podría comparar con ninguna nueva y las mediciones de ayer
+// dejarían de valer sin que nadie se entere.
+{
+  const velas = mercadoConSenal()
+  const antes = senalesLSS(velas, { swingLen: 2, sweepWindow: 10, rr: 2 })
+  const conDefectos = senalesLSS(velas, { swingLen: 2, sweepWindow: 10, rr: 2, slBufferAtr: 0, atrLen: 14 })
+  ok(
+    JSON.stringify(antes.map((s) => [s.i, s.sl, s.tp])) === JSON.stringify(conDefectos.map((s) => [s.i, s.sl, s.tp])),
+    'sin colchón, la v1.1 da EXACTAMENTE las mismas señales y niveles que antes',
+  )
+}
+
+// ── 6a. El ATR de Wilder ───────────────────────────────────────────────────
+{
+  // Con velas de rango constante 10 y sin huecos, el ATR tiene que ser 10.
+  const velas = []
+  for (let i = 0; i < 40; i++) velas.push(V(105, 95, 100))
+  const a = atrWilder(velas, 14)
+  ok(a[0] === null, 'la primera vela no tiene ATR: no hay cierre anterior')
+  ok(a[13] === null, 'ni antes de completar el periodo')
+  ok(a[14] !== null && Math.abs(a[14] - 10) < 1e-9, `con rango constante 10, el ATR es 10 (salió ${a[14]})`)
+  ok(Math.abs(a[39] - 10) < 1e-9, 'y se mantiene')
+
+  // El hueco entre velas CUENTA: es lo que distingue el rango verdadero del
+  // rango de la vela. Si alguien lo quita, el ATR sale corto y el colchón del
+  // stop también.
+  const salto = [V(105, 95, 100)]
+  for (let i = 0; i < 20; i++) salto.push(V(205, 195, 200))
+  // Con periodo 2 el ATR empieza en el índice 2: hacen falta DOS rangos
+  // verdaderos, y el primero necesita el cierre anterior.
+  const b = atrWilder(salto, 2)
+  ok(b[1] === null, 'con periodo 2 todavía no hay ATR en la vela 1')
+  ok(b[2] > 10, `un hueco de 100 da un rango verdadero mayor que el de la vela (salió ${b[2]})`)
+}
+
+// ── 6b. El colchón del stop ────────────────────────────────────────────────
+{
+  const velas = mercadoConSenal()
+  const sin = senalesLSS(velas, { swingLen: 2, sweepWindow: 10, rr: 2 })[0]
+  const con = senalesLSS(velas, { swingLen: 2, sweepWindow: 10, rr: 2, slBufferAtr: 0.15, atrLen: 3 })[0]
+
+  ok(!!con, 'con colchón sigue saliendo la señal')
+  if (con) {
+    ok(con.i === sin.i && con.lado === sin.lado, 'es la misma señal: el colchón no cambia CUÁNDO se entra')
+    // En una COMPRA el stop baja, nunca sube.
+    ok(con.sl < sin.sl, `el stop se aleja: ${sin.sl} → ${con.sl}`)
+    ok(con.entrada === sin.entrada, 'la entrada no se toca')
+    // ⚠️ Y la consecuencia que hay que tener delante al leer la tabla: con el
+    // stop más lejos, el riesgo es MAYOR, así que el objetivo a `rr` veces el
+    // riesgo también se va más lejos. No es gratis.
+    ok(con.tp > sin.tp, 'y como el riesgo crece, el objetivo a `rr` veces también se aleja')
+    const riesgoSin = sin.entrada - sin.sl
+    const riesgoCon = con.entrada - con.sl
+    ok(riesgoCon > riesgoSin, 'el riesgo por operación es mayor con colchón — eso es lo que se paga')
+  }
+}
+
+{
+  // En una VENTA el colchón va hacia ARRIBA. Al revés dejaría el stop DENTRO
+  // del recorrido, o sea más cerca de saltar: exactamente lo contrario de lo
+  // que se pidió, y sin que nada falle.
+  const velas = [
+    plana(100), plana(100),
+    V(110, 99, 100), // pivote ALTO en 110
+    plana(100), plana(100),
+    V(101, 90, 100), // pivote BAJO en 90
+    plana(100), plana(100),
+    V(115, 99, 100), // BARRIDO arriba: mecha a 115 y cierra dentro
+    V(101, 85, 88), // RUPTURA abajo: cierra en 88, por debajo de 90
+    plana(88),
+  ]
+  const sin = senalesLSS(velas, { swingLen: 2, sweepWindow: 10, rr: 2 })[0]
+  const con = senalesLSS(velas, { swingLen: 2, sweepWindow: 10, rr: 2, slBufferAtr: 0.15, atrLen: 3 })[0]
+  ok(sin && sin.lado === 'VENTA', 'el mercado de control da una VENTA')
+  if (sin && con) {
+    ok(con.sl > sin.sl, `en VENTA el colchón sube el stop, no lo baja (${sin.sl} → ${con.sl})`)
+    ok(con.sl - con.entrada > sin.sl - sin.entrada, 'y el riesgo crece, igual que en la compra')
+  }
+}
+
+{
+  // Sin ATR todavía calculable, la señal se DESCARTA en vez de salir con un
+  // stop a una distancia inventada. Es la misma asimetría de siempre: no
+  // medir es más barato que medir mal.
+  const velas = mercadoConSenal()
+  const conAtrLargo = senalesLSS(velas, { swingLen: 2, sweepWindow: 10, rr: 2, slBufferAtr: 0.15, atrLen: 500 })
+  ok(conAtrLargo.length === 0, 'si el ATR aún no existe, no se inventa el colchón: no hay señal')
+}
+
+// ── 6c. El sweep como etiqueta, no como filtro ─────────────────────────────
+{
+  const velas = mercadoConSenal({ separacion: 12 })
+  // Barrido en la 8, ruptura 12 velas después: fuera de una ventana de 5.
+  const estricto = senalesLSS(velas, { swingLen: 2, sweepWindow: 5, rr: 2, exigirSweep: true })
+  const informativo = senalesLSS(velas, { swingLen: 2, sweepWindow: 5, rr: 2, exigirSweep: false })
+
+  ok(estricto.length === 0, 'en modo estricto, un barrido viejo bloquea la señal')
+  ok(informativo.length === 1, 'con el sweep informativo, la señal sale igual')
+  // ⚠️ La etiqueta tiene que decir la VERDAD: aquí el barrido existió pero
+  // quedó fuera de la ventana, así que NO cuenta como reciente. Marcarlo con
+  // «⚡» sería decirle al usuario que hubo trampa de stops hace un momento
+  // cuando fue hace doce velas.
+  ok(informativo[0].huboSweep === false, 'y `huboSweep` es falso: el barrido quedó fuera de la ventana')
+}
+
+{
+  const velas = mercadoConSenal({ separacion: 1 })
+  const s = senalesLSS(velas, { swingLen: 2, sweepWindow: 10, rr: 2, exigirSweep: false })[0]
+  ok(s && s.huboSweep === true, 'cuando el barrido SÍ es reciente, `huboSweep` es verdadero')
+}
+
+{
+  // ⚠️ La comprobación que de verdad importa de este cambio: quitar el filtro
+  // solo puede AÑADIR señales, nunca quitarlas. Si alguna vez saliera al
+  // revés, es que el «filtro» estaba cambiando algo más que el filtrado.
+  const velas = mercadoConSenal({ separacion: 12 })
+  for (const w of [1, 3, 5, 10, 20]) {
+    const estricto = senalesLSS(velas, { swingLen: 2, sweepWindow: w, rr: 2, exigirSweep: true })
+    const informativo = senalesLSS(velas, { swingLen: 2, sweepWindow: w, rr: 2, exigirSweep: false })
+    ok(informativo.length >= estricto.length, `con ventana ${w}, el modo informativo no da MENOS señales que el estricto`)
+  }
+}
+
+// ── 6d. La salida por estructura contraria ─────────────────────────────────
+{
+  // Una compra, y después una ruptura hacia abajo que la cierra.
+  const velas = [
+    plana(100), plana(100),
+    V(101, 90, 100), // 2 — pivote BAJO en 90
+    plana(100), plana(100),
+    V(110, 99, 100), // 5 — pivote ALTO en 110
+    plana(100), plana(100),
+    V(101, 85, 100), // 8 — barrido abajo
+    V(115, 99, 112), // 9 — RUPTURA arriba → COMPRA
+    plana(112), plana(112),
+    V(113, 104, 112), // 12 — pivote BAJO en 104
+    plana(112), plana(112),
+    V(120, 111, 112), // 15 — pivote ALTO
+    plana(112), plana(112),
+    V(113, 100, 102), // 18 — RUPTURA abajo (rompe el 104) → salida de la compra
+    plana(102),
+  ]
+  const s = senalesLSS(velas, { swingLen: 2, sweepWindow: 10, rr: 2, exigirSweep: false })
+  const compra = s.find((x) => x.lado === 'COMPRA')
+  ok(!!compra, 'sale la compra')
+  if (compra) {
+    ok(compra.iSalida === 18, `la salida por estructura es la ruptura contraria de la barra 18 (salió ${compra.iSalida})`)
+    ok(compra.iSalida > compra.i, 'y siempre es POSTERIOR a la entrada')
+  }
+}
+
+{
+  // Si no hay ruptura contraria, `iSalida` es -1. ⚠️ Eso NO significa «no se
+  // cerró»: significa que la serie se acabó antes. Quien mida tiene que
+  // dejarla sin juzgar, no contarla como ganada.
+  const velas = mercadoConSenal()
+  const s = senalesLSS(velas, { swingLen: 2, sweepWindow: 10, rr: 2, exigirSweep: false })[0]
+  ok(s && s.iSalida === -1, 'sin ruptura contraria después, `iSalida` es -1')
+}
+
+{
+  // La salida se calcula sobre TODAS las rupturas, no solo sobre las que el
+  // filtro del barrido dejó pasar como señal. Una posición abierta se cierra
+  // cuando el mercado rompe en contra, haya habido barrido o no.
+  const velas = [
+    plana(100), plana(100),
+    V(101, 90, 100),
+    plana(100), plana(100),
+    V(110, 99, 100),
+    plana(100), plana(100),
+    V(101, 85, 100), // barrido abajo
+    V(115, 99, 112), // 9 — COMPRA (con barrido reciente)
+    plana(112), plana(112),
+    V(113, 104, 112), // 12 — pivote BAJO
+    plana(112), plana(112),
+    V(120, 111, 112), // 15 — pivote ALTO
+    plana(112), plana(112),
+    V(113, 100, 102), // 18 — ruptura abajo; su barrido (la 15) queda lejos
+    plana(102),
+  ]
+  // 📌 La primera versión de esta comprobación usaba `sweepWindow: 3` y falló:
+  // la vela 15 ES un barrido del máximo (mecha a 120 sobre un pivote de 115 y
+  // cierre en 112, dentro), y queda a exactamente 3 velas de la ruptura, así
+  // que el filtro la dejaba pasar. El fallo era del mercado que yo inventé, no
+  // del código. Con ventana 1 la compra sigue pasando (su barrido está a una
+  // vela) y la venta no, que es lo que esta comprobación quiere aislar.
+  const estricto = senalesLSS(velas, { swingLen: 2, sweepWindow: 1, rr: 2, exigirSweep: true })
+  const compra = estricto.find((x) => x.lado === 'COMPRA')
+  ok(!!compra, 'en modo estricto sigue saliendo la compra (su barrido sí era reciente)')
+  ok(
+    estricto.every((x) => x.lado !== 'VENTA'),
+    'y la ruptura de bajada NO es señal, porque no tuvo barrido reciente',
+  )
+  ok(compra && compra.iSalida === 18, 'pero SÍ sirve de salida: la posición se cierra igual')
 }
 
 console.log(`\n${mal ? `✗ ${mal} de ${n} MAL` : `✓ las ${n} comprobaciones pasan`}\n`)
