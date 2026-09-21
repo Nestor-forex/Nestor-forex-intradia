@@ -1982,3 +1982,156 @@ costes. Y aunque el rango saliera positivo, sería una **fracción de lo que la
 app ya da**, no una regla nueva: la app seguiría dando también las de
 tendencia, que pierden −0,05. Reducir la app a solo rango es una decisión
 distinta y tendría que medirse como tal, con su listón escrito antes.
+
+---
+
+# El NFX-LSS, medido aquí en H1 y en M15 (2026-09-18 al 20)
+
+Néstor escribió un indicador en Pine para un concurso de TradingView
+—**NestorForex Smart Signal (NFX-LSS)**, barrido de liquidez + ruptura de
+estructura (BOS/CHoCH)— y pidió medirlo en las dos apps.
+
+📌 Que el backtest salga mal **no dice que el indicador esté mal hecho**: un
+concurso de TradingView juzga la idea, cómo se ve y el código, no cinco años
+de Forex.
+
+## Qué entró aquí
+
+```
+src/lib/lss.js              la lógica                          GEMELO
+scripts/prueba-lss.mjs      82 comprobaciones                  GEMELO
+scripts/lib/lss-banco.mjs   el adaptador al banco              PRIMO
+scripts/prueba-lss-banco.mjs                                   PRIMO
+scripts/medir-lss-m15.mjs   la medición en velas de 15 minutos PRIMO
+.github/workflows/medir-lss-m15.yml   SOLO A MANO, 112 créditos
+```
+
+## ⚠️⚠️ AQUÍ SOLO SE MIDEN 7 PARES, NO 18, y es la decisión que más pesa
+
+Esta app baja las siete cotizaciones contra el dólar y **deriva** los once
+cruces. Para el máximo de un cruce hay que juntar el máximo de una con el
+mínimo de la otra, o sea suponer que los dos extremos ocurrieron en el mismo
+instante — y eso **ensancha la mecha**.
+
+En casi cualquier regla eso es un detalle. **Aquí no:** el barrido de liquidez
+se define POR LA MECHA, así que con cruces derivados se fabricarían barridos
+que nunca ocurrieron y el número saldría bonito y falso. Es el mismo error que
+en Swing dio un ATR un 400 % más alto de lo real.
+
+📌 **Invertir SÍ es exacto**, y por eso los 7 entran enteros: se baja `USD/EUR`
+y la app enseña `EUR/USD`, que es su inverso — el máximo de uno es el inverso
+del MÍNIMO del otro. ⚠️ Confundirlos dejaría las velas del revés con TODOS los
+barridos al contrario y sin que nada falle: hay cuatro comprobaciones dedicadas
+solo a eso.
+
+Y el **resolver también recibe datos exactos** (`datosExactos`): medir con
+mechas buenas y juzgar con mechas infladas sería peor que no medir.
+
+## Las dos tablas de aquí
+
+Vara neutra 1:1, spread por par descontado.
+
+**H1** (19.595 velas, 7 pares directos):
+
+| | ops | acierto | hace falta | por 1R |
+|---|---:|---:|---:|---:|
+| NFX-LSS tal como lo propuso | 2.256 | 46 % | 53 % | **−0,14** |
+| **CONTROL: solo la ruptura** | 8.647 | 47 % | 52 % | **−0,10** |
+| *la app tal cual* | *7.842* | *49 %* | *53 %* | *−0,10* |
+
+**M15** (79.669 velas, del 2023-10-02 al 2026-09-19):
+
+| | ops | acierto | hace falta | por 1R |
+|---|---:|---:|---:|---:|
+| pivote 4 (mismo nº de velas que en H1) | 7.545 | 47 % | 56 % | **−0,16** |
+| pivote 16 (mismo tiempo de reloj) | 4.407 | 46 % | 54 % | −0,15 |
+| CONTROL: solo la ruptura, pivote 16 | 16.668 | 47 % | 53 % | **−0,11** |
+
+**Los vecinos y los objetivos: todos pierden.** Siete sensibilidades de pivote
+(−0,15 a −0,23), cinco ventanas (−0,15 a −0,19) y cuatro objetivos (−0,16 los
+cuatro, exactamente).
+
+⚠️ **En los dos marcos, exigir el barrido EMPEORA.** Con Swing son tres de
+tres. **Sexta familia de filtros que se mide y falla** en este proyecto.
+
+### ⚠️ La trampa de comparar el M15 con el H1
+
+Un pivote de 4 velas son **cuatro horas** en H1 y **una hora** en M15. La misma
+cifra en la misma casilla significa dos cosas distintas. Por eso la tabla mide
+las DOS lecturas —mismo número de velas y mismo tiempo de reloj— y cada fila
+dice a cuánto equivale. Sin eso, poner las dos tablas juntas es comparar dos
+reglas creyendo que son la misma.
+
+`velas.mjs` ganó una opción `intervalo` con valor por defecto `'1h'`, así que
+**para el vigía, el reporte y el publicador no cambia absolutamente nada** —
+comprobado caller por caller.
+
+## ⚠️ LO QUE NO HAY QUE HACER
+
+**1. No volver a correr el M15.** Cuesta 112 créditos y ya se sabe lo que da.
+
+**2. No medir aquí ninguna versión del indicador hasta que la señal base pase
+el registro hacia adelante en Swing.** Lo pidió Néstor expresamente y es lo
+correcto: gastar créditos en algo que ya se sabe que pierde es tirarlos.
+
+**3. La regla en la sombra vive SOLO en Swing.** Allí «ruptura de estructura
+sola» es lo único que superó a la app (+0,02) y se anota hacia adelante con su
+preregistro. **Aquí no llega a eso** (−0,10 contra −0,10 de la app), así que no
+hay nada que anotar. Es la regla de siempre: lo medido en una app no vale en la
+otra.
+
+---
+
+## ⚠️⚠️ EL FALLO QUE TUMBÓ DOS TABLAS EL MISMO DÍA, Y ES DE ESTA APP
+
+`barridoSwap` **NO devuelve lo mismo en las dos apps**, y el código pedía los
+campos de Swing:
+
+| | Swing | **Intradía** |
+|---|---|---|
+| devuelve | `mediana`, `media` | **`cruzaron`, `mediaNoches`** |
+| por qué | cada vela ES un día: las noches salen de la duración | se cuentan por los **cortes reales de las 22:00 UTC** |
+
+Una operación de 6 horas abierta a las 20:00 cruza el corte; una de 20 horas
+abierta a las 23:00 no cruza ninguno.
+
+**O sea que copiar esa línea de la app hermana no es un descuido de escritura:
+es traerse una suposición sobre el mercado que aquí es falsa.** Es la misma
+lección de la Fase 2, cuando la prueba de costes portada desde Swing falló 5
+comprobaciones por exactamente esto.
+
+Las dos tablas se imprimieron **enteras** y reventaron en el último bloque con
+«Cannot read properties of undefined»: **112 créditos** en el M15 y **28 y 37
+minutos** en el banco.
+
+### 📌 Y la comprobación que escribí para cazarlo miraba UN SOLO archivo
+
+Por eso no vio la segunda, media hora después. Ahora `prueba-lss-banco.mjs`
+recorre **todos** los guiones que llaman a `barridoSwap` y exige que ninguno
+nombre `b.mediana` ni `b.media`. **Un error recién cometido en un sitio es
+exactamente el que se va a cometer en el de al lado.**
+
+Se excluye a sí misma a propósito —lleva esos nombres dentro del patrón que
+busca— y lleva guarda para que no se adapte a lo que encuentre: si nadie llama
+ya a `barridoSwap`, falla en vez de quedarse en verde sin mirar nada.
+
+⚠️ Y comprueba lo que el archivo **DICE**, no solo lo que la librería devuelve.
+Guardar solo el conocimiento no habría evitado el fallo: el guion podía seguir
+pidiendo el campo malo. Misma forma que `prueba-costes.mjs` usa para las
+etiquetas «(hoy)».
+
+---
+
+## 📌 Esta app tenía razón en algo que a Swing le faltaba
+
+El cajón de `otros` en `resumir` —el que recoge un `tipo` que nadie ha
+inventado todavía para que no desaparezca de todos los desgloses— **se arregló
+aquí el 2026-09-16 y a Swing nunca llegó**, porque `historialCalc.js` es PRIMO.
+
+Salió a la luz el 2026-09-20 al añadir allí una regla nueva: sus resultados no
+habrían caído en ningún cubo. Ya está arreglado en las dos.
+
+⚠️ **La lección va en las dos direcciones:** `gemelos.mjs` vigila los
+idénticos; **a los primos no los vigila nadie**, y ahí es donde se acumulan
+estas cosas. Cuando se arregle algo en un archivo PRIMO, mirar si el de la otra
+app tiene el mismo agujero — en cualquiera de los dos sentidos.
