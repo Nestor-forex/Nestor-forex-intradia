@@ -177,6 +177,16 @@ export const GEMELOS = [
   // gemelo en una app y no en la otra, la comprobacion de cada repositorio
   // estaria vigilando una lista distinta y ninguna de las dos lo diria.
   'scripts/gemelos.mjs',
+  // Y la comprobación que lee esa lista, por el mismo motivo exacto. Estuvo
+  // fuera de las dos listas hasta el 2026-09-21: era idéntica en las dos apps
+  // por costumbre, no porque nadie lo exigiera. Si una app le añadiera una
+  // comprobación y la otra no, cada repositorio estaría vigilando con un
+  // rasero distinto — y el que vigila con el rasero flojo no lo diría.
+  //
+  // ⚠️ El comodín `scripts/prueba-*.mjs` de PRIMOS también la alcanza. GEMELOS
+  // manda: lo que está nombrado a mano gana a lo que cae por un comodín. Es la
+  // misma razón por la que la lista va escrita a mano y no calculada.
+  'scripts/prueba-gemelos.mjs',
 ]
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -316,4 +326,22 @@ export const PRIMOS = {
     'Cada prueba comprueba el código de SU app. Portar una prueba entre las ' +
     'dos y que falle suele significar que las apps son distintas ahí, no que ' +
     'el código esté mal.',
+
+  // Los tres de abajo estaban duplicados y no figuraban en NINGUNA de las dos
+  // listas (encontrado el 2026-09-21). Los tres difieren por buenas razones,
+  // así que su sitio es éste — pero mientras estuvieron fuera, nadie podía
+  // saber si esa diferencia era a propósito o un despiste.
+  'src/components/Splash.jsx':
+    'La portada recorta una zona distinta de la misma ilustración: Swing se ' +
+    'queda con el globo y las velas, Intradía con el panel de gráfico y el ' +
+    'RSI. Son dos recortes de la misma imagen, no dos versiones de un código.',
+  'vite.config.js':
+    'El manifest de la PWA: nombre, nombre corto y descripción de CADA app. ' +
+    'Y el `base` del que se derivan `start_url` y `scope`, que es el nombre ' +
+    'de cada repositorio.',
+  'src/lib/push/pausa.js':
+    'Por qué están pausadas las ventas. La decisión es la misma; la PRUEBA no: ' +
+    'en Swing es el banco sobre 219 días y en Intradía son las 6 señales ' +
+    'reales que dio la app. Igualar el texto sería atribuirle a una app la ' +
+    'evidencia de la otra.',
 }
