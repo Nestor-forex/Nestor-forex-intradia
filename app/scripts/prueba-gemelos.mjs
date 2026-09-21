@@ -16,7 +16,7 @@
 //
 // Ver `gemelos.mjs` para la lista y para los casos reales que motivaron esto.
 
-import { readFileSync, existsSync } from 'node:fs'
+import { readFileSync, existsSync, readdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { GEMELOS, PRIMOS } from './gemelos.mjs'
 import { NOMBRE_APP } from '../src/lib/identidad.js'
@@ -139,6 +139,69 @@ const enLosDos = GEMELOS.filter((g) => g in PRIMOS)
 if (enLosDos.length) {
   console.log(`✗ Estos están en GEMELOS y en PRIMOS a la vez: ${enLosDos.join(', ')}`)
   fallos += enLosDos.length
+}
+
+// ═════════════════════════════════════════════════════════════════════════
+// EL HUECO: UN ARCHIVO QUE EXISTE EN LAS DOS APPS Y NO ESTÁ EN NINGUNA LISTA
+// ═════════════════════════════════════════════════════════════════════════
+//
+// ⚠️ Hasta el 2026-09-21 esta comprobación no existía, y es la que de verdad
+// cierra el agujero. Lo de arriba solo vigila los archivos que alguien se
+// ACORDÓ de apuntar. Un archivo creado mañana en las dos apps —el caso normal
+// cuando se porta algo— caía fuera de las dos listas y nadie decía nada:
+//
+//   · si eran gemelos de verdad, nada comprobaba que siguieran siéndolo;
+//   · si eran distintos a propósito, el motivo no estaba escrito en ningún
+//     sitio y el siguiente que los viera no sabría si «arreglar» la diferencia.
+//
+// Las dos salidas son buenas; lo que no vale es no elegir. Por eso esto FALLA
+// en vez de avisar: un aviso en medio de cien líneas de ✓ no lo lee nadie.
+const salta = new Set(['node_modules', 'dist', 'dev-dist', '.git', 'coverage', '.vite'])
+const MIRA = /\.(js|jsx|mjs|cjs|ts|tsx)$/
+
+function archivos(raiz, rel = '') {
+  const fuera = []
+  for (const e of readdirSync(raiz + rel, { withFileTypes: true })) {
+    if (salta.has(e.name)) continue
+    const r = rel + e.name
+    if (e.isDirectory()) fuera.push(...archivos(raiz, r + '/'))
+    else if (MIRA.test(e.name)) fuera.push(r)
+  }
+  return fuera
+}
+
+// Los comodines de PRIMOS (`textos/*.js`, `prueba-*.mjs`) se respetan: `*` vale
+// por cualquier cosa MENOS una barra, para que un comodín de una carpeta no se
+// trague en silencio lo que haya dentro de sus subcarpetas.
+const dePrimos = Object.keys(PRIMOS).map(
+  (k) => new RegExp('^' + k.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]*') + '$')
+)
+const esGemelo = new Set(GEMELOS)
+const alla = new Set(archivos(otra))
+
+const sinClasificar = archivos(aqui)
+  .filter((f) => alla.has(f))
+  .filter((f) => !esGemelo.has(f) && !dePrimos.some((r) => r.test(f)))
+
+// Guarda contra una prueba que se adapta a lo que encuentra: si el recorrido
+// se rompiera y no viera ni un archivo, esto quedaría en verde sin haber
+// mirado nada. Es el mismo agujero que ya mordió en `prueba-lss-banco.mjs`.
+if (archivos(aqui).length < 50 || alla.size < 50) {
+  console.log(`✗ El recorrido apenas encontró archivos (${archivos(aqui).length} aquí, ${alla.size} allá).`)
+  console.log('  Sin eso, la comprobación de abajo pasaría sin comprobar nada.')
+  fallos++
+} else if (sinClasificar.length) {
+  console.log(`✗ ${sinClasificar.length} archivo(s) existen en las DOS apps y no están en ninguna lista:`)
+  for (const f of sinClasificar) {
+    const igual = readFileSync(aqui + f, 'utf8') === readFileSync(otra + f, 'utf8')
+    console.log(`      ${f}  — hoy ${igual ? 'son IDÉNTICOS' : 'difieren'}`)
+  }
+  console.log('')
+  console.log('  QUÉ HACER: decidir cuál de las dos cosas es, y escribirlo en gemelos.mjs.')
+  console.log('    · tienen que ser iguales  → a GEMELOS')
+  console.log('    · difieren a propósito    → a PRIMOS, CON EL MOTIVO ESCRITO')
+  console.log('  No decidir es la única opción mala: deja la diferencia sin vigilar y sin explicar.')
+  fallos += sinClasificar.length
 }
 
 if (fallos || faltantes) {
