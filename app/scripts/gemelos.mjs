@@ -312,6 +312,16 @@ export const PRIMOS = {
     'conteo de noches que solo existe en Intradía.',
   'scripts/lib/velas.mjs':
     'Una baja velas de un día y la otra de una hora, en tandas distintas.',
+  'scripts/lib/barrido-publicado.mjs':
+    'Cada app publica lo suyo: Intradía manda `horaUltima` y `factorHora` (sin ' +
+    'ellos la sesión se calcularía con el reloj del teléfono) y Swing manda ' +
+    '`correl`, que la app no puede recalcular con solo 20 cierres. Y las ' +
+    'series que se quitan tampoco son las mismas. ⚠️ Swing lo extrajo el ' +
+    '2026-09-22: hasta ese día la lógica vivía EN LÍNEA dentro de `vigia.mjs`, ' +
+    'o sea sin forma de probarla sin red ni créditos — y por eso llevaba desde ' +
+    'el 2026-08-09 publicando sin una sola comprobación mientras la hermana sí ' +
+    'la tenía. Un archivo que falta ENTERO en una app no lo caza el detector ' +
+    'de duplicados sin clasificar: ése solo mira lo que está en las dos.',
   'scripts/lib/resolver.mjs':
     'Recorre velas de día o de hora, y llama a los campos por su nombre en ' +
     'cada app (`cierre`/`vela`, `diasTardados`/`velasTardadas`).',
