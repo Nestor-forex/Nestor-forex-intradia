@@ -1,7 +1,8 @@
 {
-  "actualizadoEl": "2026-09-24T05:02:17.483Z",
-  "vela": "2026-09-24 05:00:00",
+  "actualizadoEl": "2026-09-24T10:11:05.382Z",
+  "vela": "2026-09-24 10:00:00",
   "senales": [
-    "AUD/USD|VENTA|retroceso"
+    "USD/CHF|COMPRA|tendencia",
+    "USD/JPY|COMPRA|tendencia"
   ]
 }
