@@ -28,7 +28,17 @@
 
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { prepararCalendario, proximos } from '../src/lib/calendario.js'
+import {
+  CAUSA_CAMPOS,
+  CAUSA_OTRAS_DIVISAS,
+  CAUSA_SOLO_BAJO,
+  CAUSA_SOLO_PASADOS,
+  CAUSA_VACIO,
+  diagnosticarCalendario,
+  juzgarPublicacion,
+  prepararCalendario,
+  proximos,
+} from '../src/lib/calendario.js'
 // El nombre de la app sale de `identidad.js` y no escrito a mano: así este
 // guion es idéntico en las dos apps y `prueba-gemelos.mjs` puede vigilarlo.
 import { APP } from '../src/lib/identidad.js'
@@ -61,24 +71,56 @@ console.log(`  fuente: ${URL}`)
 const crudo = await bajar()
 console.log(`  bajados: ${crudo.length} eventos de todo el mundo`)
 
-const cal = prepararCalendario(crudo)
+const ahora = new Date()
+const diag = diagnosticarCalendario(crudo, ahora)
+const cal = prepararCalendario(crudo, ahora)
 
-// ⚠️ SI EL FEED RESPONDE PERO NO TRAE NADA NUESTRO, NO SE PUBLICA.
+const c = diag.cuenta
+console.log(
+  `  colados: ${c.bajados} bajados → ${c.legibles} legibles → ${c.nuestras} de nuestras divisas` +
+    ` → ${c.conImpacto} con impacto → ${c.publicables} de hoy en adelante`,
+)
+
+// ⚠️ SI NO QUEDA NADA QUE PUBLICAR, NO SE PUBLICA. Eso no se ablanda nunca.
 //
 // Escribir un archivo con cero eventos machacaría el bueno del día anterior, y
 // en pantalla se vería igual que una semana tranquila. Es el mismo peligro que
 // el respaldo del historial vigila: lo grave no es que algo desaparezca —eso
-// se nota— sino que encoja en silencio.
+// se nota— sino que encoja en silencio. Un archivo viejo se delata solo en
+// pantalla (`estaViejo`); uno vacío, no.
 //
-// Fallar aquí deja el archivo anterior intacto y manda un correo de fallo. Un
-// archivo viejo se delata solo en pantalla (`estaViejo`); uno vacío, no.
-if (!cal.eventos.length) {
-  console.error('')
-  console.error('✗ El feed respondió pero no dejó NI UN evento de nuestras 8 divisas.')
-  console.error('  Eso no es una semana tranquila: incluso una semana floja trae varios.')
-  console.error('  NO se publica nada, para no machacar el archivo bueno de ayer.')
-  console.error('  Mirar si ForexFactory cambió los nombres de los campos.')
-  process.exit(1)
+// Lo que SÍ cambia es el color del correo. Ver `juzgarPublicacion`.
+const { publicar, alarma } = juzgarPublicacion(diag, ahora)
+
+if (!publicar) {
+  const decir = alarma ? console.error : console.log
+  decir('')
+  decir(alarma ? '✗ No hay nada que publicar, y esto NO es normal.' : 'ℹ No hay nada que publicar todavía, y es normal.')
+
+  const POR_QUE = {
+    [CAUSA_VACIO]: 'El feed contestó bien pero no traía ni una fila. Mirar si la dirección sigue siendo la buena.',
+    [CAUSA_CAMPOS]: `Traía ${c.bajados} filas y NINGUNA es legible: les falta título, divisa o fecha.
+    Es la firma de que ForexFactory renombró los campos (hoy: title, country, date, impact).`,
+    [CAUSA_OTRAS_DIVISAS]: `Las ${c.legibles} filas legibles son todas de divisas que esta app no opera.
+    Mirar si el campo "country" dejó de venir como código de divisa (AUD, USD…).`,
+    [CAUSA_SOLO_BAJO]: `Hay ${c.nuestras} eventos de nuestras divisas, pero TODOS son de impacto bajo.
+    Puede ser una semana muy floja, o que ForexFactory cambiara las palabras de "impact".`,
+    [CAUSA_SOLO_PASADOS]: `Hay ${c.conImpacto} eventos nuestros con impacto, pero todos YA OCURRIERON.
+    El último era ${diag.ultimoNuestro}. El feed se llama "esta semana" y todavía
+    apunta a la semana que terminó; cambiará solo en las próximas horas.`,
+  }
+  decir(`  motivo: ${diag.causa}`)
+  decir(`  ${POR_QUE[diag.causa] ?? 'Motivo sin clasificar — mirar la muestra de abajo.'}`)
+  decir('  NO se publica nada, para no machacar el archivo bueno de ayer.')
+
+  // La prueba, no el recuento. Contar apariciones no es leer: si los nombres
+  // de los campos cambiaron, solo una fila cruda lo enseña.
+  decir('')
+  decir('  Lo que bajó, tal cual (las dos primeras filas):')
+  for (const fila of diag.muestra) decir(`    ${JSON.stringify(fila)}`)
+  if (!diag.muestra.length) decir('    (ninguna)')
+
+  process.exit(alarma ? 1 : 0)
 }
 
 const porImpacto = {}

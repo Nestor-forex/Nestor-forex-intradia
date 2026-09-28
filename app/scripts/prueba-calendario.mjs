@@ -25,14 +25,23 @@
 import {
   ALTO,
   BAJO,
+  CAUSA_CAMPOS,
+  CAUSA_HAY,
+  CAUSA_OTRAS_DIVISAS,
+  CAUSA_SOLO_BAJO,
+  CAUSA_SOLO_PASADOS,
+  CAUSA_VACIO,
   DIVISAS,
   FERIADO,
   HORAS_VISTA,
   MEDIO,
   OTRO,
   agruparPorDia,
+  diagnosticarCalendario,
   esRelevante,
+  esRelevoDeSemana,
   estaViejo,
+  juzgarPublicacion,
   horasHasta,
   categoriaDe,
   masUrgente,
@@ -310,6 +319,107 @@ console.log('\n11. «Se enseñan N de M»: los dos números, y qué cuenta cada 
   comprobar('y la tarjeta enseña menos, porque filtra a 48 h', proximos(cal, AHORA).length < totalSemana(cal))
   comprobar('sin calendario, el total es 0 y no revienta', totalSemana(null) === 0)
   comprobar('con basura, también 0', totalSemana({ eventos: 'x' }) === 0)
+}
+
+console.log('\n12. Cuando no hay nada que publicar: POR QUÉ, y si eso es grave')
+{
+  // 📌 Nació de siete correos en rojo en septiembre de 2026, TODOS en fin de
+  // semana y todos curados solos en la corrida siguiente. El guardián hacía
+  // bien en no publicar; lo que estaba mal era que el mensaje decía «ni un
+  // evento de nuestras 8 divisas» cuando el filtro descarta TRES cosas, así
+  // que no había forma de saber cuál de ellas había pasado.
+  //
+  // Lo que estas comprobaciones vigilan es justo eso: que cada motivo se
+  // llame por su nombre, y que solo UNO de los cinco se calle.
+  const diagnosticar = (lista, cuando = AHORA) => diagnosticarCalendario(lista, cuando)
+
+  comprobar('con eventos buenos, la causa es «hay»', diagnosticar(CRUDO).causa === CAUSA_HAY)
+  comprobar('lista vacía → «vacio»', diagnosticar([]).causa === CAUSA_VACIO)
+  comprobar('no es una lista → «vacio»', diagnosticar(null).causa === CAUSA_VACIO)
+
+  // El fallo GRAVE: ForexFactory renombra los campos. Las filas llegan, pero
+  // ninguna es legible. Es el único que justifica ir a mirar el feed.
+  const renombrado = CRUDO.map((ev) => ({ headline: ev.title, currency: ev.country, when: ev.date }))
+  comprobar('campos renombrados → «campos» (no «otrasDivisas»)', diagnosticar(renombrado).causa === CAUSA_CAMPOS)
+
+  const soloChina = [{ title: 'Caixin PMI', country: 'CNY', date: enHoras(5), impact: 'High' }]
+  comprobar('todo de divisas ajenas → «otrasDivisas»', diagnosticar(soloChina).causa === CAUSA_OTRAS_DIVISAS)
+
+  const todoBajo = [{ title: 'ANZ Job Ads', country: 'AUD', date: enHoras(5), impact: 'Low' }]
+  comprobar('nuestras pero todas de impacto bajo → «soloBajo»', diagnosticar(todoBajo).causa === CAUSA_SOLO_BAJO)
+
+  // EL CASO DEL FIN DE SEMANA. El feed se llama «esta semana» y el sábado
+  // sigue apuntando a la que terminó: todo lo que trae ya ocurrió.
+  const semanaPasada = [
+    { title: 'FOMC Statement', country: 'USD', date: enHoras(-48), impact: 'High' },
+    { title: 'Retail Sales m/m', country: 'GBP', date: enHoras(-30), impact: 'Medium' },
+  ]
+  comprobar('todas ya ocurrieron → «soloPasados»', diagnosticar(semanaPasada).causa === CAUSA_SOLO_PASADOS)
+  comprobar(
+    'y dice la fecha de la última, que es la prueba de qué semana llegó',
+    diagnosticar(semanaPasada).ultimoNuestro === new Date(enHoras(-30)).toISOString(),
+  )
+
+  // Los escalones, que son lo que el log imprime para mandar a buscar al
+  // sitio correcto en vez de al equivocado.
+  const c = diagnosticar(CRUDO).cuenta
+  comprobar(`cuenta lo bajado (${c.bajados})`, c.bajados === CRUDO.length)
+  comprobar(`y lo que sobrevive a cada filtro (${c.nuestras} → ${c.conImpacto} → ${c.publicables})`,
+    c.bajados > c.nuestras && c.nuestras > c.conImpacto && c.conImpacto > c.publicables)
+
+  // ⚠️ LA PRUEBA, NO EL RECUENTO. Contar apariciones no es leer: si los
+  // campos cambiaron de nombre, solo una fila cruda lo enseña.
+  comprobar('guarda dos filas crudas como prueba', diagnosticar(renombrado).muestra.length === 2)
+  comprobar('y son las de verdad, sin tocar', diagnosticar(renombrado).muestra[0].headline === 'FOMC Statement')
+  comprobar('sin filas, la muestra está vacía y no revienta', diagnosticar([]).muestra.length === 0)
+
+  // ⚠️ EL ARCHIVO Y EL DIAGNÓSTICO SALEN DEL MISMO SITIO. Si cada uno
+  // filtrara por su cuenta, el guardián podría decir una cosa y el archivo
+  // tener otra — y eso no falla, solo miente.
+  comprobar(
+    'lo que se publica es exactamente lo que el diagnóstico llama publicable',
+    prepararCalendario(CRUDO, AHORA).eventos.length === diagnosticar(CRUDO).cuenta.publicables,
+  )
+
+  // ── Publicar y alarmar son DOS decisiones ──────────────────────────────
+  const SABADO = new Date('2026-09-26T03:15:00Z')
+  const DOMINGO = new Date('2026-09-27T03:15:00Z')
+  const MARTES = new Date('2026-09-29T03:15:00Z')
+  comprobar('el ancla de fin de semana es sábado de verdad', SABADO.getUTCDay() === 6)
+  comprobar('y la otra, domingo', DOMINGO.getUTCDay() === 0)
+  comprobar('y el ancla de día laborable no lo es', !esRelevoDeSemana(MARTES))
+
+  const juzgar = (lista, cuando) => juzgarPublicacion(diagnosticarCalendario(lista, cuando), cuando)
+
+  comprobar('con eventos buenos: se publica y no hay alarma', juzgar(CRUDO, AHORA).publicar === true)
+  comprobar('y sin alarma', juzgar(CRUDO, AHORA).alarma === false)
+
+  // ⚠️ NO PUBLICAR NO SE ABLANDA NUNCA. Ni el sábado. Un archivo vacío
+  // machacaría el bueno de ayer y en pantalla se vería igual que una semana
+  // tranquila.
+  for (const [nombre, lista, cuando] of [
+    ['vacío', [], AHORA],
+    ['campos renombrados', renombrado, AHORA],
+    ['solo pasados un martes', semanaPasada, MARTES],
+    ['solo pasados un SÁBADO', semanaPasada, SABADO],
+  ]) {
+    comprobar(`${nombre}: NO se publica`, juzgar(lista, cuando).publicar === false)
+  }
+
+  // ⚠️ Y LA ALARMA SÍ ES SELECTIVA. Dos correos en rojo cada fin de semana
+  // enseñan a no mirar los correos, y entonces el que llegue un martes pasa
+  // desapercibido.
+  comprobar('sábado + solo pasados: NO alarma (es el relevo de semana)', juzgar(semanaPasada, SABADO).alarma === false)
+  comprobar('domingo + solo pasados: tampoco', juzgar(semanaPasada, DOMINGO).alarma === false)
+  comprobar('MARTES + solo pasados: SÍ alarma (el feed ya tenía que haber cambiado)', juzgar(semanaPasada, MARTES).alarma === true)
+  comprobar('sábado + campos renombrados: SÍ alarma (eso no lo cura el calendario)', juzgar(renombrado, SABADO).alarma === true)
+  comprobar('sábado + lista vacía: SÍ alarma', juzgar([], SABADO).alarma === true)
+  comprobar('sábado + todo de impacto bajo: SÍ alarma', juzgar(todoBajo, SABADO).alarma === true)
+
+  // La guarda de siempre: una causa que nadie ha inventado todavía tiene que
+  // salir en ROJO, no colarse por el lado silencioso.
+  comprobar('una causa desconocida alarma', juzgarPublicacion({ causa: 'loQueVengaMañana' }, SABADO).alarma === true)
+  comprobar('y un diagnóstico nulo también', juzgarPublicacion(null, SABADO).alarma === true)
 }
 
 console.log('')
