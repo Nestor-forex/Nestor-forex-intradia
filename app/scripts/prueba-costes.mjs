@@ -500,6 +500,35 @@ console.log('\n12. Ninguna etiqueta «(hoy)» del banco de pruebas está escrita
   // `hoySi` dejaría la comprobación de arriba pasando en verde sobre un informe
   // que ya no marca nada.
   comprobar(/const hoySi = /.test(fuente), 'y `hoySi` sigue existiendo para ponerlas')
+
+  // ── Y que la PRIMERA puerta se siga barriendo ──────────────────────────
+  //
+  // ⚠️ El umbral de fuerza relativa (`thr`) es la primera pared: por debajo de
+  // él un par no llega ni a que se le mire el ADX. Estuvo SIN BARRER desde
+  // siempre en esta app mientras Swing lo barría desde hacía meses, así que
+  // todas las tablas de aflojar movían paredes de dentro sobre los mismos
+  // pares de siempre y no podían cambiar gran cosa.
+  //
+  // Se quedó sin barrer porque `backtest.mjs` es PRIMO: a los primos no los
+  // vigila nadie. Esta comprobación es el guardia que faltaba — si alguien
+  // quita el barrido, lo dice el mismo día.
+  //
+  // ⚠️ Se exige un BARRIDO, no una mención. La primera versión de esta
+  // comprobación pedía solo que `thr:` apareciera dentro de algún `correr(…)`,
+  // y al borrar el barrido entero a propósito **siguió en verde**: bastaba una
+  // fila combinada suelta que también lo pasa. O sea que no comprobaba lo que
+  // decía comprobar. Ahora se busca un bucle sobre una lista de valores cuyo
+  // cuerpo se los pase a `correr`, y se cuenta cuántos son.
+  const bucles = [
+    ...fuente.matchAll(/for \(const (\w+) of \[([^\]]+)\]\)[\s\S]{0,400}?correr\(\{[^}]*\bthr:\s*\1\b/g),
+  ]
+  const cuantos = Math.max(0, ...bucles.map((m) => m[2].split(',').length))
+  comprobar(cuantos >= 4, `el umbral de fuerza (\`thr\`) se barre sobre ${cuantos} valores`)
+
+  // La guarda de siempre: sin esto, un `backtest.mjs` vacío o mal leído
+  // dejaría las cuatro comprobaciones de arriba en verde sin haber mirado
+  // nada. Una prueba que se adapta a lo que encuentra no comprueba nada.
+  comprobar(fuente.length > 10_000 && /AFLOJAR LOS FILTROS/.test(fuente), 'y se leyó el backtest de verdad, no un archivo vacío')
 }
 
 

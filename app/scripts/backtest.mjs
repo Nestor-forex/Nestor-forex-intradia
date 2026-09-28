@@ -1263,6 +1263,49 @@ for (const { nombre, r } of revCorridas) {
     )
   }
 
+  // ─────────────────────────────────────────────────────────────────────
+  // EL UMBRAL DE FUERZA RELATIVA — la primera puerta, y la que más manda
+  // ─────────────────────────────────────────────────────────────────────
+  // ⚠️ ESTA CASILLA ESTUVO EN BLANCO DESDE SIEMPRE, y es la que más pesa.
+  //
+  // Por debajo de `thr` el par ni se considera: no se llega a mirar su ADX, ni
+  // su RSI, ni sus medias. O sea que las cuatro paredes de abajo solo las
+  // alcanzan los pares que ya pasaron ÉSTA. Medido sobre 21 barridos reales de
+  // producción (22 al 28 de septiembre de 2026), 14 de los 21 días se quedan
+  // AQUÍ y solo 2 llegan vivos a la pared de la tendencia o del RSI.
+  //
+  // Swing barre este umbral desde hace meses (`conThr`) y aquí no estaba. Es
+  // el patrón de siempre: `backtest.mjs` es PRIMO, y a los primos no los
+  // vigila nadie.
+  //
+  // ⚠️⚠️ LO QUE SE BARRE ES EL UMBRAL **BASE**, NO EL EFECTIVO. En intradía
+  // `derivarVista` lo multiplica por el factor de la hora, acotado entre
+  // PISO_HORA (0,6) y TOPE_HORA (1,2). Con base 0,5 la puerta real va de 0,30
+  // en las horas muertas a 0,60 en las de más movimiento. En Swing no existe
+  // ese factor, así que **estas filas NO se pueden comparar con las suyas** —
+  // la regla de la casa: lo medido en una app no vale para la otra.
+  //
+  // ⚠️⚠️ EL LISTÓN, ESCRITO ANTES DE MIRAR NINGÚN RESULTADO (2026-09-28):
+  //
+  //     Se cambia el umbral SOLO si la fila candidata da MÁS señales/mes que
+  //     la de hoy Y NO es peor que ella en NINGUNA de las dos mitades.
+  //
+  // Es el mismo listón con el que se aflojó `TENDENCIA_MIN` en Swing y
+  // `ADX_MIN` aquí, y el que el ADX no pasó en su día. Va con la advertencia
+  // que encabeza esta sección entera: **aflojar no es mejorar.** Esta app mide
+  // −0,10 por unidad de riesgo con la vara honesta, así que más señales de un
+  // sistema que pierde es perder más rápido. Lo único que se compra aflojando
+  // es que la app HABLE, no que acierte.
+  //
+  // ⚠️ Y lo que NO vale como motivo: «da pocas señales». Un celular que suena
+  // más no es una app mejor; el silencio también es información.
+  console.log(`· El umbral de fuerza relativa, BASE (hoy ${THR})`)
+  console.log('  ⚠️ la puerta real de cada hora es este número × el factor horario (0,6 a 1,2)')
+  for (const t of [0, 0.25, 0.5, 0.75, 1]) {
+    linea(hoySi(`  fuerza > ${t.toFixed(2)}`, t === THR), correr({ geometria: simetrica, thr: t }))
+  }
+
+  console.log('')
   console.log(`· El ADX mínimo (hoy ${ADX_MIN})`)
   for (const a of [0, 10, 15, 20, 25]) {
     linea(hoySi(`  ADX ≥ ${a}`, a === ADX_MIN), correr({ geometria: simetrica, vista: { adxMin: a } }))
@@ -1295,6 +1338,26 @@ for (const { nombre, r } of revCorridas) {
   ]) {
     linea(nombre, correr({ geometria: simetrica, vista }))
   }
+
+  // ⚠️ FALTA AQUÍ «la fuerza JUNTO CON lo demás» (fuerza 0.25 + todo suelto),
+  // que es lo único que diría si aflojar las paredes de dentro sirve de algo
+  // cuando la primera puerta deja pasar más. Se deja fuera A PROPÓSITO, y el
+  // motivo es de presupuesto de tiempo, no de interés:
+  //
+  // La última duración MEDIDA de este guion son 44:06 contra un límite de 60
+  // minutos, y es de ANTES del arreglo que quitó corridas repetidas. O sea que
+  // el margen de hoy está sin medir, y cada fila de éstas es una pasada más
+  // sobre ~19.000 velas.
+  //
+  // Gastar 28 créditos y una hora de máquina para que el trabajo se corte a los
+  // 60 minutos sin imprimir ni una tabla ya pasó de verdad una vez (la corrida
+  // del commit 5648a66, cancelada a los 44:46). Así que primero se mide el
+  // barrido de la fuerza —que es la casilla que estaba en blanco—, se lee en el
+  // log cuánto tardó, y con ese número delante se decide si caben estas filas.
+  //
+  // 📌 Y si no caben, la respuesta NO es subir el límite otra vez: es que cada
+  // `correr()` vuelve a calcular el barrido de las mismas ~19.000 ventanas que
+  // ya calculó el anterior. Guardarlo una vez dejaría estas filas casi gratis.
 
   console.log('─'.repeat(80))
   console.log('Con la geometría REAL de la app:')
