@@ -180,18 +180,125 @@ export function esRelevante(ev) {
 // Lo único que se recorta es lo de días ANTERIORES a hoy, que ya no vuelve a
 // ser útil por mucho que pase el tiempo.
 export function prepararCalendario(lista, ahora = new Date()) {
-  const desde = new Date(Date.UTC(ahora.getUTCFullYear(), ahora.getUTCMonth(), ahora.getUTCDate()))
-
-  const eventos = (Array.isArray(lista) ? lista : [])
-    .map(normalizarEvento)
-    .filter((ev) => esRelevante(ev) && new Date(ev.d) >= desde)
-    .sort((a, b) => new Date(a.d) - new Date(b.d))
+  // ⚠️ Lo que se publica sale del MISMO sitio que el diagnóstico, a propósito.
+  // Si cada uno filtrara por su cuenta, el día que alguien tocara una de las
+  // dos condiciones el guardián diría una cosa y el archivo tendría otra — y
+  // eso no falla, solo miente. Aquí hay un único sitio donde se decide qué es
+  // publicable.
+  const { eventos } = diagnosticarCalendario(lista, ahora)
 
   return {
     generadoEl: ahora.toISOString(),
     fuente: 'ForexFactory (FairEconomy)',
     eventos,
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// POR QUÉ NO SALIÓ NADA
+// ─────────────────────────────────────────────────────────────────────────
+// El guardián del publicador se niega a escribir un archivo vacío, y hace
+// bien. El problema era lo que DECÍA al negarse: «ni un evento de nuestras 8
+// divisas». El filtro real descarta TRES cosas —divisas que no son nuestras,
+// impacto bajo, y días ya pasados—, así que ese mensaje mandaba a buscar al
+// sitio equivocado y no distinguía un fallo grave de uno normal.
+//
+// Los siete fallos de septiembre de 2026 fueron todos EN FIN DE SEMANA, y
+// todos se curaron solos en la corrida siguiente sin que nadie tocara nada.
+// Con el mensaje viejo no había forma de saber por qué, porque el guion solo
+// imprimía el número. Ahora se cuenta en cada escalón y se guarda un par de
+// eventos crudos como prueba.
+//
+// Los cinco motivos, de fuera hacia dentro:
+//
+//   vacio        el feed contestó pero no traía ni una fila       ← raro, grave
+//   campos       trae filas pero ninguna legible                  ← ForexFactory
+//                (sin título, sin divisa o sin fecha)                cambió los
+//                                                                    nombres
+//   otrasDivisas legibles, pero ninguna de nuestras divisas       ← muy raro
+//   soloBajo     nuestras sí, pero todas de impacto bajo          ← puede pasar
+//   soloPasados  nuestras y con impacto, pero todas ya ocurrieron ← EL NORMAL
+//
+// `soloPasados` es el del fin de semana y merece explicarse, porque no es un
+// fallo de nadie: el feed se llama «esta semana» y **el sábado la semana que
+// cubre es la que acaba de terminar**. Todo lo que trae ya pasó, así que no
+// hay nada que publicar hasta que el domingo cambie de semana. No publicar es
+// lo correcto; poner el correo en rojo por eso, no.
+export const CAUSA_VACIO = 'vacio'
+export const CAUSA_CAMPOS = 'campos'
+export const CAUSA_OTRAS_DIVISAS = 'otrasDivisas'
+export const CAUSA_SOLO_BAJO = 'soloBajo'
+export const CAUSA_SOLO_PASADOS = 'soloPasados'
+export const CAUSA_HAY = 'hay'
+
+export function diagnosticarCalendario(lista, ahora = new Date()) {
+  const crudos = Array.isArray(lista) ? lista : []
+  const desde = new Date(Date.UTC(ahora.getUTCFullYear(), ahora.getUTCMonth(), ahora.getUTCDate()))
+
+  const legibles = crudos.map(normalizarEvento).filter(Boolean)
+  const nuestras = legibles.filter((ev) => DIVISAS.includes(ev.c))
+  const conImpacto = nuestras.filter((ev) => esRelevante(ev))
+  const eventos = conImpacto
+    .filter((ev) => new Date(ev.d) >= desde)
+    .sort((a, b) => new Date(a.d) - new Date(b.d))
+
+  let causa = CAUSA_HAY
+  if (!eventos.length) {
+    if (!crudos.length) causa = CAUSA_VACIO
+    else if (!legibles.length) causa = CAUSA_CAMPOS
+    else if (!nuestras.length) causa = CAUSA_OTRAS_DIVISAS
+    else if (!conImpacto.length) causa = CAUSA_SOLO_BAJO
+    else causa = CAUSA_SOLO_PASADOS
+  }
+
+  // La fecha del último evento nuestro que traía el feed. Es la prueba de que
+  // lo que llegó era la semana anterior: si dice viernes y hoy es sábado, no
+  // hay ningún misterio que investigar.
+  const fechas = conImpacto.map((ev) => new Date(ev.d).getTime()).filter(Number.isFinite)
+  const ultimoNuestro = fechas.length ? new Date(Math.max(...fechas)).toISOString() : null
+
+  return {
+    causa,
+    eventos,
+    ultimoNuestro,
+    cuenta: {
+      bajados: crudos.length,
+      legibles: legibles.length,
+      nuestras: nuestras.length,
+      conImpacto: conImpacto.length,
+      publicables: eventos.length,
+    },
+    // Dos filas crudas TAL CUAL llegaron, para el log. Contar no es leer: si
+    // ForexFactory renombra `country` a `currency`, el recuento dirá cero y
+    // solo mirando una fila cruda se ve por qué.
+    muestra: crudos.slice(0, 2),
+  }
+}
+
+// ¿Estamos en el relevo de semana del feed?
+//
+// Sábado y domingo en UTC. No es «el mercado está cerrado» —eso sería una
+// afirmación sobre el mercado— sino el hueco en el que el archivo «esta
+// semana» todavía apunta a la semana que terminó.
+export function esRelevoDeSemana(ahora = new Date()) {
+  const dia = ahora.getUTCDay()
+  return dia === 0 || dia === 6
+}
+
+// ⚠️ PUBLICAR Y ALARMAR SON DOS DECISIONES DISTINTAS, y juntarlas era el
+// error. Negarse a publicar protege el archivo bueno del día anterior y eso
+// no se toca nunca. Poner el correo en rojo es otra cosa, y tiene su propio
+// coste: dos fallos en rojo cada fin de semana enseñan a no mirar los correos,
+// y entonces el que llegue un martes —el que sí importa— pasa desapercibido.
+//
+// Así que solo se calla UNA situación, la que está identificada con nombre y
+// fecha: el relevo de semana. Cualquier otro motivo sigue saliendo en rojo,
+// y `soloPasados` un martes también, porque para entonces el feed ya tenía
+// que haber cambiado de semana.
+export function juzgarPublicacion(diag, ahora = new Date()) {
+  if (diag?.causa === CAUSA_HAY) return { publicar: true, alarma: false }
+  const benigno = diag?.causa === CAUSA_SOLO_PASADOS && esRelevoDeSemana(ahora)
+  return { publicar: false, alarma: !benigno }
 }
 
 // Los eventos que todavía no han pasado, dentro del horizonte.
