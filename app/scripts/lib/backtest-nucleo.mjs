@@ -111,16 +111,32 @@ export function generarSenales(
     invertirVentas = false,
     reglaEntrada = null,
     vista = {},
+    // Con qué se calcula el barrido y cuánta historia ve. Por omisión, el
+    // barrido REAL de la app y su ventana de siempre, así que sin pasar nada
+    // esta función se comporta EXACTAMENTE como antes.
+    //
+    // Existe para poder medir la misma app en otra temporalidad
+    // (`scripts/lib/marco.mjs`) sin duplicar el bucle de abajo, que tiene la
+    // parte delicada: quedarse solo con las señales NUEVAS. Copiar eso para
+    // una medición aparte sería la forma más fácil de obtener un número
+    // creíble y equivocado.
+    //
+    // ⚠️ `ventana` tiene que escalar con la temporalidad. En M15, 300 velas
+    // son 75 horas y no alcanzan ni para los pivotes (192 velas): el barrido
+    // saldría calculado sobre menos historia de la que la app usa, y eso no
+    // falla — devuelve números.
+    computar = computarBarrido,
+    ventana = VENTANA,
   } = {}
 ) {
   const senales = []
   let previas = new Set()
 
   for (let i = calentamiento; i < barras.length; i++) {
-    // La ventana móvil: las últimas VENTANA velas hasta la i, ni una más.
-    const desde = Math.max(0, i + 1 - VENTANA)
+    // La ventana móvil: las últimas `ventana` velas hasta la i, ni una más.
+    const desde = Math.max(0, i + 1 - ventana)
     const hasta = barras.slice(desde, i + 1)
-    const data = computarBarrido(hasta, rates, rangos)
+    const data = computar(hasta, rates, rangos)
     // Sin `reglaEntrada` se mide el barrido de la app tal cual, que es lo que
     // hay que medir por defecto; `vista` deja mover sus umbrales (ADX,
     // compresión) sin duplicar aquí su lógica de selección. Con
