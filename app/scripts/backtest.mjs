@@ -1339,25 +1339,35 @@ for (const { nombre, r } of revCorridas) {
     linea(nombre, correr({ geometria: simetrica, vista }))
   }
 
-  // ⚠️ FALTA AQUÍ «la fuerza JUNTO CON lo demás» (fuerza 0.25 + todo suelto),
-  // que es lo único que diría si aflojar las paredes de dentro sirve de algo
-  // cuando la primera puerta deja pasar más. Se deja fuera A PROPÓSITO, y el
-  // motivo es de presupuesto de tiempo, no de interés:
+  // La fuerza JUNTO CON lo demás, que es lo único que dice si aflojar las
+  // paredes de dentro sirve de algo cuando la primera puerta deja pasar más.
+  // Aflojar solo el ADX con `thr` intacto mide sobre los mismos pares de
+  // siempre, así que casi no puede cambiar nada — y la tabla de arriba lo
+  // confirma: el ADX mueve el resultado de −0,09 a −0,10 y la fuerza lo mueve
+  // de −0,18 a −0,06.
   //
-  // La última duración MEDIDA de este guion son 44:06 contra un límite de 60
-  // minutos, y es de ANTES del arreglo que quitó corridas repetidas. O sea que
-  // el margen de hoy está sin medir, y cada fila de éstas es una pasada más
-  // sobre ~19.000 velas.
+  // 📌 ESTAS TRES FILAS ENTRARON EN LA SEGUNDA PASADA, Y CON EL NÚMERO DELANTE.
+  // La primera versión las dejó fuera por presupuesto de tiempo: la última
+  // duración conocida del guion eran 44:06 contra un límite de 60 minutos, de
+  // antes del arreglo que quitó corridas repetidas, así que el margen estaba
+  // sin medir — y una corrida ya se canceló al filo sin imprimir ni una tabla
+  // (el commit 5648a66, a los 44:46), gastando los créditos del día.
   //
-  // Gastar 28 créditos y una hora de máquina para que el trabajo se corte a los
-  // 60 minutos sin imprimir ni una tabla ya pasó de verdad una vez (la corrida
-  // del commit 5648a66, cancelada a los 44:46). Así que primero se mide el
-  // barrido de la fuerza —que es la casilla que estaba en blanco—, se lee en el
-  // log cuánto tardó, y con ese número delante se decide si caben estas filas.
+  // Medido en las marcas de tiempo del log de la corrida 36449412574: el paso
+  // «Medir» tardó 45:39 y cada fila de éstas cuesta **27 segundos**. Tres son
+  // 81 segundos contra 14 minutos de margen. Caben de sobra.
   //
-  // 📌 Y si no caben, la respuesta NO es subir el límite otra vez: es que cada
-  // `correr()` vuelve a calcular el barrido de las mismas ~19.000 ventanas que
-  // ya calculó el anterior. Guardarlo una vez dejaría estas filas casi gratis.
+  // ⚠️ Si algún día el guion se acerca otra vez al límite, la respuesta NO es
+  // subirlo: es que cada `correr()` vuelve a calcular el barrido de las mismas
+  // ~19.000 ventanas que ya calculó el anterior. Guardarlo una vez dejaría
+  // todas estas filas casi gratis.
+  for (const [nombre, t, vista] of [
+    ['  fuerza > 0.25', 0.25, {}],
+    ['  fuerza > 0.25 + todo suelto', 0.25, { adxMin: 0, rsiMax: null, tendenciaMin: 'ninguna' }],
+    ['  fuerza > 1.00 + todo suelto', 1, { adxMin: 0, rsiMax: null, tendenciaMin: 'ninguna' }],
+  ]) {
+    linea(nombre, correr({ geometria: simetrica, thr: t, vista }))
+  }
 
   console.log('─'.repeat(80))
   console.log('Con la geometría REAL de la app:')

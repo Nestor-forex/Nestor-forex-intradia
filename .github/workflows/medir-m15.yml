@@ -1,0 +1,96 @@
+name: Medir la app en velas de 15 minutos
+
+# Mide el BARRIDO DE LA APP (fuerza relativa + EMA9/21 + RSI + ADX) sobre velas
+# de 15 minutos, con sus ventanas escaladas por RELOJ, y lo compara con la misma
+# app en velas de una hora sobre los mismos días.
+#
+# NO cambia nada: no publica, no escribe en la rama `datos`, no toca el
+# historial y no modifica ni un archivo de la app. Solo imprime números.
+#
+# 📌 NO CONFUNDIR CON `medir-lss-m15.yml`. Aquél mide el indicador del concurso
+# (NFX-LSS) en M15 y ya se corrió el 2026-09-20 (−0,16 con barrido, −0,15 sin
+# él). Éste mide LA APP, que nunca se había medido en M15: el propio guion de
+# aquél lo decía — «NO hay fila "la app" aquí».
+#
+# ⚠️ SOLO A MANO, Y A PROPÓSITO. Bajar el M15 cuesta 7 créditos por tanda y por
+# defecto son 16 tandas = 112 créditos de los 800 del día. El proyecto ya gasta
+# 343 solo (vigía, publicador y reporte), así que caben — pero no todos los días
+# y no sin querer. Por eso no hay cron.
+#
+# ⚠️ El H1 con el que se compara NO se descarga aparte: sale de reagrupar estas
+# mismas velas. Si se midiera en otra corrida habría DOS diferencias a la vez
+# —la temporalidad y el periodo— y la comparación no diría nada.
+
+on:
+  workflow_dispatch:
+    inputs:
+      paginas:
+        description: 'Cuántas tandas de 5000 velas (7 créditos cada una). 16 ≈ 5 meses y medio en M15.'
+        required: false
+        default: '16'
+
+jobs:
+  medir:
+    runs-on: ubuntu-latest
+    # La descarga sola son ~16 minutos (pausa de 65 s entre tandas, porque el
+    # plan gratuito da 8 créditos por minuto y cada tanda gasta 7). Después hay
+    # que recalcular el barrido en CADA una de ~78.000 velas, dos veces (M15 y
+    # H1) más la comprobación con la geometría real.
+    #
+    # ⚠️ 90 y no 60: aquí hay cuatro veces más velas que en el banco de H1, cuyo
+    # paso «Medir» tardó 45:39 el 2026-09-28. Quedarse corto significa gastar
+    # los 112 créditos y no ver ni un número — ya pasó una vez, con el banco
+    # cancelado a los 44:46 contra un límite de 45.
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # El lint va primero y no es un adorno: los guiones corren sin
+      # compilador, así que un import que falta no se nota hasta que el guion ya
+      # va por la mitad. En swing pasó de verdad: el fallo apareció DESPUÉS de
+      # descargar los precios, con la cuota gastada y sin resultados.
+      - name: Comprobar que no falta ningún import
+        working-directory: app
+        run: npm install --silent && npm run lint
+
+      # ⚠️ ESTE PASO ES EL QUE HACE QUE LA MEDICIÓN VALGA ALGO, y va ANTES de
+      # gastar un solo crédito.
+      #
+      # `scripts/lib/marco.mjs` rearma el barrido para poder cambiarle las
+      # ventanas, y lo hace FUERA de la app —`src/` no se toca—. El precio de
+      # eso es que esa copia podría separarse de la app y acabar midiendo otra
+      # cosa mientras parece medir la app. `prueba-m15.mjs` corre las dos sobre
+      # el mismo mercado en velas de una hora y exige que salgan IDÉNTICAS campo
+      # por campo, incluidas las mismas señales.
+      #
+      # Si esto falla, la tabla de abajo no habla de la app de Néstor y no hay
+      # que gastar los créditos en imprimirla.
+      - name: Comprobar que el marco mide la app de verdad, y que el listón muerde
+        working-directory: app
+        run: node scripts/prueba-m15.mjs
+
+      - name: Comprobar el motor del banco de pruebas
+        working-directory: app
+        run: node scripts/prueba-backtest.mjs
+
+      - name: Comprobar el modelo de costes
+        working-directory: app
+        run: node scripts/prueba-costes.mjs
+
+      - name: Comprobar los indicadores contra la referencia
+        working-directory: app
+        run: node scripts/prueba-indicadores.mjs
+
+      - name: Medir
+        working-directory: app
+        env:
+          # Sin este `env` el guion se queda sin llave y falla. Está escrito en
+          # CLAUDE.md porque ya pasó: al borrar la llave de `.env.production`,
+          # `comparar-reglas.yml` se había quedado sin él y habría fallado sin
+          # explicación la próxima vez que alguien lo lanzara.
+          TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}
+          PAGINAS: ${{ inputs.paginas }}
+        run: node scripts/medir-m15.mjs
