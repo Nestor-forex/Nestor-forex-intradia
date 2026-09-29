@@ -429,7 +429,14 @@ export default {
       neutro: 'Presque le même taux : cela pèse à peine',
     },
     cabeceraSueltas: 'Taux de chaque banque centrale',
-    pie: (v) => `Source : BIS (Banque des règlements internationaux). Chaque ligne affiche la date de SA donnée : un taux directeur ne change que le jour où la banque centrale se réunit. La plus ancienne date de ${v.dias} jours.`,
+    subio: (v) => `Monté depuis ${v.de} % · ${v.cuando}`,
+    bajo: (v) => `Descendu depuis ${v.de} % · ${v.cuando}`,
+    haceDias: (v) => `il y a ${v.n} ${v.n === 1 ? 'jour' : 'jours'}`,
+    haceMeses: (v) => `il y a ${v.n} mois`,
+    haceAnios: (v) => `il y a ${v.n} ${v.n === 1 ? 'an' : 'ans'}`,
+    pieTendencia:
+      'La flèche indique de quel taux vient celui d\u2019aujourd\u2019hui et depuis combien de temps il est à ce niveau. Une devise sans flèche n\u2019a pas bougé dans la fenêtre que l\u2019app regarde : cela ne dit pas que sa banque centrale est en pause, seulement qu\u2019elle n\u2019a pas changé là-dedans.',
+    pie: (v) => `Source : BIS (Banque des règlements internationaux). Le BIS publie avec quelques jours de retard, donc la date de chaque ligne indique jusqu\u2019où va SA donnée — pas le jour où cette banque a décidé. La plus ancienne date de ${v.dias} jours.`,
   },
 
   diag: {

@@ -59,8 +59,9 @@ const CALENTAMIENTO = 1200
 
 const ac = (x) => (x === null ? '  — ' : (x.toFixed(0) + '%').padStart(4))
 const pr = (x) => (x === null ? '   —  ' : ((x >= 0 ? '+' : '') + x.toFixed(2)).padStart(6))
-const RAYA = '─'.repeat(92)
-const CAB = 'qué se midió                       ops   acierto  equil.   por 1R  │  1ª mit  │  2ª mit'
+const RAYA = '─'.repeat(102)
+const CAB =
+  'qué se midió                       ops   acierto  equil.    bruto   por 1R  │  1ª mit  │  2ª mit'
 
 async function main() {
   console.log('')
@@ -89,16 +90,29 @@ async function main() {
     return { senales, porClave: new Map(resultados.map((r) => [r.clave, r])) }
   }
 
+  // ⚠️ LA COLUMNA «BRUTO» (sin costes) SE AÑADIÓ EL 2026-09-29, y es la que
+  // distingue «la regla funciona mejor» de «el stop es más ancho, así que el
+  // spread pesa menos».
+  //
+  // Sin ella el gradiente por temporalidad —M15 −0,16, H1 −0,14, diario −0,08—
+  // no se puede leer, porque el spread pesa distinto en cada una: en M15 el stop
+  // es pequeño y el peaje se lo come. Si el bruto también empeora al bajar, la
+  // regla es peor de verdad; si el bruto está plano, es solo el peaje.
+  //
+  // Cuesta cero: `medir` vuelve a sumar sobre señales ya resueltas.
   const linea = (nombre, r, filtro = null) => {
     const ss = filtro ? r.senales.filter(filtro) : r.senales
+    const bruto = medir(ss, r.porClave)
     const m = medir(ss, r.porClave, { conSpread: true })
     const m1 = medir(ss.filter((x) => x.vela < corte), r.porClave, { conSpread: true })
     const m2 = medir(ss.filter((x) => x.vela >= corte), r.porClave, { conSpread: true })
     const eq = m.equilibrio === null ? '  — ' : `${m.equilibrio.toFixed(0).padStart(3)}%`
     console.log(
-      `${nombre.padEnd(34)} ${String(m.total).padStart(5)}   ${ac(m.acierto)}  ${eq}  ${pr(m.porRiesgo)}  │ ` +
+      `${nombre.padEnd(34)} ${String(m.total).padStart(5)}   ${ac(m.acierto)}  ${eq}  ` +
+        `${pr(bruto.porRiesgo)}  ${pr(m.porRiesgo)}  │ ` +
         `${String(m1.total).padStart(4)} ${pr(m1.porRiesgo)} │ ${String(m2.total).padStart(4)} ${pr(m2.porRiesgo)}`
     )
+    return { bruto, m, m1, m2, ss }
   }
 
   // Los mismos que en H1, para que la FORMA de la regla sea idéntica.

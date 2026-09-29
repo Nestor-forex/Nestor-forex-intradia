@@ -52,6 +52,17 @@ import { reglaBarrido } from './lib/patrones.mjs'
 import { resolver } from './lib/resolver.mjs'
 import { senalesApertura } from './lib/apertura.mjs'
 import { senalesLSSBanco, datosExactos, DIRECTOS } from './lib/lss-banco.mjs'
+// Para medir el MISMO indicador en velas de 4 horas sin gastar un crédito más:
+// se reagrupa la descarga de H1. El listón va aparte y con fecha dentro.
+import { reagruparVelas } from './lib/marco.mjs'
+import {
+  CRITERIOS as CRITERIOS_H4,
+  FECHA_PREREGISTRO as FECHA_PREREGISTRO_H4,
+  MISMOS_PARAMETROS,
+  QUE_PASA_SI_PASA as QUE_PASA_SI_PASA_H4,
+  SEMANAL_SOLO_SI,
+  juzgar as juzgarH4,
+} from './lib/preregistro-h4.mjs'
 
 // Cuántas horas se piden POR TANDA. 5000 es el tope de Twelve Data y cuesta lo
 // mismo que pedir 300: se cobra por consulta, no por vela.
@@ -1550,23 +1561,44 @@ for (const { nombre, r } of revCorridas) {
   console.log('Barrido de un pivote + ruptura de estructura. Stop en la mecha barrida.')
   console.log(`⚠️ Solo los ${DIRECTOS.length} pares DIRECTOS: en los cruces la mecha se deriva y`)
   console.log('   fabricaría barridos que nunca ocurrieron.')
-  console.log('⚠️ Todas las filas llevan el spread descontado.')
+  console.log('⚠️ La columna «por 1R» lleva el spread descontado; «bruto» no lleva nada.')
   console.log(`Las dos mitades se parten en ${corteLSS}.`)
 
   const ac = (x) => (x === null ? '  — ' : (x.toFixed(0) + '%').padStart(4))
   const pr = (x) => (x === null ? '   —  ' : ((x >= 0 ? '+' : '') + x.toFixed(2)).padStart(6))
-  const RAYA_LSS = '─'.repeat(92)
-  const CABL = 'qué se midió                       ops   acierto  equil.   por 1R  │  1ª mit  │  2ª mit'
+  const RAYA_LSS = '─'.repeat(102)
+  const CABL =
+    'qué se midió                       ops   acierto  equil.    bruto   por 1R  │  1ª mit  │  2ª mit'
+
+  // ⚠️ LA COLUMNA «BRUTO» (sin costes) SE AÑADIÓ EL 2026-09-29, Y NO ES UN
+  // ADORNO: es lo único que distingue «la regla funciona mejor» de «el stop es
+  // más ancho, así que el spread pesa menos».
+  //
+  // Nació de lo medido el día anterior en M15: la app pierde el DOBLE que en H1
+  // **acertando exactamente igual, 49 % en las dos**. Con la vara neutra eso
+  // solo puede venir del peaje, no de la dirección. El mismo mecanismo, al
+  // revés, haría que subir de temporalidad pareciera una mejora sin serlo.
+  //
+  // Hasta hoy NINGUNA de las tres tablas del LSS la imprimía, así que esa
+  // distinción no se podía hacer. Cuesta cero: `medir` solo vuelve a sumar
+  // sobre señales ya resueltas, no regenera nada.
   const linea = (nombre, r, filtro = null) => {
     const ss = filtro ? r.senales.filter(filtro) : r.senales
+    const bruto = medir(ss, r.porClave)
     const m = medir(ss, r.porClave, { conSpread: true })
     const m1 = medir(ss.filter((x) => x.vela < corteLSS), r.porClave, { conSpread: true })
     const m2 = medir(ss.filter((x) => x.vela >= corteLSS), r.porClave, { conSpread: true })
     const eq = m.equilibrio === null ? '  — ' : `${m.equilibrio.toFixed(0).padStart(3)}%`
     console.log(
-      `${nombre.padEnd(34)} ${String(m.total).padStart(5)}   ${ac(m.acierto)}  ${eq}  ${pr(m.porRiesgo)}  │ ` +
+      `${nombre.padEnd(34)} ${String(m.total).padStart(5)}   ${ac(m.acierto)}  ${eq}  ` +
+        `${pr(bruto.porRiesgo)}  ${pr(m.porRiesgo)}  │ ` +
         `${String(m1.total).padStart(4)} ${pr(m1.porRiesgo)} │ ${String(m2.total).padStart(4)} ${pr(m2.porRiesgo)}`
     )
+    // Devuelve lo medido para que el bloque de H4 pueda comparar contra la fila
+    // de H1 sin volver a calcularla. Antes no devolvía nada y la comparación
+    // habría obligado a repetir la medición — o, peor, a copiar el número a
+    // mano, que es cómo envejecen las etiquetas de este proyecto.
+    return { bruto, m, m1, m2, ss }
   }
 
   console.log('')
@@ -1643,6 +1675,135 @@ for (const { nombre, r } of revCorridas) {
         )
       }
     }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // 6) ¿Y EN VELAS DE 4 HORAS? — la pregunta de Néstor, y la única forma
+  //    limpia de contestarla
+  // ═══════════════════════════════════════════════════════════════════════
+  // Néstor: «ya lo probamos en H1 y no funcionó, pero quiero que probemos con
+  // temporalidades MÁS ALTAS a ver cómo nos sale». Y los tres puntos que ya
+  // había le daban la razón: −0,16 en M15, −0,14 en H1, −0,08 en diario.
+  //
+  // ⚠️⚠️ PERO ESOS TRES NO ERAN COMPARABLES, y eso no se dijo al medirlos. Del
+  // H1 al diario cambian CUATRO cosas a la vez: la temporalidad, los pares (7
+  // contra 14), el pivote (4 contra 8) y la ventana (6 contra 15). Así que
+  // «subir de temporalidad mejora» podía ser en realidad «los pares y los
+  // parámetros de Swing son mejores».
+  //
+  // 📌 H4 lo aísla, y gratis: sale de REAGRUPAR esta misma descarga de H1.
+  // Misma app, mismos 7 pares, mismos días, mismos parámetros. Lo único que
+  // cambia es el tamaño de la vela. CERO créditos de Twelve Data.
+  //
+  // ⚠️ Se le pasan los MISMOS parámetros que a H1, no los escalados por reloj, y
+  // el motivo es aritmético: escalar hacia arriba dividiría el pivote entre 4 y
+  // daría 1, que no es un pivote. «El mismo reloj» no existe en esta dirección.
+  // Consecuencia que hay que decir al leer la tabla: en H4 el pivote de 4 velas
+  // son 16 HORAS de mercado y en H1 son 4 — no es el mismo patrón visto más
+  // grande, es un patrón más lento.
+  //
+  // El listón está en `scripts/lib/preregistro-h4.mjs`, con fecha dentro y
+  // escrito antes de esta corrida. El veredicto lo calcula `juzgarH4()`.
+  console.log('')
+  console.log('6) ¿Y EN VELAS DE 4 HORAS? (vara neutra, mismos pares y parámetros)')
+  console.log('Reagrupado de esta misma descarga de H1: cero créditos, y lo único que')
+  console.log('cambia respecto a la fila de H1 es el tamaño de la vela.')
+  console.log('⚠️ En H4 el pivote de 4 velas son 16 HORAS de mercado; en H1, 4.')
+  {
+    const h4 = reagruparVelas(barras, rates, rangos, { horas: 4 })
+    // El calentamiento también se divide entre 4: son las mismas horas de
+    // mercado, no el mismo número de velas. Con 300 velas de H4 se comerían
+    // 1.200 horas y el periodo medido dejaría de coincidir con el de H1.
+    const calentamientoH4 = Math.ceil(VENTANA / 4)
+    const datosH4 = datosExactos(h4.barras, h4.rates, h4.rangos)
+    const corteH4 = h4.barras[Math.floor((calentamientoH4 + h4.barras.length) / 2)]
+
+    console.log(`   ${barras.length} velas H1 → ${h4.barras.length} velas H4`)
+
+    const correrH4 = (op) => {
+      const senales = senalesLSSBanco(h4.barras, h4.rates, h4.rangos, {
+        calentamiento: calentamientoH4,
+        ...op,
+      })
+      const { resultados } = resolver(senales, datosH4)
+      return { senales, porClave: new Map(resultados.map((r) => [r.clave, r])) }
+    }
+
+    const lineaH4 = (nombre, r, filtro = null) => {
+      const ss = filtro ? r.senales.filter(filtro) : r.senales
+      const bruto = medir(ss, r.porClave)
+      const m = medir(ss, r.porClave, { conSpread: true })
+      const m1 = medir(ss.filter((x) => x.vela < corteH4), r.porClave, { conSpread: true })
+      const m2 = medir(ss.filter((x) => x.vela >= corteH4), r.porClave, { conSpread: true })
+      const eq = m.equilibrio === null ? '  — ' : `${m.equilibrio.toFixed(0).padStart(3)}%`
+      console.log(
+        `${nombre.padEnd(34)} ${String(m.total).padStart(5)}   ${ac(m.acierto)}  ${eq}  ` +
+          `${pr(bruto.porRiesgo)}  ${pr(m.porRiesgo)}  │ ` +
+          `${String(m1.total).padStart(4)} ${pr(m1.porRiesgo)} │ ${String(m2.total).padStart(4)} ${pr(m2.porRiesgo)}`
+      )
+      return { bruto, m, m1, m2, ss }
+    }
+
+    console.log(CABL)
+    console.log(RAYA_LSS)
+    const h4Lss = correrH4({ ...MISMOS_PARAMETROS, rr: 1 })
+    const filaH4 = lineaH4('NFX-LSS en H4', h4Lss)
+    const h4Ruptura = correrH4({ ...MISMOS_PARAMETROS, rr: 1, exigirSweep: false })
+    lineaH4('CONTROL: solo la ruptura, H4', h4Ruptura)
+    console.log(RAYA_LSS)
+    console.log('Y las mismas dos filas en H1, para comparar en la misma pantalla:')
+    const filaH1 = linea('NFX-LSS en H1', neutraLSS)
+    linea('CONTROL: solo la ruptura, H1', correrLSS({ ...BASE, rr: 1, exigirSweep: false }))
+
+    // ── El veredicto, que lo calcula el listón ──────────────────────────
+    const porPar = new Map()
+    for (const s of filaH4.ss) porPar.set(s.par, (porPar.get(s.par) || 0) + 1)
+    const totalH4 = filaH4.ss.length || 1
+    const parMayor = porPar.size ? Math.max(...porPar.values()) / totalH4 : 1
+
+    const medidoH4 = {
+      ops: filaH4.m.total,
+      porRiesgo: filaH4.m.porRiesgo,
+      mitad1: filaH4.m1.porRiesgo,
+      mitad2: filaH4.m2.porRiesgo,
+      h1PorRiesgo: filaH1.m.porRiesgo,
+      sinCostes: filaH4.bruto.porRiesgo,
+      h1SinCostes: filaH1.bruto.porRiesgo,
+      parMayor,
+    }
+
+    const v = juzgarH4(medidoH4)
+    console.log('')
+    console.log(`EL VEREDICTO DEL H4, contra el listón escrito el ${FECHA_PREREGISTRO_H4}`)
+    console.log(RAYA_LSS)
+    for (const c of CRITERIOS_H4) {
+      const r = v.resultados.find((x) => x.clave === c.clave)
+      const val = Array.isArray(r.valor)
+        ? r.valor.map((x) => (x === null ? '—' : x.toFixed(3))).join(' vs ')
+        : r.valor
+      console.log(`  ${r.pasa ? '✓' : '✗'} ${c.dice}`)
+      console.log(`      salió: ${val}`)
+      if (!r.pasa) console.log(`      (${c.porque})`)
+    }
+    console.log(RAYA_LSS)
+    if (v.pasa) {
+      console.log('PASA los seis criterios.')
+      console.log(`⚠️ Y lo que eso autoriza: ${QUE_PASA_SI_PASA_H4}`)
+    } else {
+      console.log(`NO PASA. Falla ${v.fallan.length} de ${CRITERIOS_H4.length}: ${v.fallan.join(', ')}.`)
+      console.log('⚠️ La respuesta NO es aflojar un criterio. Para eso se escribió antes.')
+    }
+
+    // ⚠️ EL SEMANAL SOLO SI ESTO CONFIRMA, y con la advertencia por delante.
+    // Néstor lo aprobó con esa condición exacta.
+    console.log('')
+    console.log('Sobre subir a SEMANAL (que Néstor aprobó solo si el H4 confirma):')
+    console.log(`  condición: ${SEMANAL_SOLO_SI.condicion}`)
+    console.log(`  ⚠️ ${SEMANAL_SOLO_SI.advertencia}`)
+    console.log(
+      `  Y los números: ~${SEMANAL_SOLO_SI.velasDisponibles} velas semanales en 5 años, ` +
+        `~${SEMANAL_SOLO_SI.opsEsperadas} operaciones, margen ±${SEMANAL_SOLO_SI.margenPeorCaso} puntos.`
+    )
   }
 
   console.log(RAYA_LSS)

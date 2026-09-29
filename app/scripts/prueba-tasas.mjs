@@ -9,15 +9,20 @@
 
 import {
   DIVISA_ZONA,
+  OBSERVACIONES,
   UMBRAL_NEUTRO,
   ZONA_DIVISA,
   diasDelDatoMasViejo,
+  diasVigente,
   difDePar,
   difsPorPar,
+  leerSerieCSV,
   leerTasasCSV,
   partirLineaCSV,
   prepararTasas,
   tasasOrdenadas,
+  tendenciasDeSerie,
+  ultimoCambio,
 } from '../src/lib/tasas.js'
 import { PAIR_NAMES, monedasDe } from '../src/lib/pairs.js'
 
@@ -293,6 +298,168 @@ console.log('16. Las ocho sueltas salen ordenadas de mayor a menor')
   ok(s[0].divisa === 'GBP', `la más alta debía ser el GBP (4 %) y salió ${s[0].divisa}`)
   ok(s[s.length - 1].divisa === 'CHF', `la más baja debía ser el CHF (0 %) y salió ${s[s.length - 1].divisa}`)
   ok(tasasOrdenadas(null).length === 0, 'con null devuelve lista vacía sin reventar')
+}
+
+// ═════════════════════════════════════════════════════════════════════════
+// LA TENDENCIA (añadida el 2026-09-29)
+// ═════════════════════════════════════════════════════════════════════════
+//
+// ⚠️ LAS FILAS DE ESTE CSV REPRODUCEN LOS HUECOS REALES DEL BIS, que es el
+// fallo que estas comprobaciones existen para cazar. Medido con la sonda el
+// 2026-09-29: de 1000 observaciones, Nueva Zelanda trae 283 huecos y Canadá
+// 122. Sin quitarlos, Nueva Zelanda salía con 294 «cambios» en vez de 12.
+//
+// La serie de abajo tiene, a propósito:
+//
+//   · US  → un cambio limpio, sin huecos:      3.625 → 3.875 el día 17
+//   · NZ  → un hueco EN MEDIO de un valor estable: 2.5, (vacío), 2.5 …
+//            o sea el caso que inventaba dos cambios que no existen
+//   · CH  → el MISMO valor todo el rato (0): no hay tendencia que dar
+//   · JP  → dos cambios, para comprobar que se queda con el ÚLTIMO
+//   · GB  → un hueco justo ANTES del cambio real, que es el caso más
+//            traicionero: la fecha del cambio podría salir mal por un día
+const SERIE = [
+  CABECERA,
+  // Estados Unidos: sube de 3.625 a 3.875, sin huecos.
+  'D,US,368,0,,x,4,Fed,, y,2026-09-14,3.625,A,F,',
+  'D,US,368,0,,x,4,Fed,, y,2026-09-15,3.625,A,F,',
+  'D,US,368,0,,x,4,Fed,, y,2026-09-17,3.875,A,F,',
+  'D,US,368,0,,x,4,Fed,, y,2026-09-22,3.875,A,F,',
+  // Nueva Zelanda: sube el día 3 y después SOLO HAY HUECOS. Si los huecos se
+  // contaran, saldrían dos cambios más y la fecha sería el 18, no el 3.
+  'D,NZ,368,0,,x,4,RBNZ,, y,2026-09-01,2.5,A,F,',
+  'D,NZ,368,0,,x,4,RBNZ,, y,2026-09-03,2.75,A,F,',
+  'D,NZ,368,0,,x,4,RBNZ,, y,2026-09-12,,A,F,',
+  'D,NZ,368,0,,x,4,RBNZ,, y,2026-09-18,2.75,A,F,',
+  // Suiza: clavada en 0 toda la ventana. `Number('')` también es 0, así que
+  // esto además comprueba que un cero de verdad no se confunde con un hueco.
+  'D,CH,368,0,,x,4,SNB,, y,2026-09-01,0,A,F,',
+  'D,CH,368,0,,x,4,SNB,, y,2026-09-22,0,A,F,',
+  // Japón: dos cambios. Tiene que quedarse con el segundo.
+  'D,JP,368,0,,x,4,BoJ,, y,2026-06-01,0.5,A,F,',
+  'D,JP,368,0,,x,4,BoJ,, y,2026-06-17,0.75,A,F,',
+  'D,JP,368,0,,x,4,BoJ,, y,2026-08-10,1,A,F,',
+  // Reino Unido: un hueco justo antes del cambio, con una coma dentro de
+  // comillas para que las dos trampas del archivo actúen a la vez.
+  'D,GB,368,0,,"From 3 Aug 2006 onwards: official bank rate, fixed.",4,BoE,, y,2026-09-10,4,A,F,',
+  'D,GB,368,0,,x,4,BoE,, y,2026-09-15,,A,F,',
+  'D,GB,368,0,,x,4,BoE,, y,2026-09-16,3.75,A,F,',
+].join('\n')
+
+console.log('17. La serie se lee entera, en orden y sin los huecos del BIS')
+{
+  const s = leerSerieCSV(SERIE)
+  // ⚠️ Las claves son la DIVISA (`USD`), no la zona del BIS (`US`): la
+  // traducción la hace `ZONA_DIVISA` dentro del lector. La primera versión de
+  // esta línea pedía `s.US` y salió `undefined` — o sea que la comprobación
+  // habría pasado en verde si hubiera usado un `?.` más permisivo.
+  ok(s.USD?.length === 4, `USD debía traer 4 observaciones y trajo ${s.USD?.length}`)
+
+  // ⚠️ LA QUE MUERDE: la fila vacía de NZ NO puede entrar en la serie.
+  ok(s.NZD?.length === 3, `NZD debía traer 3 observaciones (una es hueco) y trajo ${s.NZD?.length}`)
+  ok(
+    !s.NZD?.some((o) => o.f === '2026-09-12'),
+    'el hueco del 12 de septiembre NO debe estar en la serie del NZD',
+  )
+  ok(s.GBP?.length === 2, `GBP debía traer 2 observaciones (una es hueco) y trajo ${s.GBP?.length}`)
+
+  // El cero SÍ entra: es un dato, no un hueco.
+  ok(s.CHF?.length === 2, `CHF debía traer 2 observaciones y trajo ${s.CHF?.length}`)
+  ok(s.CHF?.every((o) => o.v === 0), 'los ceros de Suiza entran como ceros de verdad')
+
+  // Ascendente, sin fiarse del orden de la respuesta.
+  const f = s.JPY?.map((o) => o.f) ?? []
+  ok(
+    JSON.stringify(f) === JSON.stringify([...f].sort()),
+    `la serie del JPY debía venir de más vieja a más nueva: ${f.join(' ')}`,
+  )
+
+  ok(Object.keys(leerSerieCSV('')).length === 0, 'con texto vacío devuelve {} sin reventar')
+  ok(Object.keys(leerSerieCSV(null)).length === 0, 'con null devuelve {} sin reventar')
+  ok(Object.keys(leerSerieCSV(CABECERA)).length === 0, 'con solo la cabecera devuelve {} sin reventar')
+}
+
+console.log('18. El último cambio: de dónde viene, a dónde va y desde cuándo')
+{
+  const s = leerSerieCSV(SERIE)
+
+  const us = ultimoCambio(s.USD)
+  ok(us?.de === 3.625 && us?.a === 3.875, `US debía ir de 3.625 a 3.875 y fue de ${us?.de} a ${us?.a}`)
+  ok(us?.sentido === 'subio', `US subió, y salió «${us?.sentido}»`)
+  ok(us?.desde === '2026-09-17', `US vigente desde 2026-09-17 y salió ${us?.desde}`)
+
+  // ⚠️⚠️ LA COMPROBACIÓN CENTRAL DE TODO ESTE BLOQUE. Con los huecos contados,
+  // el NZD daría 3 escalones y la fecha saldría el 18 de septiembre. La verdad
+  // es 1 escalón, el día 3.
+  const nz = ultimoCambio(s.NZD)
+  ok(nz?.escalones === 1, `el NZD tiene UN cambio real y salieron ${nz?.escalones} (¿se colaron los huecos?)`)
+  ok(nz?.desde === '2026-09-03', `el NZD es vigente desde el día 3 y salió ${nz?.desde} (¿un hueco movió la fecha?)`)
+  ok(nz?.de === 2.5 && nz?.a === 2.75, `el NZD debía ir de 2.5 a 2.75 y fue de ${nz?.de} a ${nz?.a}`)
+
+  // Igual en el GBP, donde el hueco va justo ANTES del cambio y además la fila
+  // lleva una coma dentro de comillas.
+  const gb = ultimoCambio(s.GBP)
+  ok(gb?.a === 3.75 && gb?.de === 4, `el GBP debía BAJAR de 4 a 3.75 y fue de ${gb?.de} a ${gb?.a}`)
+  ok(gb?.sentido === 'bajo', `el GBP bajó, y salió «${gb?.sentido}»`)
+  ok(gb?.desde === '2026-09-16', `el GBP es vigente desde el 16 y salió ${gb?.desde}`)
+
+  // Con dos cambios se queda con el ÚLTIMO, no con el primero.
+  const jp = ultimoCambio(s.JPY)
+  ok(jp?.escalones === 2, `el JPY tiene dos cambios y salieron ${jp?.escalones}`)
+  ok(jp?.de === 0.75 && jp?.a === 1, `el JPY debía quedarse con el último (0.75 → 1) y salió ${jp?.de} → ${jp?.a}`)
+
+  // ⚠️ SIN CAMBIO DEVUELVE `null`, NO «sin cambios». Ver el porqué en
+  // `ultimoCambio`: decir «está quieta» sería una afirmación sobre el banco
+  // central; lo único que sabemos es que no se movió en lo que la app miró.
+  ok(ultimoCambio(s.CHF) === null, 'Suiza, clavada en 0, no da tendencia: devuelve null')
+  ok(ultimoCambio([]) === null, 'una serie vacía devuelve null')
+  ok(ultimoCambio(null) === null, 'con null devuelve null sin reventar')
+  ok(ultimoCambio([{ f: '2026-09-01', v: 1 }]) === null, 'con una sola observación devuelve null')
+}
+
+console.log('19. Las tendencias, y los días que lleva vigente')
+{
+  const t = tendenciasDeSerie(leerSerieCSV(SERIE))
+  ok(!('CHF' in t), 'una divisa sin cambio NO aparece en las tendencias (no entra como «plana»)')
+  ok(Object.keys(t).length === 4, `debían salir cuatro tendencias (US, NZ, GB, JP) y salieron ${Object.keys(t).length}`)
+
+  const dias = diasVigente(t.USD, new Date('2026-09-29T00:00:00Z'))
+  ok(dias === 12, `del 17 al 29 de septiembre son 12 días y salieron ${dias}`)
+  ok(diasVigente(null) === null, 'sin cambio no hay días: null, no 0')
+  ok(diasVigente({ desde: 'mañana' }) === null, 'una fecha ilegible devuelve null, no 0')
+  ok(Object.keys(tendenciasDeSerie(null)).length === 0, 'con null devuelve {} sin reventar')
+}
+
+console.log('20. La ventana pedida alcanza, y el archivo publicado sigue siendo diminuto')
+{
+  // ⚠️ El número sale de la sonda del 2026-09-29, no de a ojo: con 1000
+  // observaciones las OCHO zonas tienen al menos 6 cambios reales dentro
+  // (Japón 6, EE. UU. 8, Suiza 10, zona euro 11, Canadá y NZ 12, R. Unido 13,
+  // Australia 14). Con 400 alcanzaba por poco — Suiza quedaba a mitad de
+  // ventana—, así que bajarlo es estrechar el margen sin ganar nada.
+  ok(OBSERVACIONES >= 1000, `OBSERVACIONES no debería bajar de 1000 y vale ${OBSERVACIONES}`)
+
+  const publicado = prepararTasas(SERIE, new Date('2026-09-29T02:00:00Z'))
+  ok(Object.keys(publicado.tendencias).length === 4, 'el publicado trae las tendencias')
+
+  // ⚠️ CAMBIO ADITIVO: `tasas` tiene que seguir saliendo exactamente igual que
+  // antes de que existieran las tendencias. Un lector viejo no debe notar nada.
+  ok(
+    JSON.stringify(publicado.tasas) === JSON.stringify(leerTasasCSV(SERIE)),
+    '`tasas` sale idéntico a lo que `leerTasasCSV` daba por su cuenta',
+  )
+
+  // Y sobrevive el viaje por JSON, que es como llega al navegador.
+  const releido = JSON.parse(JSON.stringify(publicado))
+  ok(releido.tendencias.USD.de === 3.625, 'la tendencia sobrevive el viaje por JSON')
+  ok(releido.tendencias.USD.sentido === 'subio', 'y el sentido también')
+
+  // ⚠️ EL ARCHIVO LO BAJA CADA MIEMBRO CADA VEZ QUE ABRE LA APP. Los 5,5 MB de
+  // CSV los baja el runner una vez al día; lo que viaja al teléfono es esto. Si
+  // alguien mete aquí las series completas, esta comprobación lo canta.
+  const completo = prepararTasas(CSV, new Date('2026-09-09T02:00:00Z'))
+  const kb = JSON.stringify(completo).length / 1024
+  ok(kb < 2, `el archivo publicado debe pesar menos de 2 KB y pesa ${kb.toFixed(2)} KB`)
 }
 
 console.log('')

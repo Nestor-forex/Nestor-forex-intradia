@@ -471,7 +471,14 @@ export default {
       neutro: 'Casi la misma tasa: apenas pesa',
     },
     cabeceraSueltas: 'Tasa de cada banco central',
-    pie: (v) => `Fuente: BIS (Banco de Pagos Internacionales). Cada fila lleva la fecha de SU dato: una tasa de referencia solo cambia el día que se reúne el banco central. El más antiguo es de hace ${v.dias} días.`,
+    subio: (v) => `Subió desde ${v.de} % · ${v.cuando}`,
+    bajo: (v) => `Bajó desde ${v.de} % · ${v.cuando}`,
+    haceDias: (v) => `hace ${v.n} ${v.n === 1 ? 'día' : 'días'}`,
+    haceMeses: (v) => `hace ${v.n} ${v.n === 1 ? 'mes' : 'meses'}`,
+    haceAnios: (v) => `hace ${v.n} ${v.n === 1 ? 'año' : 'años'}`,
+    pieTendencia:
+      'La flecha dice de qué tasa viene la de hoy y cuánto lleva en ese nivel. Una divisa sin flecha no se movió dentro de la ventana que la app mira: eso no dice que su banco central esté en pausa, solo que ahí dentro no cambió.',
+    pie: (v) => `Fuente: BIS (Banco de Pagos Internacionales). El BIS publica con unos días de retraso, así que la fecha de cada fila es hasta cuándo llega SU dato — no el día en que ese banco decidió. La más antigua es de hace ${v.dias} días.`,
   },
 
   diag: {

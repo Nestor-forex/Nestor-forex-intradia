@@ -29,13 +29,32 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { APP } from '../src/lib/identidad.js'
-import { DIVISA_ZONA, diasDelDatoMasViejo, prepararTasas, tasasOrdenadas } from '../src/lib/tasas.js'
+import {
+  DIVISA_ZONA,
+  OBSERVACIONES,
+  diasDelDatoMasViejo,
+  diasVigente,
+  prepararTasas,
+  tasasOrdenadas,
+} from '../src/lib/tasas.js'
 
 const ZONAS = Object.values(DIVISA_ZONA).join('+')
 
+// ⚠️ PIDE LA SERIE, NO SOLO EL ÚLTIMO VALOR (cambiado el 2026-09-29).
+//
+// Hasta esa fecha pedía `lastNObservations=1`, que da el nivel y nada más. Con
+// `OBSERVACIONES` viene la serie entera y de ahí sale la TENDENCIA — de dónde
+// viene cada tasa y desde cuándo—, que es la mitad de lo que dicen los
+// análisis del mercado y la app no enseñaba.
+//
+// No cuesta un crédito ni un secreto: es el mismo organismo público y la misma
+// dirección. Lo único que sube es la descarga: de 5,6 KB a 5,5 MB, 0,7 s,
+// medido con la sonda. Y eso lo baja el RUNNER una vez al día, no el teléfono
+// de nadie — lo que se publica sigue siendo un archivo pequeño, porque la
+// serie se resume aquí y no viaja.
 const URL =
   `https://stats.bis.org/api/v2/data/dataflow/BIS/WS_CBPOL/1.0/D.${ZONAS}` +
-  '?lastNObservations=1&format=csv'
+  `?lastNObservations=${OBSERVACIONES}&format=csv`
 
 const DESTINO = join(process.env.VIGIA_DATOS || 'datos', 'estado', 'tasas.json')
 
@@ -88,10 +107,50 @@ writeFileSync(DESTINO, texto)
 
 console.log(`  escrito: ${DESTINO} (${(texto.length / 1024).toFixed(2)} KB)`)
 
-// Las ocho al log, con su fecha. No es adorno: si un día la pantalla enseña
-// algo raro, el log de ese día dice exactamente qué se publicó.
+// Las ocho al log, con su fecha y con de dónde vienen. No es adorno: si un día
+// la pantalla enseña algo raro, el log de ese día dice exactamente qué se
+// publicó.
 for (const t of tasasOrdenadas(datos.tasas)) {
-  console.log(`    · ${t.divisa}  ${String(t.v).padStart(6)} %   (dato del ${t.f})`)
+  const c = datos.tendencias?.[t.divisa]
+  const flecha = c ? (c.sentido === 'subio' ? '↑' : '↓') : ' '
+  const venía = c ? `${flecha} desde ${c.de} % el ${c.desde} (${diasVigente(c)} días)` : '(sin cambio en la ventana)'
+  console.log(`    · ${t.divisa}  ${String(t.v).padStart(6)} %   (dato del ${t.f})   ${venía}`)
+}
+
+// ⚠️ EL NÚMERO DE ESCALONES VA AL LOG A PROPÓSITO, y no es curiosidad.
+//
+// Es el delator de que los huecos de la serie se hayan vuelto a colar. El BIS
+// publica filas con `OBS_VALUE` vacío —283 de 1000 en Nueva Zelanda— y si algún
+// día dejaran de saltarse, cada hueco contaría como dos cambios: Nueva Zelanda
+// pasaría de 12 escalones a 294. Un banco central que mueve su tasa 12 veces en
+// tres años es plausible; 294 no, y así se ve de un vistazo sin que nadie tenga
+// que ir a buscarlo.
+const tend = Object.entries(datos.tendencias || {})
+if (tend.length) {
+  console.log(
+    `  cambios dentro de la ventana de ${OBSERVACIONES} observaciones: ` +
+      tend.map(([d, c]) => `${d}:${c.escalones}`).join(' · ')
+  )
+  const sospechoso = tend.filter(([, c]) => c.escalones > 60)
+  if (sospechoso.length) {
+    console.log('')
+    console.log(`⚠ DEMASIADOS CAMBIOS en ${sospechoso.map(([d]) => d).join(', ')}.`)
+    console.log('  Un banco central no mueve su tasa decenas de veces en tres años.')
+    console.log('  Lo más probable: los huecos de la serie (OBS_VALUE vacío) dejaron de saltarse.')
+    console.log('  Ver `leerSerieCSV` en src/lib/tasas.js y su prueba en scripts/prueba-tasas.mjs.')
+  }
+}
+
+// ⚠️ Un AVISO, no un fallo. Si a una divisa no se le encuentra ningún cambio en
+// la ventana, la pantalla simplemente no enseña su tendencia y sigue enseñando
+// su nivel. Que salga en el log importa porque la primera explicación posible no
+// es «ese banco lleva años quieto» sino «la ventana se quedó corta», y eso se
+// arregla subiendo `OBSERVACIONES`.
+const sinTendencia = Object.keys(datos.tasas).filter((d) => !datos.tendencias?.[d])
+if (sinTendencia.length) {
+  console.log('')
+  console.log(`⚠ Sin tendencia (ningún cambio en la ventana): ${sinTendencia.join(', ')}`)
+  console.log(`  Se publican igual con su nivel. Si se repite, subir OBSERVACIONES (hoy ${OBSERVACIONES}).`)
 }
 
 const dias = diasDelDatoMasViejo(datos.tasas)

@@ -291,16 +291,36 @@ export function barridoConMarco(barras, rates, rangos = null, marco = MARCO_H1) 
 // cosa. Por eso la clave del grupo es el sello de tiempo truncado a la hora, y
 // hay una comprobación dedicada solo a esto.
 //
+// ⚠️ Y CON `horas > 1` LA ALINEACIÓN IMPORTA IGUAL O MÁS. Para armar velas de
+// 4 horas los cortes tienen que caer en 00:00, 04:00, 08:00… del reloj, no
+// cuatro horas después de donde empezó la descarga. Se consigue truncando la
+// hora a un múltiplo de `horas`, no contando desde el principio.
+//
+// 📌 Un detalle que conviene saber al leer una tabla de H4: los grupos de los
+// extremos pueden quedar INCOMPLETOS (la primera vela de 4 h puede llevar solo
+// dos velas de una hora si la descarga empezó a las 02:00). Son dos velas de
+// ~5.000, así que no cambian nada, y la alternativa —tirarlas— costaría
+// explicar por qué el periodo medido no coincide con el de H1.
+//
 // Devuelve lo mismo que `obtenerVelas`: { barras, rates, rangos }.
-export function reagruparAHoras(barras, rates, rangos = null) {
+export function reagruparVelas(barras, rates, rangos = null, { horas = 1 } = {}) {
+  if (!Number.isInteger(horas) || horas < 1 || 24 % horas !== 0) {
+    // Se exige que 24 sea múltiplo de `horas` para que los cortes caigan en el
+    // mismo sitio todos los días. Con 5 horas, el corte se iría desplazando de
+    // un día al siguiente y las velas de un lunes no serían comparables con
+    // las de un martes — un error que no daría ningún fallo.
+    throw new Error(`reagruparVelas: horas tiene que ser un divisor entero de 24, llegó ${horas}`)
+  }
+
   const grupos = new Map()
   for (const t of barras) {
     const d = aFechaUTC(t)
     if (Number.isNaN(d.getTime())) continue
     const dd = (n, a = 2) => String(n).padStart(a, '0')
+    const bloque = Math.floor(d.getUTCHours() / horas) * horas
     const clave =
       `${dd(d.getUTCFullYear(), 4)}-${dd(d.getUTCMonth() + 1)}-${dd(d.getUTCDate())} ` +
-      `${dd(d.getUTCHours())}:00:00`
+      `${dd(bloque)}:00:00`
     if (!grupos.has(clave)) grupos.set(clave, [])
     grupos.get(clave).push(t)
   }
@@ -331,4 +351,10 @@ export function reagruparAHoras(barras, rates, rangos = null) {
   }
 
   return { barras: salidaBarras, rates: salidaRates, rangos: salidaRangos }
+}
+
+// El caso de una hora, que es el que usa la medición de M15. Se conserva con su
+// propio nombre porque es el que se lee en los guiones y en las pruebas.
+export function reagruparAHoras(barras, rates, rangos = null) {
+  return reagruparVelas(barras, rates, rangos, { horas: 1 })
 }
