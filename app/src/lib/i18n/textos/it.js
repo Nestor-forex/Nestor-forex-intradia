@@ -425,7 +425,14 @@ export default {
       neutro: 'Quasi lo stesso tasso: pesa appena',
     },
     cabeceraSueltas: 'Tasso di ogni banca centrale',
-    pie: (v) => `Fonte: BIS (Banca dei Regolamenti Internazionali). Ogni riga porta la data del SUO dato: un tasso di riferimento cambia solo il giorno in cui la banca centrale si riunisce. Il più vecchio è di ${v.dias} giorni fa.`,
+    subio: (v) => `Salito da ${v.de} % · ${v.cuando}`,
+    bajo: (v) => `Sceso da ${v.de} % · ${v.cuando}`,
+    haceDias: (v) => `${v.n} ${v.n === 1 ? 'giorno' : 'giorni'} fa`,
+    haceMeses: (v) => `${v.n} ${v.n === 1 ? 'mese' : 'mesi'} fa`,
+    haceAnios: (v) => `${v.n} ${v.n === 1 ? 'anno' : 'anni'} fa`,
+    pieTendencia:
+      'La freccia dice da quale tasso viene quello di oggi e da quanto tempo è a quel livello. Una valuta senza freccia non si è mossa nella finestra che l\u2019app guarda: questo non dice che la sua banca centrale sia in pausa, solo che lì dentro non è cambiata.',
+    pie: (v) => `Fonte: BIS (Banca dei Regolamenti Internazionali). Il BIS pubblica con qualche giorno di ritardo, quindi la data di ogni riga dice fin dove arriva IL SUO dato — non il giorno in cui quella banca ha deciso. La più vecchia è di ${v.dias} giorni.`,
   },
 
   diag: {

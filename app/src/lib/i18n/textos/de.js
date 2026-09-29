@@ -429,7 +429,14 @@ export default {
       neutro: 'Fast derselbe Zins: fällt kaum ins Gewicht',
     },
     cabeceraSueltas: 'Zins jeder Zentralbank',
-    pie: (v) => `Quelle: BIS (Bank für Internationalen Zahlungsausgleich). Jede Zeile zeigt das Datum IHRER Angabe: ein Leitzins ändert sich nur an dem Tag, an dem die Zentralbank tagt. Die älteste ist ${v.dias} Tage alt.`,
+    subio: (v) => `Gestiegen von ${v.de} % · ${v.cuando}`,
+    bajo: (v) => `Gefallen von ${v.de} % · ${v.cuando}`,
+    haceDias: (v) => `vor ${v.n} ${v.n === 1 ? 'Tag' : 'Tagen'}`,
+    haceMeses: (v) => `vor ${v.n} ${v.n === 1 ? 'Monat' : 'Monaten'}`,
+    haceAnios: (v) => `vor ${v.n} ${v.n === 1 ? 'Jahr' : 'Jahren'}`,
+    pieTendencia:
+      'Der Pfeil zeigt, von welchem Zinssatz der heutige kommt und wie lange er schon auf diesem Stand ist. Eine Währung ohne Pfeil hat sich innerhalb des Zeitfensters der App nicht bewegt: das sagt nicht, dass ihre Zentralbank pausiert, nur dass sich darin nichts geändert hat.',
+    pie: (v) => `Quelle: BIS (Bank für Internationalen Zahlungsausgleich). Die BIS veröffentlicht mit einigen Tagen Verzögerung, deshalb sagt das Datum jeder Zeile, bis wann IHRE Daten reichen — nicht den Tag, an dem diese Bank entschieden hat. Das älteste ist ${v.dias} Tage alt.`,
   },
 
   diag: {

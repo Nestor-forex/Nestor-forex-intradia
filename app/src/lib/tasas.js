@@ -156,9 +156,174 @@ export function leerTasasCSV(texto) {
   return tasas
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+// LA TENDENCIA: no solo el nivel, también de dónde viene
+// ─────────────────────────────────────────────────────────────────────────
+//
+// Añadido el 2026-09-29. Néstor lo pidió al ver la tabla de «dónde las apps son
+// ciegas»: la pantalla decía «USD 3,875 %» y no decía que venía de 3,625 %. Y
+// la mitad de lo que dicen los análisis del mercado es justo eso — «la Fed
+// subiendo», «el Banco de Canadá en pausa»—, que es una DIRECCIÓN, no un nivel.
+//
+// ⚠️ SALE GRATIS Y SIN FUENTE NUEVA. La misma dirección del BIS acepta
+// `lastNObservations=N`: el publicador pasó de pedir 1 observación a pedir
+// `OBSERVACIONES`, y con eso la serie entera viene en la misma consulta. Cero
+// créditos de Twelve Data, ningún secreto, 0,7 segundos.
+
+// Cuántas observaciones se piden. Elegido CON LA SONDA (`sonda-huecos.mjs`,
+// 2026-09-29), no a ojo:
+//
+//   · 1000 observaciones = 5,5 MB de CSV y 0,7 s. Cubren entre 2,7 y 4 años
+//     según la zona, porque la DENSIDAD no es la misma: `US` trae ~30
+//     observaciones al mes (días corridos) y `AU` ~21 (días de mercado), así
+//     que la misma N llega más atrás en unas que en otras;
+//   · y con esa ventana las OCHO tienen al menos 6 cambios reales dentro
+//     (Japón 6, Estados Unidos 8, Suiza 10, la zona euro 11, Canadá y Nueva
+//     Zelanda 12, Reino Unido 13, Australia 14). O sea que nunca hay que decir
+//     «no sé de dónde viene» por falta de ventana.
+//
+// Con 400 también alcanzaba, pero por poco: Suiza no se había movido desde
+// junio de 2025 y quedaba a mitad de ventana. 1000 da margen de sobra y el
+// coste es medio segundo más de descarga una vez al día.
+export const OBSERVACIONES = 1000
+
+// ⚠️⚠️ EL BIS PUBLICA FILAS CON `OBS_VALUE` VACÍO, Y ESTO ES LO QUE MÁS
+// IMPORTA DE ESTE BLOQUE.
+//
+// Son días sin dato, y no son pocos: de 1000 observaciones, Nueva Zelanda trae
+// 283 huecos y Canadá 122 (medido el 2026-09-29). Si no se quitan ANTES de
+// buscar los escalones, cada hueco se lee como DOS cambios de tasa:
+//
+//     2026-09-07: 2.75  →  2026-09-12: (vacío)  →  2026-09-14: 2.75
+//
+// Contando así, Nueva Zelanda salía con **294 cambios** en vez de 12. Y el daño
+// no sería un número raro en un log: la pantalla habría dicho «vigente desde el
+// 14 de septiembre» por un hueco en la serie, cuando esa tasa lleva ahí desde
+// el 3 de septiembre. Un dato correcto sobre algo distinto de lo que uno cree
+// estar midiendo — la misma familia que el ATR de cierre a cierre.
+//
+// `leerTasasCSV` ya los salta (comprueba que el texto no esté vacío antes de
+// mirar el número), así que aquí se hace igual y por el mismo motivo.
+export function leerSerieCSV(texto) {
+  if (typeof texto !== 'string' || !texto.trim()) return {}
+
+  const lineas = texto.trim().split(/\r?\n/)
+  if (lineas.length < 2) return {}
+
+  const cabecera = partirLineaCSV(lineas[0]).map((s) => s.trim().toUpperCase())
+  const iZona = cabecera.indexOf('REF_AREA')
+  const iFecha = cabecera.indexOf('TIME_PERIOD')
+  const iValor = cabecera.indexOf('OBS_VALUE')
+  if (iZona < 0 || iFecha < 0 || iValor < 0) return {}
+
+  const series = {}
+  for (const linea of lineas.slice(1)) {
+    if (!linea.trim()) continue
+    const campos = partirLineaCSV(linea)
+
+    const divisa = ZONA_DIVISA[(campos[iZona] || '').trim()]
+    if (!divisa) continue
+
+    const fecha = (campos[iFecha] || '').trim()
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) continue
+
+    // Ver el bloque de arriba: el hueco se salta, no entra como 0 ni como
+    // cambio.
+    const cruda = (campos[iValor] || '').trim()
+    if (!cruda) continue
+    const valor = Number(cruda)
+    if (!Number.isFinite(valor)) continue
+
+    ;(series[divisa] ||= []).push({ f: fecha, v: valor })
+  }
+
+  // De más vieja a más nueva, y una fecha repetida se queda con la última
+  // leída. El orden no se hereda de la respuesta: es la misma decisión que en
+  // `leerTasasCSV` y `leerFilas`.
+  for (const divisa of Object.keys(series)) {
+    series[divisa].sort((a, b) => (a.f < b.f ? -1 : a.f > b.f ? 1 : 0))
+    series[divisa] = series[divisa].filter((r, i, arr) => i === arr.length - 1 || arr[i + 1].f !== r.f)
+  }
+  return series
+}
+
+// El último ESCALÓN real de una serie: de qué valor venía, a cuál está, y desde
+// cuándo.
+//
+// ⚠️ `sentido` es `'subio'` o `'bajo'` y nada más. NO hay `'pausa'`, `'plana'`
+// ni nada que se parezca a un veredicto sobre lo que el banco central va a
+// hacer: eso sería una opinión disfrazada de dato, y aquí solo se lee una serie.
+//
+// ⚠️ Y SI NO HAY DOS VALORES DISTINTOS EN LA VENTANA, DEVUELVE `null`. No
+// devuelve «sin cambios», porque eso se leería como «esta tasa está quieta» —
+// una afirmación sobre el banco central— cuando lo único que sabemos es que no
+// se movió dentro de lo que la app miró. «No lo sé» y «no cambió» no son lo
+// mismo, la misma decisión que `pearson` en `correlacion.js`.
+export function ultimoCambio(serie) {
+  if (!Array.isArray(serie) || serie.length < 2) return null
+
+  // Los escalones: cada punto en que el valor cambia respecto al anterior.
+  let anterior = null
+  let cambio = null
+  let escalones = 0
+  for (const o of serie) {
+    if (anterior !== null && o.v !== anterior.v) {
+      escalones++
+      cambio = { de: anterior.v, a: o.v, f: o.f }
+    }
+    anterior = o
+  }
+  if (!cambio) return null
+
+  return {
+    ...cambio,
+    sentido: cambio.a > cambio.de ? 'subio' : 'bajo',
+    // Cuántas veces se movió dentro de la ventana. No va a la pantalla: sirve
+    // para que el log del publicador delate el día que los huecos se vuelvan a
+    // colar (12 cambios es plausible en tres años; 294 no).
+    escalones,
+    // Desde cuándo está el valor actual, en días. ⚠️ Se dice «vigente desde» y
+    // NUNCA «lo decidieron ese día»: con huecos en la serie, el cambio puede
+    // haber ocurrido durante un hueco y aparecer fechado en el primer día
+    // publicado después. La serie dice desde cuándo LA VE así, y eso es lo que
+    // se puede afirmar.
+    desde: cambio.f,
+  }
+}
+
+// Las ocho tendencias, para publicarlas. Una divisa sin cambio en la ventana
+// simplemente NO aparece — igual que una tasa que falta no entra como 0.
+export function tendenciasDeSerie(series) {
+  const out = {}
+  for (const [divisa, serie] of Object.entries(series || {})) {
+    const c = ultimoCambio(serie)
+    if (c) out[divisa] = c
+  }
+  return out
+}
+
+// ¿Cuántos días lleva vigente el valor actual? `null` si no se sabe.
+export function diasVigente(cambio, ahora = new Date()) {
+  const f = cambio?.desde
+  if (typeof f !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(f)) return null
+  const ms = ahora.getTime() - new Date(f + 'T00:00:00Z').getTime()
+  if (!Number.isFinite(ms)) return null
+  return Math.max(0, Math.floor(ms / 86_400_000))
+}
+
 // Lo que se publica en `estado/tasas.json`.
+//
+// ⚠️ CAMBIO ADITIVO: `tasas` sigue siendo exactamente lo que era, así que un
+// lector viejo no nota nada. `tendencias` se añade al lado, y la pantalla tiene
+// que aguantar que NO esté — un archivo publicado antes del 2026-09-29 no lo
+// trae, y una tarjeta que reventara por eso dejaría sin tasas a quien abriera
+// la app antes de la primera corrida nueva.
 export function prepararTasas(csv, ahora = new Date()) {
-  return { actualizadoEl: ahora.toISOString(), tasas: leerTasasCSV(csv) }
+  return {
+    actualizadoEl: ahora.toISOString(),
+    tasas: leerTasasCSV(csv),
+    tendencias: tendenciasDeSerie(leerSerieCSV(csv)),
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────

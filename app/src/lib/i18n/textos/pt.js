@@ -429,7 +429,14 @@ export default {
       neutro: 'Quase a mesma taxa: quase não pesa',
     },
     cabeceraSueltas: 'Taxa de cada banco central',
-    pie: (v) => `Fonte: BIS (Banco de Compensações Internacionais). Cada linha traz a data do SEU dado: uma taxa básica só muda no dia em que o banco central se reúne. O mais antigo é de ${v.dias} dias atrás.`,
+    subio: (v) => `Subiu de ${v.de} % · ${v.cuando}`,
+    bajo: (v) => `Caiu de ${v.de} % · ${v.cuando}`,
+    haceDias: (v) => `há ${v.n} ${v.n === 1 ? 'dia' : 'dias'}`,
+    haceMeses: (v) => `há ${v.n} ${v.n === 1 ? 'mês' : 'meses'}`,
+    haceAnios: (v) => `há ${v.n} ${v.n === 1 ? 'ano' : 'anos'}`,
+    pieTendencia:
+      'A seta diz de que taxa vem a de hoje e há quanto tempo está nesse nível. Uma moeda sem seta não se moveu dentro da janela que a app olha: isso não diz que o seu banco central está em pausa, apenas que ali dentro não mudou.',
+    pie: (v) => `Fonte: BIS (Banco de Compensações Internacionais). O BIS publica com alguns dias de atraso, por isso a data de cada linha é até onde chega O SEU dado — não o dia em que esse banco decidiu. A mais antiga é de há ${v.dias} dias.`,
   },
 
   diag: {

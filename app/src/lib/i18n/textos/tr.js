@@ -424,7 +424,14 @@ export default {
       neutro: 'Faizler neredeyse aynı: etkisi çok az',
     },
     cabeceraSueltas: 'Her merkez bankasının faizi',
-    pie: (v) => `Kaynak: BIS (Uluslararası Ödemeler Bankası). Her satır KENDİ verisinin tarihini taşır: politika faizi yalnızca merkez bankasının toplandığı gün değişir. En eskisi ${v.dias} gün önceye ait.`,
+    subio: (v) => `${v.de} %\u2019den yükseldi · ${v.cuando}`,
+    bajo: (v) => `${v.de} %\u2019den düştü · ${v.cuando}`,
+    haceDias: (v) => `${v.n} gün önce`,
+    haceMeses: (v) => `${v.n} ay önce`,
+    haceAnios: (v) => `${v.n} yıl önce`,
+    pieTendencia:
+      'Ok, bugünkü faizin hangi seviyeden geldiğini ve ne kadar süredir o seviyede olduğunu söyler. Oku olmayan bir para birimi, uygulamanın baktığı pencerenin içinde hareket etmemiştir: bu, merkez bankasının beklemede olduğunu söylemez, yalnızca o aralıkta değişmediğini söyler.',
+    pie: (v) => `Kaynak: BIS (Uluslararası Ödemeler Bankası). BIS birkaç gün gecikmeyle yayınlar, bu yüzden her satırın tarihi KENDİ verisinin nereye kadar geldiğini gösterir — o bankanın karar verdiği günü değil. En eskisi ${v.dias} gün önce.`,
   },
 
   diag: {
