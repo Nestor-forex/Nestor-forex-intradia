@@ -26,7 +26,16 @@
 // archivo lo IMPORTA para comparar contra él.
 
 import { computarBarrido, derivarVista } from '../src/lib/marketCalc.js'
-import { MARCO_H1, MARCO_M15, barridoConMarco, marcoEscalado, reagruparAHoras } from './lib/marco.mjs'
+import { MARCO_H1, MARCO_M15, barridoConMarco, marcoEscalado, reagruparAHoras, reagruparVelas } from './lib/marco.mjs'
+import {
+  CRITERIOS as CRITERIOS_H4,
+  FECHA_PREREGISTRO as FECHA_H4,
+  MISMOS_PARAMETROS,
+  OPS_MINIMAS as OPS_MIN_H4,
+  SEMANAL_SOLO_SI as SEMANAL,
+  TOPE_UN_PAR as TOPE_PAR_H4,
+  juzgar as juzgarH4,
+} from './lib/preregistro-h4.mjs'
 import {
   CRITERIOS,
   FECHA_PREREGISTRO,
@@ -354,6 +363,132 @@ console.log('\n5. El listón: lo CALCULA una función, y muerde')
   comprobar(juzgar({ ...BUENO, ops: '1200' }).pasa === false, 'ni un número escrito como texto')
 
   comprobar(SWAP_EXIGIDO === 0.5, `el swap exigido es ${SWAP_EXIGIDO} pips por noche`)
+}
+
+// ════════════════════════════════════════════════════════════════════════
+console.log('\n6. Reagrupar a MÚLTIPLOS de una hora (H4), para subir de temporalidad')
+// ════════════════════════════════════════════════════════════════════════
+// Con `horas > 1` la alineación importa igual o más que con 1: las velas de 4
+// horas tienen que cortar en 00:00, 04:00, 08:00… del RELOJ, no cuatro horas
+// después de donde empezó la descarga. Y es el fallo que no da ningún error.
+{
+  const h4 = reagruparVelas(h1.barras, h1.rates, h1.rangos, { horas: 4 })
+  comprobar(h4.barras.length === Math.ceil(h1.barras.length / 4),
+    `${h1.barras.length} velas de una hora dan ${h4.barras.length} de cuatro`)
+  comprobar(h4.barras.every((t) => ['00', '04', '08', '12', '16', '20'].includes(t.slice(11, 13))),
+    'TODAS las velas de H4 cortan en 00, 04, 08, 12, 16 o 20 — nunca en medio')
+
+  // El máximo del bloque es el mayor de sus cuatro horas y el cierre el de la
+  // última. Comprobado a mano sobre el primer bloque completo.
+  const cuatro = h1.barras.slice(0, 4)
+  comprobar(h4.rangos[h4.barras[0]].EUR.h === Math.max(...cuatro.map((t) => h1.rangos[t].EUR.h)),
+    'el máximo de la vela de 4 h es el mayor de sus cuatro horas')
+  comprobar(h4.rates[h4.barras[0]].EUR === h1.rates[cuatro[3]].EUR,
+    'y el cierre, el de la cuarta hora')
+
+  // ⚠⚠ EL CASO QUE DECIDE: una descarga que NO empieza en un múltiplo de 4.
+  // Agrupar de cuatro en cuatro desde el principio daría bloques de 02:00 a
+  // 06:00, con números creíbles midiendo otra cosa.
+  const desde2 = {
+    barras: h1.barras.slice(2),
+    rates: h1.rates,
+    rangos: h1.rangos,
+  }
+  comprobar(desde2.barras[0].slice(11, 13) === '02', `el caso torcido empieza a las ${desde2.barras[0].slice(11, 16)}`)
+  const torcidoH4 = reagruparVelas(desde2.barras, desde2.rates, desde2.rangos, { horas: 4 })
+  comprobar(torcidoH4.barras[0] === '2026-07-01 00:00:00',
+    `y aun así el primer bloque es el de las 00:00 (salió ${torcidoH4.barras[0]})`)
+  comprobar(torcidoH4.barras.every((t) => ['00', '04', '08', '12', '16', '20'].includes(t.slice(11, 13))),
+    'y todos los bloques siguen cortando en el reloj')
+  // La prueba de que NO se desplazó: el primer bloque solo tiene 2 horas (02 y
+  // 03), así que su cierre es el de las 03:00.
+  comprobar(torcidoH4.rates['2026-07-01 00:00:00'].EUR === h1.rates['2026-07-01 03:00:00'].EUR,
+    'el primer bloque incompleto cierra en la 03:00, no se llevó la 04:00')
+
+  // Un divisor que NO divide a 24 se rechaza. Con 5 horas el corte se iría
+  // desplazando de un día al siguiente y las velas de un lunes no serían
+  // comparables con las de un martes — sin que nada fallara.
+  let rechazo = 0
+  for (const malo of [5, 7, 9, 10, 0, -4, 2.5, NaN, '4', null]) {
+    try {
+      reagruparVelas(h1.barras, h1.rates, h1.rangos, { horas: malo })
+    } catch {
+      rechazo++
+    }
+  }
+  comprobar(rechazo === 10, `los 10 valores de horas inválidos revientan (${rechazo}/10)`)
+  for (const bueno of [1, 2, 3, 4, 6, 8, 12, 24]) {
+    // Los divisores de 24 sí tienen que pasar.
+    reagruparVelas(h1.barras.slice(0, 48), h1.rates, h1.rangos, { horas: bueno })
+  }
+  comprobar(true, 'y los 8 divisores de 24 pasan sin reventar')
+
+  // `reagruparAHoras` sigue siendo el caso de 1 hora, byte a byte.
+  const porNombre = reagruparAHoras(m15.barras, m15.rates, m15.rangos)
+  const porNumero = reagruparVelas(m15.barras, m15.rates, m15.rangos, { horas: 1 })
+  comprobar(porNombre.barras.length === porNumero.barras.length &&
+    porNombre.barras.every((t, i) => t === porNumero.barras[i]),
+    'reagruparAHoras sigue dando lo mismo que reagruparVelas con horas: 1')
+}
+
+// ════════════════════════════════════════════════════════════════════════
+console.log('\n7. El listón del H4: lo CALCULA una función, y muerde')
+// ════════════════════════════════════════════════════════════════════════
+{
+  comprobar(FECHA_H4 === '2026-09-29', `lleva la fecha dentro (${FECHA_H4})`)
+  comprobar(CRITERIOS_H4.length === 6, `son 6 criterios (${CRITERIOS_H4.length})`)
+  comprobar(CRITERIOS_H4.every((c) => c.dice && c.porque), 'y cada uno dice qué exige Y por qué')
+  comprobar(MISMOS_PARAMETROS.swingLen === 4 && MISMOS_PARAMETROS.sweepWindow === 6,
+    'a H4 se le pasan los mismos parámetros que a H1 (pivote 4, ventana 6)')
+
+  const BUENO = {
+    ops: 400, porRiesgo: 0.04, mitad1: 0.03, mitad2: 0.05,
+    h1PorRiesgo: -0.14, sinCostes: 0.02, h1SinCostes: -0.01, parMayor: 0.2,
+  }
+  comprobar(juzgarH4(BUENO).pasa === true, 'un resultado bueno pasa los seis')
+
+  const rompiendo = {
+    ops: { ops: OPS_MIN_H4 - 1 },
+    gana: { porRiesgo: -0.01 },
+    mitades: { mitad2: -0.01 },
+    mejorQueH1: { h1PorRiesgo: 0.05 },
+    noEsSoloPeaje: { sinCostes: -0.02 },
+    concentracion: { parMayor: TOPE_PAR_H4 + 0.01 },
+  }
+  for (const [clave, cambio] of Object.entries(rompiendo)) {
+    const v = juzgarH4({ ...BUENO, ...cambio })
+    comprobar(v.pasa === false && v.fallan.length === 1 && v.fallan[0] === clave,
+      `falla SOLO «${clave}» cuando se rompe solo ése (falló: ${v.fallan.join(', ') || 'nada'})`)
+  }
+
+  // ⚠⚠ EL CRITERIO QUE DA SENTIDO A TODO ESTO, con el caso exacto que viene a
+  // cazar: H4 le gana a H1 con costes pero NO sin costes. O sea que la mejora
+  // entera es el stop más ancho diluyendo el spread — menos peaje por la misma
+  // no-ventaja. Es el mecanismo medido en M15 el 2026-09-28, al revés.
+  const soloPeaje = { ...BUENO, porRiesgo: 0.04, h1PorRiesgo: -0.14, sinCostes: -0.03, h1SinCostes: -0.01 }
+  const vp = juzgarH4(soloPeaje)
+  comprobar(vp.pasa === false && vp.fallan.includes('noEsSoloPeaje'),
+    'si la mejora es SOLO por el peaje, NO pasa — aunque gane en todo lo demás')
+
+  // Los bordes exactos.
+  comprobar(juzgarH4({ ...BUENO, ops: OPS_MIN_H4 }).pasa === true, `con exactamente ${OPS_MIN_H4} operaciones pasa`)
+  comprobar(juzgarH4({ ...BUENO, porRiesgo: 0 }).pasa === false, 'con por 1R exactamente 0 NO pasa')
+  comprobar(juzgarH4({ ...BUENO, sinCostes: BUENO.h1SinCostes }).pasa === false,
+    'empatar con H1 sin costes NO es mejorar sin costes')
+  comprobar(juzgarH4({ ...BUENO, parMayor: TOPE_PAR_H4 }).pasa === true, `con el par mayor en ${TOPE_PAR_H4} pasa`)
+
+  // La asimetría: un campo que falta no se da por bueno.
+  comprobar(juzgarH4({}).pasa === false && juzgarH4({}).fallan.length === 6,
+    'sin ningún dato fallan los SEIS')
+  for (const campo of Object.keys(BUENO)) {
+    const sin = { ...BUENO }
+    delete sin[campo]
+    comprobar(juzgarH4(sin).pasa === false, `sin «${campo}» no puede pasar`)
+  }
+
+  // Y la advertencia del semanal, que Néstor pidió por delante.
+  comprobar(/SWAP/.test(SEMANAL.advertencia), 'la nota del semanal avisa del SWAP antes que nada')
+  comprobar(SEMANAL.condicion.includes('H4'), 'y dice que solo se hace si el H4 confirma')
 }
 
 console.log('')
