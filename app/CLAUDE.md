@@ -51,3 +51,23 @@ sin costes**». Se confirmó. Y la recomendación sigue siendo **no**:
 **52 días de media**, y con 0,25 pips de swap ya caía a −0,15.
 
 ⚠️ **La respuesta NO es aflojar un criterio.** Para eso se escribió antes.
+
+## ⚠️ Y un número operativo: el banco ya va a 47 de sus 60 minutos
+
+Medido en la corrida que dio la tabla de arriba (36501748726, intento 2): el
+paso «Medir» corrió de 01:17:13 a 02:04:26, o sea **47 min 13 s** contra un
+límite de 60. **Quedan 12 minutos y pico de margen.**
+
+La duración anterior medida era 44:06, así que **el bloque de H4 costó unos 3
+minutos**. Con eso a la vista:
+
+⚠️ **Añadir otra sección grande al banco ya no es gratis.** Antes de meter una,
+o se quita otra, o se sube el límite del workflow a conciencia — no cuando ya
+haya fallado.
+
+📌 **Y esto explica el fallo del primer intento.** Aquel murió a los 46:00, que
+está DENTRO de la duración normal de este guion, no al final: no se colgó, lo
+mataron a media faena. El diagnóstico de caída del runner queda confirmado por
+la duración, no solo por eliminación — el código y la memoria ya se habían
+descartado midiéndolos (124 MB y milisegundos el bloque de H4; +8 MB en seis
+pasadas seguidas).
