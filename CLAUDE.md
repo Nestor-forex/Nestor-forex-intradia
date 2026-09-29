@@ -2135,3 +2135,132 @@ habrían caído en ningún cubo. Ya está arreglado en las dos.
 idénticos; **a los primos no los vigila nadie**, y ahí es donde se acumulan
 estas cosas. Cuando se arregle algo en un archivo PRIMO, mirar si el de la otra
 app tiene el mismo agujero — en cualquiera de los dos sentidos.
+
+---
+
+# LA APP en velas de 15 minutos: NO (2026-09-28)
+
+Néstor preguntó de frente: **«¿hemos hecho alguna prueba con la app de Intradía
+con velas de 15 minutos, tomando en cuenta todas las herramientas de
+información más mi indicador NFX-LSS?»**.
+
+La respuesta era **no**, y había que decirlo aunque el M15 ya se hubiera
+medido: lo del 2026-09-20 fue el **NFX-LSS**, no la app. Su propio guion lo
+decía —«NO hay fila "la app" aquí»— y aun así era fácil leer aquella tabla como
+si la app estuviera dentro.
+
+```
+scripts/lib/marco.mjs            las ventanas + el barrido con marco   PRIMO
+scripts/lib/preregistro-m15.mjs  el listón, fecha 2026-09-28 dentro    PRIMO
+scripts/medir-m15.mjs            la medición                           PRIMO
+scripts/prueba-m15.mjs           60 comprobaciones, sin internet       PRIMO
+.github/workflows/medir-m15.yml  solo a mano, 112 créditos
+```
+
+## ⚠️⚠️ CERO CAMBIOS EN LA APP, Y ESO LO PIDIÓ NÉSTOR
+
+La primera versión **sí** tocaba `src/lib/marketCalc.js` para sacarle las
+ventanas a un parámetro. La app habría hecho exactamente lo mismo —los valores
+por omisión eran los de hoy— y él lo frenó: **«no quiero que cambies la app; lo
+que quiero es que hagamos las pruebas, pero sin cambiarle o quitarle nada»**.
+
+Tenía razón y se revirtió entero. Medir una idea no justifica tocar el archivo
+que corre en producción.
+
+📌 **Y salió MEJOR así.** `marco.mjs` rearma el barrido en el banco de pruebas
+con dos defensas contra lo único que puede fallar (que esa copia se separe de la
+app y mida otra cosa pareciendo medir la app):
+
+1. **Las cuentas no se copian, se IMPORTAN** — `emaLast`, `rsi`, `atrWilder`,
+   `adxWilder`, `CCY` y `PAIRS` salen de la app.
+2. **`prueba-m15.mjs` compara contra la app de verdad**: la copia en H1 y el
+   `computarBarrido` real sobre el mismo mercado, idénticos campo por campo (18
+   campos por par, pivotes, las tres series, la fuerza de las 8 divisas, el
+   factor por hora de las 24 casillas) **y las mismas señales**.
+
+Eso es un guardia **más fuerte** que parametrizar la app: el día que la app
+cambie, esto se pone rojo solo en vez de seguir midiendo lo de ayer.
+
+## El número
+
+79.691 velas de 15 minutos (2023-10-13 a 2026-09-28, casi tres años), vara
+neutra 1:1, spread por par. El H1 sale de **reagrupar esas mismas velas**, así
+que son los mismos días y la misma descarga.
+
+| | ops | señ/mes | acierto | por 1R | 1ª mit | 2ª mit |
+|---|---:|---:|---:|---:|---:|---:|
+| **la app en M15** | 44.704 | 1.148 | 49 % | **−0,178** | −0,166 | −0,194 |
+| la app en H1, mismos días | 7.851 | 202 | 49 % | **−0,097** | −0,106 | −0,078 |
+| M15 + 0,5 de swap | 44.704 | 1.148 | 49 % | −0,185 | −0,173 | −0,199 |
+
+Geometría real (comprobación, no criterio): 30 % de acierto, −160.778 pips,
+−0,235. Apunta al mismo lado, al revés que en el caso del COT.
+
+**NO PASA el listón: falla 4 de 6** (gana, mitades, mejorQueH1, swap). Pasa
+solo el mínimo de operaciones y la concentración (el par mayor aporta 8,4 %).
+
+## 📌 El mecanismo, y por una vez se deduce de la tabla
+
+**El acierto es el MISMO, 49 %, en las dos temporalidades.** Con la vara neutra
+1:1 eso significa que la diferencia entera no está en acertar la dirección:
+está en **lo que cuesta operar**. El objetivo y el stop se encogen al bajar de
+temporalidad; **el spread no**.
+
+| | stop típico | 2 pips de spread pesan |
+|---|---:|---:|
+| Swing (velas de un día) | ~120 pips | 1,8 % del riesgo |
+| Intradía (velas de una hora) | ~30 pips | 7 % |
+| M15 | más pequeño aún | peor todavía |
+
+Es el mismo mecanismo ya escrito entre las dos apps, un escalón más abajo. Y
+**no es una hipótesis**: sale de la propia tabla (mismo acierto, peor por 1R),
+que es justo lo que este archivo lleva meses exigiendo antes de creerse un
+mecanismo.
+
+⚠️ Y un dato que sobra para descartarlo aunque hubiera funcionado: **1.148
+señales al mes son 38 al día.** Nadie opera eso.
+
+## Lo que esto cierra y lo que NO
+
+✅ **Cierra la pregunta de la temporalidad.** Intradía en velas de una hora es
+la decisión correcta, y ahora con número. **No volver a proponer M15 para la
+app** sin un argumento nuevo que no sea «más granularidad, más señales».
+
+✅ **Segunda medición independiente en M15 que sale peor.** El NFX-LSS dio −0,16
+en M15 contra −0,14 en H1 (2026-09-20). Dos reglas distintas apuntando al mismo
+lado es más fuerte que cualquiera sola.
+
+⚠️ **NO dice que operar en 15 minutos no funcione.** Dice que **las reglas de
+esta app** no funcionan en 15 minutos. Son dos afirmaciones distintas y solo la
+segunda está medida.
+
+⚠️ **Las herramientas de información NO entraron en esta medición**, y no es un
+olvido: hoy no apagan ni una señal, así que no hay nada que medir. Para entrar
+en la decisión pasarían a ser FILTROS, y un filtro va al banco con su propio
+listón escrito antes. Van **siete familias de filtros medidas y las siete
+fallaron**. Además, en M15 la mayoría no puede aportar nada: el COT es semanal
+con 3-10 días de retraso, las tasas cambian cada varias semanas, y la ventana
+de la correlación son 60 velas = 15 horas. **El calendario es la única que
+podría** — y sería un filtro.
+
+## Lecciones de esta tarea
+
+⚠️ **Se midió UNA configuración, no veinte.** Las ventanas escaladas por RELOJ
+(la EMA de 9 horas pasa a 36 velas; el periodo de Wilder de 14 horas, a 56).
+Barrer ventanas sobre estos mismos años sería volver al pozo con el que ya se
+eligieron las reglas de hoy, y eso devuelve el mejor número por construcción.
+
+⚠️ **El H1 se obtiene reagrupando, y POR EL RELOJ.** Agrupar de cuatro en cuatro
+desde el principio, con una descarga que empieza en `:15`, daría «horas» de
+`:15` a `:15`: números creíbles midiendo otra cosa. Hay un caso dedicado, y con
+el daño puesto el caso alineado **seguía pasando** — por eso existe el torcido.
+
+📌 **Dos fallos propios que las pruebas cazaron:** `marcoEscalado(0.5)` se
+redondeaba a 1 en silencio (media vela por hora no es un marco: ahora exige un
+entero), y el guion de medición hacía una pasada entera duplicada.
+
+📌 **Y un rótulo mío que mentía por un factor de SEIS.** La casilla del workflow
+decía «16 tandas ≈ 5 meses y medio» y son **casi tres años**. El número estaba
+bien; el rótulo mandaba a elegir mal. Es la enésima vez en este proyecto: **una
+etiqueta equivocada es un error de medición.** Corregido con el número medido
+dentro, igual que la duración real (31:18 de los 90 del límite).

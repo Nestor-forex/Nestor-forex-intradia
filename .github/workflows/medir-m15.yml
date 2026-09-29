@@ -25,7 +25,7 @@ on:
   workflow_dispatch:
     inputs:
       paginas:
-        description: 'Cuántas tandas de 5000 velas (7 créditos cada una). 16 ≈ 5 meses y medio en M15.'
+        description: 'Cuántas tandas de 5000 velas (7 créditos cada una). 16 ≈ 3 AÑOS en M15 (medido: 79.691 velas).'
         required: false
         default: '16'
 
@@ -41,6 +41,11 @@ jobs:
     # paso «Medir» tardó 45:39 el 2026-09-28. Quedarse corto significa gastar
     # los 112 créditos y no ver ni un número — ya pasó una vez, con el banco
     # cancelado a los 44:46 contra un límite de 45.
+    #
+    # 📌 MEDIDO en la primera corrida (36478554086, 2026-09-28): el paso «Medir»
+    # tardó **31:18** — 18:03 de descarga, 6:23 midiendo M15, 29 s midiendo H1 y
+    # 6:21 la comprobación con la geometría real. O sea que 90 sobra, y el
+    # límite ya no es una suposición.
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
