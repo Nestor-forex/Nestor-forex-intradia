@@ -1,0 +1,72 @@
+name: Sonda del oro en velas de una hora
+
+# Pregunta dos cosas que NO se pueden saber desde el computador donde se
+# programa, y las imprime en el log. No escribe nada en ninguna rama y no toca
+# la app.
+#
+#   1. ¿Twelve Data da `XAU/USD` en velas de UNA HORA con el plan gratuito?
+#      Está comprobado que lo da en velas diarias (sonda del 2026-09-29). A
+#      `1h` nunca se le ha preguntado, y en este plan hay símbolos e intervalos
+#      cerrados: `WTI/USD` contesta «This symbol is available starting with the
+#      Grow or Venture plan».
+#
+#   2. ¿Se cruza el calendario del oro con el de los 7 símbolos? El oro al
+#      contado para todos los días un rato y cierra el viernes antes; el Forex
+#      no cierra igual. En velas diarias eso apenas quita días; en velas de una
+#      hora no se sabe, y si al cruzar quedaran cuatro horas no habría
+#      correlación que calcular.
+#
+# ⚠️ LO QUE ESTA SONDA NO CONTESTA, y es la pregunta que decide: cuál es la
+# VENTANA correcta. En swing son 60 sesiones = 60 días ≈ 3 meses; aquí 60
+# sesiones son 60 HORAS, dos días y medio. Eso es una medición sobre los datos
+# de esta app, no un número que se copie — por eso `correlacion.js` no existe
+# aquí, decidido el 2026-09-08 con su motivo escrito.
+#
+# ⚠️ SOLO A MANO. No lleva `schedule` a propósito: contesta una pregunta de una
+# vez, no vigila nada. Un cron aquí gastaría 9 créditos al día para volver a
+# leer la misma respuesta.
+#
+# ⚠️⚠️ Y NECESITA EL SECRETO. Son 9 créditos de Twelve Data (1 el oro en 1h, 1
+# en 15min, 7 los símbolos), así que sin el `env` de abajo `leerLlave` no
+# encuentra la llave y el guion falla. La llave se sacó de `.env.production` el
+# 2026-09-03 para que no viajara dentro de la app; cualquier workflow nuevo que
+# llame a estos guiones tiene que pasársela. Ya pasó de verdad con
+# `comparar-reglas.yml`, que se quedó sin ella y habría fallado sin
+# explicación.
+
+on:
+  workflow_dispatch:
+
+# No escribe en ninguna rama: solo lee y cuenta.
+permissions:
+  contents: read
+
+jobs:
+  sonda:
+    runs-on: ubuntu-latest
+    # Sin esto GitHub deja correr un trabajo hasta SEIS HORAS. Lo normal aquí
+    # son ~1,5 minutos: las dos consultas del oro, la pausa de 65 s para no
+    # rozar el límite de 8 créditos por minuto, y la de los símbolos.
+    timeout-minutes: 10
+    steps:
+      - name: Traer el código
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Primero las comprobaciones sin internet: si el veredicto está roto, el
+      # log de la sonda diría algo creíble y equivocado. Cuesta un segundo y
+      # cero créditos.
+      - name: Comprobar el veredicto (sin internet)
+        working-directory: app
+        run: node scripts/prueba-sonda-oro-h1.mjs
+
+      # No hace falta `npm ci`: la sonda solo usa `fetch` y funciones puras.
+      - name: Preguntar
+        working-directory: app
+        env:
+          # ⚠️ SIN ESTO EL GUION FALLA. Ver la cabecera.
+          TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}
+        run: node scripts/sonda-oro-h1.mjs
