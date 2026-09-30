@@ -34,6 +34,7 @@ import {
   clasificarHora,
   repartoDeMercado,
   proporcionPlanas,
+  recorrido,
   veredicto,
 } from './lib/sonda-oro.mjs'
 
@@ -315,6 +316,40 @@ console.log('4d. ¿las velas están planas?')
   ok(proporcionPlanas([], velas) === null, 'sin horas dice «no lo sé», no 0')
   ok(proporcionPlanas(['zzz'], velas) === null, 'y con horas que no están en el mapa tampoco')
   ok(proporcionPlanas(['a'], null) === null, 'y sin mapa de velas tampoco revienta')
+}
+
+// ── 4e. `recorrido`: media Y mediana ─────────────────────────────────────
+//
+// ⚠️ Esta función existe porque `proporcionPlanas` contestó lo contrario de lo
+// que yo esperaba: las velas de horas cerradas NO salieron planas. Entonces la
+// pregunta pasó a ser cuánto más estrechas son, que es un número.
+console.log('4e. el recorrido de las velas')
+{
+  const velas = new Map([
+    ['a', { h: 10, l: 9 }], // 1
+    ['b', { h: 10, l: 8 }], // 2
+    ['c', { h: 10, l: 7 }], // 3
+    ['d', { h: NaN, l: 1 }], // no mirable
+  ])
+  const r = recorrido(['a', 'b', 'c', 'd'], velas)
+  ok(r.n === 3, 'solo cuenta las mirables')
+  ok(Math.abs(r.media - 2) < 1e-9, 'la media sale 2')
+  ok(Math.abs(r.mediana - 2) < 1e-9, 'y la mediana también con tres valores')
+
+  // ⚠️ La mediana existe porque la media sola la mueve una vela de noticia.
+  // Con un valor disparatado las dos se separan, y eso es justo lo que hay que
+  // poder ver al comparar dos poblaciones.
+  const conPico = new Map([...velas, ['e', { h: 1000, l: 0 }]])
+  const rp = recorrido(['a', 'b', 'c', 'e'], conPico)
+  ok(rp.media > 200, 'un pico arrastra la media')
+  ok(rp.mediana < 10, 'y NO arrastra la mediana: por eso van las dos')
+
+  // Media de un número par de valores: el promedio de los dos del medio.
+  const par = recorrido(['a', 'b'], velas)
+  ok(Math.abs(par.mediana - 1.5) < 1e-9, 'con dos valores la mediana es el promedio de los dos')
+
+  ok(recorrido([], velas) === null, 'sin horas dice «no lo sé», no 0')
+  ok(recorrido(['a'], null) === null, 'y sin mapa tampoco revienta')
 }
 
 // ── 5. `veredicto`: calculado, nunca escrito ─────────────────────────────
