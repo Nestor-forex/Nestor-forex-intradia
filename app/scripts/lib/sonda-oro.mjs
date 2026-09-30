@@ -372,6 +372,44 @@ export function proporcionPlanas(horas, velas) {
 }
 
 /**
+ * ⚠️⚠️ EL RECORRIDO (máximo − mínimo) DE UN GRUPO DE VELAS, Y POR QUÉ ESTA
+ * FUNCIÓN EXISTE — porque `proporcionPlanas` contestó lo contrario de lo que yo
+ * esperaba y dejó la pregunta a medias.
+ *
+ * La corrida del 2026-09-30 confirmó que 86 de 300 velas caen en horas en las
+ * que el mercado no puede estar abierto. Pero la prueba que yo había diseñado
+ * para saber QUÉ TRAEN DENTRO —«estarán planas, porque nadie negoció»— salió
+ * **0 % planas en horas cerradas y 0 % en horas de mercado**. O sea que esas
+ * velas NO son un precio repetido: llevan recorrido, pequeño pero real.
+ *
+ * Y entonces la pregunta que decide no es «¿son inventadas?» sino **¿cuánto más
+ * estrechas son?**, porque de ahí sale si el ATR de la app se está quedando
+ * corto. Eso es un número, no una teoría, y es este.
+ *
+ * 📌 Octava vez en este proyecto que un mecanismo convincente resulta falso al
+ * medirlo. La lección es la de siempre, y esta vez me la dio una prueba que yo
+ * mismo había escrito para otra cosa.
+ *
+ * Devuelve la media y la MEDIANA: la media sola la mueve una vela suelta de
+ * noticia, y aquí lo que se compara son dos poblaciones enteras.
+ * `null` —nunca 0— si no hay velas que mirar.
+ */
+export function recorrido(horas, velas) {
+  if (!(velas instanceof Map)) return null
+  const rs = []
+  for (const t of horas ?? []) {
+    const v = velas.get(t)
+    if (!v || !Number.isFinite(v.h) || !Number.isFinite(v.l)) continue
+    rs.push(v.h - v.l)
+  }
+  if (!rs.length) return null
+  rs.sort((a, b) => a - b)
+  const media = rs.reduce((a, b) => a + b, 0) / rs.length
+  const m = rs.length % 2 ? rs[(rs.length - 1) / 2] : (rs[rs.length / 2 - 1] + rs[rs.length / 2]) / 2
+  return { n: rs.length, media, mediana: m }
+}
+
+/**
  * El resumen, CALCULADO a partir de lo que se miró. Nunca escrito a mano.
  *
  * ⚠️ Si alguna de las preguntas quedó en «no se pudo mirar», el resumen lo dice

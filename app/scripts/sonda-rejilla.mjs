@@ -53,6 +53,7 @@ import {
   clasificarHora,
   repartoDeMercado,
   proporcionPlanas,
+  recorrido,
   barrasPorDia,
   rejillaRellenada,
 } from './lib/sonda-oro.mjs'
@@ -166,14 +167,52 @@ const linea = (etiqueta, p) =>
       p == null ? '(ninguna que mirar)' : `${p.planas} de ${p.n} planas (${(100 * p.proporcion).toFixed(1)} %)`
     }`,
   )
-linea('en horas de mercado:', pMercado)
-linea('en horas cerradas:', pCerrado)
+linea('planas, en mercado:', pMercado)
+linea('planas, en cerrado:', pCerrado)
 console.log('')
-console.log('  Una vela PLANA (máximo = mínimo) es la firma de un precio rellenado:')
+console.log('  Una vela PLANA (máximo = mínimo) sería la firma de un precio repetido:')
 console.log('  nadie negoció, así que no hubo recorrido.')
-console.log('  ⚠️ Pero una vela plana NO prueba nada por sí sola — en un mercado muy')
-console.log('     tranquilo puede pasar de verdad. Lo que dice algo es la PROPORCIÓN')
-console.log('     comparada con las horas de mercado, y por eso van las dos al lado.')
+console.log('  ⚠️ Una vela plana NO prueba nada por sí sola — en un mercado muy tranquilo')
+console.log('     puede pasar de verdad. Lo que dice algo es la PROPORCIÓN comparada con')
+console.log('     las horas de mercado, y por eso van las dos al lado.')
+console.log('')
+
+// ── 4. ¿CUÁNTO más estrechas? La pregunta que de verdad decide ───────────
+//
+// ⚠️⚠️ ESTE BLOQUE SE AÑADIÓ DESPUÉS DE LA PRIMERA CORRIDA, Y POR UN MOTIVO
+// QUE CONVIENE LEER.
+//
+// Yo había diseñado la prueba de las planas esperando que las velas de horas
+// cerradas salieran planas —«nadie negoció, luego el precio se repite»—. Salió
+// **0 % en las dos**: esas velas llevan recorrido, pequeño pero real. O sea que
+// no son un precio repetido, y mi explicación era falsa.
+//
+// Entonces la pregunta que decide no es «¿son inventadas?» sino **¿cuánto más
+// estrechas son?**, porque de ahí sale si el ATR de esta app se queda corto por
+// promediar 29 % de horas finas. Eso es un número y es éste.
+console.log('── ¿Cuánto más estrechas son? ──────────────────────────────')
+const rMercado = recorrido(deMercado, velas)
+const rCerrado = recorrido(rep.cerradas, velas)
+
+const fmt = (x) => (x == null ? '—' : x.toPrecision(3))
+if (rMercado && rCerrado) {
+  console.log(`  recorrido en MERCADO   (${rMercado.n} velas): media ${fmt(rMercado.media)} · mediana ${fmt(rMercado.mediana)}`)
+  console.log(`  recorrido en CERRADAS  (${rCerrado.n} velas): media ${fmt(rCerrado.media)} · mediana ${fmt(rCerrado.mediana)}`)
+  const vecesMedia = rMercado.media / rCerrado.media
+  const vecesMediana = rCerrado.mediana ? rMercado.mediana / rCerrado.mediana : null
+  console.log('')
+  console.log(`  ⇒ las de mercado se mueven ${vecesMedia.toFixed(1)}× más (por la media)`)
+  console.log(`     y ${vecesMediana == null ? '—' : vecesMediana.toFixed(1) + '×'} más (por la mediana)`)
+  console.log('')
+  console.log('  ⚠️ LO QUE ESTE NÚMERO SIGNIFICA Y LO QUE NO:')
+  console.log('     Significa que el ATR, que es un promedio de recorridos, se calcula')
+  console.log('     mezclando horas gruesas con horas finas. Cuantas más finas entren,')
+  console.log('     más abajo tira el promedio — y del ATR sale el stop.')
+  console.log('     NO significa que quitarlas mejore el resultado. Eso cambia las')
+  console.log('     señales, y va al banco de pruebas con su listón escrito antes.')
+} else {
+  console.log('  no hay bastantes velas en los dos grupos para comparar.')
+}
 console.log('')
 
 // ── El veredicto, calculado ──────────────────────────────────────────────
