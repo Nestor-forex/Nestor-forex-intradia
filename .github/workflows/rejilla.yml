@@ -1,0 +1,69 @@
+name: Diagnóstico de la rejilla (ATR por semana)
+
+# PASO 2 del trabajo de la rejilla: ¿se derrumba de verdad el ATR al abrir la
+# semana de mercado?
+#
+# La sonda del 2026-09-30 midió que el 28,7 % de las velas del barrido caen en
+# horas sin mercado y que son 5,2× más estrechas. De ahí salió una INFERENCIA:
+# el ATR es Wilder de 14 con ventana de 60 velas, un fin de semana son ~45
+# velas cerradas seguidas, y el stop es 1,5 × ATR.
+#
+# Esto la mide. Si el derrumbe no aparece, la inferencia era falsa y se ahorran
+# los 28 créditos de la medición completa (paso 3).
+#
+# ⚠️⚠️ NO CAMBIA NADA, y no es una promesa: es el permiso.
+#
+# `permissions: contents: read` — no puede escribir en ninguna rama aunque
+# quisiera. No toca un archivo de la app, ni una señal, ni el barrido publicado,
+# ni el historial, ni ninguno de los experimentos que ya corren.
+#
+# Néstor lo pidió con estas palabras: «sin tocar nada de lo que hemos hecho en
+# las apps… pero sin quitar los experimentos, porque creo que vale la pena
+# seguir midiendo y tener todo el historial de lo que hemos hecho».
+#
+# ⚠️ EL LISTÓN ESTÁ ESCRITO ANTES, en `app/scripts/lib/preregistro-rejilla.mjs`
+# con fecha 2026-09-30, incluido lo que significa CADA resultado posible. Sin
+# eso, cualquier número se lee como una confirmación de algo.
+#
+# ⚠️ SOLO A MANO. Contesta una pregunta de una vez; no vigila nada.
+#
+# ⚠️⚠️ NECESITA EL SECRETO. Son 7 créditos de Twelve Data (una tanda de los 7
+# símbolos), así que sin el `env` de abajo `leerLlave` no encuentra la llave y
+# el guion falla. Cualquier workflow nuevo que llame a estos guiones tiene que
+# pasársela — ya pasó de verdad con `comparar-reglas.yml`.
+
+on:
+  workflow_dispatch:
+
+# Solo lee. No aflojar esto para «aprovechar y guardar el resultado»: lo que
+# este trabajo NO puede hacer es escribir.
+permissions:
+  contents: read
+
+jobs:
+  diagnostico:
+    runs-on: ubuntu-latest
+    # Sin esto GitHub deja correr un trabajo hasta SEIS HORAS. Lo normal aquí
+    # es menos de un minuto: una tanda de velas y aritmética.
+    timeout-minutes: 10
+    steps:
+      - name: Traer el código
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Primero las comprobaciones sin internet. Si el ATR del diagnóstico no
+      # fuera el de la app, el log daría un número creíble sobre otra cosa — y
+      # eso ya pasó en el primer intento (0,00032541 contra 0,00032576).
+      - name: Comprobar las cuentas y el listón (sin internet)
+        working-directory: app
+        run: node scripts/prueba-rejilla.mjs
+
+      - name: Medir
+        working-directory: app
+        env:
+          # ⚠️ SIN ESTO EL GUION FALLA. Ver la cabecera.
+          TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}
+        run: node scripts/medir-rejilla.mjs
