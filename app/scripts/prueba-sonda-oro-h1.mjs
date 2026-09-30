@@ -31,6 +31,9 @@ import {
   cruzarHoras,
   barrasPorDia,
   rejillaRellenada,
+  clasificarHora,
+  repartoDeMercado,
+  proporcionPlanas,
   veredicto,
 } from './lib/sonda-oro.mjs'
 
@@ -248,6 +251,70 @@ console.log('4b. ¿la rejilla trae horas en las que no se negoció?')
   ok(barrasPorDia([]) === null, 'sin horas dice «no lo sé», no 0')
   ok(barrasPorDia(['2026-09-07 00:00:00']) === null, 'con una sola hora tampoco se puede')
   ok(rejillaRellenada([]) === null, 'y la rejilla tampoco se juzga sin datos')
+}
+
+// ── 4c. `clasificarHora`: las tres clases, y sus bordes ──────────────────
+console.log('4c. ¿esta hora puede ser mercado?')
+{
+  // Mercado seguro: cualquier hora de lunes a jueves, y el viernes de día.
+  ok(clasificarHora('2026-09-07 09:00:00') === 'mercado', 'lunes a las 9 es mercado')
+  ok(clasificarHora('2026-09-10 23:00:00') === 'mercado', 'jueves a las 23 es mercado')
+  ok(clasificarHora('2026-09-11 20:00:00') === 'mercado', 'viernes a las 20 todavía es mercado')
+
+  // ⚠️⚠️ EL CASO QUE HACE FALTA ACERTAR: el domingo por la noche ABRE el
+  // mercado. Llamarlo «cerrado» sería la etiqueta equivocada, y en este
+  // proyecto eso está escrito como un error de medición.
+  ok(clasificarHora('2026-09-13 22:00:00') === 'frontera', 'el domingo a las 22 NO se llama cerrado: abre el mercado')
+  ok(clasificarHora('2026-09-13 21:00:00') === 'frontera', 'ni las 21 del domingo, que con el cambio de hora ya abre')
+  ok(clasificarHora('2026-09-13 23:00:00') === 'frontera', 'ni las 23')
+
+  // Cerrado seguro: lo que ningún horario de verano puede salvar.
+  ok(clasificarHora('2026-09-12 12:00:00') === 'cerrado', 'el sábado al mediodía está cerrado y punto')
+  ok(clasificarHora('2026-09-12 00:00:00') === 'cerrado', 'el sábado a medianoche también')
+  ok(clasificarHora('2026-09-12 20:00:00') === 'cerrado', 'y el sábado a las 20')
+  ok(clasificarHora('2026-09-13 12:00:00') === 'cerrado', 'el domingo al mediodía está cerrado')
+  ok(clasificarHora('2026-09-11 23:00:00') === 'cerrado', 'el viernes a las 23 ya cerró con cualquier horario')
+
+  // Y los bordes exactos, uno a uno, que es donde se equivoca cualquiera.
+  ok(clasificarHora('2026-09-12 21:00:00') === 'frontera', 'sábado 21:00 es frontera, no cerrado')
+  ok(clasificarHora('2026-09-11 21:00:00') === 'frontera', 'viernes 21:00 es frontera (cierra 21 o 22 según la época)')
+  ok(clasificarHora('2026-09-11 22:00:00') === 'frontera', 'viernes 22:00 también')
+
+  ok(clasificarHora('mañana') === null, 'un texto cualquiera no se clasifica')
+  ok(clasificarHora(null) === null, 'ni un nulo')
+
+  // El reparto, y que las tres cuentas sumen.
+  const rep = repartoDeMercado([
+    '2026-09-07 09:00:00', // mercado
+    '2026-09-12 12:00:00', // cerrado
+    '2026-09-13 12:00:00', // cerrado
+    '2026-09-13 22:00:00', // frontera
+    'basura',
+  ])
+  ok(rep.mercado === 1 && rep.cerrado === 2 && rep.frontera === 1 && rep.ilegibles === 1, 'el reparto cuadra')
+  ok(rep.cerradas.length === 2, 'y guarda las cerradas para poder mirarlas')
+  ok(!rep.cerradas.includes('2026-09-13 22:00:00'), 'el domingo a las 22 NO entra en las cerradas')
+}
+
+// ── 4d. `proporcionPlanas` ───────────────────────────────────────────────
+console.log('4d. ¿las velas están planas?')
+{
+  const velas = new Map([
+    ['a', { h: 10, l: 10 }], // plana
+    ['b', { h: 10, l: 9 }],
+    ['c', { h: 10, l: 10 }], // plana
+    ['d', { h: NaN, l: 1 }], // no se puede mirar: no cuenta
+  ])
+  const p = proporcionPlanas(['a', 'b', 'c', 'd'], velas)
+  ok(p.n === 3, 'solo cuenta las que se pueden mirar')
+  ok(p.planas === 2, 'y cuenta bien las planas')
+  ok(Math.abs(p.proporcion - 2 / 3) < 1e-9, 'y la proporción sale sobre las mirables')
+
+  // `null` y no 0 cuando no hay nada que mirar: un 0 diría «ninguna está
+  // plana», que es una afirmación. Misma decisión que `pearson`.
+  ok(proporcionPlanas([], velas) === null, 'sin horas dice «no lo sé», no 0')
+  ok(proporcionPlanas(['zzz'], velas) === null, 'y con horas que no están en el mapa tampoco')
+  ok(proporcionPlanas(['a'], null) === null, 'y sin mapa de velas tampoco revienta')
 }
 
 // ── 5. `veredicto`: calculado, nunca escrito ─────────────────────────────
