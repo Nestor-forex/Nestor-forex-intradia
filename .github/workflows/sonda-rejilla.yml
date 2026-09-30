@@ -1,0 +1,65 @@
+name: Sonda de la rejilla del barrido
+
+# Comprueba si la rejilla de velas con la que esta app calcula su barrido trae
+# horas en las que el mercado estaba cerrado, y qué traen dentro esas velas.
+#
+# DE DÓNDE SALE LA PREGUNTA: la sonda del oro (2026-09-30) pidió 5000 velas de
+# una hora y salieron **24,0 por día de calendario** — imposible en un mercado
+# que abre 120 de las 168 horas de la semana (17,1 por día). La rejilla es la
+# MISMA que usan el vigía, el publicador y el reporte: mismos símbolos, mismo
+# intervalo, solo menos velas. Aquello era una inferencia; esto la comprueba.
+#
+# ⚠️⚠️ NO CAMBIA NADA, y no es una promesa: es el permiso.
+#
+# `permissions: contents: read` — no puede escribir en ninguna rama aunque
+# quisiera. No toca un archivo de la app, no cambia una señal, no escribe en la
+# rama `datos` y no roza el historial. Solo pide, cuenta e imprime.
+#
+# ⚠️ Y SI LA RESPUESTA SALE «SÍ», tampoco cambia nada por sí solo. Todo lo
+# medido de esta app se midió con estos mismos datos —los −0,13 por unidad de
+# riesgo, las 8.000 operaciones, el filtro de RSI en 70, el ADX aflojado a 10—
+# así que esas mediciones describen lo que la app hace de verdad y no se caen.
+# Cambiar la rejilla cambiaría las señales, y eso va al banco de pruebas con su
+# listón escrito antes, como todo lo demás.
+#
+# ⚠️ SOLO A MANO. Contesta una pregunta de una vez; no vigila nada.
+#
+# ⚠️⚠️ NECESITA EL SECRETO. Es 1 crédito de Twelve Data, así que sin el `env`
+# de abajo `leerLlave` no encuentra la llave y el guion falla. Cualquier
+# workflow nuevo que llame a estos guiones tiene que pasársela.
+
+on:
+  workflow_dispatch:
+
+# Solo lee. Ver la cabecera: esto es lo que hace que la sonda no pueda tocar
+# nada, y no hay que aflojarlo para «aprovechar y guardar el resultado».
+permissions:
+  contents: read
+
+jobs:
+  sonda:
+    runs-on: ubuntu-latest
+    # Sin esto GitHub deja correr un trabajo hasta SEIS HORAS. Lo normal aquí
+    # son unos segundos: una sola consulta y aritmética.
+    timeout-minutes: 10
+    steps:
+      - name: Traer el código
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Primero las comprobaciones sin internet. Si `clasificarHora` estuviera
+      # mal, el log diría algo creíble y equivocado — por ejemplo llamar
+      # «cerrado» al domingo a las 22:00, que es cuando el mercado ABRE.
+      - name: Comprobar las cuentas (sin internet)
+        working-directory: app
+        run: node scripts/prueba-sonda-oro-h1.mjs
+
+      - name: Preguntar
+        working-directory: app
+        env:
+          # ⚠️ SIN ESTO EL GUION FALLA. Ver la cabecera.
+          TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}
+        run: node scripts/sonda-rejilla.mjs

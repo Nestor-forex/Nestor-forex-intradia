@@ -59,7 +59,7 @@
 // qué. Es el mismo cálculo que obligó a poner la pausa en el publicador del
 // oro de swing.
 
-import { juzgarRespuesta, horasDe, cruzarHoras, veredicto } from './lib/sonda-oro.mjs'
+import { juzgarRespuesta, horasDe, cruzarHoras, rejillaRellenada, veredicto } from './lib/sonda-oro.mjs'
 import { SYMBOLS, leerLlave, obtenerVelas } from './lib/velas.mjs'
 
 const SIMBOLO_ORO = 'XAU/USD'
@@ -115,6 +115,21 @@ for (const intervalo of ['1h', '15min']) {
     const dias = (new Date(horas[horas.length - 1].replace(' ', 'T') + 'Z') - new Date(horas[0].replace(' ', 'T') + 'Z')) / 86_400_000
     console.log(`  o sea ${dias.toFixed(1)} días de calendario hacia atrás`)
     console.log(`  primera vela cruda: ${JSON.stringify(cuerpo.values[cuerpo.values.length - 1])}`)
+
+    // ⚠️⚠️ LA DIVISIÓN QUE LA PRIMERA VERSIÓN DE ESTA SONDA NO HACÍA, y sin la
+    // cual su «100 % de las horas se conservan» se lee como otra cosa. Ver
+    // `rejillaRellenada` en `lib/sonda-oro.mjs`.
+    const porHora = intervalo === '15min' ? 4 : 1
+    const rej = rejillaRellenada(horas, porHora)
+    if (rej) {
+      console.log(`  velas por día de calendario: ${rej.porDia.toFixed(1)} (el mercado abierto da ${rej.esperadas.toFixed(1)})`)
+      if (rej.rellenada) {
+        console.log('  ⚠️ SON MÁS DE LAS QUE CABEN: la rejilla trae horas en las que no se negoció.')
+        console.log('     El Forex abre 120 de las 168 horas de la semana. Lo que hay de más')
+        console.log('     no es mercado, y al correlacionar habría que dejarlo fuera.')
+        console.log('     (Qué traen DENTRO esas velas no se ha mirado: eso es otra pregunta.)')
+      }
+    }
   }
   console.log('')
 }
@@ -146,6 +161,18 @@ try {
   barras = r.barras
   console.log(`  horas con dato en LOS SIETE: ${barras.length}`)
   console.log(`  de ${barras[0]} a ${barras[barras.length - 1]}`)
+
+  // La misma división para los pares. Si sale igual de alta que la del oro, la
+  // rejilla uniforme no es cosa del oro: es de cómo sirve Twelve Data — y
+  // entonces la pregunta se estira hasta el barrido que esta app ya publica.
+  const rejP = rejillaRellenada(barras, 1)
+  if (rejP) {
+    console.log(`  velas por día de calendario: ${rejP.porDia.toFixed(1)} (el mercado abierto da ${rejP.esperadas.toFixed(1)})`)
+    if (rejP.rellenada) {
+      console.log('  ⚠️ LOS PARES TAMBIÉN. Entonces no es una peculiaridad del oro,')
+      console.log('     y hay que mirar qué significa para el barrido que esta app ya publica.')
+    }
+  }
 } catch (e) {
   // ⚠️ No se concluye nada de un fallo aquí: es «no se pudo mirar», no «no se
   // cruzan». Ver la cabecera de `lib/sonda-oro.mjs`.

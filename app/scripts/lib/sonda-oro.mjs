@@ -175,6 +175,202 @@ export function cruzarHoras(horasOro, horasPares) {
   }
 }
 
+// Cuántas horas a la semana está abierto el Forex: de domingo 22:00 UTC a
+// viernes 22:00 UTC son 120 de las 168 que tiene la semana. Repartido entre los
+// siete días del calendario salen **17,1 velas de una hora por día**.
+//
+// El número está aquí porque es la vara con la que se mide si una rejilla de
+// velas es de verdad o está rellenada. No es un umbral que se pueda aflojar:
+// es cuánto dura la semana de mercado.
+export const HORAS_ABIERTO_SEMANA = 120
+export const BARRAS_POR_DIA_ESPERADAS = HORAS_ABIERTO_SEMANA / 7
+
+/**
+ * ⚠️⚠️ CUÁNTAS VELAS VIENEN POR DÍA DE CALENDARIO, Y POR QUÉ ESTA FUNCIÓN
+ * EXISTE — ES EL AGUJERO QUE LA PRIMERA VERSIÓN DE ESTA SONDA TENÍA.
+ *
+ * La primera corrida (2026-09-30) imprimió, con razón, «no falta ninguna hora:
+ * los dos calendarios coinciden enteros» y «se conserva el 100 % de las horas
+ * de los pares». Las dos frases son **literalmente ciertas** y se leen como la
+ * mejor noticia posible. Pero el motivo por el que coinciden enteros NO es que
+ * el oro y el Forex abran a las mismas horas: es que Twelve Data los sirve a
+ * los dos en **la misma rejilla uniforme**.
+ *
+ * Y eso sale de una sola división que la sonda no hacía:
+ *
+ *   `1h`    → 5000 velas en 208,3 días =  24,0 por día
+ *   `15min` → 5000 velas en  52,1 días =  96,0 por día = 24 horas/día
+ *
+ * **24 velas por día de calendario es imposible en un mercado que abre 120 de
+ * las 168 horas de la semana** (17,1 por día). Ni siquiera cuadra contando solo
+ * días hábiles: 5000 entre los ~148 hábiles de ese tramo darían 33,6 por día, y
+ * un día no tiene más de 24. O sea que la rejilla trae horas en las que no se
+ * negoció nada, y los dos intervalos lo dicen por separado.
+ *
+ * ⚠️ LO QUE ESTO NO DICE, y no hay que rellenarlo de cabeza: **qué traen
+ * dentro** esas velas. Que estén ahí está forzado por la aritmética; que sean
+ * planas, repetidas o inventadas no se ha mirado, y suponerlo sería el
+ * mecanismo convincente de siempre.
+ *
+ * 📌 Y la lección, que es la séptima vez en este proyecto: **un resumen puede
+ * ser verdad y engañar igual.** Aquí no afirmaba nada falso — le faltaba dar un
+ * paso de aritmética, y sin ese paso el que lo lea construye encima de un
+ * «100 %» que significa otra cosa.
+ *
+ * Devuelve `null` —nunca 0— si no hay con qué calcularlo.
+ */
+export function barrasPorDia(horas) {
+  const h = Array.isArray(horas) ? [...horas].sort() : []
+  if (h.length < 2) return null
+  const ms =
+    new Date(h[h.length - 1].replace(' ', 'T') + 'Z').getTime() - new Date(h[0].replace(' ', 'T') + 'Z').getTime()
+  if (!Number.isFinite(ms) || ms <= 0) return null
+  return h.length / (ms / 86_400_000)
+}
+
+// ⚠️⚠️ EL TRAMO MÍNIMO PARA PODER JUZGAR, Y NO ES UN NÚMERO DECORATIVO.
+//
+// Lo destapó una comprobación al escribirla: una rejilla HONESTA de lunes a
+// viernes, 24 horas cada día, medida sobre su propio tramo —del lunes 00:00 al
+// viernes 23:00, o sea 4,96 días— da **24,2 velas por día** y se marcaría como
+// rellenada. Y no estaría mal calculada: estaría mal PREGUNTADA, porque en ese
+// tramo no cabe ningún fin de semana que rebaje la media.
+//
+// La proporción 120/168 solo aparece si el tramo cubre varias semanas enteras.
+// Con tres semanas el peso de un fin de semana suelto ya no decide, y con los
+// 208 días de la corrida real sobra de largo.
+//
+// 📌 Vale la pena tenerlo escrito: la medida que destapó el agujero de la sonda
+// tenía ella misma un agujero, y salió al probarla, no al usarla.
+export const MIN_DIAS_PARA_JUZGAR = 21
+
+/**
+ * ¿La rejilla trae más velas por día de calendario de las que el mercado
+ * abierto permite? `null` si no se puede saber.
+ *
+ * ⚠️ Solo tiene sentido para velas de UNA HORA. Con `15min` habría cuatro por
+ * hora y el número esperado sería otro, así que se le pasa cuántas velas cabrían
+ * en una hora de ese intervalo. Sin ese dato una rejilla honesta de 15 minutos
+ * se marcaría siempre, porque 4 × 17,1 = 68,6 es mucho más que 17,1.
+ *
+ * ⚠️ Y devuelve `null` —no `rellenada: false`— si el tramo es más corto que
+ * `MIN_DIAS_PARA_JUZGAR`. «No se puede juzgar» y «está bien» no son lo mismo:
+ * es la misma asimetría que gobierna `juzgarRespuesta` en este archivo.
+ */
+export function rejillaRellenada(horas, porHora = 1) {
+  const bpd = barrasPorDia(horas)
+  if (bpd == null) return null
+
+  const h = Array.isArray(horas) ? [...horas].sort() : []
+  const dias =
+    (new Date(h[h.length - 1].replace(' ', 'T') + 'Z').getTime() - new Date(h[0].replace(' ', 'T') + 'Z').getTime()) /
+    86_400_000
+  if (!Number.isFinite(dias) || dias < MIN_DIAS_PARA_JUZGAR) return null
+
+  const esperadas = BARRAS_POR_DIA_ESPERADAS * porHora
+  return {
+    porDia: bpd,
+    esperadas,
+    dias,
+    // Un margen del 10 % para no gritar por un festivo o un redondeo. La
+    // diferencia que se busca es de 24 contra 17,1, o sea un 40 %.
+    rellenada: bpd > esperadas * 1.1,
+  }
+}
+
+/**
+ * ⚠️⚠️ ¿ESTA HORA CAE DENTRO DE LA SEMANA DE MERCADO? Con tres respuestas, no
+ * dos, y la del medio es la que hace que esto sea honesto.
+ *
+ * El Forex abre el domingo por la noche y cierra el viernes por la noche, en
+ * horario de Nueva York — o sea que **el borde se mueve una hora con el cambio
+ * de hora** (21:00 o 22:00 UTC según la época del año). No hay un instante
+ * fijo que se pueda escribir aquí.
+ *
+ * Así que en vez de fingir precisión se parte en tres:
+ *
+ *   'cerrado'  → imposible que fuera mercado, con cualquier horario de verano:
+ *                sábado de 00:00 a 20:59, domingo de 00:00 a 20:59, y viernes
+ *                de 23:00 a 23:59.
+ *   'frontera' → las horas donde el cambio de hora decide: viernes 21:00-22:59,
+ *                sábado y domingo de 21:00 a 23:59.
+ *   'mercado'  → el resto.
+ *
+ * ⚠️ LA CUENTA QUE DECIDE ES LA DE 'cerrado', y solo ésa. Es un **suelo**: si
+ * hay una sola vela ahí, la rejilla trae horas sin mercado, y eso no lo puede
+ * explicar ningún horario de verano. Las de 'frontera' se cuentan aparte y NO
+ * se suman al hallazgo.
+ *
+ * 📌 Sin esta separación la sonda diría «hay velas en domingo» y sería
+ * engañoso: **el domingo a las 22:00 el mercado SÍ está abierto** — es cuando
+ * abre. Llamar cerrado a una hora de mercado sería la etiqueta equivocada de
+ * siempre, y en este proyecto eso está escrito como un error de medición.
+ */
+export function clasificarHora(t) {
+  if (typeof t !== 'string' || !/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(t)) return null
+  const d = new Date(t.replace(' ', 'T') + 'Z')
+  if (!Number.isFinite(d.getTime())) return null
+
+  const dia = d.getUTCDay() // 0 = domingo … 6 = sábado
+  const h = d.getUTCHours()
+
+  // Sábado: cerrado todo el día salvo la frontera de la noche.
+  if (dia === 6) return h <= 20 ? 'cerrado' : 'frontera'
+  // Domingo: cerrado hasta la tarde; la noche es cuando abre (o está a punto).
+  if (dia === 0) return h <= 20 ? 'cerrado' : 'frontera'
+  // Viernes: cierra por la noche. Las 21 y 22 son frontera; de 23 en adelante,
+  // cerrado con cualquier horario.
+  if (dia === 5) {
+    if (h >= 23) return 'cerrado'
+    if (h >= 21) return 'frontera'
+  }
+  return 'mercado'
+}
+
+/**
+ * El reparto de una lista de horas entre las tres clases, más el detalle de
+ * cuáles son las cerradas (para poder mirarlas con los ojos).
+ */
+export function repartoDeMercado(horas) {
+  const out = { mercado: 0, frontera: 0, cerrado: 0, ilegibles: 0, cerradas: [] }
+  for (const t of horas ?? []) {
+    const c = clasificarHora(t)
+    if (c === null) out.ilegibles++
+    else {
+      out[c]++
+      if (c === 'cerrado') out.cerradas.push(t)
+    }
+  }
+  return out
+}
+
+/**
+ * ¿Las velas de estas horas están PLANAS (máximo = mínimo)? Una vela plana es
+ * la firma de un precio rellenado: nadie negoció, así que no hubo recorrido.
+ *
+ * @param velas Map de hora → { h, l } (o cualquier objeto con máximo y mínimo)
+ *
+ * ⚠️ Devuelve `null` —nunca 0— si no hay velas que mirar. Un 0 diría «ninguna
+ * está plana», que es una afirmación.
+ *
+ * ⚠️ Y una vela plana NO prueba por sí sola que sea rellenada: en un mercado
+ * muy tranquilo puede pasar de verdad. Lo que dice algo es la PROPORCIÓN
+ * comparada con las horas de mercado, y por eso se devuelven las dos.
+ */
+export function proporcionPlanas(horas, velas) {
+  if (!(velas instanceof Map)) return null
+  let n = 0
+  let planas = 0
+  for (const t of horas ?? []) {
+    const v = velas.get(t)
+    if (!v || !Number.isFinite(v.h) || !Number.isFinite(v.l)) continue
+    n++
+    if (v.h === v.l) planas++
+  }
+  if (!n) return null
+  return { n, planas, proporcion: planas / n }
+}
+
 /**
  * El resumen, CALCULADO a partir de lo que se miró. Nunca escrito a mano.
  *
