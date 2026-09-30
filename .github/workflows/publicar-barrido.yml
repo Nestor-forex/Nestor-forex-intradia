@@ -8,13 +8,24 @@ name: Publicar el barrido para la app
 #
 # CUOTA: cada corrida gasta 7 créditos de Twelve Data.
 #
-#   este workflow ... 24 corridas × 7 = 168   (a la media, de lunes a viernes)
+#   este workflow ... 48 corridas × 7 = 336   (minutos 5 y 35, de lunes a viernes)
 #   el vigía ........ 24 corridas × 7 = 168   (al minuto 20)
 #   reporte diario ..  1 corrida  × 7 =   7
 #   ─────────────────────────────────────────
-#   total ...........................   343  de los 800 diarios
+#   total ...........................   511  de los 800 diarios
 #
-# Queda más de la mitad libre para una corrida a mano del banco de pruebas.
+# Quedan ~289 libres, suficiente para una corrida a mano del banco de pruebas
+# (28) sin acercarse al tope.
+#
+# 📌 ESTA CUENTA DECÍA 24 CORRIDAS Y 343 CRÉDITOS, y era falsa desde que se
+# añadió el segundo horario: el bloque `schedule` de abajo ya decía 48 y 511,
+# así que **el archivo se contradecía a sí mismo** 40 líneas más abajo. Y de
+# aquí lo copió CLAUDE.md, donde llevaba semanas.
+#
+# Es otra vez «al cambiar algo, mirar también quién lo NOMBRA»: el cron nuevo se
+# añadió y el rótulo que lo describe se quedó atrás. No cambiaba nada práctico,
+# pero con el número viejo alguien decidiría creyendo que hay 168 créditos de
+# holgura que no existen. Salió el 2026-09-30, calculando si cabía una sonda.
 #
 # POR QUÉ EN LOS MINUTOS 5 Y 35: el vigía corre al minuto 20 y cada barrido
 # gasta 7 de los 8 créditos por minuto que da el plan gratuito, así que dos
