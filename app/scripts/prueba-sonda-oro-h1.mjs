@@ -29,6 +29,8 @@ import {
   juzgarRespuesta,
   horasDe,
   cruzarHoras,
+  barrasPorDia,
+  rejillaRellenada,
   veredicto,
 } from './lib/sonda-oro.mjs'
 
@@ -43,6 +45,21 @@ const ok = (cond, que) => {
 }
 
 const vela = (t) => ({ datetime: t, open: '4150.0', high: '4155.0', low: '4148.0', close: '4152.0' })
+
+// Una rejilla HONESTA: 24 velas de una hora, solo de lunes a viernes, durante
+// `semanas` semanas. Arranca el lunes 2026-09-07.
+function horasHabiles(semanas) {
+  const out = []
+  const d = new Date(Date.UTC(2026, 8, 7)) // lunes
+  for (let i = 0; i < semanas * 7; i++) {
+    if (d.getUTCDay() >= 1 && d.getUTCDay() <= 5) {
+      const f = d.toISOString().slice(0, 10)
+      for (let h = 0; h < 24; h++) out.push(`${f} ${String(h).padStart(2, '0')}:00:00`)
+    }
+    d.setUTCDate(d.getUTCDate() + 1)
+  }
+  return out
+}
 
 // ── 1. `esOroDeVerdad` ───────────────────────────────────────────────────
 console.log('1. ¿es oro de verdad?')
@@ -165,6 +182,72 @@ console.log('4. el cruce de calendarios')
   const oroRoto = paresSemana.filter((_, i) => i % 2 === 0)
   const cr = cruzarHoras(oroRoto, paresSemana)
   ok(Object.keys(cr.porHoraDelDia).length > 5, 'una avería afecta a muchas horas del día, no a una')
+}
+
+// ── 4b. `barrasPorDia` y `rejillaRellenada` ──────────────────────────────
+//
+// ⚠️ ESTE BLOQUE ES LA CORRECCIÓN DE UN AGUJERO DE LA PRIMERA VERSIÓN. La
+// primera corrida imprimió «se conserva el 100 % de las horas» y «los dos
+// calendarios coinciden enteros» — verdad las dos, y engañoso el conjunto: los
+// calendarios coincidían porque Twelve Data sirve los dos en la misma rejilla
+// uniforme de 24 velas por día, no porque el oro y el Forex abran igual.
+console.log('4b. ¿la rejilla trae horas en las que no se negoció?')
+{
+  // ⚠️⚠️ ESTE PAR DE COMPROBACIONES DESTAPÓ UN AGUJERO EN LA PROPIA MEDIDA, y
+  // por eso se quedan escritas así.
+  //
+  // Una rejilla HONESTA de lunes a viernes, 24 h cada día, medida sobre SU
+  // tramo (lunes 00:00 → viernes 23:00 = 4,96 días) da 24,2 velas por día y se
+  // marcaría como rellenada. No estaba mal calculada: estaba mal PREGUNTADA,
+  // porque en ese tramo no cabe ningún fin de semana que rebaje la media. De
+  // ahí `MIN_DIAS_PARA_JUZGAR`.
+  const unaSemana = []
+  for (const d of ['07', '08', '09', '10', '11']) {
+    // 2026-09-07 es lunes; del 7 al 11, viernes.
+    for (let h = 0; h < 24; h++) unaSemana.push(`2026-09-${d} ${String(h).padStart(2, '0')}:00:00`)
+  }
+  ok(rejillaRellenada(unaSemana, 1) === null, 'un tramo de 5 días NO se juzga: diría 24/día siendo honesto')
+  ok(barrasPorDia(unaSemana) > 24, 'y la razón es que en 5 días hábiles salen más de 24 por día')
+
+  // La misma rejilla honesta, pero sobre DOCE semanas: ahí sí aparece el 17,1.
+  const habiles = horasHabiles(12)
+  const rHabil = rejillaRellenada(habiles, 1)
+  ok(rHabil !== null, 'con doce semanas sí se puede juzgar')
+  ok(rHabil.rellenada === false, 'y una rejilla de solo días hábiles NO se marca')
+  ok(Math.abs(rHabil.porDia - 120 / 7) < 1.5, `sale cerca de 17,1 y sale ${rHabil.porDia.toFixed(1)}`)
+
+  // Una rejilla uniforme 24×7, que es lo que devolvió Twelve Data de verdad.
+  const todos = []
+  for (let d = 1; d <= 28; d++) {
+    for (let h = 0; h < 24; h++) {
+      todos.push(`2026-09-${String(d).padStart(2, '0')} ${String(h).padStart(2, '0')}:00:00`)
+    }
+  }
+  const rTodo = rejillaRellenada(todos, 1)
+  ok(Math.abs(rTodo.porDia - 24) < 0.05, 'una rejilla 24×7 da 24 velas por día de calendario')
+  ok(rTodo.rellenada === true, 'y 24 por día SÍ se marca: el mercado abierto solo da 17,1')
+  ok(Math.abs(rTodo.esperadas - 120 / 7) < 1e-9, 'las esperadas son 120 horas de mercado entre 7 días')
+
+  // ⚠️ El caso de `15min`, donde el número esperado es OTRO. Sin pasarle
+  // `porHora` una rejilla honesta de 15 minutos se marcaría como rellenada:
+  // 4 velas por hora × 17,1 horas = 68,6 por día, que es mucho más que 17,1.
+  const quinces = []
+  for (const t of habiles) {
+    for (const m of ['00', '15', '30', '45']) quinces.push(t.slice(0, 14) + m + ':00')
+  }
+  ok(rejillaRellenada(quinces, 4).rellenada === false, 'una rejilla honesta de 15min no se marca si se le dice el intervalo')
+  ok(rejillaRellenada(quinces, 1).rellenada === true, 'y sin decírselo se marcaría mal: por eso `porHora` existe')
+
+  // Los números REALES de la corrida del 2026-09-30, que son lo que destapó
+  // esto. No se inventan: 5000 velas entre esas dos fechas.
+  const real1h = 5000 / ((new Date('2026-09-30T20:00:00Z') - new Date('2026-03-06T12:00:00Z')) / 86_400_000)
+  ok(real1h > 23.5 && real1h < 24.5, `la corrida real dio ~24 velas/día y da ${real1h.toFixed(1)}`)
+  ok(real1h > (120 / 7) * 1.1, 'y eso está por encima de lo que el mercado abierto permite')
+
+  // `null`, nunca 0, cuando no hay con qué.
+  ok(barrasPorDia([]) === null, 'sin horas dice «no lo sé», no 0')
+  ok(barrasPorDia(['2026-09-07 00:00:00']) === null, 'con una sola hora tampoco se puede')
+  ok(rejillaRellenada([]) === null, 'y la rejilla tampoco se juzga sin datos')
 }
 
 // ── 5. `veredicto`: calculado, nunca escrito ─────────────────────────────

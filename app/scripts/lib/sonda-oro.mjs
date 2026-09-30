@@ -175,6 +175,109 @@ export function cruzarHoras(horasOro, horasPares) {
   }
 }
 
+// Cuántas horas a la semana está abierto el Forex: de domingo 22:00 UTC a
+// viernes 22:00 UTC son 120 de las 168 que tiene la semana. Repartido entre los
+// siete días del calendario salen **17,1 velas de una hora por día**.
+//
+// El número está aquí porque es la vara con la que se mide si una rejilla de
+// velas es de verdad o está rellenada. No es un umbral que se pueda aflojar:
+// es cuánto dura la semana de mercado.
+export const HORAS_ABIERTO_SEMANA = 120
+export const BARRAS_POR_DIA_ESPERADAS = HORAS_ABIERTO_SEMANA / 7
+
+/**
+ * ⚠️⚠️ CUÁNTAS VELAS VIENEN POR DÍA DE CALENDARIO, Y POR QUÉ ESTA FUNCIÓN
+ * EXISTE — ES EL AGUJERO QUE LA PRIMERA VERSIÓN DE ESTA SONDA TENÍA.
+ *
+ * La primera corrida (2026-09-30) imprimió, con razón, «no falta ninguna hora:
+ * los dos calendarios coinciden enteros» y «se conserva el 100 % de las horas
+ * de los pares». Las dos frases son **literalmente ciertas** y se leen como la
+ * mejor noticia posible. Pero el motivo por el que coinciden enteros NO es que
+ * el oro y el Forex abran a las mismas horas: es que Twelve Data los sirve a
+ * los dos en **la misma rejilla uniforme**.
+ *
+ * Y eso sale de una sola división que la sonda no hacía:
+ *
+ *   `1h`    → 5000 velas en 208,3 días =  24,0 por día
+ *   `15min` → 5000 velas en  52,1 días =  96,0 por día = 24 horas/día
+ *
+ * **24 velas por día de calendario es imposible en un mercado que abre 120 de
+ * las 168 horas de la semana** (17,1 por día). Ni siquiera cuadra contando solo
+ * días hábiles: 5000 entre los ~148 hábiles de ese tramo darían 33,6 por día, y
+ * un día no tiene más de 24. O sea que la rejilla trae horas en las que no se
+ * negoció nada, y los dos intervalos lo dicen por separado.
+ *
+ * ⚠️ LO QUE ESTO NO DICE, y no hay que rellenarlo de cabeza: **qué traen
+ * dentro** esas velas. Que estén ahí está forzado por la aritmética; que sean
+ * planas, repetidas o inventadas no se ha mirado, y suponerlo sería el
+ * mecanismo convincente de siempre.
+ *
+ * 📌 Y la lección, que es la séptima vez en este proyecto: **un resumen puede
+ * ser verdad y engañar igual.** Aquí no afirmaba nada falso — le faltaba dar un
+ * paso de aritmética, y sin ese paso el que lo lea construye encima de un
+ * «100 %» que significa otra cosa.
+ *
+ * Devuelve `null` —nunca 0— si no hay con qué calcularlo.
+ */
+export function barrasPorDia(horas) {
+  const h = Array.isArray(horas) ? [...horas].sort() : []
+  if (h.length < 2) return null
+  const ms =
+    new Date(h[h.length - 1].replace(' ', 'T') + 'Z').getTime() - new Date(h[0].replace(' ', 'T') + 'Z').getTime()
+  if (!Number.isFinite(ms) || ms <= 0) return null
+  return h.length / (ms / 86_400_000)
+}
+
+// ⚠️⚠️ EL TRAMO MÍNIMO PARA PODER JUZGAR, Y NO ES UN NÚMERO DECORATIVO.
+//
+// Lo destapó una comprobación al escribirla: una rejilla HONESTA de lunes a
+// viernes, 24 horas cada día, medida sobre su propio tramo —del lunes 00:00 al
+// viernes 23:00, o sea 4,96 días— da **24,2 velas por día** y se marcaría como
+// rellenada. Y no estaría mal calculada: estaría mal PREGUNTADA, porque en ese
+// tramo no cabe ningún fin de semana que rebaje la media.
+//
+// La proporción 120/168 solo aparece si el tramo cubre varias semanas enteras.
+// Con tres semanas el peso de un fin de semana suelto ya no decide, y con los
+// 208 días de la corrida real sobra de largo.
+//
+// 📌 Vale la pena tenerlo escrito: la medida que destapó el agujero de la sonda
+// tenía ella misma un agujero, y salió al probarla, no al usarla.
+export const MIN_DIAS_PARA_JUZGAR = 21
+
+/**
+ * ¿La rejilla trae más velas por día de calendario de las que el mercado
+ * abierto permite? `null` si no se puede saber.
+ *
+ * ⚠️ Solo tiene sentido para velas de UNA HORA. Con `15min` habría cuatro por
+ * hora y el número esperado sería otro, así que se le pasa cuántas velas cabrían
+ * en una hora de ese intervalo. Sin ese dato una rejilla honesta de 15 minutos
+ * se marcaría siempre, porque 4 × 17,1 = 68,6 es mucho más que 17,1.
+ *
+ * ⚠️ Y devuelve `null` —no `rellenada: false`— si el tramo es más corto que
+ * `MIN_DIAS_PARA_JUZGAR`. «No se puede juzgar» y «está bien» no son lo mismo:
+ * es la misma asimetría que gobierna `juzgarRespuesta` en este archivo.
+ */
+export function rejillaRellenada(horas, porHora = 1) {
+  const bpd = barrasPorDia(horas)
+  if (bpd == null) return null
+
+  const h = Array.isArray(horas) ? [...horas].sort() : []
+  const dias =
+    (new Date(h[h.length - 1].replace(' ', 'T') + 'Z').getTime() - new Date(h[0].replace(' ', 'T') + 'Z').getTime()) /
+    86_400_000
+  if (!Number.isFinite(dias) || dias < MIN_DIAS_PARA_JUZGAR) return null
+
+  const esperadas = BARRAS_POR_DIA_ESPERADAS * porHora
+  return {
+    porDia: bpd,
+    esperadas,
+    dias,
+    // Un margen del 10 % para no gritar por un festivo o un redondeo. La
+    // diferencia que se busca es de 24 contra 17,1, o sea un 40 %.
+    rellenada: bpd > esperadas * 1.1,
+  }
+}
+
 /**
  * El resumen, CALCULADO a partir de lo que se miró. Nunca escrito a mano.
  *
