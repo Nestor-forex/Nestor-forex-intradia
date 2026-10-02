@@ -26,6 +26,10 @@ import {
   mediana,
   compararRejillas,
   veredictoDiagnostico,
+  cuantil,
+  cuantoSubeElATR,
+  huecoDeApertura,
+  veredictoPreguntaDeSwing,
 } from './lib/rejilla-atr.mjs'
 import {
   OPS_MINIMAS,
@@ -36,6 +40,12 @@ import {
   QUE_DICE_EL_DIAGNOSTICO,
   FECHA_PREREGISTRO,
   juzgar,
+  CAMBIO_MINIMO_ATR,
+  MAYORIA_DIVISAS,
+  PROPORCION_MINIMA_AFECTADA,
+  TECHO_ESTRUCTURAL_MEDIDO,
+  MECANISMO_CANDIDATO,
+  QUE_DICE_LA_PREGUNTA_DE_SWING,
 } from './lib/preregistro-rejilla.mjs'
 
 let hechas = 0
@@ -361,6 +371,130 @@ console.log('6. el listón')
     !rp.pasa && rp.fallan.includes('noEsSoloPeaje'),
     'una mejora que EMPEORA sin costes se caza: es el stop más ancho diluyendo el spread',
   )
+}
+
+console.log('')
+console.log('7. LA PREGUNTA DE SWING: ¿cuánto SUBE el ATR al quitar las horas cerradas?')
+{
+  // ⚠️ Esta pregunta NO es la de los bloques 4 y 5. Allí se compara un momento
+  // de la serie contra otro (POSICIÓN); aquí, la misma serie con y sin las
+  // horas cerradas (NIVEL). El `noSeMueve` del 2026-09-30 solo contesta la
+  // primera, y usar su respuesta para la segunda sería el error que este
+  // repositorio lleva meses documentando.
+  const m = mercado()
+  const r = cuantoSubeElATR(m.fechas, m.highs, m.lows, m.closes, { umbral: CAMBIO_MINIMO_ATR })
+  ok(r !== null, 'con una serie completa devuelve algo')
+  ok(r.velas > 100, `compara muchas velas de mercado (${r.velas})`)
+  ok(r.velasQuitadas > 0, `y quita las cerradas (${r.velasQuitadas})`)
+
+  // ⚠️⚠️ LA COMPROBACIÓN CENTRAL DE ESTE BLOQUE, Y ES LA QUE ME CORRIGIÓ A MÍ.
+  //
+  // En este mercado las horas cerradas son 5× más estrechas, o sea que el
+  // efecto está puesto a propósito. Y la MEDIANA del cociente sale **1,000
+  // exacto**: con el efecto delante, dice que no pasa nada.
+  //
+  // No es un fallo del código: `atrWilder` de esta app tiene una ventana DURA
+  // de 60 velas, así que solo cambian las velas con horas cerradas dentro de su
+  // ventana. Más de la mitad no puede cambiar y la mediana se queda clavada.
+  //
+  // 📌 Esta comprobación existe para que nadie vuelva a elegir la mediana como
+  // la que decide. Si algún día sale distinta de 1, el motivo hay que
+  // entenderlo antes de celebrarlo.
+  ok(
+    Math.abs(r.medianaDelCociente - 1) < 1e-9,
+    `la MEDIANA del cociente sale 1 pese al efecto (${r.medianaDelCociente?.toFixed(4)}) — por eso NO decide`,
+  )
+  ok(r.p90 > 1.07, `pero el p90 sí lo ve (${r.p90?.toFixed(3)})`)
+  ok(r.proporcionAfectada > 0.15, `y la PROPORCIÓN afectada también (${(100 * r.proporcionAfectada).toFixed(1)} %)`)
+  ok(r.afectadas > 0 && r.afectadas < r.velas, 'la proporción no es ni 0 ni todo')
+  ok(r.p10 != null && r.p90 != null && r.p10 <= r.medianaDelCociente && r.medianaDelCociente <= r.p90,
+    'los cuantiles encierran a la mediana')
+  ok(r.alFinal != null, 'y se mide también en la ÚLTIMA vela, que es la que la app usa hoy')
+  // El stop de esta app ES 1,5 × ATR, así que sube en la misma proporción.
+  ok(
+    Math.abs(r.stopFinalLimpia / r.stopFinalHoy - r.alFinal) < 1e-9,
+    'el stop sube exactamente lo que sube el ATR (aquí el ATR ES el stop entero)',
+  )
+  // El umbral entra como parámetro: el dueño del número es el listón.
+  const rAlto = cuantoSubeElATR(m.fechas, m.highs, m.lows, m.closes, { umbral: 0.95 })
+  ok(rAlto.proporcionAfectada < r.proporcionAfectada, 'con un umbral más alto hay menos velas afectadas')
+
+  // Sin nada que quitar, las dos rejillas son la MISMA serie: el cociente es 1
+  // exacto en TODAS las velas. Si saliera otra cosa, el emparejamiento por
+  // fecha estaría mal.
+  const limpio = mercadoSinFinDeSemana()
+  const r2 = cuantoSubeElATR(limpio.fechas, limpio.highs, limpio.lows, limpio.closes, { umbral: CAMBIO_MINIMO_ATR })
+  ok(r2 !== null, 'con una serie ya limpia también devuelve algo')
+  ok(r2.velasQuitadas === 0, 'no hay nada que quitar')
+  ok(r2.proporcionAfectada === 0, 'y entonces NINGUNA vela está afectada')
+  ok(Math.abs(r2.p90 - 1) < 1e-12, 'ni el p90 se mueve')
+  ok(veredictoPreguntaDeSwing(r2, { proporcionMinima: PROPORCION_MINIMA_AFECTADA }) === 'noSube',
+    'una serie sin horas cerradas da «noSube»')
+  ok(veredictoPreguntaDeSwing(r, { proporcionMinima: PROPORCION_MINIMA_AFECTADA }) === 'sube',
+    'y una con horas cerradas 5× más estrechas da «sube»')
+
+  // ⚠️ «No se pudo mirar» NO es «no sube».
+  ok(veredictoPreguntaDeSwing(null) === null, 'sin datos devuelve null, no «noSube»')
+  ok(veredictoPreguntaDeSwing({}) === null, 'sin la proporción afectada, null')
+  // ⚠️ Y un objeto con la MEDIANA pero sin la proporción tampoco decide: es el
+  // caso que habría dejado volver al estadístico equivocado por la puerta de
+  // atrás.
+  ok(veredictoPreguntaDeSwing({ medianaDelCociente: 1.5 }) === null, 'con la mediana sola NO decide')
+  ok(cuantoSubeElATR([], [], [], []) === null, 'una serie vacía devuelve null y no revienta')
+
+  // El umbral se DERIVA, no se copia de Swing.
+  ok(CAMBIO_MINIMO_ATR === 0.07, 'el umbral de esta app es 7 %, no el 2 % de Swing')
+  ok(PROPORCION_MINIMA_AFECTADA === 0.15, 'y hace falta que afecte al 15 % de las velas')
+  ok(TECHO_ESTRUCTURAL_MEDIDO > PROPORCION_MINIMA_AFECTADA,
+    'el umbral está por debajo del techo estructural medido (si no, sería imposible de pasar)')
+  ok(MAYORIA_DIVISAS === 0.7, 'y mayoría de divisas: es la misma rejilla para las siete')
+  for (const k of ['sube', 'noSube']) {
+    ok(typeof QUE_DICE_LA_PREGUNTA_DE_SWING[k] === 'string' && QUE_DICE_LA_PREGUNTA_DE_SWING[k].length > 40,
+      `«${k}» está escrito ANTES de los números`)
+  }
+}
+
+console.log('8. los cuantiles')
+{
+  ok(cuantil([1, 2, 3, 4, 5], 0.5) === 3, 'la mediana sale bien')
+  ok(cuantil([1, 2, 3, 4, 5], 0) === 1, 'el mínimo también')
+  ok(cuantil([1, 2, 3, 4, 5], 1) === 5, 'y el máximo')
+  ok(Math.abs(cuantil([0, 10], 0.1) - 1) < 1e-12, 'interpola entre dos valores')
+  // `null` y no 0: un 0 diría «el valor es cero», que es una afirmación.
+  ok(cuantil([], 0.5) === null, 'sin datos devuelve null, no 0')
+  ok(cuantil(undefined, 0.5) === null, 'sin array, null')
+  ok(cuantil([1, NaN, 3], 0.5) === 2, 'los no finitos no cuentan')
+}
+
+console.log('')
+console.log('9. EL MECANISMO CANDIDATO, medido — y REFUTADO')
+{
+  // Mi explicación de por qué el ATR apenas se mueve habiendo quitado un
+  // 25,8 % de velas 5× más estrechas: al limpiar, la primera vela de la semana
+  // mediría su rango contra el cierre del VIERNES y se comería el hueco del
+  // fin de semana.
+  //
+  // ⚠️⚠️ ES FALSA, y la desmiente esta misma comprobación: en la rejilla limpia
+  // de esta app **la FRONTERA se conserva** (domingo 21:00-23:00 UTC), así que
+  // la vela anterior a la apertura es LA MISMA en las dos rejillas. No hay
+  // ningún hueco que comerse. Décimo mecanismo convincente de este proyecto
+  // que resulta falso al medirlo, y el segundo en dos días.
+  const m = mercado()
+  const h = huecoDeApertura(m.fechas, m.highs, m.lows, m.closes)
+  ok(h !== null, 'devuelve algo con una serie completa')
+  ok(h.arranques > 5, `mira varios arranques de semana (${h.arranques})`)
+  ok(
+    h.conPrevioDistinto === 0,
+    `en NINGÚN arranque cambia el cierre previo (${h.conPrevioDistinto} de ${h.arranques}) — la frontera hace de puente`,
+  )
+  ok(Math.abs(h.medianaVeces - 1) < 1e-9, 'y por eso el rango de la primera vela es el MISMO en las dos rejillas')
+  // La pieza que mantiene esto verificable: las dos fechas van en cada fila.
+  ok(h.filas.every((f) => f.previoHoy && f.previoLimpia), 'cada fila lleva las DOS fechas del cierre previo')
+  ok(huecoDeApertura([], [], [], []) === null, 'una serie vacía devuelve null')
+  // ⚠️ Y que el listón no ascienda la hipótesis a resultado. Si alguien la
+  // sube, esta comprobación falla y hay que venir a borrarla a mano.
+  ok(/REFUTADA/.test(MECANISMO_CANDIDATO), 'el listón dice que la hipótesis está REFUTADA, no pendiente')
+  ok(/ventana dura de 60/.test(MECANISMO_CANDIDATO), 'y nombra la explicación que SÍ está medida')
 }
 
 console.log('')

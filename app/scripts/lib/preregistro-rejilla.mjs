@@ -305,3 +305,150 @@ export const QUE_PASA_SI_PASA =
   'SIN quitar ninguno. No se enciende nada, no cambia el barrido publicado y no se enseña en ' +
   'ninguna pantalla: una versión sin validar puesta en una pantalla se lee como validada por ' +
   'el hecho de estar ahí.'
+
+// ─────────────────────────────────────────────────────────────────────────
+// LA PREGUNTA DE SWING, QUE A INTRADÍA NUNCA SE LE HIZO (añadido 2026-10-01)
+// ─────────────────────────────────────────────────────────────────────────
+//
+// ⚠️⚠️ Lo de arriba contesta **«¿se HUNDE el ATR al abrir la semana?»**, que es
+// una pregunta de POSICIÓN: compara un momento de la serie contra otro. Corrió
+// el 2026-09-30 y dijo `noSeMueve` en 7 de 7 (máximo 1,28× contra el 1,50
+// pedido), o sea que mi inferencia era falsa — la novena de este proyecto.
+//
+// En Swing se midió otra cosa: **«¿cuánto SUBE el ATR al quitar las horas
+// cerradas?»**, que es una pregunta de NIVEL. Allí salió **+18,5 % de mediana**
+// y 12 de 14 pares por encima del umbral.
+//
+// 📌 **Y a Intradía esa segunda pregunta NO se le hizo.** El `noSeMueve` de
+// aquí contesta la primera y nada más. Néstor lo señaló con estas palabras:
+// «son preguntas distintas y el "no" de Intradía solo contesta la primera».
+// Tenía razón: `atrMedioHoy` contra `atrMedioLimpia` se imprimía en el log
+// —±2 %— pero está escrito en este mismo archivo que esa medida es
+// **insensible a propósito** y que no sirve para concluir nada. Usarla como
+// respuesta sería justo el error que arriba se documenta para evitarlo.
+//
+// ⚠️ Y hay un segundo motivo para no dar el ±2 % por respuesta: **compara dos
+// MEDIANAS, no la mediana de los COCIENTES.** Son cosas distintas: si el ATR
+// sube un 20 % en un cuarto de las velas y no se mueve en el resto, las dos
+// medianas salen casi iguales.
+//
+// ⚠️⚠️ PERO LA MEDIANA DE LOS COCIENTES TAMPOCO SIRVE AQUÍ, Y ESO ESTÁ MEDIDO
+// ANTES DE CORRER NADA REAL.
+//
+// Fue lo primero que escribí como «la que decide», y el mercado sintético de
+// `prueba-rejilla.mjs` —escrito para TENER el efecto— la desmintió:
+//
+//     mediana del cociente       1,000 EXACTO
+//     p90 del cociente           1,32
+//     velas que suben más del 7 %   23,9 %
+//
+// O sea que con el efecto delante, la mediana dice que no pasa nada. Y no es un
+// fallo: es ARITMÉTICA de esta app. `atrWilder` aquí tiene una **ventana dura
+// de 60 velas**, así que solo cambian las velas que tienen horas cerradas
+// DENTRO de su ventana — medido en el mismo mercado, el **46,7 %** como techo
+// estructural. Más de la mitad de las velas de mercado no pueden cambiar, y
+// una mediana sobre todas se queda clavada en 1.
+//
+// 📌 **Y ESTA ES LA DIFERENCIA DE FONDO CON SWING, que es lo que hacía falta
+// entender para hacer bien la pregunta:** allá `atrWilder` recorre **la serie
+// ENTERA**, así que quitar velas cambia TODOS los valores y una mediana los ve.
+// Aquí la ventana corta la memoria a 60 y el efecto es LOCAL. La misma
+// pregunta, medida con el mismo estadístico, no significa lo mismo en las dos
+// apps — que es la lección de `barridoSwap` por enésima vez.
+//
+// ⚠️ Corregir una medida tras verla fallar en un mercado SINTÉTICO no es
+// corregir un umbral tras ver un resultado: lo sintético enseñó que la medida
+// estaba mal elegida, no cuál es la respuesta. Es exactamente lo que ya pasó
+// con `atrMedioGlobal` en este mismo archivo, y queda dicho igual.
+
+// El umbral, DERIVADO de lo que significa en plata y NO copiado de Swing.
+//
+// ⚠️⚠️ ALLÁ ES 2 % Y AQUÍ ES 7 %, y la diferencia no es de estilo: es el
+// mecanismo que este proyecto ya tiene medido del 2026-09-07.
+//
+//   ┌──────────┬───────────────┬────────┬──────────────────┐
+//   │          │ stop típico   │ spread │ el spread pesa   │
+//   ├──────────┼───────────────┼────────┼──────────────────┤
+//   │ Swing    │ ~155 pips     │ ~2     │ 1,3 %  → umbral 2 % │
+//   │ Intradía │ ~30 pips      │ ~2     │ 6,7 %  → umbral 7 % │
+//   └──────────┴───────────────┴────────┴──────────────────┘
+//
+// El mismo bróker y el mismo spread, cuatro veces más peso. Un cambio en el
+// ATR por debajo del spread que se paga por entrar no cambia ninguna decisión,
+// porque ya está por debajo del coste — y aquí ese suelo está cuatro veces más
+// alto. **Copiar el 2 % de Swing habría sido traerse una suposición sobre el
+// mercado que en esta app es falsa**, que es la lección de `barridoSwap` y la
+// del filtro de RSI.
+//
+// ⚠️ **Si el número real sale por debajo, el umbral NO se vuelve a tocar.**
+export const CAMBIO_MINIMO_ATR = 0.07
+
+// ⚠️⚠️ EL ESTADÍSTICO QUE DECIDE: **la PROPORCIÓN de velas de mercado cuyo ATR
+// cambia más que el peso del spread.** No la mediana (ver arriba).
+//
+// Por qué éste y no otro: la app puede dar una señal en CUALQUIER hora de
+// mercado, y en cada una pone el stop con el ATR de esa hora. Así que lo que
+// importa no es «cuánto cambia el ATR típico» sino **en qué fracción de las
+// horas en las que la app puede hablar sale el stop desviado más de lo que
+// cuesta entrar**.
+//
+// El número, derivado y no inventado: el techo estructural son las velas con
+// horas cerradas dentro de su ventana de 60, medido en **46,7 %**. Se pide
+// **15 %**, o sea que el efecto aparezca en al menos un tercio de las velas
+// donde la geometría permite que aparezca. Un 15 % es, en horas de mercado,
+// aproximadamente **una señal por semana con el stop desviado más que el
+// spread** — eso es material; por debajo es un caso de esquina.
+//
+// ⚠️ **Si el número real sale por debajo, el umbral NO se vuelve a tocar.**
+export const PROPORCION_MINIMA_AFECTADA = 0.15
+export const TECHO_ESTRUCTURAL_MEDIDO = 0.467
+
+// Cuántas de las 7 divisas tienen que estar de acuerdo. Es la MISMA rejilla
+// para las siete: si el efecto es de la rejilla, sale en casi todas.
+export const MAYORIA_DIVISAS = 0.7
+
+export const QUE_DICE_LA_PREGUNTA_DE_SWING = Object.freeze({
+  sube:
+    'Quitar las horas cerradas sube el ATR por encima del peso del spread. Entonces el ' +
+    'stop de esta app (1,5 × ATR, o sea el stop ENTERO) está demasiado estrecho, y la ' +
+    'medición completa con su propio listón vale la pena — igual que en Swing.',
+  noSube:
+    'Quitar las horas cerradas NO mueve el ATR por encima del peso del spread. Entonces ' +
+    'la respuesta de Intradía a la pregunta de Swing es distinta de la de Swing, y eso ' +
+    'NO es una contradicción: son dos rejillas y dos ATR distintos. Lo que hay que ' +
+    'explicar entonces es el mecanismo — ver `MECANISMO_CANDIDATO`.',
+})
+
+// ⚠️⚠️ EL MECANISMO CANDIDATO, Y YA ESTÁ REFUTADO POR EL MERCADO SINTÉTICO
+//
+// Quedaba una cosa que explicar y que de entrada parece imposible: **el 25,8 %
+// de las velas son 5,2× más estrechas y aun así el ATR apenas se mueve.**
+//
+// Mi explicación fue: al quitar el fin de semana, la primera vela de la semana
+// pasa a medir su rango verdadero contra el cierre del VIERNES en vez de contra
+// el del domingo, o sea que **se come el hueco del fin de semana entero**, y un
+// rango grande compensa los que faltan.
+//
+// 📌 **FALSO, y lo dijo la comprobación que escribí para sostenerlo.** En la
+// rejilla limpia de esta app **la FRONTERA se conserva** —las horas donde el
+// cambio de hora decide si hubo mercado, domingo 21:00-23:00 UTC—, así que la
+// vela anterior a la apertura **es la misma en las dos rejillas**. No hay
+// ningún hueco del viernes que comerse: la frontera hace de puente.
+//
+// Es el **décimo** mecanismo convincente de este proyecto que resulta falso al
+// medirlo, y van dos en dos días (el anterior fue el derrumbe del lunes).
+//
+// ✅ **Y la explicación verdadera ya está medida, arriba**: la ventana dura de
+// 60 velas. Más de la mitad de las velas de mercado no tienen ninguna hora
+// cerrada dentro de su ventana, así que no pueden cambiar — el efecto es LOCAL,
+// no global, y por eso una mediana sobre todas se queda en 1.
+//
+// La medición (`huecoDeApertura`) **se queda** y se sigue imprimiendo: si algún
+// día la fuente dejara de emitir las horas de frontera, el puente desaparecería
+// y el mecanismo volvería a estar en juego. El informe enseña las dos fechas
+// del cierre previo para que eso se vea en vez de quedar escondido.
+export const MECANISMO_CANDIDATO =
+  'HIPÓTESIS YA REFUTADA en el mercado sintético: al limpiar, la vela anterior a la apertura ' +
+  'es LA MISMA en las dos rejillas, porque la frontera (domingo 21:00-23:00 UTC) se conserva y ' +
+  'hace de puente. No hay hueco del viernes que comerse. La explicación medida es la ventana ' +
+  'dura de 60 velas: el efecto es LOCAL, no global.'

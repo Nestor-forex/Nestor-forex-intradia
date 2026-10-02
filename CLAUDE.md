@@ -2264,3 +2264,136 @@ decía «16 tandas ≈ 5 meses y medio» y son **casi tres años**. El número e
 bien; el rótulo mandaba a elegir mal. Es la enésima vez en este proyecto: **una
 etiqueta equivocada es un error de medición.** Corregido con el número medido
 dentro, igual que la duración real (31:18 de los 90 del límite).
+
+---
+
+# La pregunta de Swing, que a esta app nunca se le había hecho (2026-10-01)
+
+Néstor lo señaló con estas palabras: **«allí medí "¿se hunde el ATR del
+lunes?", no "¿cuánto sube al quitar las horas cerradas?". Son preguntas
+distintas y el "no" de Intradía solo contesta la primera»**. Tenía razón.
+
+```
+app/scripts/lib/preregistro-rejilla.mjs   el listón de la pregunta nueva
+app/scripts/lib/rejilla-atr.mjs           cuantoSubeElATR · huecoDeApertura · cuantil
+app/scripts/medir-rejilla.mjs             dos secciones nuevas del informe
+app/scripts/prueba-rejilla.mjs            110 comprobaciones (eran 85), sin red
+```
+
+**No toca ni un archivo de la app.** El workflow sigue con
+`permissions: contents: read` y sigue siendo el mismo botón de 7 créditos.
+
+## Las dos preguntas, que no son la misma
+
+| | qué compara | respuesta |
+|---|---|---|
+| «¿se HUNDE el ATR al abrir la semana?» | un momento de la serie contra otro (POSICIÓN) | `noSeMueve`, 7 de 7 (2026-09-30) |
+| «¿cuánto SUBE al quitar las horas cerradas?» | la misma serie con y sin ellas (NIVEL) | **esto** |
+
+En Swing la segunda salió **+18,5 % de mediana** y 12 de 14 pares por encima
+del umbral. Aquí no se había preguntado.
+
+📌 Y el `atrMedioHoy` contra `atrMedioLimpia` que ya se imprimía —±2 %— **no
+servía de respuesta**, y está escrito en este mismo repositorio por qué: esa
+medida es **insensible a propósito**. Usarla habría sido el error que ese texto
+documenta para evitarlo.
+
+## El umbral es 7 % y en Swing 2 %. DERIVADO, no copiado
+
+| | stop típico | spread | el spread pesa | umbral |
+|---|---:|---:|---:|---:|
+| Swing | ~155 pips | ~2 | 1,3 % | 2 % |
+| **Intradía** | **~30 pips** | ~2 | **6,7 %** | **7 %** |
+
+El mismo bróker y el mismo spread, cuatro veces más peso (ya medido el
+2026-09-07). Copiar el 2 % habría sido traerse una suposición sobre el mercado
+que aquí es falsa — la lección de `barridoSwap`.
+
+## ⚠️⚠️ EL ESTADÍSTICO QUE DECIDE NO ES LA MEDIANA, y me corrigió el mercado sintético
+
+Escribí la mediana del cociente como «la que decide». El mercado sintético de
+`prueba-rejilla.mjs` —escrito para TENER el efecto— la desmintió **antes de
+correr nada real**:
+
+| | |
+|---|---:|
+| mediana del cociente | **1,000 EXACTO** |
+| p90 del cociente | 1,32 |
+| velas que suben más del 7 % | **23,9 %** |
+| techo estructural (las que PUEDEN cambiar) | **46,7 %** |
+
+Con el efecto delante, la mediana dice que no pasa nada. **No es un fallo: es
+aritmética de esta app.** `atrWilder` aquí tiene una **ventana DURA de 60
+velas**, así que solo cambian las velas con horas cerradas DENTRO de su
+ventana. Más de la mitad de las velas de mercado no puede cambiar, y una
+mediana sobre todas se queda clavada en 1.
+
+📌 **Y AHÍ ESTÁ LA DIFERENCIA DE FONDO CON SWING**, que es lo que hacía falta
+entender para hacer bien la pregunta: allá `atrWilder` recorre **la serie
+ENTERA**, así que quitar velas cambia TODOS los valores y una mediana los ve.
+Aquí el efecto es **LOCAL**. La misma pregunta, el mismo estadístico, y no
+significa lo mismo en las dos apps.
+
+**Decide `proporcionAfectada`**, con mínimo del **15 %**: la app puede dar
+señal en cualquier hora de mercado y en cada una pone el stop con el ATR de esa
+hora, así que lo que importa es en qué fracción de esas horas el stop sale
+desviado más de lo que cuesta entrar. Un 15 % es, en horas de mercado,
+aproximadamente una señal por semana con el stop desviado más que el spread.
+
+⚠️ Corregir una medida tras verla fallar en un mercado **SINTÉTICO** no es
+corregir un umbral tras ver un resultado: lo sintético enseñó que la medida
+estaba mal elegida, no cuál es la respuesta. Es exactamente lo que ya pasó con
+`atrMedioGlobal` en este mismo archivo, y hay una comprobación dedicada a que
+nadie vuelva a elegir la mediana —ni a colarla por la puerta de atrás pasando
+un objeto que solo la traiga—.
+
+## ⚠️⚠️ Y MI MECANISMO CANDIDATO ERA FALSO. EL DÉCIMO DEL PROYECTO
+
+Quedaba algo que explicar y que de entrada parece imposible: el 25,8 % de las
+velas son 5,2× más estrechas y aun así el ATR apenas se mueve. Propuse: al
+limpiar, la primera vela de la semana mide su rango contra el cierre del
+**VIERNES** y se come el hueco del fin de semana.
+
+**Falso, y lo desmintió la comprobación que escribí para sostenerlo.** En la
+rejilla limpia de esta app **la FRONTERA se conserva** —domingo 21:00-23:00
+UTC, donde el cambio de hora decide si hubo mercado—, así que **la vela
+anterior a la apertura es LA MISMA en las dos rejillas**: 0 de 19 arranques con
+el cierre previo distinto. No hay ningún hueco que comerse: la frontera hace
+de puente.
+
+Es el **décimo** mecanismo convincente de este proyecto que resulta falso al
+medirlo, y **el segundo en dos días** — el anterior fue el derrumbe del lunes,
+del 2026-09-30.
+
+📌 La medición **se queda** y el informe imprime **LAS DOS FECHAS** del cierre
+previo. Si algún día la fuente dejara de emitir las horas de frontera, el
+puente desaparecería y el mecanismo volvería a estar en juego; un cociente
+solo lo esconderría.
+
+## Y lo que YA se sabía de la otra mitad, dicho en vez de callado
+
+En la corrida del 2026-09-30, el ATR del **arranque** sube **+9 % (GBP),
++11 % (CHF), +8 % (AUD) y +14 % (NZD)**, y **baja** en EUR, JPY y CAD. O sea
+**4 de 7 por encima del umbral: sin mayoría.** Esa parte de la pregunta de
+Swing ya tenía respuesta y estaba impresa en el log; el informe la nombra
+ahora para que no se lea como si no se hubiera mirado.
+
+## Cómo se verificó
+
+Lint, build y las 24 pruebas sin internet. **Comprobado que las nuevas
+MUERDEN**, con el daño verificado en el archivo antes de darlo por bueno:
+decidir con la mediana tumba 1 · tirar la frontera al limpiar tumba 2.
+
+Y el informe se corrió **de punta a punta con un mercado inventado**, no solo
+compilando: se sustituyó el lector de velas por uno falso y se leyeron las dos
+secciones enteras. Mereció la pena — una línea larga salía sin cortar, y la
+columna de la mediana seguía rotulada como «la que decide» cuando ya no lo era.
+
+## Lo que esto NO autoriza
+
+Nada. **El paso 3 del preregistro anterior sigue sin hacerse** y eso no
+cambia: el derrumbe del lunes midió 1,28× contra el 1,50 pedido, y **el umbral
+no se vuelve a tocar**. Para eso se escribió antes.
+
+Lo siguiente es un botón: **Actions → «Diagnóstico de la rejilla (ATR por
+semana)» → Run workflow**, 7 créditos, sin escribir nada.

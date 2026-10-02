@@ -241,3 +241,230 @@ export function veredictoDiagnostico(c, { derrumbeMinimo } = {}) {
   if (c.subeEnArranque <= 1) return 'seDerrumbaPeroNoSube'
   return 'seDerrumba'
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// LA PREGUNTA DE SWING, QUE AQUÍ NUNCA SE HIZO (añadido 2026-10-01)
+// ─────────────────────────────────────────────────────────────────────────
+//
+// Arriba se contesta «¿se HUNDE el ATR al abrir la semana?» — una pregunta de
+// POSICIÓN. Aquí se contesta la de Swing: **«¿cuánto SUBE el ATR al quitar las
+// horas cerradas?»** — una pregunta de NIVEL.
+//
+// ⚠️ No vale el `atrMedioHoy` / `atrMedioLimpia` que ya se imprimía: en este
+// mismo repositorio está escrito que esa medida es **insensible a propósito**
+// (las horas afectadas son ~5 % del total, y una mediana sobre todo no las ve).
+// Y además compara dos MEDIANAS, no la mediana de los COCIENTES — si el ATR
+// sube un 20 % en un cuarto de las velas y no se mueve en el resto, las dos
+// medianas salen casi iguales.
+
+// Un cuantil, para poder enseñar la DISTRIBUCIÓN del cociente en vez de un
+// número solo. `null` cuando no hay datos: nunca 0, que sería afirmar algo.
+export function cuantil(xs, q) {
+  const v = (xs ?? []).filter(Number.isFinite).sort((a, b) => a - b)
+  if (!v.length) return null
+  const i = (v.length - 1) * q
+  const lo = Math.floor(i)
+  const hi = Math.ceil(i)
+  return lo === hi ? v[lo] : v[lo] + (v[hi] - v[lo]) * (i - lo)
+}
+
+/**
+ * ⚠️⚠️ EL MECANISMO CANDIDATO, MEDIDO Y NO AFIRMADO.
+ *
+ * Si el ATR no sube al limpiar habiendo quitado un 25,8 % de velas 5,2× más
+ * estrechas, hay algo que explicar. La hipótesis es que al limpiar **la primera
+ * vela de la semana mide su rango verdadero contra el cierre del VIERNES** en
+ * vez de contra el del domingo, o sea que se come el hueco del fin de semana
+ * entero — y un rango grande compensa los estrechos que se quitaron.
+ *
+ * Esto lo mide. Devuelve, para cada arranque de semana, el rango verdadero en
+ * las dos rejillas y su cociente.
+ *
+ * 📌 Va como hipótesis a propósito: en este proyecto hay nueve casos escritos
+ * de un mecanismo convincente que resultó falso al medirlo, y uno es el de la
+ * pregunta de arriba, de ayer mismo.
+ */
+export function huecoDeApertura(fechas, highs, lows, closes) {
+  const n = Math.min(fechas?.length ?? 0, highs?.length ?? 0, lows?.length ?? 0, closes?.length ?? 0)
+  if (n < 3) return null
+
+  // Los índices que sobreviven al limpiar (mercado y frontera), igual que en
+  // `compararRejillas`: la frontera se queda.
+  const idxLimpia = []
+  for (let i = 0; i < n; i++) if (clasificarHora(fechas[i]) !== 'cerrado') idxLimpia.push(i)
+  const posEnLimpia = new Map(idxLimpia.map((i, k) => [i, k]))
+
+  // El rango verdadero de la vela i con respecto a un cierre previo dado.
+  const rv = (i, cierrePrevio) => {
+    const h = highs[i]
+    const l = lows[i]
+    if (!Number.isFinite(h) || !Number.isFinite(l)) return null
+    if (!Number.isFinite(cierrePrevio)) return h - l
+    return Math.max(h - l, Math.abs(h - cierrePrevio), Math.abs(l - cierrePrevio))
+  }
+
+  const filas = []
+  for (const i of arranquesDeSemana(fechas, 1)) {
+    const k = posEnLimpia.get(i)
+    if (k == null || k === 0 || i === 0) continue
+    const rangoHoy = rv(i, closes[i - 1])
+    const rangoLimpia = rv(i, closes[idxLimpia[k - 1]])
+    if (rangoHoy == null || rangoLimpia == null) continue
+    filas.push({
+      fecha: fechas[i],
+      // ⚠️ Las dos fechas van en la fila a propósito: si un día el cierre
+      // previo de la rejilla limpia dejara de ser el del viernes, se vería
+      // aquí en vez de quedar escondido dentro de un cociente.
+      previoHoy: fechas[i - 1],
+      previoLimpia: fechas[idxLimpia[k - 1]],
+      rangoHoy,
+      rangoLimpia,
+      veces: rangoHoy > 0 ? rangoLimpia / rangoHoy : null,
+    })
+  }
+  if (!filas.length) return null
+  return {
+    arranques: filas.length,
+    // ⚠️ EL NÚMERO QUE REFUTA LA HIPÓTESIS, y por eso va antes que el cociente:
+    // en cuántos arranques el cierre previo es DISTINTO entre las dos rejillas.
+    // Si es 0, no hay ningún hueco que comerse — la frontera que se conserva
+    // (domingo 21:00-23:00 UTC) hace de puente y la vela anterior es la misma.
+    // Medido en el mercado sintético: 0 de 11.
+    conPrevioDistinto: filas.filter((f) => f.previoHoy !== f.previoLimpia).length,
+    medianaVeces: mediana(filas.map((f) => f.veces)),
+    medianaRangoHoy: mediana(filas.map((f) => f.rangoHoy)),
+    medianaRangoLimpia: mediana(filas.map((f) => f.rangoLimpia)),
+    filas,
+  }
+}
+
+/**
+ * ⚠️ LA PREGUNTA DE SWING: ¿cuánto sube el ATR al quitar las horas cerradas?
+ *
+ * Se mide de tres maneras a la vez porque las tres dicen cosas distintas y
+ * quedarse con una sola es cómo se fabrica un número que no significa nada:
+ *
+ *   `medianaDelCociente`  → la mediana del cociente VELA POR VELA. Es la que
+ *                           decide: contesta «en una vela cualquiera, ¿cuánto
+ *                           sube?».
+ *   `cocienteDeMedianas`  → el cociente de las dos medianas, que es lo que se
+ *                           imprimía antes. Se enseña para que se vea la
+ *                           diferencia, no para decidir con él.
+ *   `alFinal`             → en la ÚLTIMA vela, que es la que la app usa de
+ *                           verdad para poner el stop de hoy. Es el equivalente
+ *                           exacto de lo que midió Swing (`comoQuedaria`).
+ *
+ * ⚠️ Las dos series se leen en las MISMAS FECHAS, igual que en
+ * `compararRejillas`: por índice serían dos instantes distintos y no daría
+ * ningún error, daría dos números plausibles de dos momentos que no son el
+ * mismo.
+ */
+export function cuantoSubeElATR(fechas, highs, lows, closes, { atrStop = 1.5, umbral = 0.07 } = {}) {
+  const n = Math.min(fechas?.length ?? 0, highs?.length ?? 0, lows?.length ?? 0, closes?.length ?? 0)
+  if (n < PERIODO_ATR + 2) return null
+
+  const atrHoy = atrEnCada(highs, lows, closes)
+
+  const idxLimpia = []
+  for (let i = 0; i < n; i++) if (clasificarHora(fechas[i]) !== 'cerrado') idxLimpia.push(i)
+  const atrLimpia = atrEnCada(
+    idxLimpia.map((i) => highs[i]),
+    idxLimpia.map((i) => lows[i]),
+    idxLimpia.map((i) => closes[i]),
+  )
+  const porFechaLimpia = new Map()
+  idxLimpia.forEach((i, k) => {
+    if (atrLimpia[k] != null) porFechaLimpia.set(fechas[i], atrLimpia[k])
+  })
+
+  // Solo velas de MERCADO, y solo fechas que las dos rejillas pueden
+  // contestar. Preguntar por una hora cerrada no tiene sentido: en la rejilla
+  // limpia esa hora no existe.
+  const cocientes = []
+  const hoyVals = []
+  const limpiaVals = []
+  for (let i = 0; i < n; i++) {
+    if (clasificarHora(fechas[i]) !== 'mercado') continue
+    const h = atrHoy[i]
+    const l = porFechaLimpia.get(fechas[i])
+    if (h == null || l == null || h === 0) continue
+    cocientes.push(l / h)
+    hoyVals.push(h)
+    limpiaVals.push(l)
+  }
+  if (!cocientes.length) return null
+
+  // ⚠️⚠️ EL ESTADÍSTICO QUE DECIDE: la PROPORCIÓN de velas cuyo ATR cambia más
+  // que el peso del spread. NO la mediana.
+  //
+  // La mediana se escribió primero como «la que decide» y el mercado sintético
+  // la desmintió: con el efecto puesto a propósito daba **1,000 exacto** y
+  // mientras tanto el 23,9 % de las velas subía más del 7 %. No es un fallo, es
+  // aritmética de esta app: `atrWilder` tiene una ventana DURA de 60 velas, así
+  // que solo cambian las que tienen horas cerradas dentro de su ventana — el
+  // 46,7 % como techo estructural. Más de la mitad no puede cambiar y la
+  // mediana se queda clavada en 1.
+  //
+  // 📌 Y es la diferencia de fondo con Swing: allá `atrWilder` recorre la serie
+  // ENTERA, así que quitar velas cambia TODOS los valores. Aquí el efecto es
+  // LOCAL. El mismo estadístico no significa lo mismo en las dos apps.
+
+  // El final: la última fecha que las dos rejillas contestan. Es lo que la app
+  // usa HOY para poner el stop, y es la medida de Swing.
+  let finalHoy = null
+  let finalLimpia = null
+  for (let i = n - 1; i >= 0; i--) {
+    const h = atrHoy[i]
+    const l = porFechaLimpia.get(fechas[i])
+    if (h != null && l != null && h !== 0) {
+      finalHoy = h
+      finalLimpia = l
+      break
+    }
+  }
+
+  const medHoy = mediana(hoyVals)
+  const medLimpia = mediana(limpiaVals)
+  return {
+    velas: cocientes.length,
+    velasQuitadas: n - idxLimpia.length,
+    medianaDelCociente: mediana(cocientes),
+    // Lo que decide. `umbral` entra como parámetro para que el listón sea el
+    // dueño del número y este archivo solo haga la cuenta.
+    proporcionAfectada: cocientes.filter((x) => Math.abs(x - 1) >= umbral).length / cocientes.length,
+    afectadas: cocientes.filter((x) => Math.abs(x - 1) >= umbral).length,
+    p10: cuantil(cocientes, 0.1),
+    p90: cuantil(cocientes, 0.9),
+    cocienteDeMedianas: medHoy && medLimpia ? medLimpia / medHoy : null,
+    atrFinalHoy: finalHoy,
+    atrFinalLimpia: finalLimpia,
+    alFinal: finalHoy ? finalLimpia / finalHoy : null,
+    // Lo que significa en plata: el stop de esta app ES 1,5 × ATR, así que lo
+    // que sube el ATR sube el stop en la misma proporción. Se devuelve en pips
+    // relativos para que el informe no tenga que recalcularlo.
+    stopFinalHoy: finalHoy == null ? null : atrStop * finalHoy,
+    stopFinalLimpia: finalLimpia == null ? null : atrStop * finalLimpia,
+  }
+}
+
+/**
+ * El veredicto de la pregunta de Swing, CALCULADO.
+ *
+ * ⚠️⚠️ Decide con `proporcionAfectada`, NO con la mediana del cociente ni con
+ * el cociente de las medianas. Las dos se devuelven y se imprimen, y las dos
+ * son insensibles aquí por la misma razón: la ventana dura de 60 velas hace
+ * que el efecto sea LOCAL, así que más de la mitad de las velas de mercado no
+ * puede cambiar y cualquier mediana sobre todas se queda en 1. Medido en el
+ * mercado sintético, con el efecto puesto a propósito: mediana 1,000 exacto
+ * mientras el 23,9 % de las velas subía más del 7 %.
+ *
+ * 📌 Una medida insensible a lo que quiere medir es peor que ninguna: habría
+ * dado «el ATR no sube» con el efecto delante. Ya está escrito en este
+ * repositorio para `atrMedioGlobal`, y volvió a pasar.
+ *
+ * ⚠️ `null` NO es «no sube». Es «no se pudo mirar».
+ */
+export function veredictoPreguntaDeSwing(r, { proporcionMinima = 0.15 } = {}) {
+  if (!r || r.proporcionAfectada == null) return null
+  return r.proporcionAfectada >= proporcionMinima ? 'sube' : 'noSube'
+}
