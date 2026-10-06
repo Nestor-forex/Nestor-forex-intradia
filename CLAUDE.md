@@ -2463,6 +2463,37 @@ gh api "repos/Nestor-forex/Nestor-forex-intradia/actions/workflows/vigia.yml/run
   --jq '.workflow_runs[] | [.created_at,.event] | @tsv'
 ```
 
+## 3b. ⚠️⚠️ EL PEAJE MEDIDO QUE VA CON EL ARREGLO, y no hay que esconderlo
+
+Las entradas diarias disparan casi siempre **y llegan muy tarde**. Medido en el
+vigía de Swing, que ya las usa (84 corridas programadas):
+
+| | |
+|---|---:|
+| corridas con **más de 2 horas** de retraso | **74 de 84** |
+| retraso mediano | **~3 h 20 min** |
+| máximo | **6 h 24 min** |
+
+Las horarias de aquí llegaban con **29 minutos** de mediana. O sea que esto
+cambia **«pocas y puntuales» por «casi todas y muy tarde»**.
+
+📌 **Para el HISTORIAL da igual, y el motivo es concreto:** lo que cuenta es
+cuántas HORAS DISTINTAS se miran al día, no qué entrada causó cada mirada. Una
+corrida que llega con 5 horas de retraso mira la vela cerrada de ESE momento,
+así que 24 llegadas repartidas siguen cubriendo ~23 horas distintas, solo
+desplazadas.
+
+⚠️ **Para los AVISOS AL CELULAR sí importa:** un aviso de una señal de hace
+cinco horas vale poco. No se arregla cambiando el cron —el reloj es de GitHub—
+pero conviene saberlo antes de prometerle a nadie que los avisos son
+inmediatos.
+
+⚠️ **Y el riesgo que la medición de la semana tiene que mirar DE VERDAD:** si
+los retrasos amontonan varias entradas en la misma hora, `concurrency` las pone
+en cola y GitHub cancela la pendiente cuando llega otra, así que la cobertura
+podría quedar por debajo de 23. **Lo que hay que contar no es «cuántas corridas
+hubo» sino «cuántas horas distintas se miraron».**
+
 ## 4. ⚠️ NO LLEVA GUARDIÁN tipo `yaCorrioHoy`, y es deliberado
 
 En Swing el vigía trabaja **una vez al día**, así que los tres intentos

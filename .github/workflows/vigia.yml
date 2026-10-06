@@ -49,6 +49,29 @@ name: Vigía por hora
 # pierde nada. Se comprueba contando las corridas dentro de una semana:
 #   gh api repos/.../actions/workflows/vigia.yml/runs  → ¿cuántas al día?
 #
+# ⚠️⚠️ Y HAY UN PEAJE MEDIDO QUE NO HAY QUE ESCONDER: las entradas diarias
+# disparan casi siempre, pero LLEGAN MUY TARDE. Medido en el vigía de Swing,
+# que ya las usa: 74 de 84 corridas con MÁS DE DOS HORAS de retraso, mediana
+# ~3 h 20 min, máximo 6 h 24 min. Las horarias de aquí llegaban con 29 minutos
+# de mediana — o sea que esto cambia «pocas y puntuales» por «casi todas y muy
+# tarde».
+#
+# Para el HISTORIAL eso da igual, y por un motivo concreto: lo que cuenta es
+# cuántas HORAS DISTINTAS se miran al día, no qué entrada causó cada mirada.
+# Una corrida que llega con 5 horas de retraso mira la vela cerrada de ESE
+# momento, así que 24 llegadas repartidas siguen cubriendo ~23 horas distintas,
+# solo desplazadas.
+#
+# Para los AVISOS AL CELULAR sí importa: un aviso de una señal de hace cinco
+# horas vale poco. No se arregla aquí —el reloj es de GitHub— pero conviene
+# saberlo antes de prometer que los avisos son inmediatos.
+#
+# ⚠️ Y el riesgo que la medición de la semana tiene que mirar DE VERDAD: si los
+# retrasos amontonan varias entradas en la misma hora, `concurrency` las pone en
+# cola y GitHub cancela la pendiente cuando llega otra, así que la cobertura
+# podría quedar por debajo de 23. Lo que hay que contar no es «cuántas corridas
+# hubo» sino «cuántas horas distintas se miraron».
+#
 # ⚠️ Y EL GASTO SUBE, a propósito: de 5 × 7 = 35 créditos al día a 23 × 7 = 161.
 # Con el publicador (71) y el reporte (7) son ~239 de los 800. Queda sitio para
 # el banco de pruebas, pero si algún día se convierte también el publicador hay
