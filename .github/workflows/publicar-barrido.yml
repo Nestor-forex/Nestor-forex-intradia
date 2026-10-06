@@ -8,14 +8,23 @@ name: Publicar el barrido para la app
 #
 # CUOTA: cada corrida gasta 7 créditos de Twelve Data.
 #
-#   este workflow ... 48 corridas × 7 = 336   (minutos 5 y 35, de lunes a viernes)
+#   este workflow ... 24 corridas × 7 = 168   (al minuto 5, de lunes a viernes)
 #   el vigía ........ 24 corridas × 7 = 168   (al minuto 20)
 #   reporte diario ..  1 corrida  × 7 =   7
 #   ─────────────────────────────────────────
-#   total ...........................   511  de los 800 diarios
+#   total ...........................   343  de los 800 diarios
 #
-# Quedan ~289 libres, suficiente para una corrida a mano del banco de pruebas
-# (28) sin acercarse al tope.
+# Quedan ~457 libres: cabe una corrida a mano del banco de pruebas (28) o
+# incluso del M15 (112) sin acercarse al tope.
+#
+# ⚠️ ESOS 343 SON EL TECHO, NO LO QUE SE GASTA HOY. Lo que se gasta de verdad
+# depende de cuántos crones dispare GitHub, y hasta el 2026-10-06 disparaba el
+# 21 %: medido sobre 22 días hábiles, este publicador corría 10,1 veces al día
+# —no 48— y el vigía 5,0 —no 24—, o sea unos 113 créditos reales al día en vez
+# de los 511 que decía este archivo. Desde el 2026-10-06 los dos pasan a 24
+# entradas DIARIAS, que es la forma de cron que sí dispara (la tabla medida está
+# en la cabecera de `vigia.yml`). Si la predicción se cumple, el gasto real sube
+# hacia esos 343; si no se cumple, se queda donde estaba.
 #
 # 📌 ESTA CUENTA DECÍA 24 CORRIDAS Y 343 CRÉDITOS, y era falsa desde que se
 # añadió el segundo horario: el bloque `schedule` de abajo ya decía 48 y 511,
@@ -27,45 +36,66 @@ name: Publicar el barrido para la app
 # pero con el número viejo alguien decidiría creyendo que hay 168 créditos de
 # holgura que no existen. Salió el 2026-09-30, calculando si cabía una sonda.
 #
-# POR QUÉ EN LOS MINUTOS 5 Y 35: el vigía corre al minuto 20 y cada barrido
-# gasta 7 de los 8 créditos por minuto que da el plan gratuito, así que dos
-# tareas en el mismo minuto se estorbarían. Repartidos en 5, 20 y 35 quedan
-# TRES intentos por hora sin pisarse.
+# POR QUÉ EN EL MINUTO 5: la vela de una hora cierra en punto, así que el
+# minuto 5 es lo primero que se puede publicar con la vela ya cerrada. Y el
+# vigía corre al minuto 20, de modo que las dos tareas no se pisan: cada barrido
+# gasta 7 de los 8 créditos por minuto que da el plan gratuito.
 #
-# Ver el bloque `schedule` de abajo para los números que justifican tener
-# varios horarios en vez de uno.
+# Ver el bloque `schedule` de abajo para los números que justifican la forma de
+# los crones.
 
 on:
   schedule:
-    # ⚠️ DOS HORARIOS, NO UNO, Y NO ES UN DESCUIDO.
+    # ⚠️⚠️ VEINTICUATRO ENTRADAS DIARIAS, NO DOS HORARIAS (desde el 2026-10-06)
     #
-    # El reloj de GitHub Actions es muy poco fiable para tareas frecuentes.
-    # Medido sobre las 184 corridas registradas del vigía: solo el 3% llegaron
-    # puntuales, el 63% con más de media hora de retraso, y se perdieron 220
-    # corridas en huecos — el peor de 13,4 HORAS seguidas sin vigilar.
+    # Aquí había `5 * * * 1-5` y `35 * * * 1-5`, o sea 48 disparos al día. De
+    # esos 48 GitHub disparaba **222 de 1.056 en 22 días hábiles: el 21 %**, o
+    # sea 10,1 publicaciones al día en vez de 48.
     #
-    # (El de Swing, que corre UNA VEZ AL DÍA, va perfecto: 18 de 18. El
-    # problema es específico de las tareas por hora.)
+    # Lo que decide el arreglo está medido: el porcentaje que dispara NO depende
+    # de cuántos disparos tenga el workflow al día, sino de cada cuánto dispara
+    # CADA entrada. Una entrada que dispara una vez al día acierta el ~95 %; una
+    # que dispara cada hora, el 21 %. La tabla completa está en la cabecera de
+    # `vigia.yml`.
     #
-    # Y se comprobó que la redundancia SÍ funciona, con datos: el 3 de
-    # septiembre, de 16 horas, el vigía solo cubrió 3 — pero entre el vigía y
-    # este publicador se cubrieron 7. Los dos fallan de forma INDEPENDIENTE,
-    # así que cada horario nuevo es una oportunidad más de verdad, no una
-    # repetición del mismo fallo.
+    # 📌 Y la prueba de que el freno es por ENTRADA y no por workflow la daban
+    # estos dos crones: con el DOBLE de entradas que el vigía, este publicador
+    # iba al mismo 21 % por entrada y justo al doble en total (10,1 contra 5,0).
+    # Si el freno fuera por disparos totales, con 48 habría ido peor que con 24.
     #
-    # Con estos dos y el vigía (minuto 20) quedan TRES intentos por hora,
-    # repartidos: minutos 5, 20 y 35.
+    # Se pasa a 24 entradas diarias —UNA por hora, no dos— y no a 48. Una
+    # publicación por hora que de verdad ocurra vale más que dos que no: la app
+    # calcula sobre velas de una hora YA CERRADAS, y ésas no se mueven. Lo único
+    # que se pierde frente a dos por hora es el precio de la hora en curso.
     #
-    # CUOTA: cada corrida gasta 7 créditos de Twelve Data.
-    #   este workflow ... 48 corridas × 7 = 336
-    #   el vigía ........ 24 corridas × 7 = 168
-    #   reporte diario ..  1 corrida  × 7 =   7
-    #   ─────────────────────────────────────────
-    #   total ...........................   511  de los 800 diarios
-    # Quedan ~289 libres, suficiente para una corrida a mano del banco de
-    # pruebas (28) sin acercarse al tope.
-    - cron: '5 * * * 1-5'
-    - cron: '35 * * * 1-5'
+    # ⚠️ Lo que ya NO vale de la nota anterior: decía que el vigía y este
+    # publicador fallaban de forma INDEPENDIENTE, y por eso sumar horarios
+    # ayudaba. Sigue siendo cierto y deja de hacer falta — con entradas diarias
+    # la redundancia entre workflows ya no es lo que sostiene la cobertura.
+    - cron: '5 0 * * 1-5'
+    - cron: '5 1 * * 1-5'
+    - cron: '5 2 * * 1-5'
+    - cron: '5 3 * * 1-5'
+    - cron: '5 4 * * 1-5'
+    - cron: '5 5 * * 1-5'
+    - cron: '5 6 * * 1-5'
+    - cron: '5 7 * * 1-5'
+    - cron: '5 8 * * 1-5'
+    - cron: '5 9 * * 1-5'
+    - cron: '5 10 * * 1-5'
+    - cron: '5 11 * * 1-5'
+    - cron: '5 12 * * 1-5'
+    - cron: '5 13 * * 1-5'
+    - cron: '5 14 * * 1-5'
+    - cron: '5 15 * * 1-5'
+    - cron: '5 16 * * 1-5'
+    - cron: '5 17 * * 1-5'
+    - cron: '5 18 * * 1-5'
+    - cron: '5 19 * * 1-5'
+    - cron: '5 20 * * 1-5'
+    - cron: '5 21 * * 1-5'
+    - cron: '5 22 * * 1-5'
+    - cron: '5 23 * * 1-5'
   workflow_dispatch:
 
 permissions:

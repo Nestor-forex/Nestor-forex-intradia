@@ -9,18 +9,96 @@ name: Vigía por hora
 #
 # Los datos NO se guardan en esta rama: van a la rama `datos`, para que el
 # historial del código no quede sepultado bajo 24 commits diarios.
+#
+# ─────────────────────────────────────────────────────────────────────────
+# ⚠️⚠️ VEINTICUATRO CRONES DIARIOS, NO UNO POR HORA (desde el 2026-10-06)
+# ─────────────────────────────────────────────────────────────────────────
+#
+# Hasta hoy aquí había UN cron, `20 * * * 1-5`. Medido sobre 22 días hábiles
+# seguidos (2026-09-04 a 2026-10-05), ese cron disparó **110 de 528 veces: el
+# 21 %**. O sea 5 revisiones al día en vez de 24, con huecos de mediana 5 horas
+# y máximo 9, y encima EMPEORANDO con el tiempo: 12,4 horas vistas al día en la
+# semana 34 y 4,0 en la semana 40.
+#
+# Eso no es un detalle de puntualidad: es que el historial de señales —lo único
+# irrecuperable del proyecto— registra el 21 % de las horas, y las que registra
+# no son una muestra al azar. Una señal que dura una hora solo queda anotada si
+# el vigía mira justo esa hora; una que dura seis queda anotada casi siempre.
+# El historial sobre-representa las señales lentas.
+#
+# LO QUE SE MIDIÓ, Y ES LO QUE DECIDE EL ARREGLO. El porcentaje que dispara no
+# depende de cuántos disparos tenga el workflow al día, sino de cada cuánto
+# dispara CADA entrada de cron:
+#
+#   | lo que dispara cada entrada | % que de verdad dispara          |
+#   |-----------------------------|----------------------------------|
+#   | 1 vez al día                | 100 % (COT y tasas de Swing)     |
+#   | 1 vez al día × 3 entradas   |  94 % (vigía de Swing)           |
+#   | 6 veces al día (cada 4 h)   |  70 % (los dos calendarios)      |
+#   | 24 veces al día (cada hora) |  21 % (este vigía)               |
+#   | 24 veces al día × 2 entradas|  21 % (publicador: 2 × 5 = 10/día)|
+#
+# La última fila es la que descarta la otra explicación posible: si el freno
+# fuera por disparos totales del workflow, el publicador (48) tendría que ir
+# PEOR que este vigía (24), y va igual de mal por entrada y justo el DOBLE en
+# total. El freno es por entrada, y una entrada DIARIA casi nunca se pierde.
+#
+# ⚠️ ES UNA PREDICCIÓN, NO UN HECHO. Está medida la tabla; lo que no está
+# medido es que 24 entradas diarias se comporten como las 3 de Swing. Si GitHub
+# frena por otra cosa, esto se queda como está (5 corridas al día) y no se
+# pierde nada. Se comprueba contando las corridas dentro de una semana:
+#   gh api repos/.../actions/workflows/vigia.yml/runs  → ¿cuántas al día?
+#
+# ⚠️ Y EL GASTO SUBE, a propósito: de 5 × 7 = 35 créditos al día a 23 × 7 = 161.
+# Con el publicador (71) y el reporte (7) son ~239 de los 800. Queda sitio para
+# el banco de pruebas, pero si algún día se convierte también el publicador hay
+# que volver a hacer esta cuenta ANTES, no después.
+#
+# ⚠️ NO LLEVA GUARDIÁN tipo `yaCorrioHoy`, y es deliberado. Aquí el trabajo ES
+# por hora: saltarse una hora cuesta una hora de historial que no vuelve, y
+# repetir una cuesta 7 créditos de 800 y NADA más — `compararConAnterior` ya
+# descarta las señales que estaban, así que una corrida repetida no anota nada
+# dos veces. Los dos errores no valen lo mismo, así que ante la duda se corre.
 
 on:
   schedule:
     # Al minuto 20 de cada hora, de lunes a viernes (el mercado Forex está
-    # cerrado el fin de semana). NO en punto a propósito: el reporte diario
-    # sale a las 13:00 y cada barrido gasta 7 de los 8 créditos por minuto que
-    # da Twelve Data, así que si coincidieran uno de los dos se quedaría sin
-    # datos. (De todos modos velas.mjs reintenta si le toca un 429.)
+    # cerrado el fin de semana), pero escrito como VEINTICUATRO entradas de una
+    # vez al día en vez de una entrada horaria. Ver la cabecera: medido, una
+    # entrada horaria dispara el 21 % de las veces y una diaria el ~95 %.
     #
-    # Ojo: el reloj de GitHub es impuntual y a veces se atrasa; el propio
-    # vigía anota a qué minuto corrió de verdad para poder medirlo.
-    - cron: '20 * * * 1-5'
+    # El minuto 20 NO es en punto a propósito: el reporte diario sale a las
+    # 13:00 y cada barrido gasta 7 de los 8 créditos por minuto que da Twelve
+    # Data, así que si coincidieran uno de los dos se quedaría sin datos. (De
+    # todos modos velas.mjs reintenta si le toca un 429.)
+    #
+    # Ojo: el reloj de GitHub es impuntual y además se atrasa —mediana medida,
+    # 29 minutos; máximo, 59—; el propio vigía anota a qué minuto corrió de
+    # verdad para poder seguir midiéndolo.
+    - cron: '20 0 * * 1-5'
+    - cron: '20 1 * * 1-5'
+    - cron: '20 2 * * 1-5'
+    - cron: '20 3 * * 1-5'
+    - cron: '20 4 * * 1-5'
+    - cron: '20 5 * * 1-5'
+    - cron: '20 6 * * 1-5'
+    - cron: '20 7 * * 1-5'
+    - cron: '20 8 * * 1-5'
+    - cron: '20 9 * * 1-5'
+    - cron: '20 10 * * 1-5'
+    - cron: '20 11 * * 1-5'
+    - cron: '20 12 * * 1-5'
+    - cron: '20 13 * * 1-5'
+    - cron: '20 14 * * 1-5'
+    - cron: '20 15 * * 1-5'
+    - cron: '20 16 * * 1-5'
+    - cron: '20 17 * * 1-5'
+    - cron: '20 18 * * 1-5'
+    - cron: '20 19 * * 1-5'
+    - cron: '20 20 * * 1-5'
+    - cron: '20 21 * * 1-5'
+    - cron: '20 22 * * 1-5'
+    - cron: '20 23 * * 1-5'
   workflow_dispatch:
 
 # El vigía escribe en la rama `datos`, así que necesita permiso de escritura:

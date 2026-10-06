@@ -201,5 +201,67 @@ console.log('\n10. Todo lo que una señal CALCULA, o se anota o está decidido q
   )
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+// LOS CRONES DEL VIGÍA: VEINTICUATRO DIARIOS, NUNCA UNO HORARIO
+// ─────────────────────────────────────────────────────────────────────────
+//
+// Medido sobre 22 días hábiles seguidos: una entrada de cron que dispara CADA
+// HORA solo dispara el 21 % de las veces (110 de 528), mientras que una que
+// dispara UNA VEZ AL DÍA dispara el ~95 %. Por eso el vigía no lleva
+// `20 * * * 1-5` sino 24 entradas `20 <hora> * * 1-5`. Lo mismo el publicador.
+//
+// ⚠️ ESTO SE COMPRUEBA PORQUE VOLVER ATRÁS ES UNA LÍNEA Y NO FALLA NADA.
+// Alguien que «simplifique» las 24 entradas en una horaria dejaría el vigía
+// mirando 5 horas al día otra vez, y el síntoma no sería un error: sería un
+// historial que crece más despacio de lo que debería, meses después y sin que
+// nada lo señale. Es el mismo fallo silencioso que ya mordió con la vela de
+// domingo de Swing.
+//
+// Se lee el YAML como TEXTO a propósito: no hay forma de importar un workflow,
+// y lo que se quiere comprobar es exactamente lo que GitHub va a leer.
+{
+  // Los DOS workflows que corren por hora. El publicador no anota historial,
+  // pero es el que mantiene fresco el `barrido.json` que lee la app, y tenía
+  // exactamente el mismo problema (10,1 publicaciones al día de 48).
+  const WORKFLOWS = ['vigia.yml', 'publicar-barrido.yml']
+  for (const [i, wf] of WORKFLOWS.entries()) {
+    console.log(`\n13.${i + 1} Los crones de ${wf}`)
+    const yml = readFileSync(new URL(`../../.github/workflows/${wf}`, import.meta.url), 'utf8')
+    const crones = [...yml.matchAll(/^\s*-\s*cron:\s*'([^']+)'/gm)].map((m) => m[1])
+
+    // ⚠️ GUARDA. Si el workflow se reescribe y estos recortes dejan de encontrar
+    // nada, la prueba tiene que FALLAR, no quedarse en verde sin haber mirado un
+    // solo cron. Es el agujero de «una prueba que se adapta a lo que encuentra
+    // no comprueba nada», que este repo ya documenta varias veces.
+    comprobar(`se leyeron entradas de cron del workflow (${crones.length})`, crones.length > 0)
+
+    const campos = crones.map((c) => c.trim().split(/\s+/))
+    const horarias = crones.filter((_, i) => campos[i][1] === '*')
+    comprobar(
+      horarias.length
+        ? `⚠️ HAY ${horarias.length} CRON HORARIO (${horarias.join(', ')}) — medido, una entrada horaria dispara` +
+            ' el 21 % de las veces. Tiene que ser una entrada por hora, no una entrada con `*` en la hora.'
+        : 'ninguna entrada dispara cada hora (nada con `*` en el campo de la hora)',
+      horarias.length === 0
+    )
+
+    const horas = campos.map((f) => Number(f[1])).filter((h) => Number.isInteger(h))
+    const distintas = new Set(horas)
+    comprobar(`hay 24 entradas, una por hora (${distintas.size} horas distintas)`, distintas.size === 24)
+    const faltan = [...Array(24).keys()].filter((h) => !distintas.has(h))
+    comprobar(faltan.length ? `faltan las horas ${faltan.join(', ')}` : 'están las 24 horas del día, de 0 a 23', faltan.length === 0)
+
+    // Todas al mismo minuto y solo de lunes a viernes: el mercado está cerrado
+    // el fin de semana, y el minuto 20 evita chocar con el reporte de las 13:00.
+    const minutos = new Set(campos.map((f) => f[0]))
+    comprobar(`todas al mismo minuto (${[...minutos].join(', ')})`, minutos.size === 1)
+    const noHabiles = crones.filter((_, i) => campos[i][4] !== '1-5')
+    comprobar(
+      noHabiles.length ? `hay crones fuera de lunes a viernes: ${noHabiles.join(', ')}` : 'todas de lunes a viernes (1-5)',
+      noHabiles.length === 0
+    )
+  }
+}
+
 console.log(fallos === 0 ? '\nTodas las comprobaciones pasaron.\n' : `\n${fallos} comprobación(es) fallaron.\n`)
 process.exit(fallos === 0 ? 0 : 1)

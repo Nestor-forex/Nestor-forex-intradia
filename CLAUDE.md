@@ -2397,3 +2397,157 @@ no se vuelve a tocar**. Para eso se escribió antes.
 
 Lo siguiente es un botón: **Actions → «Diagnóstico de la rejilla (ATR por
 semana)» → Run workflow**, 7 créditos, sin escribir nada.
+
+---
+
+# El reloj de GitHub: MEDIDO, EXPLICADO y ARREGLADO (2026-10-06)
+
+Néstor: **«quiero que busques una solución definitiva para ese problema de
+GitHub que no dispara los crones que le toca, me parece que de alguna manera
+afecta la calidad de la información y en consecuencia el criterio para tomar
+decisiones»**.
+
+Tenía razón, y la medición dice en qué exactamente. Pero lo importante de este
+día no es el síntoma —ya estaba anotado desde el 2026-08-09 como «el reloj se
+salta horas»— sino que **por primera vez se midió la CAUSA**, y la causa tiene
+arreglo.
+
+## 1. El número, sobre 22 días hábiles seguidos (2026-09-04 a 2026-10-05)
+
+| | debería disparar | disparó | % |
+|---|---:|---:|---:|
+| **vigía por hora** (`20 * * * 1-5`) | 528 | **110** | **21 %** |
+| **publicador** (2 crones horarios) | 1.056 | **222** | **21 %** |
+
+O sea **5,0 revisiones al día en vez de 24**, con huecos de **mediana 5 horas y
+máximo 9**, y un retraso sobre el minuto programado de **mediana 29 minutos,
+máximo 59**.
+
+⚠️ **Y EMPEORANDO.** Horas vistas al día por semana: 12,4 (W34) · 10,8 (W35) ·
+5,4 · 5,6 · 5,4 · 5,2 · **4,0 (W40)**. Así que el historial de agosto y el de
+octubre **no son comparables entre sí**, que es lo peor que le puede pasar a un
+registro que se está acumulando hacia 150 operaciones.
+
+## 2. ⚠️⚠️ LA CAUSA: el freno es POR ENTRADA DE CRON, no por workflow
+
+Es el hallazgo del día y es lo que convierte el problema en arreglable. Medido
+sobre los ocho workflows programados de las dos apps, mismo periodo:
+
+| lo que dispara cada ENTRADA | % que de verdad dispara | quién |
+|---|---:|---|
+| 1 vez al día | **100 %** | COT y tasas de Swing (22 de 22) |
+| 1 vez al día × 3 entradas | **94 %** | vigía de Swing (62 de 66) |
+| 6 veces al día (cada 4 h) | **70 %** | los dos calendarios (93 de 132) |
+| 24 veces al día (cada hora) | **21 %** | vigía de Intradía |
+| 24 veces al día × 2 entradas | **21 %** | publicador de Intradía |
+
+📌 **La última fila descarta la otra explicación posible.** Si el freno fuera
+por disparos TOTALES del workflow, el publicador (48 al día) tendría que ir
+peor que el vigía (24). Va **igual de mal por entrada y justo el DOBLE en
+total** (10,1 contra 5,0 corridas al día). El freno no mira el workflow: mira
+cada entrada, y **cuanto más a menudo dispara una entrada, menos veces
+dispara**.
+
+## 3. El arreglo: 24 entradas DIARIAS en vez de una horaria
+
+`20 * * * 1-5` pasa a ser `20 0 * * 1-5` … `20 23 * * 1-5`. Y el publicador
+igual, al minuto 5. No hay código nuevo: es la forma del cron.
+
+⚠️ **ES UNA PREDICCIÓN, NO UN HECHO.** Lo medido es la tabla. Lo que NO está
+medido es que 24 entradas diarias se comporten como las 3 de Swing. Si GitHub
+frena por algo más, esto se queda como estaba (5 corridas al día) y no se
+pierde nada. **Se comprueba contando las corridas dentro de una semana:**
+
+```
+gh api "repos/Nestor-forex/Nestor-forex-intradia/actions/workflows/vigia.yml/runs?per_page=100" \
+  --jq '.workflow_runs[] | [.created_at,.event] | @tsv'
+```
+
+## 4. ⚠️ NO LLEVA GUARDIÁN tipo `yaCorrioHoy`, y es deliberado
+
+En Swing el vigía trabaja **una vez al día**, así que los tres intentos
+necesitan un guardián o harían el trabajo tres veces. Aquí el trabajo ES por
+hora, y los dos errores no valen lo mismo:
+
+| equivocarse hacia… | cuesta |
+|---|---|
+| **correr de más** | 7 créditos de 800 — y `compararConAnterior` descarta las señales que ya estaban, así que **no anota nada dos veces** |
+| **saltarse una hora** | una hora de historial que no vuelve |
+
+Misma asimetría que `esSombra` y `yaCorrioHoy`, resuelta hacia el otro lado
+porque aquí lo barato es repetir.
+
+## 5. El publicador pasa a UNA por hora, no a dos
+
+Tenía dos entradas horarias (minutos 5 y 35) para tener dos oportunidades. Con
+entradas diarias esa redundancia deja de hacer falta: **una publicación por
+hora que de verdad ocurra vale más que dos que no.** La app calcula sobre velas
+de una hora YA CERRADAS y ésas no se mueven; lo único que se pierde frente a
+dos por hora es el precio de la hora en curso.
+
+⚠️ Y queda dicho qué parte de la nota anterior ya NO vale: decía que el vigía y
+el publicador fallaban de forma INDEPENDIENTE y que por eso sumar horarios
+ayudaba. Sigue siendo cierto y **deja de ser lo que sostiene la cobertura**.
+
+## 6. EL GASTO REAL DE CRÉDITOS, que era otra pregunta de Néstor
+
+📌 **Este archivo decía 511 al día y CLAUDE.md de Swing decía 89. Los dos
+estaban mal.** El de aquí suponía que los crones disparan; el de Swing salió de
+una medición mía con las cifras de corridas equivocadas (4,2 y 7,5 en vez de
+5,0 y 10,1).
+
+| | corridas/día medidas | créditos |
+|---|---:|---:|
+| publicador | 10,1 | 71 |
+| vigía | 5,0 | 35 |
+| reporte diario | 1,0 | 7 |
+| **real HOY de los 800** | | **≈ 113** |
+
+Y el techo si la predicción se cumple: 168 (publicador) + 168 (vigía) + 7 =
+**343 de 800**, con ~457 libres — cabe el banco de pruebas (28) o incluso el
+M15 (112).
+
+⚠️ **La holgura de hoy es holgura mientras el reloj falle.** Arreglar la
+cadencia TRIPLICA el gasto, a propósito, y esa es la cuenta que hay que hacer
+ANTES de añadir cualquier fuente nueva.
+
+## 7. Lo que esto NO arregla, y hay que decirlo
+
+**Los números ya medidos de Intradía no cambian.** Los −0,13 por unidad de
+riesgo, las 8.000 operaciones del banco, el filtro de RSI en 70, el ADX
+aflojado a 10: todo eso sale del **banco de pruebas**, que se baja las velas él
+mismo y no depende del reloj ni de una sola corrida del vigía. Lo que el reloj
+estropea es el **registro hacia adelante**, no la medición histórica.
+
+⚠️ **Y lo que estropeaba, dicho con el mecanismo:** una señal que dura una hora
+solo queda anotada si el vigía mira justo esa hora —21 % de probabilidad—;
+una que dura seis horas queda anotada casi siempre. Así que el historial de
+Intradía **sobre-representa las señales lentas y sub-representa las rápidas**.
+No es ruido: es un sesgo con dirección, en una app cuyo horizonte es de horas.
+
+📌 Las 74 señales anotadas en 58 días son las que sobrevivieron a ese filtro.
+No hay forma de saber cuántas se perdieron, y **rellenarlas sería inventar**
+—el registro vale porque anota lo que la app dijo ESA hora—. Lo único que se
+puede hacer es que de aquí en adelante no se pierdan.
+
+## 8. La pregunta de la rejilla, contestada el mismo día
+
+Néstor pidió **«quita sábados y funde domingo con lunes»**, que es lo que Swing
+acaba de encender (su PR #106). **Aquí la respuesta medida es NO**, y el botón
+que lo decidió ya se pulsó: `rejilla.yml`, 7 créditos.
+
+```
+VEREDICTO: 7 de 7 → noSeMueve
+% de velas AFECTADAS: EUR 13,0 · GBP 12,7 · JPY 17,8 · CHF 15,7 · AUD 8,8 · NZD 14,4 · CAD 11,2
+umbral: 7 % de cambio en el ATR, en al menos el 15 % de las velas · mayoría 5 de 7 → pasan 2
+stop final: JPY 0.19601 → 0.19402 (−1 %), el resto igual hasta el cuarto decimal
+```
+
+⚠️ **Y NO es una contradicción con Swing, está medido por qué:** aquí
+`atrWilder` tiene una **ventana DURA de 60 velas**, así que solo cambian las
+velas con horas cerradas dentro de su ventana — el **46,7 % como techo
+estructural**. Más de la mitad NO PUEDE cambiar. En Swing `atrWilder` recorre
+**la serie ENTERA**, así que quitar velas mueve todos los valores. **El mismo
+estadístico no significa lo mismo en las dos apps**, que es la regla de siempre
+de este proyecto con una cara nueva.
+
