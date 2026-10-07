@@ -415,6 +415,12 @@ export default {
       'Activity: how many times the price changed today, according to this broker. It does NOT say which way or how far: a pair can change 8,000 times and end where it started. Nor is it volume — no real volume exists in Forex, because there is no central exchange to record it. Compare pairs with each other right now, not days with each other: the day is only half done.',
     pie: (v) => `Spread in pips, amber above 3. Taken on ${v.hora}.`,
   },
+  frescura: {
+    generadoMin: (v) => `Generated ${v.n} min ago`,
+    generadoH: (v) => `Generated ${v.n} h ago`,
+    generadoDias: (v) => `Generated ${v.n} ${v.n === 1 ? 'day' : 'days'} ago`,
+  },
+
   tasas: {
     paraQue: 'Traders check them when a trade will stay open overnight: they tell you in which pairs the interest works in your favour night after night and in which it works against you. It is not the exact figure your broker will charge.',
     titulo: 'Interest rates and swap',

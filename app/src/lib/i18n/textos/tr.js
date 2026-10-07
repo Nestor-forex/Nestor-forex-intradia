@@ -410,6 +410,12 @@ export default {
       'Hareket: bu aracı kuruma göre fiyatın bugün kaç kez değiştiği. Yönü de mesafeyi de SÖYLEMEZ: bir parite 8.000 kez değişip başladığı yerde bitebilir. Hacim de değildir — Forex’te gerçek bir hacim yoktur, çünkü onu kaydeden merkezi bir borsa yoktur. Pariteleri şu anda birbiriyle karşılaştır, günleri birbiriyle değil: gün henüz yarısında.',
     pie: (v) => `Spread pip cinsinden, 3'ün üzerinde kehribar rengi. ${v.hora} tarihinde alındı.`,
   },
+  frescura: {
+    generadoMin: (v) => `${v.n} dk önce hesaplandı`,
+    generadoH: (v) => `${v.n} sa önce hesaplandı`,
+    generadoDias: (v) => `${v.n} gün önce hesaplandı`,
+  },
+
   tasas: {
     paraQue: 'Bir işlem gecelemek üzereyse yatırımcılar buna bakar: hangi paritelerde faizin her gece lehinize, hangilerinde aleyhinize çalıştığını gösterir. Aracı kurumunuzun keseceği kesin tutar değildir.',
     titulo: 'Faiz oranları ve Swap',

@@ -415,6 +415,12 @@ export default {
       "Activité : combien de fois le prix a changé aujourd'hui, selon ce courtier. Elle ne dit NI dans quel sens NI de combien : une paire peut changer 8 000 fois et finir là où elle a commencé. Ce n'est pas non plus du volume — il n'en existe pas de réel sur le Forex, car aucune bourse centrale ne l'enregistre. Compare les paires entre elles à cet instant, pas les journées entre elles : la journée est à moitié faite.",
     pie: (v) => `Spread en pips, en ambre au-dessus de 3. Relevé le ${v.hora}.`,
   },
+  frescura: {
+    generadoMin: (v) => `Généré il y a ${v.n} min`,
+    generadoH: (v) => `Généré il y a ${v.n} h`,
+    generadoDias: (v) => `Généré il y a ${v.n} ${v.n === 1 ? 'jour' : 'jours'}`,
+  },
+
   tasas: {
     paraQue: 'Les traders les regardent quand une position va rester ouverte d\'un jour à l\'autre : elles indiquent dans quelles paires l\'intérêt joue en ta faveur nuit après nuit et dans lesquelles il joue contre toi. Ce n\'est pas le montant exact que ton broker te facturera.',
     titulo: "Taux d'intérêt et swap",

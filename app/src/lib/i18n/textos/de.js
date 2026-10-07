@@ -415,6 +415,12 @@ export default {
       'Aktivität: wie oft sich der Kurs heute geändert hat, laut diesem Broker. Sie sagt NICHT, in welche Richtung oder wie weit: ein Paar kann sich 8.000 Mal ändern und dort enden, wo es angefangen hat. Volumen ist es auch nicht — im Forex gibt es kein echtes, weil keine zentrale Börse es erfasst. Vergleiche Paare jetzt untereinander, nicht Tage miteinander: der Tag ist erst halb vorbei.',
     pie: (v) => `Spread in Pips, ab 3 in Bernstein. Aufgenommen am ${v.hora}.`,
   },
+  frescura: {
+    generadoMin: (v) => `Erstellt vor ${v.n} Min.`,
+    generadoH: (v) => `Erstellt vor ${v.n} Std.`,
+    generadoDias: (v) => `Erstellt vor ${v.n} ${v.n === 1 ? 'Tag' : 'Tagen'}`,
+  },
+
   tasas: {
     paraQue: 'Trader schauen darauf, wenn eine Position über Nacht offen bleibt: Sie zeigen, in welchen Paaren der Zins Nacht für Nacht für dich arbeitet und in welchen gegen dich. Es ist nicht der genaue Betrag, den dein Broker berechnet.',
     titulo: 'Zinssätze und Swap',

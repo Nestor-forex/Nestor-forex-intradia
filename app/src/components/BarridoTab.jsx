@@ -1,9 +1,10 @@
 import { sesgoColor, tendColor } from '../lib/display'
 import { fmtFechaHora } from '../lib/format'
 import BarraFuerza from './BarraFuerza'
+import Frescura from './Frescura'
 import { useIdioma } from '../lib/i18n'
 
-export default function BarridoTab({ loading, error, sinConfigurar, stale, guardadoEl, monedas, pares, corte, onVerTablero }) {
+export default function BarridoTab({ loading, error, sinConfigurar, stale, guardadoEl, generadoEl, horasViejo, monedas, pares, corte, onVerTablero }) {
   const { t, locale } = useIdioma()
   const paresOrdenados = [...pares].sort((a, b) => Math.abs(b.dif) - Math.abs(a.dif))
 
@@ -14,6 +15,10 @@ export default function BarridoTab({ loading, error, sinConfigurar, stale, guard
         <span className="mono" style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>
           {corte}
         </span>
+        {/* Debajo de la hora de la VELA y no en su lugar: son dos cosas
+            distintas y las dos hacen falta. Aquella dice de qué hora son los
+            precios; esta, cuándo se hizo la cuenta. */}
+        <Frescura generadoEl={generadoEl} horasViejo={horasViejo} />
       </div>
 
       {sinConfigurar && (

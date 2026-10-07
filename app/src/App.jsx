@@ -189,6 +189,8 @@ export default function App() {
                     sinConfigurar={mercado.sinConfigurar}
                     stale={mercado.stale}
                     guardadoEl={mercado.guardadoEl}
+                    generadoEl={mercado.generadoEl}
+                    horasViejo={mercado.horasViejo}
                     monedas={mercado.monedas}
                     pares={mercado.pares}
                     corte={mercado.corte}
@@ -267,6 +269,8 @@ export default function App() {
             sinConfigurar={mercado.sinConfigurar}
             stale={mercado.stale}
             guardadoEl={mercado.guardadoEl}
+            generadoEl={mercado.generadoEl}
+            horasViejo={mercado.horasViejo}
             monedas={mercado.monedas}
             pares={mercado.pares}
             compras={mercado.compras}
