@@ -40,16 +40,45 @@
 // de UNA HORA ya cerradas, y esas no cambian. Lo único que se refresca entre
 // medias es el precio de la hora en curso.
 
+import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { computarBarrido } from '../src/lib/marketCalc.js'
 import { leerLlave, obtenerVelas } from './lib/velas.mjs'
-import { escribir } from './lib/vigia-nucleo.mjs'
+import { escribir, yaCorrioEstaHora } from './lib/vigia-nucleo.mjs'
 import { armarBarrido } from './lib/barrido-publicado.mjs'
 
 const DATOS = process.env.VIGIA_DATOS || fileURLToPath(new URL('../../datos-local', import.meta.url))
 const BARRIDO = `${DATOS}/estado/barrido.json`
 
 const ahora = new Date()
+
+// ⚠️ EL GUARDIÁN DE LA HORA, ANTES DE PEDIR PRECIOS. Desde el 2026-10-06 hay
+// DOS relojes pulsando este botón —las 24 entradas de cron de GitHub y el reloj
+// de fuera en Cloudflare—, así que sin esto correría hasta 47 veces al día: 329
+// créditos de los 800 en vez de 168. El porqué y la asimetría («ante la duda,
+// publicar») están en `vigia-nucleo.mjs`.
+//
+// ⚠️ Aquí la marca de tiempo NO sale de un archivo de estado —este guion no
+// tiene— sino del `generadoEl` que el propio barrido publicado lleva dentro.
+// Por eso el guardián recibe un texto y no un objeto de estado.
+//
+// 📌 Y sí, esto deja atrás el diseño de «dos oportunidades por hora» que tenía
+// este publicador. Aquellas dos existían para cubrir los saltos del reloj de
+// GitHub; lo que cubre un salto ahora es que haya DOS RELOJES independientes, y
+// lo que de verdad hacía falta —una publicación por hora, puntual— es
+// exactamente lo que queda.
+const ultimoGeneradoEl = (() => {
+  try {
+    return JSON.parse(readFileSync(BARRIDO, 'utf8')).generadoEl
+  } catch {
+    return null // no hay barrido todavía, o está roto: se publica
+  }
+})()
+if (process.env.SOLO_SI_FALTA_LA_HORA === '1' && yaCorrioEstaHora(ultimoGeneradoEl, ahora)) {
+  console.log(`Esta hora ya se publicó (${ultimoGeneradoEl}). Este intento no hace nada.`)
+  process.exit(0)
+}
+
 const { barras, rates, rangos } = await obtenerVelas(leerLlave())
 const data = computarBarrido(barras, rates, rangos)
 const barrido = armarBarrido(data, ahora)

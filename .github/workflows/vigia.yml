@@ -123,6 +123,11 @@ on:
     - cron: '20 22 * * 1-5'
     - cron: '20 23 * * 1-5'
   workflow_dispatch:
+    inputs:
+      forzar:
+        description: 'Correr aunque esta hora ya se haya mirado (el guardián de la hora)'
+        type: boolean
+        default: false
 
 # El vigía escribe en la rama `datos`, así que necesita permiso de escritura:
 # por defecto el token de Actions es de solo lectura.
@@ -185,6 +190,21 @@ jobs:
           TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}
           VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          # ⚠️ EL GUARDIÁN DE LA HORA. Desde el 2026-10-06 hay DOS relojes
+          # pulsando este botón: los 24 crones de GitHub (que disparan casi
+          # siempre y llegan horas tarde) y el reloj de fuera en Cloudflare
+          # (`reloj-externo/` del repositorio de Swing, que sí es puntual). Sin
+          # esto el vigía correría hasta 47 veces al día: 329 créditos de Twelve
+          # Data de los 800 en vez de 168.
+          #
+          # Va puesto SIEMPRE menos cuando alguien marca la casilla «forzar» al
+          # lanzarlo a mano, que es para lo que sirve el botón.
+          #
+          # ⚠️ Y por eso se escribe `'0' || '1'` y no `'' || '1'`: una cadena
+          # vacía es FALSA en las expresiones de GitHub, así que con `''` el
+          # `||` se dispararía igual y el guardián quedaría puesto siempre —
+          # forzar no forzaría nada, y en silencio.
+          SOLO_SI_FALTA_LA_HORA: ${{ inputs.forzar && '0' || '1' }}
         run: node scripts/vigia.mjs
 
       - name: Guardar lo que vio

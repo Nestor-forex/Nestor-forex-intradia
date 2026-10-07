@@ -18,7 +18,15 @@
 import { fileURLToPath } from 'node:url'
 import { computarBarrido, derivarVista } from '../src/lib/marketCalc.js'
 import { leerLlave, obtenerVelas } from './lib/velas.mjs'
-import { compararConAnterior, escribir, esSombra, leerEstado, leerJsonl, separarSombra } from './lib/vigia-nucleo.mjs'
+import {
+  compararConAnterior,
+  escribir,
+  esSombra,
+  leerEstado,
+  leerJsonl,
+  separarSombra,
+  yaCorrioEstaHora,
+} from './lib/vigia-nucleo.mjs'
 import { armarBarrido } from './lib/barrido-publicado.mjs'
 import { resolver, resumir } from './lib/resolver.mjs'
 
@@ -33,6 +41,24 @@ const LOG_CORRIDAS = `${DATOS}/historial/corridas.jsonl`
 const LOG_RESULTADOS = `${DATOS}/historial/resultados.jsonl`
 
 const ahora = new Date()
+
+// ⚠️ EL GUARDIÁN DE LA HORA VA ANTES DE PEDIR PRECIOS, no después: si fuera
+// después ya se habrían gastado los 7 créditos y el guardián no serviría para
+// nada.
+//
+// Desde el 2026-10-06 hay DOS relojes pulsando este botón —las 24 entradas de
+// cron de GitHub y el reloj de fuera en Cloudflare—, así que sin esto el vigía
+// correría hasta 47 veces al día: 329 créditos de los 800 en vez de 168. El
+// porqué y la asimetría («ante la duda, correr») están en `vigia-nucleo.mjs`.
+//
+// Solo se aplica cuando lo pulsa un RELOJ. Lanzarlo a mano con la casilla
+// «forzar» marcada siempre corre, que es para lo que sirve el botón.
+const estadoPrevio = leerEstado(ESTADO)
+if (process.env.SOLO_SI_FALTA_LA_HORA === '1' && yaCorrioEstaHora(estadoPrevio.actualizadoEl, ahora)) {
+  console.log(`Esta hora ya se miró (${estadoPrevio.actualizadoEl}). Este intento no hace nada.`)
+  process.exit(0)
+}
+
 const { barras, rates, rangos } = await obtenerVelas(leerLlave())
 const data = computarBarrido(barras, rates, rangos)
 // ⚠️ `incluirRetrocesos` va encendido AQUÍ y solo aquí.
@@ -51,7 +77,7 @@ const data = computarBarrido(barras, rates, rangos)
 // La app (`derivarVista` sin este parámetro) sigue sin darlas.
 const vista = derivarVista(data, { thr: 0.5, topN: 3, incluirRetrocesos: true })
 
-const { actuales, nuevas } = compararConAnterior(vista.setups, leerEstado(ESTADO))
+const { actuales, nuevas } = compararConAnterior(vista.setups, estadoPrevio)
 
 // Cuáles pueden llegar a un celular y cuáles solo se anotan. La regla está en
 // `vigia-nucleo.mjs`, con su prueba: es la promesa de que una señal sin

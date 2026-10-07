@@ -11,7 +11,15 @@
 import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { compararConAnterior, escribir, esSombra, idDe, leerEstado, separarSombra } from './lib/vigia-nucleo.mjs'
+import {
+  compararConAnterior,
+  escribir,
+  esSombra,
+  idDe,
+  leerEstado,
+  separarSombra,
+  yaCorrioEstaHora,
+} from './lib/vigia-nucleo.mjs'
 
 const dir = mkdtempSync(join(tmpdir(), 'vigia-'))
 const ESTADO = join(dir, 'estado/vigia.json')
@@ -260,6 +268,106 @@ console.log('\n10. Todo lo que una señal CALCULA, o se anota o está decidido q
       noHabiles.length ? `hay crones fuera de lunes a viernes: ${noHabiles.join(', ')}` : 'todas de lunes a viernes (1-5)',
       noHabiles.length === 0
     )
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────
+console.log('\n14. EL GUARDIÁN DE LA HORA (dos relojes pulsando el mismo botón)')
+// ────────────────────────────────────────────────────────────────────────
+// Desde el 2026-10-06 pulsan este workflow los 24 crones de GitHub Y el reloj
+// de fuera en Cloudflare. Sin guardián el vigía correría hasta 47 veces al día:
+// 329 créditos de Twelve Data de los 800 en vez de 168. Y lo haría EN SILENCIO,
+// que es lo de siempre: nada falla, solo se acaba la cuota antes.
+{
+  const ahora = new Date('2026-10-06T14:37:00Z')
+
+  comprobar(
+    'la misma hora UTC → ya corrió, se salta',
+    yaCorrioEstaHora('2026-10-06T14:05:00Z', ahora) === true
+  )
+  comprobar(
+    'el mismo minuto exacto → se salta',
+    yaCorrioEstaHora('2026-10-06T14:37:00Z', ahora) === true
+  )
+  comprobar(
+    '⚠️ la hora ANTERIOR → corre, aunque hayan pasado 38 minutos',
+    yaCorrioEstaHora('2026-10-06T13:59:00Z', ahora) === false
+  )
+  comprobar('la hora siguiente → corre', yaCorrioEstaHora('2026-10-06T15:01:00Z', ahora) === false)
+  comprobar('ayer a la misma hora → corre', yaCorrioEstaHora('2026-10-05T14:05:00Z', ahora) === false)
+
+  // ⚠️ Se compara la hora de RELOJ, no «hace menos de 60 minutos». Lo que
+  // importa para el historial es cuántas horas DISTINTAS se miran al día —es lo
+  // que mide `medir-puntualidad.mjs` en la app hermana—, así que dos corridas en
+  // la misma hora de reloj son una hora mirada, y dos corridas separadas por 2
+  // minutos a caballo de las en punto son DOS.
+  comprobar(
+    '⚠️ 13:59 y 14:01 son dos horas distintas: la segunda corre',
+    yaCorrioEstaHora('2026-10-06T13:59:00Z', new Date('2026-10-06T14:01:00Z')) === false
+  )
+
+  // ⚠️⚠️ LA ASIMETRÍA, QUE ES LO QUE NO HAY QUE ABLANDAR. Ante cualquier duda
+  // devuelve `false`, o sea CORRE. Equivocarse hacia correr cuesta 7 créditos de
+  // los 800 y no cambia el historial (`compararConAnterior` descarta lo que ya
+  // estaba). Equivocarse hacia saltarse cuesta una hora de historial que no
+  // vuelve. Los dos errores no valen lo mismo, así que la condición no puede ser
+  // simétrica. Es la misma forma de escribir que `esSombra`.
+  comprobar('sin marca (null) → corre', yaCorrioEstaHora(null, ahora) === false)
+  comprobar('sin marca (undefined) → corre', yaCorrioEstaHora(undefined, ahora) === false)
+  comprobar('fecha ilegible → corre', yaCorrioEstaHora('esta mañana', ahora) === false)
+  comprobar('un número en vez de texto → corre', yaCorrioEstaHora(1760000000000, ahora) === false)
+  comprobar('un objeto → corre', yaCorrioEstaHora({ hora: 14 }, ahora) === false)
+  comprobar('cadena vacía → corre', yaCorrioEstaHora('', ahora) === false)
+
+  // Y el campo del que lo lee el vigía. ⚠️ `leerEstado` lo TIRABA hasta el
+  // 2026-10-06: sin esto el guardián nunca se activaría y los dos relojes harían
+  // el trabajo dos veces, otra vez en silencio. Es el mismo descuido que ya tuvo
+  // Swing, anotado en CLAUDE.md con fecha del 2026-09-07.
+  escribir(ESTADO, JSON.stringify({ senales: ['a|COMPRA|tendencia'], actualizadoEl: '2026-10-06T14:05:00Z' }))
+  const leido = leerEstado(ESTADO)
+  comprobar('⚠️ `leerEstado` CONSERVA `actualizadoEl`', leido.actualizadoEl === '2026-10-06T14:05:00Z')
+  comprobar('y con él el guardián se activa', yaCorrioEstaHora(leido.actualizadoEl, ahora) === true)
+
+  escribir(ESTADO, JSON.stringify({ senales: [] }))
+  comprobar('un estado viejo sin ese campo → null, y entonces CORRE', leerEstado(ESTADO).actualizadoEl === null)
+  comprobar('   (y no revienta)', yaCorrioEstaHora(leerEstado(ESTADO).actualizadoEl, ahora) === false)
+
+  escribir(ESTADO, '{ esto no es json')
+  comprobar('archivo roto → null, y CORRE', leerEstado(ESTADO).actualizadoEl === null)
+}
+
+// ────────────────────────────────────────────────────────────────────────
+console.log('\n14b. Los dos guiones MIRAN antes de pedir precios, y los workflows lo piden')
+// ────────────────────────────────────────────────────────────────────────
+// Un guardián que se consultara DESPUÉS de `obtenerVelas` no serviría para
+// nada: los 7 créditos ya estarían gastados. Se comprueba leyendo el guion como
+// texto porque importarlo saldría a internet.
+{
+  for (const [guion, marca] of [
+    ['scripts/vigia.mjs', 'estadoPrevio.actualizadoEl'],
+    ['scripts/publicar-barrido.mjs', 'ultimoGeneradoEl'],
+  ]) {
+    const texto = readFileSync(new URL(`../${guion}`, import.meta.url), 'utf8')
+    const iGuardian = texto.indexOf('yaCorrioEstaHora(')
+    const iVelas = texto.indexOf('await obtenerVelas(')
+    comprobar(`${guion}: usa el guardián con ${marca}`, texto.includes(`yaCorrioEstaHora(${marca}`))
+    comprobar(`${guion}: lo mira ANTES de pedir velas`, iGuardian > 0 && iVelas > 0 && iGuardian < iVelas)
+    comprobar(`${guion}: lee la variable del workflow`, texto.includes("process.env.SOLO_SI_FALTA_LA_HORA === '1'"))
+  }
+
+  for (const wf of ['vigia.yml', 'publicar-barrido.yml']) {
+    const texto = readFileSync(new URL(`../../.github/workflows/${wf}`, import.meta.url), 'utf8')
+    comprobar(`${wf}: le pasa SOLO_SI_FALTA_LA_HORA al guion`, texto.includes('SOLO_SI_FALTA_LA_HORA:'))
+    // ⚠️ `'0' || '1'` y NO `'' || '1'`. Una cadena vacía es falsa en las
+    // expresiones de GitHub, así que con `''` el `||` se dispararía igual y el
+    // guardián quedaría puesto SIEMPRE: marcar «forzar» no forzaría nada, y en
+    // silencio. Es la clase de fallo que no se ve hasta que alguien necesita el
+    // botón de verdad.
+    comprobar(
+      `${wf}: la expresión usa '0' y no una cadena vacía (si no, «forzar» no forzaría)`,
+      texto.includes("inputs.forzar && '0' || '1'")
+    )
+    comprobar(`${wf}: tiene la casilla «forzar» para lanzarlo a mano`, /inputs:\s*\n\s*forzar:/.test(texto))
   }
 }
 
