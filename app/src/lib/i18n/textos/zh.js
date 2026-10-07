@@ -362,6 +362,13 @@ export default {
     cerrar: '收起',
   },
 
+  sombra: {
+    aviso: ({ ops, meta }) =>
+      `它还不能当作信号：它有 ${ops} 笔真实交易，需要 ${meta} 笔才能相信它，无论数字是正是负。`,
+    margen: ({ ops, m }) =>
+      `只有 ${ops} 笔交易时，那个百分比仅凭偶然就可能移动 ±${m} 个点。`,
+  },
+
   historial: {
     modoTendencia: '趋势模式',
     modoRango: '区间模式',
@@ -407,6 +414,7 @@ export default {
     pie: (v) => `点差以点为单位，超过 3 显示为琥珀色。采集于 ${v.hora}。`,
   },
   frescura: {
+    coste: (v) => `${v.horas} 小时前的信号中，每 100 个已有 ${v.pct} 个无法再执行`,
     generadoMin: (v) => `${v.n} 分钟前生成`,
     generadoH: (v) => `${v.n} 小时前生成`,
     generadoDias: (v) => `${v.n} 天前生成`,

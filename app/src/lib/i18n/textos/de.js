@@ -371,6 +371,13 @@ export default {
     cerrar: 'Schließen',
   },
 
+  sombra: {
+    aviso: ({ ops, meta }) =>
+      `Sie kann noch NICHT als Signal genommen werden: sie hat ${ops} echte Trades von den ${meta}, die nötig sind, um ihr zu glauben — egal wie die Zahl ausfällt.`,
+    margen: ({ ops, m }) =>
+      `Mit ${ops} Trades kann sich dieser Prozentsatz allein durch Zufall um ±${m} Punkte bewegen.`,
+  },
+
   historial: {
     modoTendencia: 'Trend-Modus',
     modoRango: 'Range-Modus',
@@ -416,6 +423,7 @@ export default {
     pie: (v) => `Spread in Pips, ab 3 in Bernstein. Aufgenommen am ${v.hora}.`,
   },
   frescura: {
+    coste: (v) => `${v.pct} von 100 Signalen von vor ${v.horas} Std. sind nicht mehr nutzbar`,
     generadoMin: (v) => `Erstellt vor ${v.n} Min.`,
     generadoH: (v) => `Erstellt vor ${v.n} Std.`,
     generadoDias: (v) => `Erstellt vor ${v.n} ${v.n === 1 ? 'Tag' : 'Tagen'}`,

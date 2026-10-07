@@ -84,6 +84,18 @@ export const GEMELOS = [
   'src/components/Frescura.jsx',
   'src/lib/frescura.js',
   'scripts/prueba-frescura.mjs',
+  // Por qué el número de una regla de la sombra todavía no se puede creer:
+  // cuántas operaciones reales lleva, cuántas faltan y cuánto puede moverse ese
+  // porcentaje solo por casualidad. Gemelo el componente Y las cuentas, y el
+  // listón de 150 operaciones es el MISMO en las dos a propósito: no es un
+  // parámetro de trading, es `margen(n)`, o sea aritmética. Con 150 el margen
+  // del peor caso baja de ±10 puntos con velas diarias y con velas de una hora
+  // igual; lo único que cambia entre apps es cuánto se tarda en llegar.
+  //
+  // ⚠️ La PRUEBA no es gemela (ver PRIMOS): mira la pantalla de cada app, y
+  // aquí son tres reglas de sombra y allá una.
+  'src/components/AvisoSombra.jsx',
+  'src/lib/sombra.js',
   // La cabecera de TODAS las tarjetas que se abren. Es gemela por el mismo
   // motivo por el que se extrajo: había ocho copias de la misma cabecera y
   // cada una terminaba en una flechita gris que nadie leía como un botón. Si
@@ -275,6 +287,13 @@ export const PRIMOS = {
     '2026-10-07 lleva además `HORAS_VIEJO`, el umbral de frescura, que es ' +
     'distinto a propósito: 26 en Swing (vigía diario) y 2 en Intradía (vigía ' +
     'por hora).',
+  'scripts/prueba-sombra.mjs':
+    'Las cuentas y el componente SÍ son gemelos; la prueba no, porque mira la ' +
+    'PANTALLA de cada app: en Swing hay tres reglas en la sombra (reversión, ' +
+    'comprar la caída y ruptura de estructura) y en Intradía una (el ' +
+    'retroceso). Y solo la de Swing puede comparar el listón de 150 ' +
+    'operaciones contra `preregistro-lss.mjs`, que allá existe y acá no; ' +
+    'como `sombra.js` es GEMELO, esa comprobación cubre a las dos.',
   'scripts/prueba-cableado.mjs':
     'Comprueba que todo lo que `App.jsx` le pide al hook, el hook lo ' +
     'devuelva, y que lo que `derivarVista` calcula o llegue a la pantalla o ' +

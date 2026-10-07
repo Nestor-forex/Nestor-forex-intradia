@@ -365,6 +365,13 @@ export default {
     cerrar: '閉じる',
   },
 
+  sombra: {
+    aviso: ({ ops, meta }) =>
+      `まだシグナルとして扱えません。数字が良くても悪くても、信用するには${meta}件の実取引が必要で、現在は${ops}件です。`,
+    margen: ({ ops, m }) =>
+      `${ops}件では、その数字は偶然だけで±${m}ポイント動きえます。`,
+  },
+
   historial: {
     modoTendencia: 'トレンドモード',
     modoRango: 'レンジモード',
@@ -410,6 +417,7 @@ export default {
     pie: (v) => `スプレッドは pip 表示、3 を超えると琥珀色。取得: ${v.hora}。`,
   },
   frescura: {
+    coste: (v) => `${v.horas} 時間前のシグナル 100 件のうち ${v.pct} 件はもう使えません`,
     generadoMin: (v) => `${v.n} 分前に生成`,
     generadoH: (v) => `${v.n} 時間前に生成`,
     generadoDias: (v) => `${v.n} 日前に生成`,

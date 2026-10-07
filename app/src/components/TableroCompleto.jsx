@@ -45,7 +45,7 @@ function RazonList({ items, emptyText }) {
   )
 }
 
-export default function TableroCompleto({ onVolver, onVerSetup, loading, error, sinConfigurar, stale, guardadoEl, monedas, pares, compras, ventas, vigilancia, rangos = [], setups, corte, generadoEl, horasViejo, sesion: sesionDatos }) {
+export default function TableroCompleto({ onVolver, onVerSetup, loading, error, sinConfigurar, stale, guardadoEl, monedas, pares, compras, ventas, vigilancia, rangos = [], setups, corte, generadoEl, horasViejo, costePorAntiguedad, sesion: sesionDatos }) {
   const { t, locale } = useIdioma()
   const fecha = useMemo(() => fmtFechaHoy(locale), [locale])
   // La sesión sale de la hora de la última vela (la calcula el barrido); si
@@ -94,7 +94,7 @@ export default function TableroCompleto({ onVolver, onVerSetup, loading, error, 
             )}
             <div>{loading ? '…' : corte}</div>
             {/* Cuándo se CALCULÓ, que no es la hora de la vela. Ver `Frescura`. */}
-            <Frescura generadoEl={generadoEl} horasViejo={horasViejo} style={{ fontSize: 12.5 }} />
+            <Frescura generadoEl={generadoEl} horasViejo={horasViejo} costePorAntiguedad={costePorAntiguedad} style={{ fontSize: 12.5 }} />
           </div>
         </section>
 

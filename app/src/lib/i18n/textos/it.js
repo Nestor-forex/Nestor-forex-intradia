@@ -367,6 +367,13 @@ export default {
     cerrar: 'Chiudi',
   },
 
+  sombra: {
+    aviso: ({ ops, meta }) =>
+      `NON può ancora essere presa come segnale: ha ${ops} operazioni reali sulle ${meta} che servono per crederci, qualunque sia il numero.`,
+    margen: ({ ops, m }) =>
+      `Con ${ops} operazioni quella percentuale può muoversi di ±${m} punti solo per caso.`,
+  },
+
   historial: {
     modoTendencia: 'Modo tendenza',
     modoRango: 'Modo range',
@@ -412,6 +419,7 @@ export default {
     pie: (v) => `Spread in pip, in ambra sopra 3. Rilevato il ${v.hora}.`,
   },
   frescura: {
+    coste: (v) => `${v.pct} segnali su 100 di ${v.horas} h fa non sono più utilizzabili`,
     generadoMin: (v) => `Generato ${v.n} min fa`,
     generadoH: (v) => `Generato ${v.n} h fa`,
     generadoDias: (v) => `Generato ${v.n} ${v.n === 1 ? 'giorno' : 'giorni'} fa`,

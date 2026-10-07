@@ -371,6 +371,13 @@ export default {
     cerrar: 'Close',
   },
 
+  sombra: {
+    aviso: ({ ops, meta }) =>
+      `It still CANNOT be taken as a signal: it has ${ops} real trades out of the ${meta} needed to believe it, whichever way the number comes out.`,
+    margen: ({ ops, m }) =>
+      `With ${ops} trades that percentage can move ±${m} points by chance alone.`,
+  },
+
   historial: {
     modoTendencia: 'Trend mode',
     modoRango: 'Range mode',
@@ -416,6 +423,7 @@ export default {
     pie: (v) => `Spread in pips, amber above 3. Taken on ${v.hora}.`,
   },
   frescura: {
+    coste: (v) => `${v.pct} of every 100 signals from ${v.horas} h ago can no longer be taken`,
     generadoMin: (v) => `Generated ${v.n} min ago`,
     generadoH: (v) => `Generated ${v.n} h ago`,
     generadoDias: (v) => `Generated ${v.n} ${v.n === 1 ? 'day' : 'days'} ago`,

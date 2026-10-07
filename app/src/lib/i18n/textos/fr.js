@@ -371,6 +371,13 @@ export default {
     cerrar: 'Fermer',
   },
 
+  sombra: {
+    aviso: ({ ops, meta }) =>
+      `Elle ne peut encore PAS être prise comme signal : elle compte ${ops} opérations réelles sur les ${meta} nécessaires pour y croire, quel que soit le chiffre.`,
+    margen: ({ ops, m }) =>
+      `Avec ${ops} opérations, ce pourcentage peut bouger de ±${m} points par simple hasard.`,
+  },
+
   historial: {
     modoTendencia: 'Mode tendance',
     modoRango: 'Mode range',
@@ -416,6 +423,7 @@ export default {
     pie: (v) => `Spread en pips, en ambre au-dessus de 3. Relevé le ${v.hora}.`,
   },
   frescura: {
+    coste: (v) => `${v.pct} signaux sur 100 d’il y a ${v.horas} h ne sont plus praticables`,
     generadoMin: (v) => `Généré il y a ${v.n} min`,
     generadoH: (v) => `Généré il y a ${v.n} h`,
     generadoDias: (v) => `Généré il y a ${v.n} ${v.n === 1 ? 'jour' : 'jours'}`,

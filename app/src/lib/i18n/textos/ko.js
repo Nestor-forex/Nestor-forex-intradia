@@ -365,6 +365,13 @@ export default {
     cerrar: '닫기',
   },
 
+  sombra: {
+    aviso: ({ ops, meta }) =>
+      `아직 신호로 받아들일 수 없습니다. 수치가 어떻게 나오든, 믿으려면 실제 거래 ${meta}건이 필요하고 현재는 ${ops}건입니다.`,
+    margen: ({ ops, m }) =>
+      `${ops}건으로는 그 비율이 우연만으로 ±${m}포인트 움직일 수 있습니다.`,
+  },
+
   historial: {
     modoTendencia: '추세 모드',
     modoRango: '박스권 모드',
@@ -410,6 +417,7 @@ export default {
     pie: (v) => `스프레드는 pip 단위, 3을 넘으면 호박색. ${v.hora}에 수집.`,
   },
   frescura: {
+    coste: (v) => `${v.horas}시간 전 신호 100개 중 ${v.pct}개는 더 이상 쓸 수 없습니다`,
     generadoMin: (v) => `${v.n}분 전 생성`,
     generadoH: (v) => `${v.n}시간 전 생성`,
     generadoDias: (v) => `${v.n}일 전 생성`,

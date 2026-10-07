@@ -88,3 +88,52 @@ export function describirEdad(minutos, horasViejo) {
   if (minutos < 48 * 60) return { clave: 'generadoH', n: Math.floor(minutos / 60), viejo }
   return { clave: 'generadoDias', n: Math.floor(minutos / (60 * 24)), viejo }
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// CUÁNTO CUESTA ESA ANTIGÜEDAD — pero solo donde esté MEDIDO
+// ─────────────────────────────────────────────────────────────────────────
+// El 2026-10-07 se midió en Intradía, sobre 19.899 velas de una hora (tres
+// años), cuántas de las señales que la app enseñaba YA NO SE PODÍAN TOMAR
+// cuando el barrido tenía k horas: o el precio ya se había pasado del stop, o
+// ya había llegado al objetivo.
+//
+// ⚠️⚠️ LA TABLA NO VIVE AQUÍ, Y ÉSA ES LA DECISIÓN.
+//
+// Este archivo es GEMELO: lo que se escriba aquí sale en las DOS apps. Y la
+// medición es de INTRADÍA — en Swing una vela es un día y el retraso
+// equivalente es otra pregunta, con otro umbral, que NO se ha medido.
+//
+// Así que la tabla la pasa quien llama, desde su `useMarketData.js`, que es
+// PRIMO. Swing pasa `null` y entonces aquí no se afirma nada: ni número, ni
+// renglón. Es la misma asimetría que `HORAS_VIEJO` y la misma lección de
+// `barridoSwap` — un número medido en una app no vale en la otra.
+//
+// ⚠️ Y ante la duda NO se afirma. Sin tabla, con una tabla rara, o con una
+// antigüedad por debajo del primer punto medido, devuelve `null`. Inventar un
+// porcentaje en una app cuyo argumento entero es no afirmar más de lo que se
+// puede demostrar sería exactamente lo contrario de lo que esto viene a hacer.
+
+/**
+ * Qué parte de las señales enseñadas ya no se puede tomar, a esta antigüedad.
+ *
+ * @param {number|null} minutos   lo que devuelve `edadEnMinutos`
+ * @param {{horas:number, pct:number}[]|null} tabla  puntos MEDIDOS, de menor a mayor
+ * @returns {{pct:number, horas:number}|null}
+ */
+export function costeDeLaAntiguedad(minutos, tabla) {
+  if (typeof minutos !== 'number' || !Number.isFinite(minutos)) return null
+  if (!Array.isArray(tabla) || !tabla.length) return null
+
+  const horas = minutos / 60
+  // Se coge el MAYOR punto medido que no pase de la antigüedad actual: así el
+  // número que sale siempre es uno que se midió, nunca uno interpolado.
+  //
+  // ⚠️ Interpolar sería inventar. Entre el punto de 3 h y el de 6 h no hay
+  // medición, y una recta entre dos puntos no es un dato: es un dibujo.
+  let elegido = null
+  for (const p of tabla) {
+    if (!Number.isFinite(p?.horas) || !Number.isFinite(p?.pct)) return null
+    if (horas >= p.horas && p.pct > 0) elegido = p
+  }
+  return elegido ? { pct: elegido.pct, horas: elegido.horas } : null
+}
