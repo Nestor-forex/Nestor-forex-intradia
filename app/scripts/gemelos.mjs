@@ -75,6 +75,15 @@ export const GEMELOS = [
   'src/components/Diagnostico.jsx',
   'scripts/prueba-diario.mjs',
   'src/components/Glosario.jsx',
+  // De cuándo es el barrido que estás viendo. Gemelo el componente Y las
+  // cuentas, pero NO el umbral de cuándo se pinta en ámbar: ése vive en
+  // `useMarketData.js`, que es PRIMO, porque las dos apps publican con
+  // cadencias distintas (Swing una vez al día, Intradía una vez por hora) y un
+  // dato de 3 horas es viejo allí y normal acá. Copiar ese número de la hermana
+  // sería traerse una suposición falsa, que es la lección de `barridoSwap`.
+  'src/components/Frescura.jsx',
+  'src/lib/frescura.js',
+  'scripts/prueba-frescura.mjs',
   // La cabecera de TODAS las tarjetas que se abren. Es gemela por el mismo
   // motivo por el que se extrajo: había ocho copias de la misma cabecera y
   // cada una terminaba en una flechita gris que nadie leía como un botón. Si
@@ -262,7 +271,16 @@ export const PRIMOS = {
     'de las aproximadas; en Swing los 14 pares se piden directos y esa ' +
     'advertencia sobra.',
   'src/lib/useMarketData.js':
-    'Cada una lee el barrido de la rama `datos` de SU repositorio.',
+    'Cada una lee el barrido de la rama `datos` de SU repositorio. Y desde el ' +
+    '2026-10-07 lleva además `HORAS_VIEJO`, el umbral de frescura, que es ' +
+    'distinto a propósito: 26 en Swing (vigía diario) y 2 en Intradía (vigía ' +
+    'por hora).',
+  'scripts/prueba-cableado.mjs':
+    'Comprueba que todo lo que `App.jsx` le pide al hook, el hook lo ' +
+    'devuelva, y que lo que `derivarVista` calcula o llegue a la pantalla o ' +
+    'esté en una lista con el motivo escrito. El bloque general es idéntico; ' +
+    'las claves concretas y la regla de sombra que cada app esconde no lo ' +
+    'son, y por eso no puede ser gemelo.',
   'src/lib/useCalendario.js':
     'Mismo motivo: cada app publica y lee SU propio calendario. El contenido ' +
     'es el mismo —las 8 divisas coinciden— pero si Intradía leyera el archivo ' +

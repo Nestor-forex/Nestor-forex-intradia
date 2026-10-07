@@ -411,6 +411,12 @@ export default {
       "Attività: quante volte è cambiato il prezzo oggi, secondo questo broker. NON dice in che direzione né di quanto: una coppia può cambiare 8.000 volte e finire dov'era. E non è volume — nel Forex non ne esiste uno reale, perché non c'è una borsa centrale che lo registri. Confronta le coppie fra loro adesso, non i giorni fra loro: la giornata è a metà.",
     pie: (v) => `Spread in pip, in ambra sopra 3. Rilevato il ${v.hora}.`,
   },
+  frescura: {
+    generadoMin: (v) => `Generato ${v.n} min fa`,
+    generadoH: (v) => `Generato ${v.n} h fa`,
+    generadoDias: (v) => `Generato ${v.n} ${v.n === 1 ? 'giorno' : 'giorni'} fa`,
+  },
+
   tasas: {
     paraQue: 'I trader le guardano quando un\'operazione resterà aperta da un giorno all\'altro: dicono in quali coppie l\'interesse gioca a tuo favore notte dopo notte e in quali contro. Non è la cifra esatta che ti addebiterà il broker.',
     titulo: 'Tassi di interesse e swap',

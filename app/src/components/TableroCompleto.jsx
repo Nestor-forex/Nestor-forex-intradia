@@ -7,6 +7,7 @@ import { generarReporteMd, descargarMd } from '../lib/reporte'
 import BarraFuerza from './BarraFuerza'
 import Sparkline from './Sparkline'
 import Glosario from './Glosario'
+import Frescura from './Frescura'
 
 function Chip({ children, color }) {
   return (
@@ -44,7 +45,7 @@ function RazonList({ items, emptyText }) {
   )
 }
 
-export default function TableroCompleto({ onVolver, onVerSetup, loading, error, sinConfigurar, stale, guardadoEl, monedas, pares, compras, ventas, vigilancia, rangos = [], setups, corte, sesion: sesionDatos }) {
+export default function TableroCompleto({ onVolver, onVerSetup, loading, error, sinConfigurar, stale, guardadoEl, monedas, pares, compras, ventas, vigilancia, rangos = [], setups, corte, generadoEl, horasViejo, sesion: sesionDatos }) {
   const { t, locale } = useIdioma()
   const fecha = useMemo(() => fmtFechaHoy(locale), [locale])
   // La sesión sale de la hora de la última vela (la calcula el barrido); si
@@ -92,6 +93,8 @@ export default function TableroCompleto({ onVolver, onVerSetup, loading, error, 
               <div style={{ color: 'var(--text-muted)' }}>{t('tablero.factorHora', { factor: sesionDatos.factor.toFixed(2) })}</div>
             )}
             <div>{loading ? '…' : corte}</div>
+            {/* Cuándo se CALCULÓ, que no es la hora de la vela. Ver `Frescura`. */}
+            <Frescura generadoEl={generadoEl} horasViejo={horasViejo} style={{ fontSize: 12.5 }} />
           </div>
         </section>
 

@@ -39,6 +39,19 @@ const URL_BARRIDO =
 // caché vieja no se lea como si fuera de las nuevas.
 const CACHE_KEY = 'nfi_market_cache_v3'
 const LIMITE_MS = 15_000
+
+// A partir de cuántas horas el barrido se enseña en ámbar («esto ya está
+// viejo»). Ver `frescura.js` para por qué el número NO vive allí.
+//
+// DERIVADO, no copiado de la app hermana: aquí el vigía corre CADA HORA y las
+// velas son de una hora, así que a las dos horas ya hay una vela entera sin
+// mirar. Es 1 hora de cadencia + 1 de holgura.
+//
+// ⚠️ En Swing el mismo número es 26, porque allí el vigía corre una vez al día
+// y las velas son diarias. El MISMO dato de 3 horas es viejo aquí y normal
+// allá — hay una comprobación dedicada a eso en `prueba-frescura.mjs`. Copiar
+// el número de la hermana sería traerse una suposición que aquí es falsa.
+const HORAS_VIEJO = 2
 // Cada cuánto se vuelve a mirar si hay barrido nuevo mientras la app está
 // abierta. Se mantienen los 15 minutos de antes: ahora es un archivo estático
 // de 20 KB en vez de siete consultas a una API con cuota, así que mirar
@@ -146,6 +159,11 @@ export function useMarketData({ thr = 0.5, topN = 3 } = {}) {
     sinConfigurar: false,
     stale,
     guardadoEl,
+    // Cuándo CALCULÓ el vigía este barrido. ⚠️ No es lo mismo que `ultima`,
+    // que es la hora de la VELA, ni que `guardadoEl`, que es cuándo lo bajó
+    // este teléfono. Ver `frescura.js` para por qué hacía falta un tercer dato.
+    generadoEl: data?.generadoEl ?? null,
+    horasViejo: HORAS_VIEJO,
     ultima: data?.ultima ?? null,
     ratesUSD: data?.ratesUSD ?? null,
     monedas: vista?.monedas ?? [],

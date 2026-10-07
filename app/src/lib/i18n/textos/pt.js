@@ -415,6 +415,12 @@ export default {
       'Atividade: quantas vezes o preço mudou hoje, segundo esta corretora. NÃO diz para onde nem quanto: um par pode mudar 8.000 vezes e terminar onde começou. Também não é volume — no Forex não existe um real, porque não há bolsa central que o registre. Compare pares entre si agora mesmo, não dias entre si: o dia está pela metade.',
     pie: (v) => `Spread em pips, em âmbar se passar de 3. Tomado em ${v.hora}.`,
   },
+  frescura: {
+    generadoMin: (v) => `Gerado há ${v.n} min`,
+    generadoH: (v) => `Gerado há ${v.n} h`,
+    generadoDias: (v) => `Gerado há ${v.n} ${v.n === 1 ? 'dia' : 'dias'}`,
+  },
+
   tasas: {
     paraQue: 'Os traders olham quando uma operação vai ficar aberta de um dia para o outro: dizem em que pares os juros jogam a teu favor noite após noite e em quais jogam contra. Não é o valor exato que o teu bróker vai cobrar.',
     titulo: 'Taxas de juro e swap',
