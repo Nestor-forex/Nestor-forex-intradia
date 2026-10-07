@@ -97,6 +97,11 @@ on:
     - cron: '5 22 * * 1-5'
     - cron: '5 23 * * 1-5'
   workflow_dispatch:
+    inputs:
+      forzar:
+        description: 'Correr aunque esta hora ya se haya publicado (el guardián de la hora)'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -142,6 +147,14 @@ jobs:
           # Si el secreto está puesto, se usa; si no, `velas.mjs` se cae a la
           # clave de .env.production. Ver el comentario de `leerLlave`.
           TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}
+          # ⚠️ EL GUARDIÁN DE LA HORA — el mismo que el del vigía, y por el
+          # mismo motivo: desde el 2026-10-06 hay DOS relojes pulsando este
+          # botón (los crones de GitHub y el reloj de fuera en Cloudflare), y sin
+          # esto serían 329 créditos de los 800 en vez de 168.
+          #
+          # `'0' || '1'` y no `'' || '1'`: una cadena vacía es FALSA en las
+          # expresiones de GitHub, así que con `''` forzar no forzaría nada.
+          SOLO_SI_FALTA_LA_HORA: ${{ inputs.forzar && '0' || '1' }}
         run: node scripts/publicar-barrido.mjs
 
       - name: Guardar

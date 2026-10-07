@@ -38,12 +38,66 @@ export function separarSombra(nuevas) {
 export function leerEstado(ruta) {
   try {
     const e = JSON.parse(readFileSync(ruta, 'utf8'))
-    return { senales: Array.isArray(e.senales) ? e.senales : [] }
+    return {
+      senales: Array.isArray(e.senales) ? e.senales : [],
+      // Cuándo corrió el vigía por última vez. Lo usa `yaCorrioEstaHora` para
+      // que dos relojes no hagan el trabajo dos veces.
+      //
+      // ⚠️ ESTE CAMPO SE TIRABA. Hasta el 2026-10-06 `leerEstado` se quedaba
+      // solo con `senales`, así que el guardián de la hora nunca se habría
+      // activado y los dos relojes harían el trabajo dos veces — 329 créditos
+      // al día en vez de 168, y en silencio. Es el mismo descuido que ya tuvo
+      // Swing y que está anotado en CLAUDE.md con fecha del 2026-09-07.
+      actualizadoEl: typeof e.actualizadoEl === 'string' ? e.actualizadoEl : null,
+    }
   } catch {
     // Primera corrida, o archivo estropeado: se arranca de cero. Que no haya
     // estado previo no puede tumbar el vigía.
-    return { senales: [] }
+    return { senales: [], actualizadoEl: null }
   }
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// EL GUARDIÁN DE LA HORA (desde el 2026-10-06)
+//
+// Desde hoy hay DOS relojes pulsando el mismo botón: el de GitHub (sus 24
+// entradas de cron, que disparan casi siempre y llegan horas tarde) y el de
+// fuera, en Cloudflare (`reloj-externo/worker.js` del repositorio de Swing, que
+// sí es puntual). Sin este guardián el vigía correría hasta 47 veces al día en
+// vez de 24: **329 créditos de Twelve Data de los 800 en vez de 168**, y el
+// publicador del barrido otros tantos.
+//
+// 📌 Y conviene tener escrito que esto es un CAMBIO DE OPINIÓN mío. Al poner
+// las 24 entradas de cron escribí que un guardián aquí SOBRABA, porque repetir
+// una corrida es barato (7 créditos, y `compararConAnterior` descarta las
+// señales que ya estaban, así que no se anota nada dos veces). Era cierto **con
+// un solo reloj**. Con dos, la cuenta cambia y el guardián hace falta.
+//
+// ⚠️ ESCRITO POR EL LADO SEGURO, igual que `esSombra` y que el `yaCorrioHoy` de
+// Swing. Ante cualquier duda —no hay marca, el archivo está roto, la fecha no
+// se entiende, no es texto— devuelve `false`, o sea CORRE:
+//
+//   · equivocarse hacia CORRER cuesta 7 créditos de los 800 y no cambia el
+//     historial;
+//   · equivocarse hacia SALTARSE cuesta una hora de historial que no vuelve.
+//
+// Los dos errores no valen lo mismo, así que la condición no puede ser
+// simétrica.
+//
+// Se compara la HORA en UTC, que es el huso en el que están escritos los crones
+// y en el que trabaja el reloj de fuera. Y se compara la hora de RELOJ, no
+// «hace menos de 60 minutos»: lo que importa para el historial es cuántas horas
+// DISTINTAS se miran al día, que es exactamente lo que mide
+// `app/scripts/medir-puntualidad.mjs`.
+//
+// Recibe la marca de tiempo como texto —y no el objeto de estado entero— para
+// que sirva igual al vigía (`estado.actualizadoEl`) y al publicador del barrido
+// (`generadoEl` del propio `barrido.json`), que no tiene archivo de estado.
+export function yaCorrioEstaHora(marcaISO, ahora) {
+  if (typeof marcaISO !== 'string') return false
+  const d = new Date(marcaISO)
+  if (Number.isNaN(d.getTime())) return false
+  return d.toISOString().slice(0, 13) === ahora.toISOString().slice(0, 13)
 }
 
 // Devuelve { actuales, nuevas } con los setups de esta revisión y cuáles no
