@@ -141,7 +141,21 @@ comprobar('`horasViejo` sale de una constante con su porqué escrito', /HORAS_VI
 // ⚠️ El umbral NO puede vivir en `frescura.js`, que es GEMELO: cada app publica
 // con una cadencia distinta y copiar el número de la hermana sería traerse una
 // suposición falsa. Ver la cabecera de `frescura.js`.
-comprobar('`frescura.js` NO lleva el umbral dentro', !/HORAS_VIEJO/.test(leer('../src/lib/frescura.js')))
+//
+// 📌 Se busca la DEFINICIÓN (`HORAS_VIEJO =`), no la palabra suelta. La
+// primera versión buscaba la palabra en todo el archivo y saltó en falso en
+// cuanto un COMENTARIO de `frescura.js` la nombró para explicar por qué no
+// vive allí. Es el espejo del fallo del 2026-10-06, donde un comentario
+// satisfacía la búsqueda y la prueba dejaba de morder: allí de más, aquí de
+// menos. Lo que hay que mirar es si el archivo DEFINE el número.
+const FRESCURA = leer('../src/lib/frescura.js')
+comprobar('`frescura.js` NO define el umbral', !/HORAS_VIEJO\s*=/.test(FRESCURA))
+comprobar('…y sigue nombrándolo para explicar por qué no está ahí', /HORAS_VIEJO/.test(FRESCURA))
+
+// ⚠️ Lo mismo con la tabla de lo que cuesta un barrido viejo: está MEDIDA en
+// Intradía y NO en Swing. Vive en `useMarketData.js`, que es PRIMO.
+comprobar('`frescura.js` NO define la tabla del coste', !/COSTE_POR_ANTIGUEDAD\s*=/.test(FRESCURA))
+comprobar('el hook devuelve `costePorAntiguedad`', devueltos.includes('costePorAntiguedad'))
 
 console.log('\n6. ⚠️ Lo que `derivarVista` calcula y el hook deja fuera, CON EL MOTIVO')
 // ─────────────────────────────────────────────────────────────────────────

@@ -411,6 +411,7 @@ export default {
     pie: (v) => `Spread pip cinsinden, 3'ün üzerinde kehribar rengi. ${v.hora} tarihinde alındı.`,
   },
   frescura: {
+    coste: (v) => `${v.horas} saat önceki her 100 sinyalden ${v.pct} tanesi artık alınamaz`,
     generadoMin: (v) => `${v.n} dk önce hesaplandı`,
     generadoH: (v) => `${v.n} sa önce hesaplandı`,
     generadoDias: (v) => `${v.n} gün önce hesaplandı`,

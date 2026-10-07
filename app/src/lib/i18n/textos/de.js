@@ -416,6 +416,7 @@ export default {
     pie: (v) => `Spread in Pips, ab 3 in Bernstein. Aufgenommen am ${v.hora}.`,
   },
   frescura: {
+    coste: (v) => `${v.pct} von 100 Signalen von vor ${v.horas} Std. sind nicht mehr nutzbar`,
     generadoMin: (v) => `Erstellt vor ${v.n} Min.`,
     generadoH: (v) => `Erstellt vor ${v.n} Std.`,
     generadoDias: (v) => `Erstellt vor ${v.n} ${v.n === 1 ? 'Tag' : 'Tagen'}`,

@@ -52,6 +52,30 @@ const LIMITE_MS = 15_000
 // allá — hay una comprobación dedicada a eso en `prueba-frescura.mjs`. Copiar
 // el número de la hermana sería traerse una suposición que aquí es falsa.
 const HORAS_VIEJO = 2
+
+// Cuántas de las señales que la app enseñaba YA NO SE PODÍAN TOMAR cuando el
+// barrido tenía esta antigüedad: o el precio ya se había pasado del stop, o ya
+// había llegado al objetivo.
+//
+// MEDIDO el 2026-10-07 sobre 19.899 velas de una hora (tres años, de octubre
+// de 2023 a octubre de 2026) con `scripts/medir-frescura.mjs`. No es una
+// estimación ni una regla de tres: cada fila es un punto que se midió.
+//
+// ⚠️ Lo que NO dice, y hay que tenerlo claro antes de leerlo: el ACIERTO no se
+// mueve (48 % en todas las filas, con barrido fresco y con el de seis horas).
+// El barrido viejo no hace que la app se equivoque más de dirección; lo que se
+// estropea es la GEOMETRÍA — los niveles dejan de encajar con el precio. Son
+// dos cosas distintas y el texto de pantalla no las mezcla.
+//
+// ⚠️ Esta tabla es de INTRADÍA y no se copia a Swing. Allí una vela es un día
+// y el retraso equivalente es otra pregunta, con otro umbral, SIN MEDIR. Swing
+// pasa `null` y su pantalla no afirma nada. Es la lección de `barridoSwap`.
+const COSTE_POR_ANTIGUEDAD = [
+  { horas: 1, pct: 2.6 },
+  { horas: 2, pct: 6.7 },
+  { horas: 3, pct: 11 },
+  { horas: 6, pct: 21 },
+]
 // Cada cuánto se vuelve a mirar si hay barrido nuevo mientras la app está
 // abierta. Se mantienen los 15 minutos de antes: ahora es un archivo estático
 // de 20 KB en vez de siete consultas a una API con cuota, así que mirar
@@ -164,6 +188,7 @@ export function useMarketData({ thr = 0.5, topN = 3 } = {}) {
     // este teléfono. Ver `frescura.js` para por qué hacía falta un tercer dato.
     generadoEl: data?.generadoEl ?? null,
     horasViejo: HORAS_VIEJO,
+    costePorAntiguedad: COSTE_POR_ANTIGUEDAD,
     ultima: data?.ultima ?? null,
     ratesUSD: data?.ratesUSD ?? null,
     monedas: vista?.monedas ?? [],

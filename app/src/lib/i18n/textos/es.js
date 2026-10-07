@@ -461,6 +461,10 @@ export default {
   // no apaga ni cambia ninguna señal. Van como FUNCIONES porque llevan el
   // número dentro y cada idioma ordena la frase distinto.
   frescura: {
+    // Lo MEDIDO, y solo donde se midió. Dice que esa parte de las señales ya
+    // no se puede tomar —el precio se pasó del stop o ya llegó al objetivo—,
+    // NO que la app acierte menos: el acierto no se movió en toda la tabla.
+    coste: (v) => `${v.pct} de cada 100 señales de hace ${v.horas} h ya no se pueden tomar`,
     generadoMin: (v) => `Generado hace ${v.n} min`,
     generadoH: (v) => `Generado hace ${v.n} h`,
     generadoDias: (v) => `Generado hace ${v.n} ${v.n === 1 ? 'día' : 'días'}`,

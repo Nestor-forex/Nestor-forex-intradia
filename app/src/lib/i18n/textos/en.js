@@ -416,6 +416,7 @@ export default {
     pie: (v) => `Spread in pips, amber above 3. Taken on ${v.hora}.`,
   },
   frescura: {
+    coste: (v) => `${v.pct} of every 100 signals from ${v.horas} h ago can no longer be taken`,
     generadoMin: (v) => `Generated ${v.n} min ago`,
     generadoH: (v) => `Generated ${v.n} h ago`,
     generadoDias: (v) => `Generated ${v.n} ${v.n === 1 ? 'day' : 'days'} ago`,

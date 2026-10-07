@@ -1,5 +1,5 @@
 import { useT } from '../lib/i18n'
-import { describirEdad, edadEnMinutos } from '../lib/frescura'
+import { costeDeLaAntiguedad, describirEdad, edadEnMinutos } from '../lib/frescura'
 
 // DE CUÁNDO ES EL BARRIDO QUE ESTÁS VIENDO.
 //
@@ -24,18 +24,35 @@ import { describirEdad, edadEnMinutos } from '../lib/frescura'
 // números son LTR por naturaleza—. Forzarle `ltr` al renglón entero es el fallo
 // del calendario, que partía «24.5K» en dos. La regla de la casa: se fija la
 // dirección solo de lo que NO es idioma.
-export default function Frescura({ generadoEl, horasViejo, style }) {
+export default function Frescura({ generadoEl, horasViejo, costePorAntiguedad, style }) {
   const t = useT()
 
-  const edad = describirEdad(edadEnMinutos(generadoEl, new Date()), horasViejo)
+  const minutos = edadEnMinutos(generadoEl, new Date())
+  const edad = describirEdad(minutos, horasViejo)
   if (!edad) return null
 
+  // ⚠️ SOLO SALE DONDE ESTÉ MEDIDO. Sin tabla (Swing hoy) esto es `null` y no
+  // se pinta ni un carácter. Ver `costeDeLaAntiguedad` y el comentario de
+  // `COSTE_POR_ANTIGUEDAD` en el `useMarketData.js` de cada app.
+  const coste = costeDeLaAntiguedad(minutos, costePorAntiguedad)
+
   return (
-    <span
-      className="mono"
-      style={{ fontSize: 11.5, color: edad.viejo ? 'var(--amber)' : 'var(--text-muted)', ...style }}
-    >
-      {t(`frescura.${edad.clave}`, { n: edad.n })}
+    <span style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <span
+        className="mono"
+        style={{ fontSize: 11.5, color: edad.viejo ? 'var(--amber)' : 'var(--text-muted)', ...style }}
+      >
+        {t(`frescura.${edad.clave}`, { n: edad.n })}
+      </span>
+      {coste && (
+        // ⚠️ El texto dice «de las que ves» y NO «pierdes más»: lo medido es
+        // que esa parte de las señales ya no se puede tomar, no que la app
+        // acierte menos — el acierto no se movió en toda la tabla. Confundir
+        // las dos cosas sería la etiqueta equivocada de siempre.
+        <span className="mono" style={{ fontSize: 11, color: 'var(--text-muted)', ...style }}>
+          {t('frescura.coste', { pct: Math.round(coste.pct), horas: coste.horas })}
+        </span>
+      )}
     </span>
   )
 }

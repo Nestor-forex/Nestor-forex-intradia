@@ -410,6 +410,7 @@ export default {
     pie: (v) => `스프레드는 pip 단위, 3을 넘으면 호박색. ${v.hora}에 수집.`,
   },
   frescura: {
+    coste: (v) => `${v.horas}시간 전 신호 100개 중 ${v.pct}개는 더 이상 쓸 수 없습니다`,
     generadoMin: (v) => `${v.n}분 전 생성`,
     generadoH: (v) => `${v.n}시간 전 생성`,
     generadoDias: (v) => `${v.n}일 전 생성`,

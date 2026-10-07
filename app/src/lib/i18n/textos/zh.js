@@ -407,6 +407,7 @@ export default {
     pie: (v) => `点差以点为单位，超过 3 显示为琥珀色。采集于 ${v.hora}。`,
   },
   frescura: {
+    coste: (v) => `${v.horas} 小时前的信号中，每 100 个已有 ${v.pct} 个无法再执行`,
     generadoMin: (v) => `${v.n} 分钟前生成`,
     generadoH: (v) => `${v.n} 小时前生成`,
     generadoDias: (v) => `${v.n} 天前生成`,

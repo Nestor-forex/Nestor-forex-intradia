@@ -2,7 +2,7 @@
 //
 // Correr con: node scripts/prueba-frescura.mjs
 
-import { describirEdad, edadEnMinutos } from '../src/lib/frescura.js'
+import { costeDeLaAntiguedad, describirEdad, edadEnMinutos } from '../src/lib/frescura.js'
 
 let fallos = 0
 const comprobar = (que, cond) => {
@@ -95,6 +95,38 @@ console.log('\n7. De punta a punta, como lo usará la pantalla')
   // Un barrido viejo de verdad, publicado antes de que el campo existiera.
   comprobar('un barrido sin `generadoEl` → no se pinta nada', describirEdad(edadEnMinutos(undefined, AHORA), 2) === null)
 }
+
+console.log('\n8. ⚠️ El coste MEDIDO, y solo donde esté medido')
+// La tabla de Intradía, medida el 2026-10-07 sobre 19.899 velas de una hora.
+const TABLA_INTRADIA = [
+  { horas: 1, pct: 2.6 },
+  { horas: 2, pct: 6.7 },
+  { horas: 3, pct: 11 },
+  { horas: 6, pct: 21 },
+]
+
+comprobar('a 3 h devuelve el punto de 3 h', costeDeLaAntiguedad(180, TABLA_INTRADIA)?.pct === 11)
+comprobar('a 3 h 59 min sigue devolviendo el de 3 h, no inventa', costeDeLaAntiguedad(239, TABLA_INTRADIA)?.horas === 3)
+comprobar('a 6 h devuelve el de 6 h', costeDeLaAntiguedad(360, TABLA_INTRADIA)?.pct === 21)
+comprobar('a 20 h sigue con el último medido, no extrapola', costeDeLaAntiguedad(1200, TABLA_INTRADIA)?.horas === 6)
+
+console.log('\n8b. ⚠️⚠️ SIN MEDICIÓN NO SE AFIRMA NADA — el caso de Swing')
+// Es la decisión de fondo: en Swing no se ha medido, pasa `null`, y la
+// pantalla no puede inventarse un porcentaje. Copiar el número de la hermana
+// sería la lección de `barridoSwap` al revés.
+comprobar('tabla null → null (Swing hoy)', costeDeLaAntiguedad(180, null) === null)
+comprobar('tabla vacía → null', costeDeLaAntiguedad(180, []) === null)
+comprobar('tabla sin definir → null', costeDeLaAntiguedad(180, undefined) === null)
+comprobar('⚠️ una tabla con basura dentro → null, no un número a medias', costeDeLaAntiguedad(180, [{ horas: 1, pct: 2.6 }, { horas: 'tres', pct: 11 }]) === null)
+comprobar('sin edad → null', costeDeLaAntiguedad(null, TABLA_INTRADIA) === null)
+comprobar('con NaN → null', costeDeLaAntiguedad(NaN, TABLA_INTRADIA) === null)
+
+console.log('\n8c. Por debajo del primer punto medido tampoco se afirma')
+// Con el barrido recién hecho el coste medido es CERO, y un «0 %» en pantalla
+// sería ruido. Por debajo de la primera hora no se dice nada.
+comprobar('recién generado → null', costeDeLaAntiguedad(0, TABLA_INTRADIA) === null)
+comprobar('a 59 minutos → null', costeDeLaAntiguedad(59, TABLA_INTRADIA) === null)
+comprobar('a 60 minutos justos → ya sale el de 1 h', costeDeLaAntiguedad(60, TABLA_INTRADIA)?.horas === 1)
 
 console.log(fallos === 0 ? '\n✓ todo bien.\n' : `\n✗ ${fallos} comprobación(es) fallaron.\n`)
 process.exit(fallos === 0 ? 0 : 1)

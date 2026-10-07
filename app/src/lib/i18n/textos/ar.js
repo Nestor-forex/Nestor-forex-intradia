@@ -412,6 +412,7 @@ export default {
     pie: (v) => `السبريد بالنقاط، بلون كهرماني فوق 3. أُخذ في ${v.hora}.`,
   },
   frescura: {
+    coste: (v) => `من كل 100 إشارة عمرها ${v.horas} ساعة، ${v.pct} لم تعد صالحة`,
     generadoMin: (v) => `حُسِب قبل ${v.n} دقيقة`,
     generadoH: (v) => `حُسِب قبل ${v.n} ساعة`,
     generadoDias: (v) => `حُسِب قبل ${v.n} يومًا`,

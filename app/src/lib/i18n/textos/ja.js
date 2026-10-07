@@ -410,6 +410,7 @@ export default {
     pie: (v) => `スプレッドは pip 表示、3 を超えると琥珀色。取得: ${v.hora}。`,
   },
   frescura: {
+    coste: (v) => `${v.horas} 時間前のシグナル 100 件のうち ${v.pct} 件はもう使えません`,
     generadoMin: (v) => `${v.n} 分前に生成`,
     generadoH: (v) => `${v.n} 時間前に生成`,
     generadoDias: (v) => `${v.n} 日前に生成`,

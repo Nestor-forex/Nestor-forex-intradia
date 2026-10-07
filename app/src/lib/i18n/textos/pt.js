@@ -416,6 +416,7 @@ export default {
     pie: (v) => `Spread em pips, em âmbar se passar de 3. Tomado em ${v.hora}.`,
   },
   frescura: {
+    coste: (v) => `${v.pct} de cada 100 sinais de há ${v.horas} h já não podem ser usados`,
     generadoMin: (v) => `Gerado há ${v.n} min`,
     generadoH: (v) => `Gerado há ${v.n} h`,
     generadoDias: (v) => `Gerado há ${v.n} ${v.n === 1 ? 'dia' : 'dias'}`,
