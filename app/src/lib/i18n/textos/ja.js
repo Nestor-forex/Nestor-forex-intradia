@@ -365,6 +365,13 @@ export default {
     cerrar: '閉じる',
   },
 
+  sombra: {
+    aviso: ({ ops, meta }) =>
+      `まだシグナルとして扱えません。数字が良くても悪くても、信用するには${meta}件の実取引が必要で、現在は${ops}件です。`,
+    margen: ({ ops, m }) =>
+      `${ops}件では、その数字は偶然だけで±${m}ポイント動きえます。`,
+  },
+
   historial: {
     modoTendencia: 'トレンドモード',
     modoRango: 'レンジモード',

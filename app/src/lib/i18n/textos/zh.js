@@ -362,6 +362,13 @@ export default {
     cerrar: '收起',
   },
 
+  sombra: {
+    aviso: ({ ops, meta }) =>
+      `它还不能当作信号：它有 ${ops} 笔真实交易，需要 ${meta} 笔才能相信它，无论数字是正是负。`,
+    margen: ({ ops, m }) =>
+      `只有 ${ops} 笔交易时，那个百分比仅凭偶然就可能移动 ±${m} 个点。`,
+  },
+
   historial: {
     modoTendencia: '趋势模式',
     modoRango: '区间模式',

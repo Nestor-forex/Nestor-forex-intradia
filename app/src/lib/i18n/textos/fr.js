@@ -371,6 +371,13 @@ export default {
     cerrar: 'Fermer',
   },
 
+  sombra: {
+    aviso: ({ ops, meta }) =>
+      `Elle ne peut encore PAS être prise comme signal : elle compte ${ops} opérations réelles sur les ${meta} nécessaires pour y croire, quel que soit le chiffre.`,
+    margen: ({ ops, m }) =>
+      `Avec ${ops} opérations, ce pourcentage peut bouger de ±${m} points par simple hasard.`,
+  },
+
   historial: {
     modoTendencia: 'Mode tendance',
     modoRango: 'Mode range',

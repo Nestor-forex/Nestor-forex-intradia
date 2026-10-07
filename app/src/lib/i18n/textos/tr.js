@@ -366,6 +366,13 @@ export default {
     cerrar: 'Kapat',
   },
 
+  sombra: {
+    aviso: ({ ops, meta }) =>
+      `Henüz sinyal olarak alınamaz: sayı nasıl çıkarsa çıksın, ona inanmak için gereken ${meta} gerçek işlemden ${ops} tanesi var.`,
+    margen: ({ ops, m }) =>
+      `${ops} işlemle o yüzde, sadece rastlantı yüzünden ±${m} puan oynayabilir.`,
+  },
+
   historial: {
     modoTendencia: 'Trend modu',
     modoRango: 'Range modu',

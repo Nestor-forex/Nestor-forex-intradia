@@ -365,6 +365,13 @@ export default {
     cerrar: '닫기',
   },
 
+  sombra: {
+    aviso: ({ ops, meta }) =>
+      `아직 신호로 받아들일 수 없습니다. 수치가 어떻게 나오든, 믿으려면 실제 거래 ${meta}건이 필요하고 현재는 ${ops}건입니다.`,
+    margen: ({ ops, m }) =>
+      `${ops}건으로는 그 비율이 우연만으로 ±${m}포인트 움직일 수 있습니다.`,
+  },
+
   historial: {
     modoTendencia: '추세 모드',
     modoRango: '박스권 모드',

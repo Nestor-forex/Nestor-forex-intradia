@@ -1,3 +1,4 @@
+import AvisoSombra from './AvisoSombra'
 import TarjetaPlegable from './TarjetaPlegable'
 import { useIdioma } from '../lib/i18n'
 import { fmtFecha } from '../lib/format'
@@ -100,6 +101,7 @@ export default function HistorialTab() {
                   el bloque de arriba una vez, y repetirlo aquí sería la misma
                   advertencia dos veces en la misma pantalla. */}
               <Resumen resumen={{ todas: resumen.sombra, exactas: resumen.sombra, aproximadas: 0 }} t={t} />
+              <AvisoSombra ops={resumen.sombra.total} />
               <p style={{ ...TEXTO, margin: 0 }}>{t('historial.sombraIntro')}</p>
             </div>
           )}

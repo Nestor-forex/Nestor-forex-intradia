@@ -371,6 +371,13 @@ export default {
     cerrar: 'Close',
   },
 
+  sombra: {
+    aviso: ({ ops, meta }) =>
+      `It still CANNOT be taken as a signal: it has ${ops} real trades out of the ${meta} needed to believe it, whichever way the number comes out.`,
+    margen: ({ ops, m }) =>
+      `With ${ops} trades that percentage can move ±${m} points by chance alone.`,
+  },
+
   historial: {
     modoTendencia: 'Trend mode',
     modoRango: 'Range mode',

@@ -410,6 +410,13 @@ export default {
     cerrar: 'Cerrar',
   },
 
+  sombra: {
+    aviso: ({ ops, meta }) =>
+      `Todavía NO se puede tomar como señal: lleva ${ops} operaciones reales de las ${meta} que hacen falta para creerle, salga el número como salga.`,
+    margen: ({ ops, m }) =>
+      `Con ${ops} operaciones ese porcentaje puede moverse ±${m} puntos solo por casualidad.`,
+  },
+
   historial: {
     modoTendencia: 'Modo tendencia',
     modoRango: 'Modo rango',

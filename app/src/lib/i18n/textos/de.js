@@ -371,6 +371,13 @@ export default {
     cerrar: 'Schließen',
   },
 
+  sombra: {
+    aviso: ({ ops, meta }) =>
+      `Sie kann noch NICHT als Signal genommen werden: sie hat ${ops} echte Trades von den ${meta}, die nötig sind, um ihr zu glauben — egal wie die Zahl ausfällt.`,
+    margen: ({ ops, m }) =>
+      `Mit ${ops} Trades kann sich dieser Prozentsatz allein durch Zufall um ±${m} Punkte bewegen.`,
+  },
+
   historial: {
     modoTendencia: 'Trend-Modus',
     modoRango: 'Range-Modus',
