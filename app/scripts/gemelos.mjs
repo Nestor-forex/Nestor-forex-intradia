@@ -366,6 +366,16 @@ export const PRIMOS = {
   'scripts/lib/vigia-nucleo.mjs':
     'El identificador de una señal lleva el tipo en Intradía (que tiene modo ' +
     'rango) y no en Swing.',
+  'scripts/publicar-barrido.mjs':
+    'Mismo nombre y mismo trabajo, y todo lo demás distinto. Intradía publica ' +
+    'velas de una HORA ya cerradas —que no se mueven— cada hora y por 7 ' +
+    'créditos; Swing publica una vela de DÍA que va a medias, dos veces al día ' +
+    'y por 14. De ahí salen un comentario de cabecera entero sobre la vela en ' +
+    'curso que allá no aplica, y una línea de log que la mide. ⚠️ Y el motivo ' +
+    'de NO meterlo en el vigía tampoco es el mismo: allá es no duplicar avisos ' +
+    'ni señales dentro de la misma hora; aquí es que `vistoEl` va a DÍA, así ' +
+    'que dos corridas del vigía el mismo día partirían el historial en dos ' +
+    'mitades que no se podrían comparar entre sí.',
   'scripts/reporte-diario.mjs': 'Cada uno arma el texto de su app.',
   'scripts/lib/push-envio.mjs':
     'Toma el nombre de la app para escribirle solo a los aparatos correctos.',
