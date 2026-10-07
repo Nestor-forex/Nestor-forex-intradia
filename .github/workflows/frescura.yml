@@ -1,0 +1,44 @@
+# ¿CUÁNTO CUESTA OPERAR CON UN BARRIDO VIEJO?
+#
+# Mide la app con un barrido de 0, 1, 2, 3 y 6 horas de antigüedad: entra al
+# precio de AHORA con el stop y el objetivo de hace k horas, que es lo que le
+# pasa a quien abre la app con datos viejos.
+#
+# Existe porque el 2026-10-07 escribí que decidir con un barrido de tres horas
+# es peor que con uno fresco, y lo presenté como si estuviera medido. No lo
+# estaba. Néstor lo paró. Esto lo mide.
+#
+# El listón está en `app/scripts/lib/preregistro-frescura.mjs`, con fecha
+# anterior a la primera corrida y con lo que obliga CADA resultado —incluido el
+# de que yo tuviera razón y el de que no— escrito antes de verlo.
+#
+# SOLO A MANO. No escribe nada: ni en la rama `datos`, ni en el historial, ni
+# en `src/`. Por eso el permiso es de LECTURA.
+#
+# Cuesta 7 créditos de Twelve Data de los 800 del día.
+name: ¿Cuánto cuesta un barrido viejo?
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  medir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # ⚠️ Sin este `env` el guion no tiene llave y falla. Está escrito en
+      # CLAUDE.md desde que se sacó la llave de `.env.production`: todo
+      # workflow que llame a los guiones de velas tiene que pasarlo.
+      - name: Medir
+        working-directory: app
+        env:
+          TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}
+        run: node scripts/medir-frescura.mjs
