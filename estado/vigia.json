@@ -1,7 +1,8 @@
 {
-  "actualizadoEl": "2026-10-08T13:21:29.803Z",
-  "vela": "2026-10-08 13:00:00",
+  "actualizadoEl": "2026-10-08T14:21:19.104Z",
+  "vela": "2026-10-08 14:00:00",
   "senales": [
-    "USD/JPY|VENTA|rango"
+    "GBP/USD|VENTA|rango",
+    "NZD/USD|VENTA|rango"
   ]
 }
