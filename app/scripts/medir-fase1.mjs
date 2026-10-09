@@ -34,6 +34,16 @@ const CALENTAMIENTO = 300
 const THR = 0.5
 const TOP_N = 5
 const VELAS = Number(process.env.VELAS || 5000)
+// ⚠️ SIN `paginas` SOLO SE MIDEN 6,4 MESES, Y ESO NO ES UNA MEDICIÓN.
+// Twelve Data devuelve como mucho 5.000 velas por consulta, y 5.000 velas H1
+// son 196 días. La primera corrida de este guion (2026-10-09) salió así: 848
+// operaciones de la app en vez de las ~8.000 de cinco años, y la Fase 1 se
+// quedó en **2 operaciones**, con las que no se puede decir nada de nada.
+// `backtest.mjs` pide 4 páginas desde siempre; esto se había quedado en 1.
+// ⚠️ Cuesta 7 créditos por página (28 en total) y tarda ~3,5 min: hay una
+// pausa obligatoria de 65 s entre páginas porque el plan gratuito da 8
+// créditos por minuto.
+const PAGINAS = Number(process.env.PAGINAS || 4)
 const SWAP_CONTROL = 0.5
 
 const enVentanaNY = (h) => h >= VENTANA_NY.desde && h < VENTANA_NY.hasta
@@ -72,7 +82,7 @@ console.log('⚠️ El ORO no entra: la regla decide por diferencia de fuerza en
 console.log('   divisas del par, y el oro no es una de las ocho del barrido. El motivo')
 console.log('   entero está en el preregistro.\n')
 
-const { barras, rates, rangos } = await obtenerVelas(leerLlave(), { velas: VELAS })
+const { barras, rates, rangos } = await obtenerVelas(leerLlave(), { velas: VELAS, paginas: PAGINAS })
 const completo = computarBarrido(barras, rates, rangos)
 console.log(`Velas H1: ${barras.length} · de ${barras[0]} a ${barras.at(-1)}`)
 
@@ -95,10 +105,30 @@ function correr(reglaEntrada, geometria) {
   return { senales, porClave: new Map(resultados.map((r) => [r.clave, r])) }
 }
 
-function fila(reglaEntrada, geometria) {
+function fila(reglaEntrada, geometria, etq = '') {
   const { senales, porClave } = correr(reglaEntrada, geometria)
   const m = (lista, opts = {}) => medir(lista, porClave, { conSpread: true, ...opts })
   const todo = m(senales)
+
+  // ⚠️⚠️ EL GUARDIÁN QUE FALTABA, Y NO ES «TENER MÁS CUIDADO».
+  // Si una fila tiene señales y el corte de las mitades no deja NINGUNA a un
+  // lado, eso no es un resultado flojo: es que el guion no sabe partir las
+  // señales — un nombre de campo equivocado, un corte fuera de rango. Y se
+  // imprime igual de bien que un resultado de verdad, con `n/d` en una
+  // columna que nadie mira dos veces. Revienta a propósito: una medición que
+  // no puede juzgar tiene que DECIRLO, no dejar que el veredicto le eche la
+  // culpa a la regla.
+  if (senales.length > 0) {
+    const a = senales.filter((s) => s.vela < CORTE).length
+    const b = senales.filter((s) => s.vela >= CORTE).length
+    if (a + b !== senales.length) {
+      throw new Error(
+        `${etq}: el corte pierde señales (${a} + ${b} ≠ ${senales.length}). ` +
+          'Probablemente el campo de fecha no se llama como este guion cree.'
+      )
+    }
+  }
+
   return {
     // ⚠️ `medir` devuelve `total` (resueltas) y NO `perdidas`, y su `acierto`
     // ya viene EN PORCENTAJE (0-100), no en fracción. La primera versión de
@@ -108,8 +138,16 @@ function fila(reglaEntrada, geometria) {
     ops: todo.total,
     acierto: todo.acierto,
     porRiesgo: todo.porRiesgo,
-    porRiesgo1aMitad: m(senales.filter((s) => s.cierre < CORTE)).porRiesgo,
-    porRiesgo2aMitad: m(senales.filter((s) => s.cierre >= CORTE)).porRiesgo,
+    // ⚠️⚠️ AQUÍ EL CAMPO SE LLAMA `vela`, NO `cierre`. En swing es `cierre`, y
+    // `backtest-nucleo.mjs` lo dice por escrito en el propio objeto. La primera
+    // versión de este guion llegó copiada de allá con `s.cierre`, que aquí es
+    // `undefined` — así que **las dos mitades salían vacías a la vez** y la
+    // tabla imprimía `n/d` en las dos columnas de las cinco filas, sin un solo
+    // error. El listón lo cazó («faltan las mitades: sin ellas no se puede
+    // juzgar»), pero la tabla ya se leía como un resultado.
+    // Es la regla de siempre: lo escrito en una app no vale en la otra.
+    porRiesgo1aMitad: m(senales.filter((s) => s.vela < CORTE)).porRiesgo,
+    porRiesgo2aMitad: m(senales.filter((s) => s.vela >= CORTE)).porRiesgo,
     porRiesgoConSwap: m(senales, { swapPipsNoche: SWAP_CONTROL }).porRiesgo,
     senalesMes: senales.length / MESES,
     pips: todo.pips,
@@ -155,7 +193,7 @@ function tabla(nombre, geometria) {
   console.log('                                      ops  señ/mes  acierto   por 1R    1ª mit    2ª mit   con swap')
   const out = {}
   for (const [etq, regla] of FILAS) {
-    const f = fila(regla, geometria)
+    const f = fila(regla, geometria, etq)
     out[etq] = f
     console.log(
       `  ${etq.padEnd(34)}${String(f.ops).padStart(5)}  ${f.senalesMes.toFixed(1).padStart(7)}  ` +
