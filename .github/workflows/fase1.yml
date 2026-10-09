@@ -1,0 +1,38 @@
+name: Medir la estrategia Fase 1
+
+# SOLO A MANO. Mide las dos condiciones que la especificación del 2026-10-07 le
+# añade a una regla que YA CORRE en la sombra: la ventana de Nueva York y el
+# rechazo por RSI extendido.
+#
+# El listón está en `app/scripts/lib/preregistro-fase1.mjs`, escrito antes de la
+# primera corrida, y ahí está también por qué el ORO y el H4 no se miden.
+#
+# ⚠️ GASTA 7 CRÉDITOS de Twelve Data (los 7 símbolos de esta app).
+# ⚠️ `contents: read`: una medición no escribe nada.
+
+on:
+  workflow_dispatch:
+    inputs:
+      velas:
+        description: 'Cuántas velas H1 bajar (por defecto 5000)'
+        type: string
+        default: '5000'
+
+permissions:
+  contents: read
+
+jobs:
+  medir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Medir
+        working-directory: app
+        env:
+          TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}
+          VELAS: ${{ inputs.velas }}
+        run: node scripts/medir-fase1.mjs
