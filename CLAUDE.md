@@ -2582,3 +2582,152 @@ estructural**. Más de la mitad NO PUEDE cambiar. En Swing `atrWilder` recorre
 estadístico no significa lo mismo en las dos apps**, que es la regla de siempre
 de este proyecto con una cara nueva.
 
+
+---
+
+# La «estrategia Fase 1» NO pasa, y el camino destapó tres fallos míos (2026-10-09)
+
+Néstor pidió el 2026-10-07 parametrizar su forma de operar en reglas fijas y
+medirlas. Esto es el resultado. **Cero archivos de `src/` tocados.**
+
+```
+app/scripts/lib/preregistro-fase1.mjs   el listón, fecha 2026-10-07 dentro
+app/scripts/medir-fase1.mjs             la medición, 28 créditos
+app/scripts/prueba-fase1.mjs            9 bloques, sin internet
+.github/workflows/fase1.yml             solo a mano, permiso de LECTURA
+```
+
+## ⚠️⚠️ LO PRIMERO: LA ENTRADA YA EXISTÍA Y YA CORRE
+
+`clasificarRetroceso` en `src/lib/marketCalc.js` es, **línea por línea**, los
+puntos 3, 4 y 5 de la especificación: medias ordenadas, el precio devuelto a la
+EMA9 sin romper la EMA21, con la fuerza acompañando. Lleva anotándose en la
+sombra desde semanas ANTES de que se escribiera la especificación.
+
+📌 **Quinta vez en el proyecto que se diseña algo ya construido** (el puente de
+MT5, el botón de borrar, la calculadora de riesgo…). Aquí al menos se encontró
+antes de escribir código duplicado. **Buscarlo en el repositorio ANTES de
+diseñarlo** sigue siendo la regla.
+
+Así que esto no mide «una estrategia nueva»: mide **las DOS cosas que la
+especificación añade** encima de una regla que ya existe.
+
+## ⚠️ EL ORO NO ENTRA, y el motivo es ESTRUCTURAL
+
+La regla decide por `p.dif`, la **diferencia de fuerza relativa entre las dos
+divisas del par**, y esa fuerza se calcula sobre las **ocho divisas del
+barrido**. El oro no es una de ellas, así que `dif` **no existe** para XAU/USD:
+no hay «fuerza del oro» que restar.
+
+Aplicarle la Fase 1 **no es añadir un símbolo**: es inventar una medida de
+fuerza nueva para un activo que no participa en el sistema de fuerzas. Eso es
+un diseño aparte, con su propia medición. Decirlo así es más útil que medir el
+oro con media regla y entregar un número.
+
+## El resultado — vara neutra 1:1, spread por par, 34,7 meses
+
+19.898 velas H1, de 2023-10-31 a 2026-10-09. Corte en 2025-06-27.
+
+| | ops | señ/mes | acierto | por 1R | 1ª mit | 2ª mit | con swap |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| **0. CONTROL: la app tal cual** | 7.743 | 222,9 | 48 % | **−0,097** | −0,104 | −0,082 | −0,106 |
+| **1. El retroceso (lo que ya corre)** | 314 | 9,0 | 40 % | **−0,232** | −0,285 | −0,016 | −0,236 |
+| 2. + solo ventana de Nueva York | **54** | 1,6 | 33 % | **−0,381** | −0,475 | −0,053 | −0,387 |
+| 3. + solo rechazar RSI extendido | 311 | 9,0 | 41 % | −0,224 | −0,287 | **+0,034** | −0,228 |
+| **4. LA FASE 1 (ventana + RSI)** | **54** | 1,6 | 33 % | **−0,381** | −0,475 | −0,053 | −0,387 |
+
+Geometría real (comprobación): app −0,139 · retroceso −0,210 · Fase 1 −0,435.
+**Coinciden en el signo**, así que no hubo que elegir vara.
+
+**❌ NO PASA, y falla los SEIS criterios.** Lo que más decide:
+
+- **la ventana de Nueva York se lleva 260 de las 314 señales** y empeora el
+  resultado de −0,232 a −0,381. Deja **1,6 señales/mes** contra las 8 pedidas:
+  a ese ritmo, 150 operaciones son **ocho años**;
+- **el RSI no hace prácticamente nada**: −0,232 → −0,224, o sea +0,008 contra
+  el +0,02 pedido. Es el mismo retrato del ADX (entre 0 y 10 había seis señales
+  de diferencia en cinco años): ceremonia que no cambia el número.
+
+## ⚠️⚠️ EL HALLAZGO QUE NO SE BUSCABA, Y ES MÁS GRANDE QUE LA FASE 1
+
+**El retroceso —la regla que YA corre en la sombra de esta app— mide −0,232**,
+más del DOBLE de malo que la app (−0,097), y pierde en las dos mitades.
+
+**Ese número no existía en esta memoria.** La regla se encendió en la sombra
+sin medirla a tres años, y **no tiene preregistro** (sí lo tienen «comprar la
+caída» y la ruptura de estructura, las dos de Swing).
+
+Y choca con su historial real, que el 2026-09-16 iba **5 de 9 ganadas, +74
+pips**. **Nueve operaciones no son nada contra 314** —el margen del peor caso
+con n=9 es ±33 puntos—, así que lo que manda es el banco. Es el caso ESPEJO de
+la reversión de Swing: allá el backtest da positivo y la realidad va en contra;
+aquí al revés.
+
+⚠️ **PERO ESTO ES UN SUBPRODUCTO, NO UNA MEDICIÓN DEL RETROCESO.** Es la fila
+de referencia de otra pregunta: no lleva barrido de umbrales vecinos, ni
+concentración por par, ni listón propio escrito antes. **Apagar la sombra con
+este número sería decidir con una medición que no se diseñó para eso** — justo
+lo contrario de lo que el proyecto hace con los controles que salen bien
+(la confluencia, el barrido de liquidez). Lo que corresponde es **anotarlo y
+que tenga su medición propia**, no tocar nada hoy.
+
+📌 Y lo que NO cambia mientras tanto: la sombra **no manda avisos y no se
+propone**. Equivocarse hacia «sigo anotando una regla mala» cuesta unas líneas
+en un archivo; hacia «apago la que iba a salir bien» cuesta el registro hacia
+adelante, que es lo único limpio que tiene el proyecto.
+
+## ⚠️⚠️ LOS TRES FALLOS DEL GUION, TODOS DE LA MISMA FAMILIA
+
+Ninguno dio error. Los tres imprimieron una tabla que se leía como un
+resultado. **Y los tres son constantes o nombres traídos de SWING.**
+
+**1. `s.cierre` en vez de `s.vela`.** En swing el campo de fecha se llama
+`cierre`; aquí `vela`, y `backtest-nucleo.mjs` lo dice por escrito dentro del
+propio objeto. Con `s.cierre` —que aquí es `undefined`— las comparaciones
+`< CORTE` y `>= CORTE` son **las dos falsas**, así que **las dos mitades
+salieron vacías a la vez**: `n/d` en las dos columnas de las cinco filas.
+
+**2. Faltaba `paginas`.** Twelve Data devuelve **como mucho 5.000 velas por
+consulta**, y 5.000 velas H1 son **196 días**. `backtest.mjs` pide 4 páginas
+desde siempre. Con una sola, la primera corrida midió **6,4 meses** y dejó la
+Fase 1 en **DOS operaciones** — con las que no se puede decir nada.
+
+**3. `TOP_N = 5` en vez de 3.** Swing se queda con los 5 mejores por lado; aquí
+`derivarVista` y `backtest.mjs` usan 3. Con 5, la fila rotulada **«CONTROL: la
+app tal cual» no era la app tal cual**, y dejaba de ser comparable con la tabla
+ya publicada de esta app — que es la única razón por la que el control existe.
+
+📌 **El listón hizo su trabajo** y se negó a juzgar («faltan las mitades: sin
+ellas no se puede juzgar»). Pero la tabla ya se leía bien, y es lo que casi se
+reportó como «la Fase 1 no funciona» con dos operaciones detrás.
+
+## Los cuatro guardianes, que es lo que queda de los tres fallos
+
+Porque «tener más cuidado» no es un arreglo:
+
+| | qué vigila |
+|---|---|
+| el guion **REVIENTA** si el corte pierde señales (`a + b !== senales.length`) | el fallo 1, y cualquier nombre de campo equivocado que venga |
+| la prueba lee los campos que `generarSenales` **empuja de verdad** | ídem, incluso si algún día se renombra allá |
+| `TOP_N` se compara contra **las dos fuentes**: `derivarVista` y `backtest.mjs` | el fallo 3 |
+| la cabecera del `.yml` se compara contra las páginas (7 × páginas = créditos) | que el coste escrito envejezca solo |
+
+⚠️ El primero **a propósito no salta** cuando una regla legítimamente tiene
+todas sus señales en una mitad: eso es un resultado flojo, no un guion roto.
+Solo salta cuando el reparto **PIERDE** señales.
+
+**Comprobado que los cuatro muerden**, con el daño verificado en el archivo
+antes de darlo por bueno: devolver `s.cierre` tumba 1 · quitar las páginas
+tumba 1 · quitar el guardián tumba 1 · `TOP_N = 5` tumba 2 · dejar la cabecera
+en 7 créditos tumba 1.
+
+## 📌 La regla que este día deja escrita
+
+**Un guion de medición portado de la app hermana trae sus constantes dentro, y
+ninguna de ellas falla al correr.** El campo de fecha, el número de páginas y
+el `topN` son tres cosas que no dan error, no rompen el build, no las ve el
+linter y **cambian lo que la tabla dice**. Tres en dos días.
+
+La defensa no es leerlo con cuidado: es que **cada constante se compare contra
+la fuente que la define de verdad** — el objeto que el banco empuja, el valor
+por defecto de la app, el otro guion que ya la usa.
