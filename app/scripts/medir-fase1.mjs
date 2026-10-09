@@ -32,7 +32,13 @@ import {
 
 const CALENTAMIENTO = 300
 const THR = 0.5
-const TOP_N = 5
+// ⚠️⚠️ TRES, NO CINCO. Swing se queda con los 5 mejores por lado y de allá vino
+// este guion; aquí el valor por defecto de `derivarVista` es `topN = 3` y
+// `backtest.mjs` usa 3. Con 5 la fila rotulada «CONTROL: la app tal cual» NO es
+// la app tal cual, y además deja de ser comparable con la tabla ya publicada de
+// esta app — que es la única razón por la que el control existe. Es el mismo
+// error que el campo `cierre`: una constante de la app hermana colada aquí.
+const TOP_N = 3
 const VELAS = Number(process.env.VELAS || 5000)
 // ⚠️ SIN `paginas` SOLO SE MIDEN 6,4 MESES, Y ESO NO ES UNA MEDICIÓN.
 // Twelve Data devuelve como mucho 5.000 velas por consulta, y 5.000 velas H1
