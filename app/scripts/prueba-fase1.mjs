@@ -145,5 +145,69 @@ console.log('\n8. ⚠️ El guion no reescribe la regla cuatro veces')
   comprobar('y la regla se parametriza', /reglaFase1\s*=/.test(g) && /conVentana/.test(g) && /conRSI/.test(g))
 }
 
+console.log('\n9. ⚠️⚠️ Los dos fallos de la primera corrida (2026-10-09), ya con guardián')
+// Los dos se imprimieron como si fueran un resultado y ninguno dio error.
+{
+  const g = readFileSync(fileURLToPath(new URL('./medir-fase1.mjs', import.meta.url)), 'utf8')
+  const nucleo = readFileSync(
+    fileURLToPath(new URL('./lib/backtest-nucleo.mjs', import.meta.url)),
+    'utf8'
+  )
+
+  // (a) EL NOMBRE DEL CAMPO DE FECHA. En swing se llama `cierre`; aquí, `vela`.
+  // El guion llegó copiado de swing con `s.cierre`, que aquí es `undefined`, y
+  // las dos mitades salieron vacías A LA VEZ: `n/d` en las dos columnas de las
+  // cinco filas. Se comprueba contra el objeto que `generarSenales` empuja de
+  // verdad, no contra una lista escrita a mano — si algún día se renombra allá,
+  // esto cae aquí.
+  const camposDelObjeto = new Set(
+    [...nucleo.matchAll(/^\s{8}(\w+)[,:]/gm)].map((m) => m[1])
+  )
+  comprobar(
+    `el objeto de señal trae \`vela\` (campos leídos: ${camposDelObjeto.size})`,
+    camposDelObjeto.size > 5 && camposDelObjeto.has('vela')
+  )
+  comprobar('y NO trae `cierre`, que es el nombre de swing', !camposDelObjeto.has('cierre'))
+  const camposQueUsaElCorte = new Set([...g.matchAll(/s\.(\w+)\s*[<>]=?\s*CORTE/g)].map((m) => m[1]))
+  comprobar(
+    `el corte de mitades usa un campo que existe (usa: ${[...camposQueUsaElCorte].join(', ') || 'ninguno'})`,
+    camposQueUsaElCorte.size > 0 && [...camposQueUsaElCorte].every((c) => camposDelObjeto.has(c))
+  )
+
+  // (b) EL GUARDIÁN que revienta cuando el corte pierde señales. Sin él, el
+  // fallo (a) vuelve a pasar en silencio la próxima vez que alguien toque esto.
+  comprobar(
+    'si el corte pierde señales, el guion REVIENTA en vez de imprimir n/d',
+    /a \+ b !== senales\.length/.test(g) && /throw new Error/.test(g)
+  )
+
+  // (c) LAS PÁGINAS. Sin `paginas` solo se miden 6,4 meses (5.000 velas H1 son
+  // 196 días), y con eso la Fase 1 se quedó en DOS operaciones. `backtest.mjs`
+  // pide 4 páginas desde siempre; este guion se había quedado en 1.
+  const paginasBt = /paginas:\s*PAGINAS/.test(
+    readFileSync(fileURLToPath(new URL('./backtest.mjs', import.meta.url)), 'utf8')
+  )
+  comprobar('`backtest.mjs` sigue pidiendo varias páginas', paginasBt)
+  comprobar('y este guion también', /paginas:\s*PAGINAS/.test(g))
+  const m = /const PAGINAS = Number\(process\.env\.PAGINAS \|\| (\d+)\)/.exec(g)
+  comprobar(`y su valor por defecto son al menos 4 páginas (${m?.[1] ?? 'n/d'})`, Number(m?.[1]) >= 4)
+
+  // (d) Y EL WORKFLOW DICE LO QUE CUESTA DE VERDAD. Al pasar de 1 página a 4,
+  // el coste pasó de 7 créditos a 28 y la cabecera del `.yml` se quedaría
+  // diciendo 7. Es «al cambiar algo, mirar también quién lo NOMBRA», que en
+  // este proyecto ya mordió con la etiqueta «(hoy)» y con `vigia.yml`.
+  const wf = readFileSync(
+    fileURLToPath(new URL('../../.github/workflows/fase1.yml', import.meta.url)),
+    'utf8'
+  )
+  comprobar('el workflow pasa `PAGINAS` al guion', /PAGINAS:\s*\$\{\{\s*inputs\.paginas/.test(wf))
+  const dice = /GASTA (\d+) CRÉDITOS/.exec(wf)
+  const esperado = 7 * Number(m?.[1] ?? 0)
+  comprobar(
+    `y dice los créditos que gasta de verdad (dice ${dice?.[1] ?? 'n/d'}, son ${esperado})`,
+    Number(dice?.[1]) === esperado
+  )
+}
+
 console.log(fallos === 0 ? '\n✓ todo bien.\n' : `\n✗ ${fallos} comprobación(es) fallaron.\n`)
 process.exit(fallos === 0 ? 0 : 1)

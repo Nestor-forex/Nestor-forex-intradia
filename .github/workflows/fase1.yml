@@ -7,16 +7,25 @@ name: Medir la estrategia Fase 1
 # El listón está en `app/scripts/lib/preregistro-fase1.mjs`, escrito antes de la
 # primera corrida, y ahí está también por qué el ORO y el H4 no se miden.
 #
-# ⚠️ GASTA 7 CRÉDITOS de Twelve Data (los 7 símbolos de esta app).
+# ⚠️ GASTA 28 CRÉDITOS de Twelve Data: 7 símbolos × 4 páginas. La primera
+# corrida (2026-10-09) pedía UNA página y por eso midió 6,4 meses en vez de
+# dos años largos — con 5.000 velas H1 son 196 días. 4 páginas es lo que pide
+# `backtest.mjs` desde siempre, y es lo que hace comparables las dos tablas.
+# ⚠️ Tarda ~4 minutos: entre páginas hay una pausa obligatoria de 65 s, porque
+# el plan gratuito da 8 créditos por minuto.
 # ⚠️ `contents: read`: una medición no escribe nada.
 
 on:
   workflow_dispatch:
     inputs:
       velas:
-        description: 'Cuántas velas H1 bajar (por defecto 5000)'
+        description: 'Cuántas velas H1 por página (por defecto 5000, el máximo)'
         type: string
         default: '5000'
+      paginas:
+        description: 'Cuántas páginas hacia atrás (por defecto 4 · 7 créditos cada una)'
+        type: string
+        default: '4'
 
 permissions:
   contents: read
@@ -35,4 +44,5 @@ jobs:
         env:
           TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}
           VELAS: ${{ inputs.velas }}
+          PAGINAS: ${{ inputs.paginas }}
         run: node scripts/medir-fase1.mjs
