@@ -201,6 +201,27 @@ console.log('\n9. ⚠️⚠️ Los dos fallos de la primera corrida (2026-10-09)
     'utf8'
   )
   comprobar('el workflow pasa `PAGINAS` al guion', /PAGINAS:\s*\$\{\{\s*inputs\.paginas/.test(wf))
+
+  // (e) ⚠️⚠️ EL TERCER FALLO DE LA MISMA FAMILIA: `TOP_N` venía de swing (5) y
+  // aquí la app usa 3. Con 5, la fila rotulada «CONTROL: la app tal cual» no es
+  // la app, y deja de ser comparable con la tabla ya publicada de esta app —
+  // que es la única razón por la que el control existe. Se comprueba contra las
+  // DOS fuentes: el valor por defecto de `derivarVista` y el del banco.
+  const mio = /const TOP_N = (\d+)/.exec(g)
+  const delBanco = /const TOP_N = (\d+)/.exec(
+    readFileSync(fileURLToPath(new URL('./backtest.mjs', import.meta.url)), 'utf8')
+  )
+  const deLaApp = /^\s*topN = (\d+),/m.exec(
+    readFileSync(fileURLToPath(new URL('../src/lib/marketCalc.js', import.meta.url)), 'utf8')
+  )
+  comprobar(
+    `TOP_N coincide con el banco de pruebas (${mio?.[1] ?? 'n/d'} vs ${delBanco?.[1] ?? 'n/d'})`,
+    mio?.[1] !== undefined && mio[1] === delBanco?.[1]
+  )
+  comprobar(
+    `y con el valor por defecto de la app (${deLaApp?.[1] ?? 'n/d'})`,
+    deLaApp?.[1] !== undefined && mio?.[1] === deLaApp[1]
+  )
   const dice = /GASTA (\d+) CRÉDITOS/.exec(wf)
   const esperado = 7 * Number(m?.[1] ?? 0)
   comprobar(
