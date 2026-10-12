@@ -51,6 +51,7 @@ import { MARCO_H1, MARCO_M15, barridoConMarco, reagruparAHoras } from './lib/mar
 import { obtenerVelas, leerLlave } from './lib/velas.mjs'
 import { resolver } from './lib/resolver.mjs'
 import { simetrica } from './lib/geometrias.mjs'
+import { UMBRAL_FUERZA } from '../src/lib/marketCalc.js'
 import {
   CRITERIOS,
   FECHA_PREREGISTRO,
@@ -62,7 +63,9 @@ import {
 
 const VELAS = 5000
 const PAGINAS = Number(process.env.PAGINAS || 16)
-const THR = 0.5
+// ⚠️ NO se escribe el número: lo importa. Cuatro copias a mano del umbral que
+// decide todas las señales eran cuatro formas de medir otra app (2026-10-12).
+const THR = UMBRAL_FUERZA
 const TOP_N = 3
 
 // Cuánta historia ve el barrido en cada momento. En H1 son 300 velas; en M15

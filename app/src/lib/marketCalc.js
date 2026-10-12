@@ -462,6 +462,27 @@ export function computarBarrido(barras, rates, rangos = null) {
 // 40 sobre 35 meses: 46-47 % de acierto en todos.
 export const ADX_MIN = 0
 
+// CUÁNTA DIFERENCIA DE FUERZA SE EXIGE. Es la PRIMERA puerta y la única que
+// ninguna señal se salta: `clasificar` no devuelve ni 'VIGILAR' sin pasarla.
+//
+// ⚠️ ESTABA ESCRITO A MANO EN TRECE SITIOS (2026-10-12), y eso es un fallo
+// esperando a ocurrir, no una molestia de estilo: el vigía, el reporte diario,
+// el comparador de reglas y el banco de pruebas llevaban cada uno su propio
+// `0.5`. El día que alguien cambiara uno, la app diría una cosa, el reporte
+// otra y el banco mediría una tercera — **y nada fallaría**. Es la familia de
+// las etiquetas «(hoy)» que envejecieron solas el 2026-09-05, y el arreglo es
+// el mismo: un solo sitio donde vive el número, y quien lo necesite lo IMPORTA.
+//
+// Hay una comprobación que falla si vuelve a aparecer escrito a mano.
+//
+// ⚠️⚠️ AQUÍ ESTE NÚMERO NO ES EL UMBRAL EFECTIVO, Y EN SWING SÍ. `derivarVista`
+// lo multiplica por el factor de la hora: en el solape de Londres con Nueva
+// York sube ~19 %, a propósito, porque a esa hora todo se separa más y una
+// divergencia pequeña significa menos. El umbral de verdad con el que se
+// clasificó sale en la vista como `umbral`, ya multiplicado — y es ÉSE el que
+// hay que enseñar, nunca esta constante.
+export const UMBRAL_FUERZA = 0.5
+
 // ⚠️ EL DE RANGO ES OTRO NÚMERO, Y ES A PROPÓSITO.
 //
 // El ADX se usa para dos cosas opuestas: una señal de tendencia lo quiere
@@ -942,7 +963,7 @@ export function perforaExtremo(p, n, lado, volver = true) {
 export function derivarVista(
   data,
   {
-    thr = 0.5,
+    thr = UMBRAL_FUERZA,
     topN = 3,
     t = crearT(IDIOMA_BASE),
     locale,
@@ -1100,5 +1121,46 @@ export function derivarVista(
   const fuente = t('calc_barrido.fuenteCierre')
   const corte = t('calc_barrido.corte', { local: enCO, utc: enUTC, fuente })
 
-  return { monedas, pares, compras, ventas, vigilancia, rangos, retrocesos, setups, corte, sesion }
+  // HASTA DÓNDE LLEGÓ LA DIVERGENCIA DE ESTA HORA, Y CUÁNTO HACÍA FALTA.
+  //
+  // ⚠️ No decide nada. Es INFORMACIÓN, y existe porque sin ella un reporte sin
+  // señales es un HUECO: «el mercado está plano» y «la app está atascada» se
+  // ven exactamente igual en pantalla («Ninguno ahora»). Con los dos números al
+  // lado, un `0,31 de 0,59` dice «mido bien y ahora no da».
+  //
+  // ⚠️⚠️ Y HACE FALTA PORQUE LA ESCALA 0-10 NO SIRVE PARA ESTO, que es el error
+  // que me engañó a mí el 2026-10-12 teniendo el código delante: `esc` es una
+  // normalización de mínimo a máximo, así que **la divisa más débil vale 0 y la
+  // más fuerte 10 SIEMPRE**, por pequeña que sea la diferencia real. Un «10,0
+  // contra 0,0» no dice que haya divergencia: dice cuál es la primera y cuál la
+  // última, y eso es verdad todas las horas del año. Ese día los tres reportes
+  // salieron vacíos con la mayor `dif` en 0,31 contra un umbral de 0,59 — y en
+  // pantalla se leía «CAD 10,0 · CHF 0,0».
+  //
+  // Sale del `dif` CRUDO de los pares, no de la escala, y ya está en la mano:
+  // no cuesta un crédito ni una consulta más.
+  const difs = paresRaw.map((p) => Math.abs(p.dif)).filter((d) => Number.isFinite(d))
+  // ⚠️ `null` y NUNCA 0 cuando no se puede medir (barrido vacío, `dif` con
+  // basura dentro). Un 0 diría «ahora no hay ninguna divergencia», que es una
+  // AFIRMACIÓN sobre el mercado; `null` dice «no lo sé» y quien lo pinte no
+  // pinta nada. Misma asimetría que `edadEnMinutos`.
+  const difMax = difs.length ? Math.max(...difs) : null
+
+  return {
+    monedas,
+    pares,
+    compras,
+    ventas,
+    vigilancia,
+    rangos,
+    retrocesos,
+    setups,
+    corte,
+    sesion,
+    // ⚠️ EL UMBRAL EFECTIVO, ya multiplicado por el factor de la hora — NO la
+    // constante `UMBRAL_FUERZA`. Enseñar la constante aquí diría 0,50 a una
+    // hora en la que de verdad se exigía 0,59.
+    umbral: thr,
+    difMax,
+  }
 }

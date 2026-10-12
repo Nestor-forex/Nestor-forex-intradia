@@ -172,6 +172,9 @@ console.log('\n6. ⚠️ Lo que `derivarVista` calcula y el hook deja fuera, CON
 const NO_SE_PASAN = {
   retrocesos:
     '⚠️ REGLA EN LA SOMBRA (el retroceso). No se enseña en ninguna pantalla hasta que pase su listón: pasarla al hook la encendería de hecho. Sus NÚMEROS sí se ven, en el Historial, que los lee del historial publicado y no de aquí.',
+  umbral:
+    'solo para el REPORTE diario (2026-10-12): el umbral de fuerza EFECTIVO de esa hora, ya con el factor aplicado. Llevarlo a la pantalla serían 13 idiomas y no lo ha pedido nadie.',
+  difMax: 'ídem — hasta dónde llegó la divergencia de esa hora. Va junto a `umbral` en el reporte, no en la app.',
 }
 
 const calculados = clavesDelReturn(leer('../src/lib/marketCalc.js'))
