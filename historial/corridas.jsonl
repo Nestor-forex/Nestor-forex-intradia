@@ -400,3 +400,4 @@
 {"en":"2026-10-12T16:23:50.683Z","hora":16,"minuto":23,"vela":"2026-10-12 16:00:00","factorHora":1.2,"total":0,"nuevas":0,"disparo":"workflow_dispatch"}
 {"en":"2026-10-12T17:23:48.454Z","hora":17,"minuto":23,"vela":"2026-10-12 17:00:00","factorHora":1,"total":0,"nuevas":0,"disparo":"workflow_dispatch"}
 {"en":"2026-10-12T18:01:40.970Z","hora":18,"minuto":1,"vela":"2026-10-12 18:00:00","factorHora":0.94,"total":0,"nuevas":0,"disparo":"schedule"}
+{"en":"2026-10-12T19:08:23.896Z","hora":19,"minuto":8,"vela":"2026-10-12 19:00:00","factorHora":0.85,"total":0,"nuevas":0,"disparo":"schedule"}
