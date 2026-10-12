@@ -2838,3 +2838,118 @@ igual en las dos apps es **la disciplina**, no el número.
 
 ⚠️ Y sigue en pie que **lo medido aquí no vale allá**: Intradía mide −0,13 por
 unidad de riesgo y esto no lo mueve ni un centavo. Es información.
+
+---
+
+# ¿Apagar el modo tendencia? El listón, escrito ANTES (2026-10-12)
+
+Néstor lo pidió tras ver el desglose del registro real. **Está construido y NO
+ha corrido todavía**: lo que hay es el listón, la medición y las comprobaciones.
+Cero archivos de `src/` tocados y el workflow lleva `permissions: contents:
+read` — no puede escribir aunque quisiera.
+
+```
+app/scripts/lib/preregistro-modos.mjs    el listón, fecha 2026-10-12 dentro
+app/scripts/medir-modos.mjs              la medición, 7 créditos
+app/scripts/prueba-preregistro-modos.mjs  33 comprobaciones, sin internet
+.github/workflows/modos.yml              solo a mano, permiso de LECTURA
+```
+
+## De dónde sale la pregunta
+
+El registro REAL del 2026-10-12, con la lógica de `historialCalc.js`:
+
+| modo | ops | acierto | equilibrio | pips |
+|---|---:|---:|---:|---:|
+| **rango** | 39 | **54 % ±16** | 40 % | **+353** |
+| **tendencia** | 40 | **20 % ±15** | 37 % | **−985** |
+
+**34 puntos · z = +3,32 · p = 0,0009** — una vez de cada 1.100 por azar, con los
+márgenes sin solaparse. Y contra el backtest (38 %) cada uno se desvía en
+dirección contraria: rango z = +2,04, tendencia z = −2,35.
+
+⚠️ **Pero son 79 operaciones Y van sesgadas.** El 2026-10-06 se midió que el
+reloj hacía que el vigía mirara solo 4,3 de las 24 horas, y que ese sesgo tiene
+DIRECCIÓN: sobre-representa las señales lentas. Si los dos modos duran cosas
+distintas, les afecta distinto. **Por eso el registro real no decide** — decide
+el banco de pruebas, que se baja las velas él mismo.
+
+## ⚠️ Esto NO es un filtro, y la diferencia es mecánica
+
+Van ocho familias de filtros medidas y ocho fallando. Un filtro **no quita
+señales: las cambia por otras**, porque la app se queda con los N mejores por
+lado y al rechazar uno sube el siguiente (medido el 2026-08-25).
+
+Aquí no pasa: `rangosRaw` sale de `paresRaw` por su cuenta y `clasificarRango`
+exige ADX por debajo de `ADX_MAX_RANGO`, lo contrario de lo que pide una señal
+de tendencia. **Apagar tendencia es una resta limpia.**
+
+⚠️ **Y eso se COMPRUEBA, no se supone.** El guion cruza las señales de rango con
+las del resto por par, lado y hora, y **se para con salida 1** si alguna
+coincide. Si algún día dejaran de ser independientes, esta medición dejaría de
+contestar la pregunta que dice contestar.
+
+## Los cinco criterios
+
+Mejora de al menos **+0,02** sobre la app · **en las DOS mitades** · al menos
+**8 señales/mes** · sigue mejor **pagando 0,5 de swap** · ningún par aporta más
+del **40 %** de la ventaja.
+
+⚠️ El de las señales/mes no es un adorno: el 2026-09-04 se AFLOJARON dos puertas
+justamente para que las apps hablaran más, aceptando que el resultado por
+operación no mejorara. Dar marcha atrás a ciegas sería deshacer esa decisión sin
+decirlo.
+
+⚠️ El del swap tampoco sobra por llamarse Intradía: está medido que el **52 %**
+de sus operaciones reales cruzan al menos una noche, y los dos modos pueden
+durar cosas distintas.
+
+## ⚠️⚠️ EL FALLO QUE CAZÓ EL HUMO, Y ERA UN FALSO VERDE
+
+Antes de gastar un crédito se corrió todo con un mercado inventado. En ese
+mercado no salía **ni una** señal de rango, `medir()` devolvía `null`, el guion
+lo convertía en 0 con un `?? 0`… y **«+0,000» le ganaba a «−1,356»**. O sea que
+el criterio más importante PASABA sobre un grupo vacío.
+
+Es la asimetría de siempre entrando por la puerta de atrás: **«no se pudo
+medir» y «midió cero» no son lo mismo**, y de los dos errores el caro es
+confundirlos a favor de la propuesta. Misma decisión que `pearson` devolviendo
+`null` y nunca 0, `difMax`, `edadEnMinutos` y `veredictoBusqueda`.
+
+Ahora `juzgar()` **se niega a dar veredicto** si falta un número o si un grupo
+no llega a `MIN_OPS = 150`, y lo dice con esas palabras: «NO SE PUDO MEDIR — eso
+no es *no pasa el listón*». Con seis comprobaciones dedicadas, incluido el caso
+exacto del fallo (un 0 con cero operaciones).
+
+📌 Y el humo cazó además un error de plomería: `generarSenales` devuelve la
+LISTA, no un objeto con `senales` dentro. Reventaba con «senales is not
+iterable» — el mismo tipo de fallo que ya está documentado para esa función
+(los argumentos cambiados, 2026-09-02), y que sin el humo no habría aparecido
+hasta después de gastar los créditos.
+
+## Comprobado que el listón MUERDE
+
+Ocho resultados inventados que fallan un criterio cada uno, y se exige que
+`juzgar()` los rechace **por ÉSE y no por otro**. Más los bordes exactos
+(+0,020 pasa, +0,0199 no; 8 señales/mes pasa, 7,9 no; empatar en una mitad NO
+cuenta como mejorar) y el caso de coma flotante, que en este proyecto ya decidió
+un veredicto una vez.
+
+**Con el daño verificado en el archivo antes de darlo por bueno:** quitar el
+mínimo de operaciones tumba 1 · devolver el `?? 0` que inventaba ceros tumba 1.
+
+## ⚠️ Lo que NINGÚN veredicto autoriza
+
+- **Apagar el modo RANGO si saliera al revés.** El listón está escrito en una
+  sola dirección a propósito. Probar las dos y quedarse con la que gane es lo
+  que tumbó al COT, donde en una mitad ganaba «seguir a los fondos» y en la otra
+  «ir en contra» — la firma de una moneda al aire.
+- **Usar el registro real de 79 operaciones como confirmación.** Va sesgado por
+  el reloj y es la razón de que esta medición exista, no su respaldo.
+- **Aflojar un criterio porque el resultado quede a un pelo.**
+- **Y pasar el listón TAMPOCO apaga nada.** Sería una propuesta, con su propio
+  PR y su verificación en navegador, y la decisión es de Néstor.
+
+## Lo siguiente
+
+**Actions → «¿Conviene apagar el modo tendencia?» → Run workflow.** 7 créditos.

@@ -1,0 +1,76 @@
+name: ¿Conviene apagar el modo tendencia?
+
+# ¿Debe la app quedarse solo con el modo RANGO?
+#
+# La pregunta sale del REGISTRO REAL del 2026-10-12: el modo rango va 54 % con
+# +353 pips y el modo tendencia 20 % con −985, una diferencia de 34 puntos cuya
+# probabilidad por azar es de una entre 1.100, y con los márgenes de error sin
+# solaparse.
+#
+# ⚠️ Pero eso son 79 operaciones Y van sesgadas: el 2026-10-06 se midió que el
+# reloj de GitHub hacía que el vigía mirara solo 4,3 de las 24 horas del día, y
+# que ese sesgo tiene DIRECCIÓN — sobre-representa las señales lentas. Si los
+# dos modos duran cosas distintas, les afecta distinto. Por eso el registro real
+# no decide: decide el banco de pruebas, que se baja las velas él mismo.
+#
+# ⚠️⚠️ NO CAMBIA NADA, y no es una promesa: es el permiso.
+#
+# `permissions: contents: read` — no puede escribir en ninguna rama aunque
+# quisiera. No toca un archivo de `src/`, ni una señal, ni el barrido publicado,
+# ni el historial, ni ninguno de los experimentos que ya corren. Y pasar el
+# listón TAMPOCO apaga nada: sería una propuesta, con su propio PR, y la
+# decisión es de Néstor.
+#
+# ⚠️ EL LISTÓN ESTÁ ESCRITO ANTES, en `app/scripts/lib/preregistro-modos.mjs`
+# con fecha 2026-10-12, incluido lo que significa CADA resultado posible y lo
+# que NO autoriza ninguno. Sin eso, cualquier número se lee como confirmación.
+#
+# ⚠️ SOLO A MANO. Contesta una pregunta de una vez; no vigila nada.
+#
+# ⚠️⚠️ NECESITA EL SECRETO. Son 7 créditos de Twelve Data (una tanda de los 7
+# símbolos), así que sin el `env` de abajo `leerLlave` no encuentra la llave y
+# el guion falla. Cualquier workflow nuevo que llame a estos guiones tiene que
+# pasársela — ya pasó de verdad con `comparar-reglas.yml`.
+
+on:
+  workflow_dispatch:
+    inputs:
+      paginas:
+        description: 'Tandas de velas (4 = ~20.000 velas ≈ 5 años. Cada una son 7 créditos y 65 s de pausa)'
+        required: false
+        default: '4'
+
+# Solo lee. No aflojar esto para «aprovechar y guardar el resultado»: lo que
+# este trabajo NO puede hacer es escribir.
+permissions:
+  contents: read
+
+jobs:
+  medir:
+    runs-on: ubuntu-latest
+    # Sin esto GitHub deja correr un trabajo hasta SEIS HORAS. Lo normal aquí
+    # son unos minutos: cuatro tandas de velas con sus pausas y aritmética.
+    timeout-minutes: 20
+    steps:
+      - name: Traer el código
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Primero las comprobaciones sin internet, y la primera es la que importa:
+      # que el listón MUERDA. Un veredicto que calcula una función solo vale si
+      # esa función dice que no cuando toca — si no, el preregistro da una falsa
+      # sensación de rigor, que es peor que no tenerlo.
+      - name: Comprobar que el listón muerde (sin internet)
+        working-directory: app
+        run: node scripts/prueba-preregistro-modos.mjs
+
+      - name: Medir
+        working-directory: app
+        env:
+          PAGINAS: ${{ inputs.paginas }}
+          # ⚠️ SIN ESTO EL GUION FALLA. Ver la cabecera.
+          TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}
+        run: node scripts/medir-modos.mjs
