@@ -46,7 +46,38 @@ const NOMBRE_SESION = {
   'sesion.nuevaYork': 'Nueva York',
 }
 
-function formatoChat({ fecha, monedas, pares, compras, ventas, vigilancia, rangos, setups, corte, sesion }) {
+// HASTA DÓNDE LLEGÓ LA DIVERGENCIA Y CUÁNTO HACÍA FALTA.
+//
+// ⚠️ Esto es lo único que distingue «el mercado está plano» de «la app está
+// atascada»: las dos se leen igual en «_Ninguno ahora._». El 2026-10-12 salieron
+// TRES reportes seguidos vacíos y no había forma de saber cuál de las dos era.
+//
+// ⚠️⚠️ Y NO SE PUEDE DEDUCIR DE LA LÍNEA DE FUERZA QUE ESTÁ ARRIBA. La escala
+// 0-10 es una normalización de mínimo a máximo: el más débil vale 0 y el más
+// fuerte 10 SIEMPRE, por pequeña que sea la diferencia real. Ese día yo leí
+// «CAD 10,0 · CHF 0,0» y afirmé que había divergencia de sobra; la mayor de
+// verdad era 0,31 contra un umbral de 0,59. La escala es un ORDEN, no una
+// magnitud.
+//
+// ⚠️ EL UMBRAL CAMBIA CON LA HORA, y ésta es la mitad que solo pasa aquí: en el
+// solape de Londres con Nueva York sube ~19 % a propósito, porque a esa hora
+// todo se separa más. Por eso se enseña el umbral de CADA reporte y no un
+// número fijo — en Swing sería siempre el mismo.
+//
+// Se enseña SIEMPRE, también con señales, y a propósito: si apareciera solo en
+// los reportes vacíos, su presencia sería el mensaje y nadie leería los números.
+const lineaUmbral = (difMax, umbral) => {
+  // ⚠️ Ante la duda NO SE ESCRIBE NADA. `difMax` es `null` cuando no se pudo
+  // medir, y una línea inventada aquí es peor que ninguna.
+  if (!Number.isFinite(difMax) || !Number.isFinite(umbral)) return ''
+  const d = difMax.toFixed(2)
+  const u = umbral.toFixed(2)
+  return difMax > umbral
+    ? `\n\n_Divergencia: el par más separado iba a ${d} y el umbral de esta hora era ${u}._`
+    : `\n\n_Ningún par llegó al umbral de fuerza: el más separado iba a ${d} y hacía falta ${u}. Por eso no hay señales._`
+}
+
+function formatoChat({ fecha, monedas, pares, compras, ventas, vigilancia, rangos, setups, corte, sesion, difMax, umbral }) {
   const li = (xs) => (xs.length ? xs.map((x) => `• *${x.name}* — ${x.razon}`).join('\n') : '_Ninguno ahora._')
   const fuerza = monedas.map((m) => `${m.cod} ${m.score.toFixed(1)}`).join(' · ')
 
@@ -79,7 +110,7 @@ ${
         )
         .join('\n')
     : '_Sin setups limpios ahora._'
-}
+}${lineaUmbral(difMax, umbral)}
 
 _Riesgo: 1-2% del capital por operación. ${limitaciones}_`
 }
@@ -87,7 +118,11 @@ _Riesgo: 1-2% del capital por operación. ${limitaciones}_`
 const apiKey = leerLlave()
 const { barras, rates, rangos } = await obtenerVelas(apiKey)
 const data = computarBarrido(barras, rates, rangos)
-const vista = derivarVista(data, { thr: 0.5, topN: 3 })
+// ⚠️ El umbral NO se escribe aquí: se deja el que trae `derivarVista`, que
+// además lo multiplica por el factor de la hora. Hasta el 2026-10-12 este guion
+// pasaba su propio `0.5`, así que cambiar el de la app habría dejado el reporte
+// midiendo con otro número sin que nada fallara.
+const vista = derivarVista(data, { topN: 3 })
 const fecha = new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 const texto = formatoChat({ fecha, ...vista })
 

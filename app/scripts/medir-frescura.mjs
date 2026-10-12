@@ -13,7 +13,7 @@ import { desvioDelRB, porcentajes, senalesConRetraso } from './lib/frescura-banc
 import { medir } from './lib/backtest-nucleo.mjs'
 import { actual, simetrica } from './lib/geometrias.mjs'
 import { resolver } from './lib/resolver.mjs'
-import { computarBarrido } from '../src/lib/marketCalc.js'
+import { computarBarrido, UMBRAL_FUERZA } from '../src/lib/marketCalc.js'
 import { leerLlave, obtenerVelas } from './lib/velas.mjs'
 import {
   COMO_SE_MIDE,
@@ -29,7 +29,9 @@ import {
 
 const VELAS = 5000
 const PAGINAS = Number(process.env.PAGINAS || 4)
-const THR = 0.5
+// ⚠️ NO se escribe el número: lo importa. Tres copias a mano del umbral que
+// decide todas las señales eran tres formas de medir otra app (2026-10-12).
+const THR = UMBRAL_FUERZA
 const TOP_N = 3
 
 console.log('---FRESCURA-INICIO---')

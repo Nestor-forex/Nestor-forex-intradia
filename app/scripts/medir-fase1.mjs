@@ -17,7 +17,7 @@
 // y juntas, contra el retroceso a secas y contra la app.
 
 import { leerLlave, obtenerVelas } from './lib/velas.mjs'
-import { computarBarrido, ADX_MIN } from '../src/lib/marketCalc.js'
+import { computarBarrido, ADX_MIN, UMBRAL_FUERZA } from '../src/lib/marketCalc.js'
 import { generarSenales, medir } from './lib/backtest-nucleo.mjs'
 import { resolver } from './lib/resolver.mjs'
 import { actual, simetrica } from './lib/geometrias.mjs'
@@ -31,7 +31,9 @@ import {
 } from './lib/preregistro-fase1.mjs'
 
 const CALENTAMIENTO = 300
-const THR = 0.5
+// ⚠️ NO se escribe el número: lo importa. Tres copias a mano del umbral que
+// decide todas las señales eran tres formas de medir otra app (2026-10-12).
+const THR = UMBRAL_FUERZA
 // ⚠️⚠️ TRES, NO CINCO. Swing se queda con los 5 mejores por lado y de allá vino
 // este guion; aquí el valor por defecto de `derivarVista` es `topN = 3` y
 // `backtest.mjs` usa 3. Con 5 la fila rotulada «CONTROL: la app tal cual» NO es

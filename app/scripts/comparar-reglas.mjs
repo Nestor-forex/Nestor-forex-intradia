@@ -7,7 +7,7 @@
 // bloqueado api.twelvedata.com. No manda nada ni cambia nada: solo imprime.
 // Sirve para volver a medir cada vez que se toque una regla de cálculo.
 
-import { computarBarrido, derivarVista } from '../src/lib/marketCalc.js'
+import { computarBarrido, derivarVista, UMBRAL_FUERZA } from '../src/lib/marketCalc.js'
 import { leerLlave, obtenerVelas } from './lib/velas.mjs'
 
 // R/B con la regla vieja (stop al extremo de 10 velas ∓ ½ ATR) y con la
@@ -80,17 +80,17 @@ for (let k = 0; k < HORAS; k++) {
   const f = d.factorHora?.[h] ?? 1
   const crudo = d.factorHoraCrudo?.[h] ?? f
 
-  const v = derivarVista(d, { thr: 0.5, topN: 3 })
+  const v = derivarVista(d, { topN: 3 })
   const total = v.compras.length + v.ventas.length + v.rangos.length
 
   // Mismo cálculo pero con el recorte de antes (hasta 1.6).
   const fViejo = Math.min(TOPE_VIEJO, Math.max(PISO, crudo))
-  const vV = derivarVista(d, { thr: (0.5 * fViejo) / f, topN: 3 })
+  const vV = derivarVista(d, { thr: (UMBRAL_FUERZA * fViejo) / f, topN: 3 })
   const totalV = vV.compras.length + vV.ventas.length + vV.rangos.length
 
   // Y sin ningún ajuste por hora (factor = 1 siempre), que es como estaba
   // antes del punto 4.
-  const vSin = derivarVista(d, { thr: 0.5 / f, topN: 3 })
+  const vSin = derivarVista(d, { thr: UMBRAL_FUERZA / f, topN: 3 })
   const totalSin = vSin.compras.length + vSin.ventas.length + vSin.rangos.length
 
   const b = porHora[h]

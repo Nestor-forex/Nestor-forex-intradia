@@ -75,7 +75,12 @@ const data = computarBarrido(barras, rates, rangos)
 // para decidir con fundamento en vez de con una corazonada bonita.
 //
 // La app (`derivarVista` sin este parámetro) sigue sin darlas.
-const vista = derivarVista(data, { thr: 0.5, topN: 3, incluirRetrocesos: true })
+// ⚠️ El umbral de fuerza NO se escribe aquí. Hasta el 2026-10-12 este guion
+// llevaba su propio `0.5`, igual que el reporte, el comparador y el banco de
+// pruebas: cuatro copias del número que decide TODAS las señales. Cambiar una
+// habría dejado al vigía anotando el historial con un criterio distinto del que
+// la app enseña — y el historial es lo único irrecuperable del proyecto.
+const vista = derivarVista(data, { topN: 3, incluirRetrocesos: true })
 
 const { actuales, nuevas } = compararConAnterior(vista.setups, estadoPrevio)
 

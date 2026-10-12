@@ -84,6 +84,17 @@ export const GEMELOS = [
   'src/components/Frescura.jsx',
   'src/lib/frescura.js',
   'scripts/prueba-frescura.mjs',
+  // Que el UMBRAL DE FUERZA viva en un SOLO sitio. Estaba escrito a mano en
+  // nueve guiones aquí y trece allá (2026-10-12): el vigía, el reporte y cada
+  // guion del banco de pruebas con su propia copia del número que decide TODAS
+  // las señales. Nada fallaba, y por eso es gemelo: la disciplina tiene que ser
+  // la misma en las dos o la lección se queda en una sola.
+  //
+  // ⚠️ El VALOR sí difiere en lo que importa y eso NO lo compara este archivo:
+  // allá se multiplica por el factor de la hora y aquí no hay horas. La prueba
+  // comprueba la disciplina (un solo sitio, nadie lo escribe a mano, la vista
+  // dice el que usó); lo del factor lo comprueba cada app por su cuenta.
+  'scripts/prueba-umbral.mjs',
   // Por qué el número de una regla de la sombra todavía no se puede creer:
   // cuántas operaciones reales lleva, cuántas faltan y cuánto puede moverse ese
   // porcentaje solo por casualidad. Gemelo el componente Y las cuentas, y el

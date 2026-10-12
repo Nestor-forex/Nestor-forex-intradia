@@ -36,7 +36,7 @@
 // 📌 Una etiqueta equivocada es un error de medición: los números estaban bien
 // y la conclusión que inducían era falsa. Ya había pasado con «rompimiento» el
 // 2026-09-04. Derivándola del propio valor no puede volver a envejecer sola.
-import { computarBarrido, ADX_MIN, RSI_MAX, TENDENCIA_MIN } from '../src/lib/marketCalc.js'
+import { computarBarrido, ADX_MIN, RSI_MAX, TENDENCIA_MIN, UMBRAL_FUERZA } from '../src/lib/marketCalc.js'
 
 // Le pega «(hoy)» a la fila que de verdad corre en la app.
 const hoySi = (nombre, esLaDeHoy) => (esLaDeHoy ? `${nombre}  (hoy)` : nombre)
@@ -79,7 +79,9 @@ const VELAS = 5000
 // tandas porque el plan gratuito da 8 créditos por minuto. Unos 4 minutos.
 const PAGINAS = Number(process.env.PAGINAS || 4)
 
-const THR = 0.5
+// ⚠️ NO se escribe el número: lo importa. Tres copias a mano del umbral que
+// decide todas las señales eran tres formas de medir otra app (2026-10-12).
+const THR = UMBRAL_FUERZA
 const TOP_N = 3
 
 const { barras, rates, rangos } = await obtenerVelas(leerLlave(), { velas: VELAS, paginas: PAGINAS })

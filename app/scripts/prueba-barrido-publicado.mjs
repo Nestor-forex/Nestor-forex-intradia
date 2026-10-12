@@ -20,7 +20,7 @@
 // se pierden los `undefined` y los `NaN`) y exige que `derivarVista` saque lo
 // mismo que sacaría con los datos completos.
 
-import { computarBarrido, derivarVista } from '../src/lib/marketCalc.js'
+import { computarBarrido, derivarVista, UMBRAL_FUERZA } from '../src/lib/marketCalc.js'
 import { armarBarrido, SERIES_LARGAS } from './lib/barrido-publicado.mjs'
 
 let fallos = 0
@@ -193,11 +193,44 @@ console.log('\n5. La hora de la vela viaja en el archivo')
 
   // Sin ellos, la vista cambiaría. Si esta comprobación no fallara al
   // quitarlos, es que no hacían falta y sobra publicarlos.
-  const sinHora = derivarVista({ ...JSON.parse(texto), horaUltima: undefined, factorHora: undefined }, { thr: 0.5, topN: 3 })
-  const conHora = derivarVista(JSON.parse(texto), { thr: 0.5, topN: 3 })
+  const sinHora = derivarVista({ ...JSON.parse(texto), horaUltima: undefined, factorHora: undefined }, { topN: 3 })
+  const conHora = derivarVista(JSON.parse(texto), { topN: 3 })
   comprobar(
     JSON.stringify(sinHora.sesion) !== JSON.stringify(conHora.sesion),
     'y quitarlos SÍ cambia la sesión — o sea que publicarlos no sobra'
+  )
+
+  // ⚠️⚠️ Y EL UMBRAL QUE DEVUELVE LA VISTA TIENE QUE SER EL EFECTIVO, NO LA
+  // CONSTANTE.
+  //
+  // Esta mitad solo existe aquí: en Swing el umbral de fuerza es un número
+  // fijo, pero aquí `derivarVista` lo multiplica por el factor de la hora (en
+  // el solape de Londres con Nueva York sube ~19 %, a propósito, porque a esa
+  // hora todo se separa más y una divergencia pequeña significa menos).
+  //
+  // El reporte diario enseña ese número desde el 2026-10-12. Si enseñara la
+  // constante, diría «hacía falta 0,50» a una hora en la que de verdad se
+  // exigía 0,59 — un número bien escrito describiendo otra cosa, que es la
+  // familia de fallo que este repositorio lleva meses coleccionando.
+  const f = conHora.sesion.factor
+  comprobar(Number.isFinite(f) && f > 0, `la vista trae el factor de la hora (${f})`)
+  comprobar(
+    Math.abs(conHora.umbral - UMBRAL_FUERZA * f) < 1e-9,
+    `el umbral de la vista es el EFECTIVO (${conHora.umbral} = ${UMBRAL_FUERZA} × ${f}), no la constante`
+  )
+  // Y sin factor de hora cae a la constante pelada, que es el caso de Swing.
+  comprobar(sinHora.umbral === UMBRAL_FUERZA, 'y sin factor de hora es la constante pelada')
+
+  // ⚠️ CON UN FACTOR DISTINTO DE 1, que es lo único que de verdad MUERDE. El
+  // mercado inventado cae en una hora cuyo factor es ~1,000, así que las dos
+  // comprobaciones de arriba pasarían igual si alguien devolviera la constante
+  // en vez del umbral efectivo. Aquí se fuerza el 1,19 del solape de Londres
+  // con Nueva York, que es la hora en la que la diferencia decide algo.
+  const crudo = JSON.parse(texto)
+  const forzado = derivarVista({ ...crudo, factorHora: { ...crudo.factorHora, [crudo.horaUltima]: 1.19 } }, { topN: 3 })
+  comprobar(
+    Math.abs(forzado.umbral - UMBRAL_FUERZA * 1.19) < 1e-9,
+    `con factor 1,19 el umbral sube a ${forzado.umbral?.toFixed?.(4)} — NO se queda en ${UMBRAL_FUERZA}`
   )
 }
 
