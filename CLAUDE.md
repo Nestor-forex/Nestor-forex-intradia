@@ -2772,3 +2772,69 @@ explicación falsa de por qué no había señales.
 
 📌 Antes de afirmar «hay diferencia de fuerza», mirar `dif`. La escala no sirve
 para eso.
+
+---
+
+# El umbral de fuerza ya no está escrito en trece sitios (2026-10-12)
+
+El caso nació **en esta app**: tres reportes seguidos salieron sin una sola
+señal y no había forma de distinguir «el mercado está plano» de «la app está
+atascada». La lección larga está en el `CLAUDE.md` de Swing; aquí va lo propio.
+
+PR #91, emparejado con el #118 de Swing. **No cambia ni una señal.**
+
+## La línea del reporte
+
+```
+_Ningún par llegó al umbral de fuerza: el más separado iba a 0.31 y hacía falta 0.59. Por eso no hay señales._
+```
+
+Ese 0,59 es el caso real del 2026-10-12 a las 15 UTC, con `CAD 10,0 · CHF 0,0`
+en pantalla. La escala 0-10 no lo podía decir: normaliza de mínimo a máximo, así
+que el más débil vale 0 y el más fuerte 10 **siempre**.
+
+## ⚠️⚠️ La mitad que solo existe aquí: el umbral NO es la constante
+
+`derivarVista` multiplica `UMBRAL_FUERZA` por el **factor de la hora** — en el
+solape de Londres con Nueva York sube ~19 %, a propósito, porque a esa hora todo
+se separa más y una divergencia pequeña significa menos.
+
+Lo que se enseña es el **EFECTIVO** (`vista.umbral`), nunca la constante. En
+Swing son el mismo número y aquí no, así que copiar de allá «enseña
+`UMBRAL_FUERZA`» diría 0,50 a una hora en la que se exigía 0,59. **Es la regla
+de siempre —lo de una app no vale en la otra— con el mismo nombre de variable
+significando dos cosas.**
+
+📌 **Y esto llevaba meses invisible.** Que la app sea más exigente a la hora de
+más movimiento es una decisión correcta que nunca se le dijo a nadie. Ahora se
+lee en el reporte.
+
+## 📌 La comprobación NO MORDÍA, y por poco se queda así
+
+El bloque nuevo de `prueba-barrido-publicado` pasaba igual si alguien devolvía
+la constante: **el mercado inventado cae en una hora cuyo factor es ~1,000**, o
+sea que `0,5 × 1,000` y `0,5` son indistinguibles. Hubo que **forzar el 1,19**
+para que la comprobación separara los dos casos. Comprobado con el daño puesto:
+con el factor forzado falla, sin forzarlo no.
+
+⚠️ Si se toca ese bloque, el caso del factor forzado es el único que vale. Los
+otros dos son contexto.
+
+## Trece copias a mano, y por qué importaba
+
+El vigía, el reporte, `comparar-reglas` y cada guion del banco de pruebas
+llevaban su propio `0.5`. Nada fallaba — y el día que alguien cambiara uno, el
+**vigía habría anotado el historial con un criterio distinto del que la app
+enseña**. El historial es lo único irrecuperable del proyecto.
+
+`comparar-reglas` conserva su aritmética (`UMBRAL_FUERZA * fViejo / f`), que es
+lo que mide: lo que cambió es de dónde sale el número, no la cuenta.
+
+## El guardián
+
+`prueba-umbral.mjs`, 19 comprobaciones y **GEMELO** (65 ahora). Es gemelo
+aunque el valor efectivo difiera, y el motivo está dentro: lo que tiene que ser
+igual en las dos apps es **la disciplina**, no el número.
+
+⚠️ Y sigue en pie que **lo medido aquí no vale allá**: Intradía mide −0,13 por
+unidad de riesgo y esto no lo mueve ni un centavo. Es información.
