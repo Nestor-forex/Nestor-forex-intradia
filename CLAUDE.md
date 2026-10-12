@@ -2731,3 +2731,44 @@ linter y **cambian lo que la tabla dice**. Tres en dos días.
 La defensa no es leerlo con cuidado: es que **cada constante se compare contra
 la fuente que la define de verdad** — el objeto que el banco empuja, el valor
 por defecto de la app, el otro guion que ya la usa.
+
+---
+
+# ⚠️ La escala 0-10 de la fuerza es un ORDEN, no una magnitud (2026-10-12)
+
+Esto salió leyendo **el reporte de ESTA app**, aunque la lección completa quedó
+escrita en el `CLAUDE.md` de Swing (es el mismo `esc` en las dos, y
+`marketCalc.js` es PRIMO, así que a nadie le avisa una máquina si se arregla
+solo en una).
+
+```js
+esc[c] = ((raw[c] - mn) / (mx - mn)) * 10
+```
+
+**La divisa más débil del día vale 0 y la más fuerte vale 10, SIEMPRE**, por
+pequeña que sea la diferencia real. Un «CAD 10.0 · CHF 0.0» no dice que haya
+divergencia: dice cuál es la primera y cuál la última, y eso es verdad todos los
+días.
+
+Medido ese día sobre el barrido real de las 15:23 UTC, con `USD 10,0` y
+`CHF 0,0` en pantalla:
+
+| | |
+|---|---:|
+| mayor `dif` cruda de los 18 pares (USD/CHF) | **0,31** |
+| umbral a esa hora (`thr` 0,5 × factor 1,19) | **0,59** |
+
+El par más divergente del día iba a la mitad de lo que se pide. **Por eso los
+tres reportes de ese lunes salieron sin una sola señal, y sin nada «En
+vigilancia» tampoco** — `clasificar` devuelve `VIGILAR` con solo pasar el umbral
+de fuerza, así que un «ninguno en vigilancia» significa que **falla la primera
+condición**, no una segunda.
+
+⚠️ **Y no confundir `clasificar` con `clasificarRetroceso`.** La segunda es la
+regla de la SOMBRA (pide que el precio retroceda hasta la EMA9 sin romper la
+EMA21) y **no es lo que decide lo que la app propone**. Están en el mismo
+archivo y se parecen; yo las confundí en el chat con Néstor y le di una
+explicación falsa de por qué no había señales.
+
+📌 Antes de afirmar «hay diferencia de fuerza», mirar `dif`. La escala no sirve
+para eso.
