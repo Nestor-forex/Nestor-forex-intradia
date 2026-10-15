@@ -1,5 +1,8 @@
 {
-  "actualizadoEl": "2026-10-15T21:24:03.381Z",
-  "vela": "2026-10-15 21:00:00",
-  "senales": []
+  "actualizadoEl": "2026-10-15T22:23:48.918Z",
+  "vela": "2026-10-15 22:00:00",
+  "senales": [
+    "USD/CHF|VENTA|tendencia",
+    "AUD/JPY|VENTA|retroceso"
+  ]
 }
