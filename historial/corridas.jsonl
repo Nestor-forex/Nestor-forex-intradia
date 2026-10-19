@@ -503,3 +503,4 @@
 {"en":"2026-10-16T23:23:39.242Z","hora":23,"minuto":23,"vela":"2026-10-16 23:00:00","factorHora":0.68,"total":0,"nuevas":0,"disparo":"workflow_dispatch"}
 {"en":"2026-10-17T00:33:30.800Z","hora":0,"minuto":33,"vela":"2026-10-17 00:00:00","factorHora":0.85,"total":0,"nuevas":0,"disparo":"schedule"}
 {"en":"2026-10-17T01:20:00.972Z","hora":1,"minuto":20,"vela":"2026-10-17 01:00:00","factorHora":0.96,"total":0,"nuevas":0,"disparo":"schedule"}
+{"en":"2026-10-19T00:23:28.588Z","hora":0,"minuto":23,"vela":"2026-10-19 00:00:00","factorHora":0.85,"total":0,"nuevas":0,"disparo":"workflow_dispatch"}
