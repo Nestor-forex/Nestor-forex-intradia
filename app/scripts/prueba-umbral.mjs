@@ -143,6 +143,161 @@ bien(/Number\.isFinite\(difMax\)/.test(rep), 'y se calla cuando `difMax` no se p
 // Y que no se haya quedado pasando su propia copia del número.
 bien(!/derivarVista\([^)]*thr:/.test(rep), 'el reporte ya no pasa su propio umbral a `derivarVista`')
 
+// ── 5. EL REPORTE Y LA APP TIENEN QUE PEDIR LO MISMO ────────────────────
+//
+// ⚠️⚠️ POR QUÉ: el 2026-10-19 Néstor abrió la app y vio «EUR/CAD COMPRA ·
+// EUR/NZD COMPRA · EUR/CHF COMPRA» mientras el reporte de ese mismo día decía
+// «sin setups limpios hoy» y yo le decía que esos pares eran para VENDER. Los
+// tres eran ciertos de cosas distintas, y el origen era UNA palabra: la app
+// llama a `derivarVista` con `incluirReversion: true` desde el 2026-09-05 y el
+// reporte la llamaba sin ella.
+//
+// Nada fallaba — y eso es lo de siempre en este repositorio. Dos salidas del
+// mismo proyecto, con los mismos datos del mismo día, describiendo apps
+// distintas. Su frase fue «que tú digas una cosa y la app diga otra, eso no
+// puede pasar», y tiene razón.
+//
+// ⚠️ Esto NO compara los textos: compara las OPCIONES con las que cada uno
+// pide el cálculo, que es donde nació la divergencia. Si mañana la app
+// enciende otra regla, esta prueba exige que el reporte la encienda también o
+// que alguien venga aquí a escribir por qué no.
+console.log('\n5. el reporte pide el mismo cálculo que la app')
+
+const hook = leer('../src/lib/useMarketData.js')
+const opcionesDe = (txt) => {
+  const m = txt.match(/derivarVista\(\s*data\s*,\s*\{([^}]*)\}/)
+  if (!m) return null
+  return new Set(
+    m[1]
+      .split(',')
+      .map((s) => s.split(':')[0].trim())
+      .filter((s) => s && s !== 't' && s !== 'topN' && s !== 'thr'),
+  )
+}
+const opApp = opcionesDe(hook)
+const opRep = opcionesDe(rep)
+
+// Guarda: si el lector no encuentra las llamadas, esta prueba no comprueba
+// nada y tiene que FALLAR en vez de pasar en verde sobre un vacío.
+bien(opApp !== null, 'se encontró la llamada de la app (si no, esta prueba no mira nada)')
+bien(opRep !== null, 'se encontró la llamada del reporte')
+
+if (opApp && opRep) {
+  const faltan = [...opApp].filter((k) => !opRep.has(k))
+  bien(
+    faltan.length === 0,
+    faltan.length
+      ? `el reporte NO pasa lo que la app sí: ${faltan.join(', ')} — la app y el reporte describirían apps distintas`
+      : 'el reporte pasa todas las opciones de reglas que pasa la app',
+  )
+  // ⚠️ Y que el reporte la PINTE, no solo que la pida: pedirla y no enseñarla
+  // dejaría el mismo hueco con el cálculo correcto detrás.
+  //
+  // Agnóstico a propósito — este archivo es GEMELO. Swing enciende
+  // `incluirReversion` y tiene que pintar su bloque; Intradía hoy no enciende
+  // ninguna regla extra y no hay bloque que exigirle. El día que encienda una,
+  // esta prueba se la pide sin que nadie venga a tocarla.
+  const reglasExtra = [...opApp].filter((k) => /^incluir/.test(k))
+  if (reglasExtra.length) {
+    bien(true, `la app enciende reglas extra: ${reglasExtra.join(', ')}`)
+    bien(/\$\{bloque[A-Z]/.test(rep), 'y el reporte pinta un bloque aparte para ellas')
+    bien(
+      /EXPERIMENTO|experimento/.test(rep),
+      'con el aviso de que es un experimento y no una propuesta de la app',
+    )
+  } else {
+    bien(true, 'esta app no enciende ninguna regla extra: no hay bloque que exigir')
+  }
+}
+
+// ── 6. NINGÚN PAR QUE PASE EL UMBRAL DESAPARECE EN SILENCIO ─────────────
+//
+// ⚠️⚠️ EL INVARIANTE, y es lo que de verdad se rompió: un par que pasa el
+// umbral de fuerza tiene que salir en ALGUNA lista, o que algo diga por qué
+// no sale. Las dos cosas valen; lo que no vale es que desaparezca.
+//
+// El caso real (Swing, 2026-10-16 y 19): cinco pares pasaron el umbral, los
+// cinco clasificaron 'VENTA', y las ventas están pausadas desde el
+// 2026-08-12. Caen de `ventas` por la pausa y NO caen en `vigilancia`, que
+// solo recoge 'VIGILAR'. Resultado: fuera de las cuatro listas, con el
+// reporte diciendo «divergencia 1,32 contra 0,50» justo encima. Se leía como
+// «el mercado está plano».
+//
+// ⚠️ Escrito como invariante Y NO como «comprueba que Swing avisa» a
+// propósito: este archivo es GEMELO. Intradía hoy no pausa ningún lado, así
+// que allí el par sale en su lista y el invariante se cumple por el otro
+// camino. El día que alguien pause algo en cualquiera de las dos, esta misma
+// prueba lo exige sin que nadie venga a tocarla.
+console.log('\n6. ningún par que pase el umbral desaparece en silencio')
+
+// ⚠️ Este par tiene que clasificar 'VENTA' DE VERDAD, no 'VIGILAR': si solo
+// pasara el umbral sin cumplir la tendencia, caería en `vigilancia` y seguiría
+// saliendo en el reporte — que es justo el caso que NO hay que avisar. Con
+// `TENDENCIA_MIN = 'media'` eso exige `c < e20`, y por eso van los dos campos.
+// (La primera versión de esta prueba no los traía y fallaba: el fallo era de la
+// prueba, no del código.)
+const soloVentas = {
+  ...barridoFlojo,
+  pares: barridoFlojo.pares.map((p, i) => ({
+    ...p,
+    dif: i === 0 ? -9 : 0,
+    tend: 'Bajista',
+    rsiV: 45,
+    c: 1.0,
+    e20: 1.1,
+    e50: 1.12,
+    // Los niveles que `mkSetup` necesita para construir la operación. Hacen
+    // falta porque la comparación «sin pausar» SÍ llega a armar el setup.
+    lo10: 0.95,
+    hi10: 1.05,
+    lo20: 0.92,
+    hi20: 1.08,
+    atrAbs: 0.01,
+    // ⚠️ Campos que solo pide UNA de las dos apps. Este archivo es GEMELO, así
+    // que el mercado de prueba lleva la UNIÓN de lo que necesitan las dos —
+    // igual que `barridoFlojo` ya lleva `atrPctH` y `pivots`. Sobran en la otra
+    // y no estorban; sin ellos la prueba revienta al portarla.
+    adx: 25,
+    e9: 1.1,
+    e21: 1.12,
+    pivots: { p: 1.0, r1: 1.03, r2: 1.06, s1: 0.97, s2: 0.94 },
+  })),
+}
+const v = derivarVista(soloVentas)
+const pasanElUmbral = v.pares.filter((p) => Math.abs(p.dif) > v.umbral)
+bien(pasanElUmbral.length === 1, `el mercado de prueba deja 1 par por encima del umbral (${pasanElUmbral.length})`)
+
+const enAlgunaLista = (name) =>
+  [...v.compras, ...v.ventas, ...v.vigilancia].some((x) => x.name === name) ||
+  v.setups.some((s) => s.name === name)
+const loExplicaAlgo = (name) => Boolean(v.bloqueados?.pares?.includes(name))
+
+for (const p of pasanElUmbral) {
+  bien(
+    enAlgunaLista(p.name) || loExplicaAlgo(p.name),
+    `${p.name} pasa el umbral y o sale en una lista o algo dice por qué no (sale: ${enAlgunaLista(p.name)} · explicado: ${loExplicaAlgo(p.name)})`,
+  )
+}
+
+// ⚠️ Y el aviso no puede aparecer «por si acaso»: sin ningún lado apagado no
+// hay nada que explicar, y una frase ahí sería una afirmación sobre el mercado
+// donde no hay nada que decir. `null` y nunca `{ n: 0 }` — misma asimetría que
+// `difMax`. (`?? null` porque en la app que no pausa nada el campo no existe.)
+const sinPausa = derivarVista(soloVentas, { incluirVentas: true })
+bien((sinPausa.bloqueados ?? null) === null, 'sin ningún lado apagado no se inventa un aviso')
+bien((derivarVista({ ...barridoFlojo, pares: [] }).bloqueados ?? null) === null, 'sin pares tampoco')
+
+// Y si ESTA app apaga un lado, el reporte tiene que decirlo. Donde no se apaga
+// nada, no hay línea que exigir.
+const estaAppApagaUnLado = v.bloqueados !== null && v.bloqueados !== undefined
+if (estaAppApagaUnLado) {
+  bien(/lineaBloqueados/.test(rep), 'esta app apaga un lado, así que el reporte tiene la línea que lo explica')
+  bien(/\$\{lineaBloqueados\(/.test(rep), 'y la pinta de verdad')
+  bien(/pausad/.test(rep), 'nombrando que el motivo es una pausa')
+} else {
+  bien(true, 'esta app no apaga ningún lado: no hay línea que exigir')
+}
+
 console.log('')
 console.log(`${ok} bien · ${mal} MAL`)
 if (mal) process.exit(1)
