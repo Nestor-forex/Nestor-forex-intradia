@@ -373,9 +373,9 @@ export default {
 
   sombra: {
     aviso: ({ ops, meta }) =>
-      `Ainda NÃO pode ser tomada como sinal: tem ${ops} operações reais das ${meta} necessárias para acreditar nela, seja qual for o número.`,
+      `Ainda NÃO pode ser tomada como sinal: tem ${ops} das ${meta} operações reais necessárias para acreditar nela, seja qual for o número.`,
     margen: ({ ops, m }) =>
-      `Com ${ops} operações, essa percentagem pode mover-se ±${m} pontos só por casualidade.`,
+      `Com uma amostra de ${ops}, essa percentagem pode mover-se ±${m} pontos só por casualidade.`,
   },
 
   historial: {
