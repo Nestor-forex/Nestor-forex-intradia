@@ -373,9 +373,9 @@ export default {
 
   sombra: {
     aviso: ({ ops, meta }) =>
-      `Elle ne peut encore PAS être prise comme signal : elle compte ${ops} opérations réelles sur les ${meta} nécessaires pour y croire, quel que soit le chiffre.`,
+      `Elle ne peut encore PAS être prise comme signal : elle compte ${ops} des ${meta} opérations réelles nécessaires pour y croire, quel que soit le chiffre.`,
     margen: ({ ops, m }) =>
-      `Avec ${ops} opérations, ce pourcentage peut bouger de ±${m} points par simple hasard.`,
+      `Avec un échantillon de ${ops}, ce pourcentage peut bouger de ±${m} points par simple hasard.`,
   },
 
   historial: {

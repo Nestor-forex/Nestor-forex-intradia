@@ -388,6 +388,8 @@ export const PRIMOS = {
     'que dos corridas del vigía el mismo día partirían el historial en dos ' +
     'mitades que no se podrían comparar entre sí.',
   'scripts/reporte-diario.mjs': 'Cada uno arma el texto de su app.',
+  'scripts/lib/lineas-reporte.mjs':
+    'Las líneas que explican por qué hay o no hay señales. El texto es de cada app y además dicen cosas distintas: en Swing hay un lado PAUSADO que hay que nombrar y el umbral es fijo; en Intradía el umbral cambia con la hora y el MODO RANGO da señales sin pasar por él, así que ahí la frase habla de «señales de tendencia». Lo que sí es igual, y lo vigila `prueba-umbral.mjs` (GEMELO): ninguna de las dos afirma «no hay señales» sin que se le haya dicho si hay señales.',
   'scripts/lib/push-envio.mjs':
     'Toma el nombre de la app para escribirle solo a los aparatos correctos.',
   'scripts/prueba-*.mjs':

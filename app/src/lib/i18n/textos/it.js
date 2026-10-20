@@ -369,9 +369,9 @@ export default {
 
   sombra: {
     aviso: ({ ops, meta }) =>
-      `NON può ancora essere presa come segnale: ha ${ops} operazioni reali sulle ${meta} che servono per crederci, qualunque sia il numero.`,
+      `NON può ancora essere presa come segnale: ha ${ops} delle ${meta} operazioni reali che servono per crederci, qualunque sia il numero.`,
     margen: ({ ops, m }) =>
-      `Con ${ops} operazioni quella percentuale può muoversi di ±${m} punti solo per caso.`,
+      `Con un campione di ${ops} quella percentuale può muoversi di ±${m} punti solo per caso.`,
   },
 
   historial: {

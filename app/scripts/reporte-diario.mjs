@@ -38,6 +38,12 @@ import { computarBarrido, derivarVista } from '../src/lib/marketCalc.js'
 import { limitaciones } from '../src/lib/fakeData.js'
 import { leerLlave, obtenerVelas } from './lib/velas.mjs'
 import { APP } from '../src/lib/identidad.js'
+// ⚠️ ESTA LÍNEA VIVE FUERA, Y NO ES ORGANIZACIÓN: dentro de este guion no se
+// podía probar, porque aquí se piden velas en cuanto se importa. Eso costó un
+// fallo real el 2026-10-20 — «por eso no hay señales» salió publicada en un
+// reporte que traía una señal de rango. El porqué está en la cabecera de
+// `lib/lineas-reporte.mjs`.
+import { lineaUmbral } from './lib/lineas-reporte.mjs'
 
 const NOMBRE_SESION = {
   'sesion.sidney': 'Sídney',
@@ -46,40 +52,17 @@ const NOMBRE_SESION = {
   'sesion.nuevaYork': 'Nueva York',
 }
 
-// HASTA DÓNDE LLEGÓ LA DIVERGENCIA Y CUÁNTO HACÍA FALTA.
-//
-// ⚠️ Esto es lo único que distingue «el mercado está plano» de «la app está
-// atascada»: las dos se leen igual en «_Ninguno ahora._». El 2026-10-12 salieron
-// TRES reportes seguidos vacíos y no había forma de saber cuál de las dos era.
-//
-// ⚠️⚠️ Y NO SE PUEDE DEDUCIR DE LA LÍNEA DE FUERZA QUE ESTÁ ARRIBA. La escala
-// 0-10 es una normalización de mínimo a máximo: el más débil vale 0 y el más
-// fuerte 10 SIEMPRE, por pequeña que sea la diferencia real. Ese día yo leí
-// «CAD 10,0 · CHF 0,0» y afirmé que había divergencia de sobra; la mayor de
-// verdad era 0,31 contra un umbral de 0,59. La escala es un ORDEN, no una
-// magnitud.
-//
-// ⚠️ EL UMBRAL CAMBIA CON LA HORA, y ésta es la mitad que solo pasa aquí: en el
-// solape de Londres con Nueva York sube ~19 % a propósito, porque a esa hora
-// todo se separa más. Por eso se enseña el umbral de CADA reporte y no un
-// número fijo — en Swing sería siempre el mismo.
-//
-// Se enseña SIEMPRE, también con señales, y a propósito: si apareciera solo en
-// los reportes vacíos, su presencia sería el mensaje y nadie leería los números.
-const lineaUmbral = (difMax, umbral) => {
-  // ⚠️ Ante la duda NO SE ESCRIBE NADA. `difMax` es `null` cuando no se pudo
-  // medir, y una línea inventada aquí es peor que ninguna.
-  if (!Number.isFinite(difMax) || !Number.isFinite(umbral)) return ''
-  const d = difMax.toFixed(2)
-  const u = umbral.toFixed(2)
-  return difMax > umbral
-    ? `\n\n_Divergencia: el par más separado iba a ${d} y el umbral de esta hora era ${u}._`
-    : `\n\n_Ningún par llegó al umbral de fuerza: el más separado iba a ${d} y hacía falta ${u}. Por eso no hay señales._`
-}
-
 function formatoChat({ fecha, monedas, pares, compras, ventas, vigilancia, rangos, setups, corte, sesion, difMax, umbral }) {
   const li = (xs) => (xs.length ? xs.map((x) => `• *${x.name}* — ${x.razon}`).join('\n') : '_Ninguno ahora._')
   const fuerza = monedas.map((m) => `${m.cod} ${m.score.toFixed(1)}`).join(' · ')
+  // ⚠️ LO QUE LA LÍNEA DE ABAJO NECESITA SABER, y que antes no sabía.
+  //
+  // En esta app `setups` lleva los de TENDENCIA y los de RANGO juntos, y el
+  // rango NO pasa por el umbral de fuerza (`clasificarRango` no lo recibe).
+  // Así que si nadie llegó al umbral y aun así hay setups, son de rango — y
+  // decir «no hay señales» con uno en pantalla es justo lo que se publicó el
+  // 2026-10-20. Ver la cabecera de `lib/lineas-reporte.mjs`.
+  const haySenales = setups.length > 0
 
   return `⚡ *Nestor Forex Intradía* — ${fecha}
 ${corte}
@@ -110,7 +93,7 @@ ${
         )
         .join('\n')
     : '_Sin setups limpios ahora._'
-}${lineaUmbral(difMax, umbral)}
+}${lineaUmbral({ difMax, umbral, haySenales })}
 
 _Riesgo: 1-2% del capital por operación. ${limitaciones}_`
 }

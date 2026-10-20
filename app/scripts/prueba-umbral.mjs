@@ -132,13 +132,14 @@ bien(roto.difMax === null, 'con un `dif` roto devuelve null, no NaN')
 console.log('\n4. el reporte diario')
 
 const rep = leer('./reporte-diario.mjs')
+const lineas = leer('./lib/lineas-reporte.mjs')
 bien(/lineaUmbral/.test(rep), 'el reporte tiene la línea del umbral')
 bien(/\$\{lineaUmbral\(/.test(rep), 'y la pinta de verdad dentro del texto')
-bien(/umbral de fuerza/.test(rep), 'con la frase que explica por qué no hay señales')
+bien(/umbral de fuerza/.test(lineas), 'con la frase que explica por qué no hay señales')
 
 // ⚠️ ESTO ES LO QUE EVITA UNA LÍNEA INVENTADA. Sin la guarda, un barrido sin
 // datos imprimiría «iba a NaN y hacía falta NaN», que es peor que no decir nada.
-bien(/Number\.isFinite\(difMax\)/.test(rep), 'y se calla cuando `difMax` no se pudo medir')
+bien(/Number\.isFinite\(difMax\)/.test(lineas), 'y se calla cuando `difMax` no se pudo medir')
 
 // Y que no se haya quedado pasando su propia copia del número.
 bien(!/derivarVista\([^)]*thr:/.test(rep), 'el reporte ya no pasa su propio umbral a `derivarVista`')
@@ -293,9 +294,107 @@ const estaAppApagaUnLado = v.bloqueados !== null && v.bloqueados !== undefined
 if (estaAppApagaUnLado) {
   bien(/lineaBloqueados/.test(rep), 'esta app apaga un lado, así que el reporte tiene la línea que lo explica')
   bien(/\$\{lineaBloqueados\(/.test(rep), 'y la pinta de verdad')
-  bien(/pausad/.test(rep), 'nombrando que el motivo es una pausa')
+  // La frase se mudó al módulo el 2026-10-20 para poder probarla; el bloque 7
+  // comprueba lo mismo sobre su SALIDA de verdad, que es más fuerte que buscar
+  // la palabra en un archivo.
+  bien(/pausad/.test(lineas), 'nombrando que el motivo es una pausa')
 } else {
   bien(true, 'esta app no apaga ningún lado: no hay línea que exigir')
+}
+
+// ── 7. NINGUNA FRASE AFIRMA «NO HAY SEÑALES» SIN SABER SI LAS HAY ───────
+//
+// ⚠️⚠️ POR QUÉ: el 2026-10-20 las dos apps publicaron en el chat de Néstor una
+// frase falsa. Swing dijo «Por eso no hay señales» en un reporte que traía DOS
+// setups (GBP/JPY y GBP/USD COMPRA); Intradía dijo lo mismo con una señal de
+// rango en pantalla (USD/CHF VENTA, R/B 1:1.8).
+//
+// Los números eran verdad las dos veces. Lo falso era la conclusión — *una
+// etiqueta equivocada es un error de medición*, que en este archivo ya está
+// escrito dos veces.
+//
+// 📌 Y la causa no era descuido: esas funciones **sólo recibían `difMax` y
+// `umbral`**, así que no tenían con qué saber si había señales y aun así
+// afirmaban que no las había. Esto comprueba lo único que lo cierra: que la
+// afirmación dependa del dato, y que el reporte le pase el dato.
+//
+// ⚠️ Es GEMELO, así que son INVARIANTES y no el texto de ninguna de las dos:
+// cada app redacta como quiera, pero ninguna puede afirmar una ausencia que no
+// ha comprobado.
+console.log('\n7. ninguna frase afirma una ausencia que no ha comprobado')
+
+const mod = await import('./lib/lineas-reporte.mjs')
+// Sin esta guarda el bucle de abajo no entraría nunca y el bloque pasaría en
+// verde sin mirar nada — el agujero de siempre.
+bien(typeof mod.lineaUmbral === 'function', 'la línea del umbral vive en un módulo que se puede probar')
+
+// ⚠️ LA QUE DE VERDAD IMPORTA: una sola copia. Si el guion se quedara con su
+// propia versión, se podría arreglar el módulo y seguir publicando la frase
+// mala — es el fallo del umbral en nueve sitios, en pequeño.
+bien(
+  !/^\s*const lineaUmbral\s*=/m.test(rep),
+  'el reporte NO tiene su propia copia de la línea (la importa)',
+)
+bien(/from '\.\/lib\/lineas-reporte\.mjs'/.test(rep), 'y la importa de ese módulo')
+
+// Y que le PASE el dato: con el módulo bien y la llamada sin el dato, el valor
+// por defecto es `false` y la frase mala vuelve.
+bien(/haySenales/.test(rep), 'el reporte calcula si hay señales')
+bien(/lineaUmbral\(\{[^}]*haySenales/.test(rep), 'y se lo pasa a la línea del umbral')
+bien(
+  /const haySenales = setups\.length > 0/.test(rep),
+  'contándolo de los setups que la propia app propone',
+)
+
+// AFIRMA la ausencia sólo cuando no hay nada.
+const bajoSin = mod.lineaUmbral({ difMax: 0.2, umbral: 0.5, haySenales: false })
+const bajoCon = mod.lineaUmbral({ difMax: 0.2, umbral: 0.5, haySenales: true })
+bien(/no propone ninguna señal/.test(bajoSin), 'sin señales dice que la app no propone nada')
+bien(!/no propone ninguna señal/.test(bajoCon), 'CON señales NO afirma que no haya ninguna')
+// El HECHO sobrevive en los dos casos: lo que se quita es la conclusión, no el
+// dato. Si al arreglar la conclusión se perdieran los números, el reporte
+// volvería a ser un hueco.
+for (const [txt, caso] of [
+  [bajoSin, 'sin señales'],
+  [bajoCon, 'con señales'],
+]) {
+  bien(txt.includes('0.20') && txt.includes('0.50'), `los dos números siguen saliendo (${caso})`)
+}
+
+// Con divergencia de sobra no se afirma ninguna ausencia, haya señales o no.
+for (const hay of [true, false]) {
+  const alto = mod.lineaUmbral({ difMax: 1.4, umbral: 0.5, haySenales: hay })
+  bien(!/no propone ninguna señal/.test(alto), `con divergencia alta no afirma ausencia (haySenales=${hay})`)
+}
+
+// Ante la duda, nada. Misma asimetría que `difMax` y que `pearson`.
+bien(mod.lineaUmbral({ difMax: null, umbral: 0.5 }) === '', 'sin `difMax` no escribe nada')
+bien(mod.lineaUmbral({ difMax: 0.2, umbral: NaN }) === '', 'sin umbral tampoco')
+
+// Y la otra línea, SOLO donde esta app apaga un lado. Donde no se apaga nada
+// no hay nada que exigir — es la misma condición derivada del bloque 6, no un
+// «sáltatelo si no está».
+if (estaAppApagaUnLado) {
+  bien(typeof mod.lineaBloqueados === 'function', 'la línea de los pares pausados también vive en el módulo')
+  const blo = { n: 5, pares: ['EUR/CAD', 'EUR/NZD', 'EUR/CHF', 'USD/CAD', 'EUR/USD'] }
+  const pausSin = mod.lineaBloqueados({ bloqueados: blo, haySenales: false })
+  const pausCon = mod.lineaBloqueados({ bloqueados: blo, haySenales: true })
+  bien(/no propone ninguna señal/.test(pausSin), 'sin señales explica que por eso no hay nada')
+  bien(!/no propone ninguna señal/.test(pausCon), 'CON señales NO afirma que no haya ninguna')
+  // Los cinco pares se nombran en los dos casos: es el dato por el que existe
+  // la línea, y el 2026-10-19 su ausencia hizo leer «el mercado está plano».
+  for (const [txt, caso] of [
+    [pausSin, 'sin señales'],
+    [pausCon, 'con señales'],
+  ]) {
+    bien(blo.pares.every((p) => txt.includes(p)), `nombra los cinco pares (${caso})`)
+    bien(/pausad/.test(txt), `y dice que el motivo es una pausa (${caso})`)
+  }
+  bien(mod.lineaBloqueados({ bloqueados: null }) === '', 'sin pares pausados no escribe nada')
+  bien(mod.lineaBloqueados({ bloqueados: { n: 0, pares: [] } }) === '', 'con cero tampoco')
+  bien(/lineaBloqueados\(\{[^}]*haySenales/.test(rep), 'y el reporte le pasa si hay señales')
+} else {
+  bien(true, 'esta app no apaga ningún lado: no hay segunda línea que exigir')
 }
 
 console.log('')
