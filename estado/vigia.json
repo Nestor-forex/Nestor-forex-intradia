@@ -1,7 +1,8 @@
 {
-  "actualizadoEl": "2026-10-20T00:23:28.634Z",
-  "vela": "2026-10-20 00:00:00",
+  "actualizadoEl": "2026-10-20T01:06:57.215Z",
+  "vela": "2026-10-20 01:00:00",
   "senales": [
-    "USD/CHF|VENTA|rango"
+    "USD/CHF|VENTA|rango",
+    "NZD/CHF|VENTA|rango"
   ]
 }
