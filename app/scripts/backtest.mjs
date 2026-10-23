@@ -875,11 +875,27 @@ console.log('')
 // franja que la investigación señala como la de más información.
 const enSolape = (h) => h >= 12 && h < 16
 
+// ⚠️ El umbral de la R2 en UN solo sitio. Estaba escrito a mano en la R2, otra
+// vez en la R4 y una tercera en la etiqueta: tres copias que podían separarse
+// sin que nada fallara, y la etiqueta es justo la que engaña — aquí está
+// escrito que una etiqueta equivocada es un error de medición. Lo cazó
+// `prueba-umbral.mjs` el 2026-10-23.
+//
+// 📌 No se exporta desde `marketCalc.js` como `RSI_MAX`, y a propósito: esa es
+// un umbral de la app VIVA, y éste es el parámetro de una regla que solo se
+// mide. Juntarlos sería decir que la app usa algo que no usa.
+const RSI_ESTIRADO_R2 = 35
+
 const REGLAS_REVERSION = [
   ['R1. Comprar lo débil, vender lo fuerte', (p, esc, thr) => (p.dif < -thr ? 'COMPRA' : p.dif > thr ? 'VENTA' : null)],
   [
-    'R2. …y solo con el RSI estirado (35/65)',
-    (p, esc, thr) => (p.dif < -thr && p.rsiV <= 35 ? 'COMPRA' : p.dif > thr && p.rsiV >= 65 ? 'VENTA' : null),
+    `R2. …y solo con el RSI estirado (${RSI_ESTIRADO_R2}/${100 - RSI_ESTIRADO_R2})`,
+    (p, esc, thr) =>
+      p.dif < -thr && p.rsiV <= RSI_ESTIRADO_R2
+        ? 'COMPRA'
+        : p.dif > thr && p.rsiV >= 100 - RSI_ESTIRADO_R2
+          ? 'VENTA'
+          : null,
   ],
   [
     'R3. …y solo lejos de la EMA21',
@@ -888,7 +904,13 @@ const REGLAS_REVERSION = [
   [
     'R4. R2 solo en el solape Londres-NY',
     (p, esc, thr, hora) =>
-      !enSolape(hora) ? null : p.dif < -thr && p.rsiV <= 35 ? 'COMPRA' : p.dif > thr && p.rsiV >= 65 ? 'VENTA' : null,
+      !enSolape(hora)
+        ? null
+        : p.dif < -thr && p.rsiV <= RSI_ESTIRADO_R2
+          ? 'COMPRA'
+          : p.dif > thr && p.rsiV >= 100 - RSI_ESTIRADO_R2
+            ? 'VENTA'
+            : null,
   ],
   [
     'R5. CONTROL: la inversión, de frente',

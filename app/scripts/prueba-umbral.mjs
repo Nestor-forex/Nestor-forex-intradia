@@ -397,6 +397,113 @@ if (estaAppApagaUnLado) {
   bien(true, 'esta app no apaga ningún lado: no hay segunda línea que exigir')
 }
 
+// ══════════════════════════════════════════════════════════════════════════
+// 8. EL UMBRAL DE RSI DE LA REVERSIÓN SE LEE, NO SE ESCRIBE
+// ══════════════════════════════════════════════════════════════════════════
+//
+// ⚠️ Esto es GEMELO, así que va escrito como INVARIANTE y no como una
+// afirmación sobre Swing: la primera mitad solo aplica donde la app tiene esa
+// regla, y se condiciona. En Intradía `RSI_REVERSION` no existe y el bloque se
+// salta diciéndolo.
+//
+// El fallo que lo justifica es del 2026-10-22 y es de los de este repositorio:
+// el barrido de umbrales de `backtest.mjs` marcaba «← el elegido» sobre un 35
+// ESCRITO A MANO cuando la regla que corre usa 40. Los números estaban bien y
+// el rótulo inducía la conclusión contraria — una etiqueta equivocada es un
+// error de medición.
+
+console.log('')
+console.log('8. El umbral de RSI de la reversión: ¿se lee o se escribe?')
+
+const estaAppCorreLaReversion = /^export const RSI_REVERSION = /m.test(calc)
+
+if (!estaAppCorreLaReversion) {
+  bien(true, 'esta app no tiene regla de reversión: no hay umbral que exigir')
+} else {
+  const banco = leer('./backtest.mjs')
+
+  bien(
+    /\bRSI_REVERSION\b/.test(banco),
+    'el banco de pruebas IMPORTA el umbral en vez de escribirlo'
+  )
+
+  // Las filas de reversión del banco, por su nombre. Se leen de las cadenas
+  // que empiezan por M<n>. o R<n>.
+  //
+  // 📌 El lector hubo que rehacerlo: la primera versión buscaba líneas
+  // indentadas y la fila `M1` tiene nombre y función en la MISMA línea, así
+  // que leía 3 de 4. Se arregló el LECTOR, no el umbral de la comprobación:
+  // bajarlo de 4 a 3 habría sido adaptar la prueba a lo que encontró.
+  const filasRev = [...banco.matchAll(/(?:`|')([MR]\d\w*\.[^`'\n]*)(?:`|')/g)].map((m) => m[1])
+  bien(filasRev.length >= 4, `se encontraron las filas de reversión del banco (${filasRev.length})`)
+
+  // ⚠️⚠️ `sinPrefijo` y el `/RSI/` SIN `i` son los dos arreglos de dos fallos
+  // MÍOS en esta misma comprobación, el día que se escribió:
+  //
+  //   · buscar un dígito en el nombre completo cazaba el del PREFIJO («M2»),
+  //     así que «lleva su umbral dentro» se cumplía por construcción en TODAS
+  //     las filas y la comprobación no podía fallar;
+  //   · y `/RSI/i` cazaba «inve**rsi**ón» en «M4. CONTROL: la inversión de
+  //     antes», que no habla de RSI ninguno.
+  //
+  // Una comprobación que no puede fallar es lo mismo que no tener
+  // comprobación.
+  const sinPrefijo = (n) => n.replace(/^[MR]\d\w*\.\s*/, '')
+  const sinUmbral = filasRev.filter((n) => /RSI/.test(sinPrefijo(n)) && !/\d|\$\{/.test(sinPrefijo(n)))
+  bien(
+    sinUmbral.length === 0,
+    sinUmbral.length
+      ? `filas que nombran el RSI sin decir con qué umbral: ${sinUmbral.join(' | ')}`
+      : 'toda fila que nombra el RSI dice con qué umbral lo mide'
+  )
+
+  // Y la marca del barrido de umbrales, que es donde empezó el fallo: tiene
+  // que compararse contra el valor real, nunca contra un número escrito.
+  const marca = banco.match(/const marca = u === ([^\s?]+)/)
+  bien(!!marca, 'se encontró la marca del barrido de umbrales')
+  if (marca) {
+    bien(marca[1] === 'RSI_REVERSION', `la marca compara contra el valor real, no contra un número (${marca[1]})`)
+  }
+}
+
+// ── Lo que vale en las DOS apps: nadie escribe un umbral de RSI a mano ──────
+//
+// Se mira en los guiones que DECIDEN señales, que son los que pueden medir una
+// app distinta de la que corre sin que nada falle.
+{
+  const sospechosos = []
+  for (const f of readdirSync(new URL('.', import.meta.url))) {
+    if (!f.endsWith('.mjs')) continue
+    const src = leer(`./${f}`)
+    // Solo los que generan señales: los demás no deciden nada.
+    if (!/generarSenales\s*\(/.test(src)) continue
+    // ⚠️ Las pruebas quedan fuera: construyen mercados y reglas de mentira a
+    // propósito, y ahí un número escrito es el dato del caso, no un umbral.
+    if (f.startsWith('prueba-')) continue
+    // `rsiV <= 35` y compañía: una comparación de RSI contra un número pelado.
+    //
+    // ⚠️ El `(?!\s*-)` NO es un detalle: sin él esto cazaba `rsiV >= 100 - u`,
+    // que es justo la forma CORRECTA de escribir el espejo de un umbral leído.
+    // Y el `\b` impide que `\d+` RETROCEDA y case «10» dentro de «100», que es
+    // lo que pasó al primer intento: el mismo falso positivo con otra cara.
+    // Marcó cuatro guiones que estaban bien — una comprobación que exige lo
+    // que no debe exigir es tan inútil como una que no exige nada, y en este
+    // repositorio va por la quinta vez.
+    const crudas = [...src.matchAll(/rsiV\s*[<>]=?\s*\d+\b(?!\s*-)/g)].map((m) => m[0])
+    if (crudas.length) sospechosos.push(`${f}: ${crudas.join(', ')}`)
+  }
+  // Guarda: si el recorrido se rompe, esto no puede quedarse en verde sin
+  // haber mirado nada.
+  const miradosJs = readdirSync(new URL('.', import.meta.url)).filter((f) => f.endsWith('.mjs'))
+  bien(miradosJs.length >= 10, `se recorrieron los guiones de scripts/ (${miradosJs.length})`)
+  bien(
+    sospechosos.length === 0,
+    sospechosos.length
+      ? `comparan el RSI contra un número escrito a mano: ${sospechosos.join(' · ')}`
+      : 'ningún guion que decide señales compara el RSI contra un número escrito a mano'
+  )
+}
+
 console.log('')
 console.log(`${ok} bien · ${mal} MAL`)
 if (mal) process.exit(1)
