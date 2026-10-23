@@ -17,7 +17,7 @@
 // y juntas, contra el retroceso a secas y contra la app.
 
 import { leerLlave, obtenerVelas } from './lib/velas.mjs'
-import { computarBarrido, ADX_MIN, UMBRAL_FUERZA } from '../src/lib/marketCalc.js'
+import { computarBarrido, ADX_MIN, RSI_MAX, UMBRAL_FUERZA } from '../src/lib/marketCalc.js'
 import { generarSenales, medir } from './lib/backtest-nucleo.mjs'
 import { resolver } from './lib/resolver.mjs'
 import { actual, simetrica } from './lib/geometrias.mjs'
@@ -73,8 +73,12 @@ const reglaFase1 =
     const venta = p.e9 < p.e21 && p.dif < -thr && p.c >= p.e9 && p.c < p.e21
     if (!compra && !venta) return null
     // El punto 6 de la especificación: no perseguir lo ya extendido.
-    if (conRSI && compra && p.rsiV >= 70) return null
-    if (conRSI && venta && p.rsiV <= 30) return null
+    // ⚠️ El umbral se IMPORTA, no se escribe. Estaba a mano en 70/30 mientras
+    // `RSI_MAX` lo exporta la app: dos copias del mismo número que podían
+    // separarse sin que nada fallara, y entonces esta medición describiría una
+    // app distinta de la que corre. Lo cazó `prueba-umbral.mjs` el 2026-10-23.
+    if (conRSI && compra && p.rsiV >= RSI_MAX) return null
+    if (conRSI && venta && p.rsiV <= 100 - RSI_MAX) return null
     return compra ? 'COMPRA' : 'VENTA'
   }
 
