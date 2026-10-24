@@ -367,6 +367,27 @@ export default {
     cerrar: 'Chiudi',
   },
 
+  // Lo que señaló la regla en pruebas, en su última vela. Ver
+  // `components/SenalesSombra.jsx` — el aviso va ANTES de cualquier número a
+  // propósito: aquí lo caro no es leer mal un dato, es creer que esta lista
+  // es lo que la app propone.
+  sombraSenales: {
+    titulo: 'Cosa ha segnalato la regola in prova',
+    desc: 'Il ritracciamento: la regola che la sentinella annota senza proporla',
+    paraQue:
+      'Per poterla seguire candela per candela invece di aspettare mesi la sua percentuale: quale coppia ha segnato, a che ora, in che direzione e con quali livelli. NON dice quale operare — è un esperimento non validato, ed è per questo che sta a parte dai segnali dell\'app.',
+    avance: ({ n }) => `${n} segnali in vista`,
+    aviso:
+      'QUESTO NON È CIÒ CHE L\'APP PROPONE. È una regola IN OSSERVAZIONE: la sentinella la annota per misurarla con operazioni reali, nessuno ne è stato avvisato e non ha ancora superato la sua asticella.',
+    sinSenales: 'Questa regola non ha ancora segnalato nulla.',
+    pieCarry:
+      'A favore / contro il differenziale dice da che parte gioca lo swap finché la posizione resta aperta. La differenza dei tassi NON è lo swap: il broker ci aggiunge un margine che nessuno pubblica e per di più asimmetrico. Questo dà il lato, non il numero.',
+    carry: {
+      aFavor: 'Swap a favore',
+      enContra: 'Swap contro',
+      neutro: 'Swap: pesa appena',
+    },
+  },
   sombra: {
     aviso: ({ ops, meta }) =>
       `NON può ancora essere presa come segnale: ha ${ops} delle ${meta} operazioni reali che servono per crederci, qualunque sia il numero.`,

@@ -248,7 +248,7 @@ function calcularPivots(highs, lows, closes, L) {
 // velas "del futuro"). Aun así hay que convertirla a mano: `new Date('2026-07-30
 // 02:00:00')` la leería como hora *local* del dispositivo, o sea 5 horas
 // corridas en Colombia.
-function aFechaUTC(ts) {
+export function aFechaUTC(ts) {
   const s = String(ts).trim().replace(' ', 'T')
   if (/(Z|[+-]\d\d:?\d\d)$/.test(s)) return new Date(s)
   return new Date(s.includes('T') ? s + 'Z' : s + 'T00:00:00Z')

@@ -1,4 +1,5 @@
 import AvisoSombra from './AvisoSombra'
+import SenalesSombra from './SenalesSombra'
 import TarjetaPlegable from './TarjetaPlegable'
 import { useIdioma } from '../lib/i18n'
 import { fmtFecha } from '../lib/format'
@@ -20,7 +21,7 @@ const COLOR = {
 
 export default function HistorialTab() {
   const { t, locale } = useIdioma()
-  const { cargando, error, filas, resumen } = useHistorial()
+  const { cargando, error, senales, filas, resumen } = useHistorial()
 
   if (cargando) return <Aviso>{t('historial.cargando')}</Aviso>
   if (error) return <Aviso ambar>{t('historial.error')}</Aviso>
@@ -105,6 +106,12 @@ export default function HistorialTab() {
               <p style={{ ...TEXTO, margin: 0 }}>{t('historial.sombraIntro')}</p>
             </div>
           )}
+
+          {/* Lo que señaló la regla en pruebas en su última vela. Va AQUÍ
+              —entre su porcentaje y la lista histórica— y no en el Barrido a
+              propósito: el Barrido es donde está lo que la app PROPONE, y esto
+              no se propone. Ver `SenalesSombra.jsx`. */}
+          <SenalesSombra senales={senales} />
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {filas.map((f) => (

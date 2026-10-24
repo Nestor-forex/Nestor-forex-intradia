@@ -371,6 +371,27 @@ export default {
     cerrar: 'Close',
   },
 
+  // Lo que señaló la regla en pruebas, en su última vela. Ver
+  // `components/SenalesSombra.jsx` — el aviso va ANTES de cualquier número a
+  // propósito: aquí lo caro no es leer mal un dato, es creer que esta lista
+  // es lo que la app propone.
+  sombraSenales: {
+    titulo: 'What the rule under test signalled',
+    desc: 'The pullback: the rule the watcher records without proposing it',
+    paraQue:
+      'So you can follow it candle by candle instead of waiting months for its hit rate: which pair it flagged, at what hour, which way and at what levels. It does NOT say which one to trade — it is an unvalidated experiment, which is why it sits apart from the app\'s own signals.',
+    avance: ({ n }) => `${n} signals shown`,
+    aviso:
+      'THIS IS NOT WHAT THE APP PROPOSES. It is a rule UNDER OBSERVATION: the watcher records it to measure it with real trades, nobody was alerted about it, and it has not cleared its bar yet.',
+    sinSenales: 'This rule has not signalled anything yet.',
+    pieCarry:
+      'For / against the differential says which way the swap works while the trade stays open. The rate difference is NOT the swap: the broker adds a margin nobody publishes, and it is asymmetric. This gives you the side, not the number.',
+    carry: {
+      aFavor: 'Swap in favour',
+      enContra: 'Swap against',
+      neutro: 'Swap: barely matters',
+    },
+  },
   sombra: {
     aviso: ({ ops, meta }) =>
       `It still CANNOT be taken as a signal: it has ${ops} of the ${meta} real trades needed to believe it, whichever way the number comes out.`,

@@ -362,6 +362,27 @@ export default {
     cerrar: '收起',
   },
 
+  // Lo que señaló la regla en pruebas, en su última vela. Ver
+  // `components/SenalesSombra.jsx` — el aviso va ANTES de cualquier número a
+  // propósito: aquí lo caro no es leer mal un dato, es creer que esta lista
+  // es lo que la app propone.
+  sombraSenales: {
+    titulo: '测试中的规则发出了什么信号',
+    desc: '回调：守望程序记录但不建议的规则',
+    paraQue:
+      '为了能逐根K线跟踪它，而不必等上几个月看它的胜率：它标记了哪个货币对、在哪个小时、方向如何、价位在哪里。它不会告诉你该交易哪一个——这是一个尚未验证的实验，所以与应用自身的信号分开显示。',
+    avance: ({ n }) => `显示 ${n} 个信号`,
+    aviso:
+      '这不是应用建议的内容。这是一条处于观察中的规则：守望程序记录它是为了用真实交易来衡量，没有人收到过它的通知，它也还没有达到自己的门槛。',
+    sinSenales: '这条规则还没有发出任何信号。',
+    pieCarry:
+      '顺差 / 逆差表示持仓期间 Swap 向哪一边作用。利率差并不是 Swap：经纪商会加上一个无人公布且不对称的加价。这只给出方向，不给出数字。',
+    carry: {
+      aFavor: 'Swap 有利',
+      enContra: 'Swap 不利',
+      neutro: 'Swap：影响很小',
+    },
+  },
   sombra: {
     aviso: ({ ops, meta }) =>
       `它还不能当作信号：它有 ${ops} 笔真实交易，需要 ${meta} 笔才能相信它，无论数字是正是负。`,

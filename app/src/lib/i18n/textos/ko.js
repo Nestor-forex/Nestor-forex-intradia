@@ -365,6 +365,27 @@ export default {
     cerrar: '닫기',
   },
 
+  // Lo que señaló la regla en pruebas, en su última vela. Ver
+  // `components/SenalesSombra.jsx` — el aviso va ANTES de cualquier número a
+  // propósito: aquí lo caro no es leer mal un dato, es creer que esta lista
+  // es lo que la app propone.
+  sombraSenales: {
+    titulo: '시험 중인 규칙이 낸 신호',
+    desc: '되돌림: 감시 프로그램이 기록만 하고 제안하지는 않는 규칙',
+    paraQue:
+      '적중률이 나올 때까지 몇 달을 기다리는 대신 캔들 하나하나를 따라갈 수 있도록: 어떤 통화쌍을, 몇 시에, 어느 방향으로, 어떤 가격대에 표시했는지 보여 줍니다. 무엇을 거래하라고 말하지 않습니다 — 아직 검증되지 않은 실험이라 앱 자체의 신호와 따로 둡니다.',
+    avance: ({ n }) => `신호 ${n}개 표시`,
+    aviso:
+      '이것은 앱이 제안하는 내용이 아닙니다. 관찰 중인 규칙입니다: 실제 거래로 측정하려고 감시 프로그램이 기록할 뿐이며, 누구에게도 알림이 가지 않았고 아직 자신의 기준을 넘지 못했습니다.',
+    sinSenales: '이 규칙은 아직 아무 신호도 내지 않았습니다.',
+    pieCarry:
+      '차이에 유리 / 불리는 포지션이 열려 있는 동안 Swap이 어느 쪽으로 작용하는지를 알려 줍니다. 금리 차이는 Swap이 아닙니다: 브로커가 아무도 공개하지 않는, 게다가 비대칭인 마진을 더합니다. 이것은 방향을 알려 줄 뿐 금액은 알려 주지 않습니다.',
+    carry: {
+      aFavor: 'Swap 유리',
+      enContra: 'Swap 불리',
+      neutro: 'Swap: 거의 영향 없음',
+    },
+  },
   sombra: {
     aviso: ({ ops, meta }) =>
       `아직 신호로 받아들일 수 없습니다. 수치가 어떻게 나오든, 믿으려면 실제 거래 ${meta}건이 필요하고 현재는 ${ops}건입니다.`,

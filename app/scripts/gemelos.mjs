@@ -107,6 +107,17 @@ export const GEMELOS = [
   // aquí son tres reglas de sombra y allá una.
   'src/components/AvisoSombra.jsx',
   'src/lib/sombra.js',
+  // ¿Esta señal va a favor o en contra del diferencial de tasas? Es gemelo
+  // porque NO decide nada propio: llama a `difDePar` de `tasas.js`, que ya es
+  // gemelo y lleva dentro el signo y la banda neutra. Lo que no puede haber dos
+  // veces es ese CONVENIO: el día que uno de los dos se moviera, la pantalla y
+  // la medición dirían cosas opuestas sin que fallara nada — el fallo del
+  // umbral de fuerza en nueve sitios (2026-10-12).
+  //
+  // ⚠️ Y sigue en pie que **la diferencia de tasas NO es el swap**: el margen
+  // del bróker no lo publica nadie y es asimétrico. Esto da el lado, no el
+  // número. Eso vale igual en las dos apps, así que el archivo entero vale.
+  'src/lib/carrySenal.js',
   // La cabecera de TODAS las tarjetas que se abren. Es gemela por el mismo
   // motivo por el que se extrajo: había ocho copias de la misma cabecera y
   // cada una terminaba en una flechita gris que nadie leía como un botón. Si
@@ -236,6 +247,38 @@ export const GEMELOS = [
 // empeora en Swing; está medido. Unificar umbrales sería el peor error posible
 // aquí.
 export const PRIMOS = {
+  'src/lib/senalesSombra.js':
+    'Agrupa lo que el vigia ya anoto de las reglas en pruebas. La idea es la ' +
+    'misma y el agrupamiento NO puede serlo: en Swing cada vela ES un dia, asi ' +
+    'que agrupa por `cierre` ("2026-10-15") y agrupar por dia o por vela es lo ' +
+    'mismo. En Intradia cada vela es una HORA y las senales traen `vela` ' +
+    '("2026-10-15 22:00:00"): agrupar por dia meteria hasta 24 velas en el ' +
+    'mismo monton y perderia justo lo que esa app mide. Copiar el de Swing ' +
+    'leeria un campo que alli no existe y dejaria la tarjeta vacia SIN DAR ' +
+    'NINGUN ERROR. Ademas Intradia tiene que convertir ese timestamp a UTC a ' +
+    'mano (`aFechaUTC`), porque viene sin zona y `new Date()` lo leeria como ' +
+    'hora local: cinco horas corridas en Colombia.',
+
+  'src/components/SenalesSombra.jsx':
+    'La tarjeta de esas senales. Tres diferencias reales, no de estilo. Una: ' +
+    'Swing enseña cuatro reglas de sombra y Intradia UNA (la reversion, ' +
+    '«comprar la caida» y la ruptura estan medidas en Intradia y pierden). ' +
+    'Dos: alli el grupo lleva solo la fecha y aqui tiene que llevar la HORA, ' +
+    'porque el retroceso de las 22:00 y el de las 09:00 son operaciones ' +
+    'distintas en sesiones distintas. Tres: la marca de «geometria vieja» solo ' +
+    'existe en Swing, donde «comprar la caida» se anoto dos meses con la ' +
+    'geometria equivocada; en Intradia marcaria en falso, que es el defecto ' +
+    'que alla salio mirando la captura.',
+
+  'scripts/prueba-senales-sombra.mjs':
+    'La comprobacion de lo anterior, que por lo de arriba tampoco puede ser ' +
+    'gemela. En Intradia vigila ademas dos cosas que en Swing no existen: que ' +
+    'NO se lea `cierre` (el campo de la app hermana, que alli no existe), y ' +
+    'que la hora se lea como UTC. Esa segunda corre en un proceso aparte con ' +
+    'la zona forzada a Bogota, y no por gusto: la primera version la ' +
+    'comprobaba en la zona de la maquina —que es UTC— y NO MORDIA, con el ' +
+    'fallo puesto a proposito las 44 comprobaciones seguian en verde.',
+
   'scripts/lib/lss-banco.mjs':
     'El adaptador que lleva las senales del NFX-LSS al banco de pruebas. La ' +
     'logica es gemela; ESTO no puede serlo por dos razones de peso. Primera: ' +
