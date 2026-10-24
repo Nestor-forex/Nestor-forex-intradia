@@ -127,6 +127,31 @@ export function generarSenales(
     // falla — devuelve números.
     computar = computarBarrido,
     ventana = VENTANA,
+    // Función (nombreDelPar) → boolean. Restringe QUÉ PARES mira la app, no
+    // qué señales se cuentan después.
+    //
+    // ⚠️⚠️ La diferencia no es de estilo y es la pieza central del corte
+    // dólar/cruces. La app se queda con los `topN` mejores por lado, así que
+    // quitar pares NO quita señales: **las cambia por otras.** Si se filtrara
+    // la lista de salida, los huecos se quedarían vacíos y se mediría «la app
+    // con menos señales»; filtrando aquí, el que estaba cuarto sube al hueco y
+    // entra en otra hora, a otro precio, con su propio resultado — que es lo
+    // que de verdad haría una app de 7 pares. Lo primero es una resta; esto es
+    // OTRA app.
+    //
+    // 📌 Se filtra `data.pares` y NO `data.esc`: la fuerza de una divisa sale
+    // de su propia serie, no de qué pares se miran. Recortarla además
+    // cambiaría el ranking de fuerza, que es un dato del mercado y no una
+    // decisión de la app.
+    //
+    // ⚠️ Y aquí hay un motivo propio de ESTA app, que en Swing no existe: los
+    // once cruces se DERIVAN de las siete divisas contra el dólar. Recortar
+    // `esc` dejaría sin fuerza a divisas que siguen haciendo falta para
+    // construir los pares que sí se miran.
+    //
+    // Por defecto `null` = los 18 de siempre, así que ninguna fila ya medida
+    // cambia.
+    universo = null,
   } = {}
 ) {
   const senales = []
@@ -136,7 +161,10 @@ export function generarSenales(
     // La ventana móvil: las últimas `ventana` velas hasta la i, ni una más.
     const desde = Math.max(0, i + 1 - ventana)
     const hasta = barras.slice(desde, i + 1)
-    const data = computar(hasta, rates, rangos)
+    const completo = computar(hasta, rates, rangos)
+    const data = universo
+      ? { ...completo, pares: completo.pares.filter((p) => universo(p.name)) }
+      : completo
     // Sin `reglaEntrada` se mide el barrido de la app tal cual, que es lo que
     // hay que medir por defecto; `vista` deja mover sus umbrales (ADX,
     // compresión) sin duplicar aquí su lógica de selección. Con

@@ -410,6 +410,27 @@ export default {
     cerrar: 'Cerrar',
   },
 
+  // Lo que señaló la regla en pruebas, en su última vela. Ver
+  // `components/SenalesSombra.jsx` — el aviso va ANTES de cualquier número a
+  // propósito: aquí lo caro no es leer mal un dato, es creer que esta lista
+  // es lo que la app propone.
+  sombraSenales: {
+    titulo: 'Lo que señaló la regla en pruebas',
+    desc: 'El retroceso: la regla que el vigía anota sin proponerla',
+    paraQue:
+      'Para poder seguirla vela a vela en vez de esperar meses a su porcentaje: qué par marcó, en qué hora, hacia dónde y con qué niveles. NO dice cuál operar — es un experimento sin validar, y por eso va aparte de las señales de la app.',
+    avance: ({ n }) => `${n} señales a la vista`,
+    aviso:
+      'ESTO NO ES LO QUE LA APP PROPONE. Es una regla EN OBSERVACIÓN: el vigía la anota para medirla con operaciones reales, nadie recibió aviso de ella y todavía no ha pasado su listón.',
+    sinSenales: 'Esta regla todavía no ha señalado nada.',
+    pieCarry:
+      'A favor / en contra del diferencial dice hacia qué lado juega el swap mientras la operación siga abierta. La diferencia de tasas NO es el swap: el bróker le suma un margen que no publica nadie y que además es desigual. Esto da el lado, no el número.',
+    carry: {
+      aFavor: 'Swap a favor',
+      enContra: 'Swap en contra',
+      neutro: 'Swap: apenas pesa',
+    },
+  },
   sombra: {
     aviso: ({ ops, meta }) =>
       `Todavía NO se puede tomar como señal: lleva ${ops} de las ${meta} operaciones reales que hacen falta para creerle, salga el número como salga.`,

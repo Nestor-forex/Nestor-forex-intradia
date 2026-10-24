@@ -27,9 +27,12 @@ name: ¿Conviene apagar el modo tendencia?
 #
 # ⚠️ SOLO A MANO. Contesta una pregunta de una vez; no vigila nada.
 #
-# ⚠️⚠️ NECESITA EL SECRETO. Son 7 créditos de Twelve Data (una tanda de los 7
-# símbolos), así que sin el `env` de abajo `leerLlave` no encuentra la llave y
-# el guion falla. Cualquier workflow nuevo que llame a estos guiones tiene que
+# ⚠️⚠️ NECESITA EL SECRETO. Sin el `env` de abajo `leerLlave` no encuentra la
+# llave y el guion falla.
+#
+# ⚠️ Y el coste, corregido el 2026-10-24: cada tanda pide los 7 símbolos y
+# gasta 7 créditos, así que con el valor por defecto (4 tandas) son **28**, no
+# 7. Decía 7 a secas — un número bien calculado describiendo otra cosa. Cualquier workflow nuevo que llame a estos guiones tiene que
 # pasársela — ya pasó de verdad con `comparar-reglas.yml`.
 
 on:

@@ -371,6 +371,27 @@ export default {
     cerrar: 'Schließen',
   },
 
+  // Lo que señaló la regla en pruebas, en su última vela. Ver
+  // `components/SenalesSombra.jsx` — el aviso va ANTES de cualquier número a
+  // propósito: aquí lo caro no es leer mal un dato, es creer que esta lista
+  // es lo que la app propone.
+  sombraSenales: {
+    titulo: 'Was die Regel im Test signalisiert hat',
+    desc: 'Der Rücklauf: die Regel, die der Wächter notiert, ohne sie vorzuschlagen',
+    paraQue:
+      'Um sie Kerze für Kerze zu verfolgen, statt Monate auf ihre Trefferquote zu warten: welches Paar, zu welcher Stunde, in welche Richtung und mit welchen Niveaus. Sie sagt NICHT, was zu handeln ist — sie ist ein unbestätigtes Experiment und steht deshalb getrennt von den Signalen der App.',
+    avance: ({ n }) => `${n} Signale sichtbar`,
+    aviso:
+      'DAS IST NICHT, WAS DIE APP VORSCHLÄGT. Es ist eine Regel IN BEOBACHTUNG: der Wächter notiert sie, um sie an echten Trades zu messen, niemand wurde darüber benachrichtigt, und ihre Hürde hat sie noch nicht genommen.',
+    sinSenales: 'Diese Regel hat noch nichts signalisiert.',
+    pieCarry:
+      'Für / gegen die Zinsdifferenz sagt, in welche Richtung der Swap wirkt, solange die Position offen bleibt. Die Zinsdifferenz ist NICHT der Swap: der Broker schlägt eine Marge auf, die niemand veröffentlicht und die zudem ungleich ist. Das gibt die Seite, nicht die Zahl.',
+    carry: {
+      aFavor: 'Swap dafür',
+      enContra: 'Swap dagegen',
+      neutro: 'Swap: kaum von Gewicht',
+    },
+  },
   sombra: {
     aviso: ({ ops, meta }) =>
       `Sie kann noch NICHT als Signal genommen werden: sie hat ${ops} von den ${meta} echten Trades, die nötig sind, um ihr zu glauben — egal wie die Zahl ausfällt.`,

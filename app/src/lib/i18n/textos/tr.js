@@ -366,6 +366,27 @@ export default {
     cerrar: 'Kapat',
   },
 
+  // Lo que señaló la regla en pruebas, en su última vela. Ver
+  // `components/SenalesSombra.jsx` — el aviso va ANTES de cualquier número a
+  // propósito: aquí lo caro no es leer mal un dato, es creer que esta lista
+  // es lo que la app propone.
+  sombraSenales: {
+    titulo: 'Test aşamasındaki kuralın verdiği sinyal',
+    desc: 'Geri çekilme: gözcünün önermeden kaydettiği kural',
+    paraQue:
+      'Başarı oranı için aylarca beklemek yerine onu mum mum takip edebilmek için: hangi pariteyi, hangi saatte, hangi yönde ve hangi seviyelerle işaretledi. Hangisinin işleme alınacağını SÖYLEMEZ — doğrulanmamış bir deneydir, bu yüzden uygulamanın kendi sinyallerinden ayrı durur.',
+    avance: ({ n }) => `${n} sinyal görünüyor`,
+    aviso:
+      'BU, UYGULAMANIN ÖNERDİĞİ ŞEY DEĞİLDİR. GÖZLEM ALTINDA bir kuraldır: gözcü onu gerçek işlemlerle ölçmek için kaydeder, kimseye bildirimi gitmedi ve kendi eşiğini henüz geçmedi.',
+    sinSenales: 'Bu kural henüz hiçbir sinyal vermedi.',
+    pieCarry:
+      'Farkın lehine / aleyhine, işlem açık kaldığı sürece Swap’ın hangi yöne çalıştığını söyler. Faiz farkı Swap DEĞİLDİR: aracı kurum kimsenin yayımlamadığı ve üstelik simetrik olmayan bir marj ekler. Bu, yönü verir; rakamı değil.',
+    carry: {
+      aFavor: 'Swap lehte',
+      enContra: 'Swap aleyhte',
+      neutro: 'Swap: neredeyse etkisiz',
+    },
+  },
   sombra: {
     aviso: ({ ops, meta }) =>
       `Henüz sinyal olarak alınamaz: sayı nasıl çıkarsa çıksın, ona inanmak için gereken ${meta} gerçek işlemden ${ops} tanesi var.`,

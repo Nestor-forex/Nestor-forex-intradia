@@ -371,6 +371,27 @@ export default {
     cerrar: 'Fermer',
   },
 
+  // Lo que señaló la regla en pruebas, en su última vela. Ver
+  // `components/SenalesSombra.jsx` — el aviso va ANTES de cualquier número a
+  // propósito: aquí lo caro no es leer mal un dato, es creer que esta lista
+  // es lo que la app propone.
+  sombraSenales: {
+    titulo: 'Ce qu\'a signalé la règle à l\'essai',
+    desc: 'Le repli : la règle que la vigie note sans la proposer',
+    paraQue:
+      'Pour la suivre bougie par bougie au lieu d\'attendre des mois son taux de réussite : quelle paire, à quelle heure, dans quel sens et à quels niveaux. Elle ne dit PAS laquelle trader — c\'est une expérience non validée, et c\'est pourquoi elle est à part des signaux de l\'app.',
+    avance: ({ n }) => `${n} signaux affichés`,
+    aviso:
+      'CE N\'EST PAS CE QUE L\'APP PROPOSE. C\'est une règle SOUS OBSERVATION : la vigie la note pour la mesurer sur des opérations réelles, personne n\'en a été alerté, et elle n\'a pas encore franchi sa barre.',
+    sinSenales: 'Cette règle n\'a encore rien signalé.',
+    pieCarry:
+      'Pour / contre le différentiel indique dans quel sens joue le swap tant que la position reste ouverte. L\'écart de taux n\'est PAS le swap : le courtier y ajoute une marge que personne ne publie et qui est de surcroît asymétrique. Cela donne le côté, pas le chiffre.',
+    carry: {
+      aFavor: 'Swap favorable',
+      enContra: 'Swap défavorable',
+      neutro: 'Swap : poids négligeable',
+    },
+  },
   sombra: {
     aviso: ({ ops, meta }) =>
       `Elle ne peut encore PAS être prise comme signal : elle compte ${ops} des ${meta} opérations réelles nécessaires pour y croire, quel que soit le chiffre.`,

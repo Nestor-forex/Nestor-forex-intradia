@@ -365,6 +365,27 @@ export default {
     cerrar: '閉じる',
   },
 
+  // Lo que señaló la regla en pruebas, en su última vela. Ver
+  // `components/SenalesSombra.jsx` — el aviso va ANTES de cualquier número a
+  // propósito: aquí lo caro no es leer mal un dato, es creer que esta lista
+  // es lo que la app propone.
+  sombraSenales: {
+    titulo: 'テスト中のルールが出したシグナル',
+    desc: '押し目：監視プログラムが記録するだけで提案はしないルール',
+    paraQue:
+      '勝率が出るまで何か月も待つのではなく、ローソク足ごとに追えるようにするため。どの通貨ペアを、何時に、どちら向きに、どの水準で示したかがわかります。どれを取引すべきかは示しません — 検証されていない実験なので、アプリ自身のシグナルとは分けてあります。',
+    avance: ({ n }) => `${n} 件のシグナルを表示`,
+    aviso:
+      'これはアプリが提案しているものではありません。観察中のルールです：実際の取引で測るために監視プログラムが記録しているだけで、誰にも通知は送られておらず、まだ基準にも達していません。',
+    sinSenales: 'このルールはまだ何もシグナルを出していません。',
+    pieCarry:
+      '差分に対して有利 / 不利は、ポジションを持ち続ける間に Swap がどちら向きに働くかを示します。金利差は Swap そのものではありません：ブローカーは誰も公表しない、しかも非対称なマージンを上乗せします。これは向きを示すもので、金額ではありません。',
+    carry: {
+      aFavor: 'Swap 有利',
+      enContra: 'Swap 不利',
+      neutro: 'Swap：ほぼ影響なし',
+    },
+  },
   sombra: {
     aviso: ({ ops, meta }) =>
       `まだシグナルとして扱えません。数字が良くても悪くても、信用するには${meta}件の実取引が必要で、現在は${ops}件です。`,
