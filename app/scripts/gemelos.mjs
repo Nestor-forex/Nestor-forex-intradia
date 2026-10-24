@@ -247,6 +247,19 @@ export const GEMELOS = [
 // empeora en Swing; está medido. Unificar umbrales sería el peor error posible
 // aquí.
 export const PRIMOS = {
+  'scripts/lib/preregistro-cruces.mjs':
+    'El liston del corte dolar/cruces. La pregunta es la misma y los listones ' +
+    'NO pueden serlo, por donde salio cada uno. En Swing el corte se encontro ' +
+    'MIRANDO los resultados (2026-10-21) y el liston se escribio despues para ' +
+    'juzgarlo; en Intradia no se ha mirado nunca, asi que alli se puede hacer ' +
+    'lo que aqui era imposible: FIJAR LA DIRECCION de antemano, y `juzgar()` ' +
+    'se niega a dar por bueno el monton que no se predijo. Ademas el reparto ' +
+    'de pares es distinto —7 y 7 aqui, 7 y 11 alla— asi que el criterio de ' +
+    'señales va en numero absoluto aqui (derivado de ~36 al mes) y en FRACCION ' +
+    'alla; copiar el 15 habria sido traerse una suposicion sobre otra app, que ' +
+    'es el fallo de `barridoSwap`. Y alla se añade que la app seguiria ' +
+    'perdiendo aunque el corte pasara, porque parte de -0,13 y no de -0,040.',
+
   'src/lib/senalesSombra.js':
     'Agrupa lo que el vigia ya anoto de las reglas en pruebas. La idea es la ' +
     'misma y el agrupamiento NO puede serlo: en Swing cada vela ES un dia, asi ' +

@@ -1,0 +1,97 @@
+name: ¿Sirve partir en pares con dólar y cruces?
+
+# ¿SE REPITE EN INTRADÍA EL CORTE QUE SE VIO EN SWING?
+#
+# El 2026-10-23 quedó medido en Swing que su app, restringida a los 7 pares con
+# dólar, pasa de −0,040 a +0,073 por unidad de riesgo, gana en las dos mitades,
+# aguanta el swap y su CONTROL (los cruces) se derrumba a −0,142. Fue lo primero
+# del proyecto en pasar un preregistro completo.
+#
+# Néstor pidió el 2026-10-24 medirlo también aquí. Esto es esa medición.
+#
+# ⚠️⚠️ LO QUE HACE QUE VALGA: LA DIRECCIÓN VA FIJADA ANTES.
+#
+# En Swing el corte se encontró MIRANDO los resultados, y el listón se escribió
+# después para juzgarlo. Aquí no se ha mirado nunca, así que se puede hacer lo
+# que allá era imposible: escribir de antemano CUÁL de los dos montones se
+# juzga. Se miden los dos —uno es el control del otro— pero solo se juzga el
+# predicho. Quedarse con el que gane al verlo no mediría nada: con dos montones
+# siempre hay uno mejor, y eso es el troceo a posteriori que este proyecto
+# rechazó con el control de la confluencia y con el de «comprar la caída».
+#
+# ⚠️ Y la predicción es FLOJA, dicho antes de verla acertar o fallar: nadie ha
+# explicado POR QUÉ pasa en Swing. Hay un número y no hay mecanismo. En este
+# proyecto hay diez casos escritos de un mecanismo convincente que resultó
+# falso al medirlo. Lo que justifica medirlo igual es que es barato: el banco ya
+# se baja estas velas.
+#
+# ⚠️⚠️ NO CAMBIA NADA, y no es una promesa: es el permiso.
+#
+# `permissions: contents: read` — no puede escribir en ninguna rama aunque
+# quisiera. No toca un archivo de `src/`, ni una señal, ni el barrido
+# publicado, ni el historial, ni ninguno de los experimentos que ya corren. Y
+# pasar el listón TAMPOCO enciende nada: sería una propuesta, con su propio PR,
+# y la decisión es de Néstor.
+#
+# ⚠️ Y aunque pasara, la app seguiría perdiendo. Intradía mide −0,13 por unidad
+# de riesgo; una mejora de 0,02 o 0,05 la deja en −0,11 o −0,08. «Menos malo»
+# no es «bueno». En Swing la base era −0,040 y el corte la ponía en positivo;
+# aquí ni el mejor caso imaginable hace eso.
+#
+# ⚠️ EL LISTÓN ESTÁ ESCRITO ANTES, en `app/scripts/lib/preregistro-cruces.mjs`
+# con fecha 2026-10-24, incluido lo que significa cada resultado y lo que NO
+# autoriza ninguno. Sin eso, cualquier número se lee como confirmación.
+#
+# ⚠️ SOLO A MANO. Contesta una pregunta de una vez; no vigila nada.
+#
+# ⚠️⚠️ NECESITA EL SECRETO. Son 7 créditos de Twelve Data (una tanda de los 7
+# símbolos), así que sin el `env` de abajo `leerLlave` no encuentra la llave y
+# el guion falla. Cualquier workflow nuevo que llame a estos guiones tiene que
+# pasársela — ya pasó de verdad con `comparar-reglas.yml`.
+
+on:
+  workflow_dispatch:
+    inputs:
+      paginas:
+        description: 'Tandas de velas (4 = ~20.000 velas ≈ 5 años. Cada una son 7 créditos y 65 s de pausa)'
+        required: false
+        default: '4'
+
+# Solo lee. No aflojar esto para «aprovechar y guardar el resultado»: lo que
+# este trabajo NO puede hacer es escribir.
+permissions:
+  contents: read
+
+jobs:
+  medir:
+    runs-on: ubuntu-latest
+    # Sin esto GitHub deja correr un trabajo hasta SEIS HORAS. Lo normal aquí
+    # son unos minutos: cuatro tandas de velas con sus pausas, y después tres
+    # corridas del banco sobre esas mismas velas.
+    timeout-minutes: 30
+    steps:
+      - name: Traer el código
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Primero las comprobaciones sin internet, y la primera es la que importa:
+      # que el listón MUERDA. Un veredicto que calcula una función solo vale si
+      # esa función dice que no cuando toca — si no, el preregistro da una falsa
+      # sensación de rigor, que es peor que no tenerlo.
+      #
+      # Y vigila también la plomería: que `universo` recorte los PARES y no la
+      # salida, que es lo que distingue «otra app» de una resta.
+      - name: Comprobar que el listón muerde (sin internet)
+        working-directory: app
+        run: node scripts/prueba-cruces.mjs
+
+      - name: Medir
+        working-directory: app
+        env:
+          PAGINAS: ${{ inputs.paginas }}
+          # ⚠️ SIN ESTO EL GUION FALLA. Ver la cabecera.
+          TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}
+        run: node scripts/medir-cruces.mjs
