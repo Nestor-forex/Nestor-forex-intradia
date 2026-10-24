@@ -1,8 +1,9 @@
 // ¿SE REPITE EN INTRADÍA EL CORTE DÓLAR / CRUCES QUE SE VIO EN SWING?
 //
 // Correr con: Actions → «¿Sirve partir en pares con dólar y cruces?» → Run
-// workflow. Cuesta 7 créditos de Twelve Data (una descarga de velas, las
-// mismas que el resto del banco).
+// workflow. Cada tanda de velas pide los 7 símbolos de una vez y gasta 7
+// créditos de Twelve Data, así que con el valor por defecto (4 tandas) son 28.
+// Son las mismas velas que se baja el resto del banco.
 //
 // ⚠️ ESTO NO CAMBIA NADA DE LA APP. Es un diagnóstico: no toca ningún archivo
 // de `src/`, el workflow lleva `permissions: contents: read` y el veredicto lo

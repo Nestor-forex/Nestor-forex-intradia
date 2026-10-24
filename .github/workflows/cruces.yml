@@ -44,10 +44,15 @@ name: ¿Sirve partir en pares con dólar y cruces?
 #
 # ⚠️ SOLO A MANO. Contesta una pregunta de una vez; no vigila nada.
 #
-# ⚠️⚠️ NECESITA EL SECRETO. Son 7 créditos de Twelve Data (una tanda de los 7
-# símbolos), así que sin el `env` de abajo `leerLlave` no encuentra la llave y
-# el guion falla. Cualquier workflow nuevo que llame a estos guiones tiene que
-# pasársela — ya pasó de verdad con `comparar-reglas.yml`.
+# ⚠️⚠️ NECESITA EL SECRETO. Sin el `env` de abajo `leerLlave` no encuentra la
+# llave y el guion falla. Cualquier workflow nuevo que llame a estos guiones
+# tiene que pasársela — ya pasó de verdad con `comparar-reglas.yml`.
+#
+# ⚠️ CUÁNTO CUESTA, con el número bien: cada tanda pide los 7 símbolos de una
+# vez y gasta **7 créditos**, así que con el valor por defecto (4 tandas) son
+# **28**. La primera versión de esta cabecera decía 7 a secas — un número bien
+# calculado describiendo otra cosa, que es el fallo que este proyecto lleva
+# meses coleccionando. Intradía gasta ~113 de los 800 al día, así que cabe.
 
 on:
   workflow_dispatch:
