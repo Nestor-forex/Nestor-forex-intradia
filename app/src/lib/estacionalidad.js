@@ -231,6 +231,25 @@ export function direccionPorMes(velas) {
 }
 
 /**
+ * El margen, escrito sin que nunca se lea «±0.00».
+ *
+ * ⚠️⚠️ ESTO SALIÓ MIRANDO LA CAPTURA, y es de la familia exacta que esta
+ * función existe para evitar. Con dos decimales un margen de 0,0046 se
+ * redondea a `0.00`, y eso no dice «el margen es pequeño»: dice **«este número
+ * es exacto»**, que es una afirmación, y falsa. El margen nunca es cero.
+ *
+ * Misma asimetría que en el resto del proyecto: equivocarse hacia «el margen
+ * es mayor de lo que parece» cuesta leer un número con más prudencia de la
+ * necesaria; hacia «no hay margen» cuesta justo lo que esta tarjeta denuncia
+ * de la competencia.
+ */
+export function margenLegible(x) {
+  if (!Number.isFinite(x) || x < 0) return '—'
+  if (x === 0) return '0'
+  return x < 0.005 ? '<0.01' : x.toFixed(2)
+}
+
+/**
  * ¿Se puede leer esta casilla? Para que la pantalla lo marque en vez de
  * esconderla.
  */

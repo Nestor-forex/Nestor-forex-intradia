@@ -24,6 +24,7 @@ import {
   porMes,
   direccionPorMes,
   casillaFloja,
+  margenLegible,
   estacionalidadDe,
 } from '../src/lib/estacionalidad.js'
 import { margen } from '../src/lib/diagnostico.js'
@@ -291,6 +292,25 @@ ok(casillaFloja(null) && casillaFloja({ n: NaN }) && casillaFloja({}), 'y lo que
     DIAS_HABILES.some((d) => casillaFloja(p[d])),
     'y alguna sale marcada como floja en vez de desaparecer',
   )
+}
+
+// ── 7b. ⚠️ EL MARGEN NUNCA SE LEE COMO CERO ─────────────────────────────────
+console.log('\n7b. margenLegible')
+ok(margenLegible(0.0046) === '<0.01', 'un margen de 0,0046 NO se escribe «0.00»: se escribe «<0.01»')
+ok(margenLegible(0.004999) === '<0.01', 'y justo por debajo del redondeo, igual')
+ok(margenLegible(0.005) === '0.01', 'a partir de 0,005 ya cabe en dos decimales')
+ok(margenLegible(0.0144) === '0.01' && margenLegible(22) === '22.00', 'los normales salen con dos decimales')
+ok(margenLegible(0) === '0', 'un cero EXACTO sí se escribe 0 — pero nunca sale de `resumenNumerico`')
+for (const malo of [null, undefined, NaN, -1, 'x']) {
+  ok(margenLegible(malo) === '—', `lo que no se puede leer sale «—», no un número (${String(malo)})`)
+}
+{
+  // La comprobación que de verdad importa: con los márgenes que salen de un
+  // perfil por hora de verdad, NINGUNO se escribe «0.00».
+  const p = perfilPor(horaria, porHoraUTC, HORAS)
+  const escritos = HORAS.map((h) => margenLegible(p[h].margen95))
+  ok(!escritos.includes('0.00'), 'ni un margen del perfil por hora real se escribe «0.00»')
+  ok(escritos.some((x) => x === '<0.01'), 'y los pequeños salen como «<0.01»')
 }
 
 // ── 8. El paquete completo de un par ─────────────────────────────────────────

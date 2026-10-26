@@ -443,6 +443,15 @@ export const PRIMOS = {
   'scripts/lib/vigia-nucleo.mjs':
     'El identificador de una señal lleva el tipo en Intradía (que tiene modo ' +
     'rango) y no en Swing.',
+  'src/components/Estacionalidad.jsx':
+    'Intradia tiene panel por HORA y Swing no, porque alli una vela ES un dia. Y los 11 ' +
+      'cruces de Intradia salen sin panel mensual de recorrido, asi que su tarjeta ensena ' +
+      'dos tramos de datos distintos (7 meses de velas H1 y ~14 anos de diarias) en vez de ' +
+      'uno. La matematica, `src/lib/estacionalidad.js`, si es GEMELA.',
+  'src/lib/useEstacionalidad.js':
+    'Cada app lee SU archivo, igual que `useCalendario`: el contenido no es el mismo, y ' +
+      'aunque lo fuera, si una leyera el archivo de la otra un fallo del workflow de la ' +
+      'hermana la dejaria sin tarjeta y nadie sabria donde buscar.',
   'scripts/publicar-estacionalidad.mjs':
     'Swing necesita UNA descarga (velas diarias: de ahi salen el perfil por dia y los dos ' +
       'paneles por mes) e Intradia DOS (H1 para hora y dia, diarias para los meses). Ademas ' +
