@@ -96,6 +96,30 @@ export default {
     asia: 'Asia / Sídney',
   },
 
+  // QUÉ ES ESTA APP, Y QUÉ NO ES. Lo pidió Néstor con sus palabras: «mis apps
+  // no venden, por ahora, señales para copiar, y eso quiero que las apps lo
+  // dejen bien claro».
+  //
+  // ⚠️ `liston` es FUNCIÓN y lee el número de `OPS_PARA_CREER`: escrito a mano
+  // envejecería solo en los 13 idiomas, que es lo que le pasó a
+  // `medicion.queSignifica` durante meses.
+  //
+  // ⚠️ Y dice «SI alguno pasa su listón», nunca «cuando»: van nueve familias
+  // medidas y nueve que no pasan, así que prometer el resultado sería afirmar
+  // algo que todavía no existe.
+  queEs: {
+    titulo: 'Qué es esta app, y qué no es',
+    desc: 'Información para ahorrar tiempo, no señales para copiar',
+    paraQue: 'Para que sepas exactamente qué estás mirando antes de poner dinero. Se lee una vez y vale para todas las pantallas.',
+    avance: 'Nada de lo que ves aquí es una señal para copiar: son experimentos en marcha, y la app te enseña cuánto les falta para que su número signifique algo.',
+    informacion: 'Esta app es INFORMACIÓN. Reúne en un sitio lo que de otro modo te llevaría una hora de mirar gráficos: qué divisas están fuertes y cuáles débiles, qué noticias vienen, cuánto cuesta abrir una operación y cuánto mantenerla, qué pares se mueven juntos. Eso es lo que te ahorra tiempo y te deja decidir a tiempo cuando vas a operar.',
+    experimentos: 'La dirección, el Stop-loss y el Take-profit que ves en pantalla son EXPERIMENTOS: reglas armadas con ciertas medidas e indicadores, que la app anota cada día y resuelve con precios reales para saber si funcionan o no. Están ahí para que veas cómo evolucionan, no para copiarlas.',
+    liston: ({ meta }) => `Cada experimento tiene que llegar a ${meta} operaciones reales antes de que su resultado signifique algo. Con menos, un número alto y un número bajo son el mismo número — y eso lo dice la aritmética, no una opinión.`,
+    quienDecide: 'Cuando un experimento llega a esas operaciones, quien decide es el desarrollador de la app: seguir midiéndolo, cambiar a otros experimentos o, si el resultado es bueno, empezar a darlo como señal. Si el resultado es malo, también se informa.',
+    privilegio: 'Mientras tanto tienes el privilegio de acompañar las mediciones desde dentro: ves los mismos números que ve el desarrollador, con sus aciertos y sus fallos, el mismo día. Y si alguno pasa su listón, quien esté suscrito en ese momento tendrá esas señales gratis durante unas semanas antes de que suba el precio de la suscripción.',
+    puedeQueNo: 'Y puede que ninguno lo pase. Eso también es un resultado y se cuenta igual: esta app enseña sus propios números aunque salgan malos.',
+    riesgo: 'Nada de esto es asesoría financiera. Operar en Forex tiene riesgo alto y puedes perder tu dinero. Las decisiones son tuyas.',
+  },
   barrido: {
     titulo: 'Barrido intradía (H1)',
     tituloLargo: 'Barrido intradía (H1) · Forex',

@@ -85,6 +85,13 @@ export const GEMELOS = [
   'src/lib/estacionalidad.js',
   'scripts/prueba-estacionalidad.mjs',
   'src/components/Glosario.jsx',
+  // Qué es la app y qué NO es: que nada de lo que se ve es una señal para
+  // copiar, que son experimentos, qué pasa cuando uno llega a su listón y
+  // quién decide. Es gemelo porque NO nombra ninguna regla, ningún par ni
+  // ningún umbral: lo que dice vale igual con velas diarias que con velas de
+  // una hora. Meter aquí el nombre de un experimento sería crear una
+  // divergencia esperando a ocurrir.
+  'src/components/QueEsEstaApp.jsx',
   // De cuándo es el barrido que estás viendo. Gemelo el componente Y las
   // cuentas, pero NO el umbral de cuándo se pinta en ámbar: ése vive en
   // `useMarketData.js`, que es PRIMO, porque las dos apps publican con

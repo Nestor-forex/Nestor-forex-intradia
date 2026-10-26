@@ -2,6 +2,7 @@ import { sesgoColor, tendColor } from '../lib/display'
 import { fmtFechaHora } from '../lib/format'
 import BarraFuerza from './BarraFuerza'
 import Frescura from './Frescura'
+import QueEsEstaApp from './QueEsEstaApp'
 import { useIdioma } from '../lib/i18n'
 
 export default function BarridoTab({ loading, error, sinConfigurar, stale, guardadoEl, generadoEl, horasViejo, costePorAntiguedad, monedas, pares, corte, onVerTablero }) {
@@ -20,6 +21,13 @@ export default function BarridoTab({ loading, error, sinConfigurar, stale, guard
             precios; esta, cuándo se hizo la cuenta. */}
         <Frescura generadoEl={generadoEl} horasViejo={horasViejo} costePorAntiguedad={costePorAntiguedad} />
       </div>
+
+      {/* LO PRIMERO DE LA PRIMERA PANTALLA, y a propósito: antes incluso de los
+          avisos de datos. Aquéllos son del día; éste es de qué es la app, y
+          quien lo lee una vez no lo necesita más. Va plegado, pero su frase
+          decisiva se ve CERRADO (la ranura `avance`): un aviso que solo aparece
+          al abrir una tarjeta no es un aviso. */}
+      <QueEsEstaApp />
 
       {sinConfigurar && (
         <div style={{ padding: 12, border: '1px solid var(--amber)', borderRadius: 8, color: 'var(--amber)', fontSize: 12.5, lineHeight: 1.5 }}>

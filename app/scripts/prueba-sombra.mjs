@@ -156,5 +156,41 @@ console.log('\n9. ⚠️⚠️ El aviso NO afirma el signo del resultado')
   comprobar('`sombra.margen` tampoco', !signo.test(m))
 }
 
+console.log('\n10. ⚠️⚠️ «Qué es esta app»: el listón se LEE y no se promete nada')
+// La tarjeta que dice que nada de lo que se ve es una señal para copiar. Lo
+// pidió Néstor y lo que se vigila aquí son las tres formas en que ese texto se
+// puede echar a perder sin que falle nada:
+//
+//   · que alguien escriba el 150 a mano (es `medicion.queSignifica` otra vez,
+//     que dijo «55 %» durante meses en los 13 idiomas);
+//   · que diga «CUANDO alguno pase su listón» en vez de «SI» — van nueve
+//     familias medidas y nueve que no pasan, así que el «cuando» prometería un
+//     resultado que puede no existir;
+//   · y que la tarjeta exista y no esté enchufada en ninguna pantalla, que es
+//     el fallo que dejó la correlación y el cruce de riesgo meses sin pintarse.
+{
+  const comp = readFileSync(fileURLToPath(new URL('../src/components/QueEsEstaApp.jsx', import.meta.url)), 'utf8')
+  comprobar('la tarjeta importa OPS_PARA_CREER en vez de escribir el número', /OPS_PARA_CREER/.test(comp))
+  // Se mira solo el JSX, no los comentarios: la cabecera explica POR QUÉ el
+  // listón son 150 y nombrarlo ahí es documentación, no un número duplicado.
+  const codigo = comp.replace(/^\s*\/\/.*$/gm, '')
+  comprobar('y no lleva el listón escrito a mano en el código', !new RegExp(`\\b${OPS_PARA_CREER}\\b`).test(codigo))
+
+  const es = (await import('../src/lib/i18n/textos/es.js')).default.queEs
+  comprobar('`queEs.liston` es una función (o sea, lee el número)', typeof es.liston === 'function')
+  comprobar('y mete dentro el que se le pasa', es.liston({ meta: 777 }).includes('777'))
+
+  comprobar('`queEs.avance` sigue diciendo que no es para copiar', /copiar/i.test(es.avance))
+  // ⚠️ Lo que NO puede decir. «Cuando alguno pase» da por hecho que alguno
+  // pasará; «si alguno pasa» no.
+  comprobar(
+    '`queEs.privilegio` dice SI alguno pasa, nunca CUANDO',
+    /\bsi alguno pasa\b/i.test(es.privilegio) && !/\bcuando (alguno|alguna|pase|pasen)\b/i.test(es.privilegio),
+  )
+
+  const barrido = readFileSync(fileURLToPath(new URL('../src/components/BarridoTab.jsx', import.meta.url)), 'utf8')
+  comprobar('está enchufada en la pestaña Barrido', /<QueEsEstaApp\s*\/>/.test(barrido))
+}
+
 console.log(fallos === 0 ? '\n✓ todo bien.\n' : `\n✗ ${fallos} comprobación(es) fallaron.\n`)
 process.exit(fallos === 0 ? 0 : 1)

@@ -54,6 +54,30 @@ export default {
     asia: 'アジア / シドニー',
   },
 
+  // QUÉ ES ESTA APP, Y QUÉ NO ES. Lo pidió Néstor con sus palabras: «mis apps
+  // no venden, por ahora, señales para copiar, y eso quiero que las apps lo
+  // dejen bien claro».
+  //
+  // ⚠️ `liston` es FUNCIÓN y lee el número de `OPS_PARA_CREER`: escrito a mano
+  // envejecería solo en los 13 idiomas, que es lo que le pasó a
+  // `medicion.queSignifica` durante meses.
+  //
+  // ⚠️ Y dice «SI alguno pasa su listón», nunca «cuando»: van nueve familias
+  // medidas y nueve que no pasan, así que prometer el resultado sería afirmar
+  // algo que todavía no existe.
+  queEs: {
+    titulo: 'このアプリが何で、何ではないか',
+    desc: '時間を節約するための情報であり、まねするためのシグナルではありません',
+    paraQue: 'お金を入れる前に、自分が何を見ているのかを正確に知っておくためのものです。一度読めば、すべての画面に当てはまります。',
+    avance: 'ここに表示されているものは、どれもまねするためのシグナルではありません。進行中の実験であり、その数字が意味を持つまでにあとどれくらい必要かもアプリが示します。',
+    informacion: 'このアプリは情報です。ほかの方法ならチャートを一時間眺めることになる内容を、一か所にまとめています。どの通貨が強くどれが弱いか、どんな指標発表が控えているか、取引を開くのにいくらかかり、持ち続けるのにいくらかかるか、どの通貨ペアが一緒に動くか。これが時間を節約し、取引しようとするときに間に合う判断を可能にします。',
+    experimentos: '画面に出ている方向、Stop-loss、Take-profit はすべて実験です。ある種の測定値と指標で組んだルールを、アプリが毎日記録し、実際の値段で決着させて、機能するかしないかを確かめています。進み方を見てもらうために置いてあり、まねするためではありません。',
+    liston: ({ meta }) => `どの実験も、結果に意味が出るまでに実取引 ${meta} 件に達する必要があります。それより少ないと、高い数字と低い数字は同じ数字です。これは算数が言っていることで、だれかの意見ではありません。`,
+    quienDecide: '実験がその件数に達したとき、決めるのはアプリの開発者です。測定を続けるか、ほかの実験に切り替えるか、結果が良ければシグナルとして出し始めるか。結果が悪ければ、それも知らせます。',
+    privilegio: 'それまでの間、あなたには測定を内側から一緒に追う特権があります。開発者が見ているのと同じ数字を、当たりも外れも、同じ日に見られます。そしてどれかが基準を越えたら、その時点で購読している人は数週間そのシグナルを無料で受け取り、そのあとで購読料が上がります。',
+    puedeQueNo: 'どれも越えない可能性もあります。それも一つの結果で、同じように伝えます。このアプリは自分の数字が悪くても、そのまま見せます。',
+    riesgo: 'これらはいずれも投資助言ではありません。Forex の取引はリスクが高く、お金を失うことがあります。判断はあなた自身のものです。',
+  },
   barrido: {
     titulo: '日中スキャン（H1）',
     tituloLargo: '日中スキャン（H1）· Forex',

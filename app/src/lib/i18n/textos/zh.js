@@ -54,6 +54,30 @@ export default {
     asia: '亚洲 / 悉尼',
   },
 
+  // QUÉ ES ESTA APP, Y QUÉ NO ES. Lo pidió Néstor con sus palabras: «mis apps
+  // no venden, por ahora, señales para copiar, y eso quiero que las apps lo
+  // dejen bien claro».
+  //
+  // ⚠️ `liston` es FUNCIÓN y lee el número de `OPS_PARA_CREER`: escrito a mano
+  // envejecería solo en los 13 idiomas, que es lo que le pasó a
+  // `medicion.queSignifica` durante meses.
+  //
+  // ⚠️ Y dice «SI alguno pasa su listón», nunca «cuando»: van nueve familias
+  // medidas y nueve que no pasan, así que prometer el resultado sería afirmar
+  // algo que todavía no existe.
+  queEs: {
+    titulo: '这个应用是什么，不是什么',
+    desc: '用来节省时间的信息，不是可以照抄的信号',
+    paraQue: '让你在投入资金之前，清楚自己正在看的是什么。读一次就够，它适用于所有页面。',
+    avance: '这里显示的任何内容都不是可以照抄的信号：它们是正在进行的实验，应用也会告诉你它们还差多少才能让数字有意义。',
+    informacion: '这个应用提供的是信息。它把原本需要你花一个小时看图才能得到的东西集中在一处：哪些货币强、哪些弱，接下来有什么新闻，开一笔交易要花多少、持有又要花多少，哪些货币对会一起波动。这正是为你省下时间、让你在要交易时能及时决定的部分。',
+    experimentos: '屏幕上显示的方向、Stop-loss 和 Take-profit 都是实验：用某些度量和指标搭起来的规则，应用每天记录它们，并用真实价格结算，以此判断它们有效还是无效。它们放在那里是让你看它们如何演变，不是让你照抄。',
+    liston: ({ meta }) => `每个实验必须累积到 ${meta} 笔真实交易，它的结果才有意义。少于这个数，高的数字和低的数字其实是同一个数字——这是算术说的，不是谁的看法。`,
+    quienDecide: '当一个实验达到这个数量时，由应用的开发者来决定：继续测量、换成其他实验，或者如果结果好，就开始把它当作信号提供。如果结果不好，也会照实告知。',
+    privilegio: '在那之前，你有从内部陪着这些测量一起走的特权：你和开发者在同一天看到同样的数字，对的和错的都看得到。如果有哪一个过了门槛，当时已订阅的人会先免费拿到那些信号几周，之后订阅价格才会上调。',
+    puedeQueNo: '也可能没有任何一个能过。那同样是一个结果，也会照样讲出来：这个应用即使自己的数字很难看，也照样显示。',
+    riesgo: '以上都不是投资建议。Forex 交易风险很高，你可能亏掉自己的钱。决定在你自己。',
+  },
   barrido: {
     titulo: '日内扫描（H1）',
     tituloLargo: '日内扫描（H1）· Forex',

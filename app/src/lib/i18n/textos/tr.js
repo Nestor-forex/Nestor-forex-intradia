@@ -54,6 +54,30 @@ export default {
     asia: 'Asya / Sidney',
   },
 
+  // QUÉ ES ESTA APP, Y QUÉ NO ES. Lo pidió Néstor con sus palabras: «mis apps
+  // no venden, por ahora, señales para copiar, y eso quiero que las apps lo
+  // dejen bien claro».
+  //
+  // ⚠️ `liston` es FUNCIÓN y lee el número de `OPS_PARA_CREER`: escrito a mano
+  // envejecería solo en los 13 idiomas, que es lo que le pasó a
+  // `medicion.queSignifica` durante meses.
+  //
+  // ⚠️ Y dice «SI alguno pasa su listón», nunca «cuando»: van nueve familias
+  // medidas y nueve que no pasan, así que prometer el resultado sería afirmar
+  // algo que todavía no existe.
+  queEs: {
+    titulo: 'Bu uygulama nedir, ne değildir',
+    desc: 'Zaman kazandıran bilgi, kopyalanacak sinyal değil',
+    paraQue: 'Para koymadan önce neye baktığını tam olarak bilmen için. Bir kez okunur ve bütün ekranlar için geçerlidir.',
+    avance: 'Burada gördüğün hiçbir şey kopyalanacak bir sinyal değil: bunlar süren deneyler ve uygulama, sayılarının bir anlam taşıması için daha ne kadar gerektiğini de gösteriyor.',
+    informacion: 'Bu uygulama BİLGİdir. Aksi halde grafiklere bakarak bir saatini alacak olanı tek bir yerde toplar: hangi para birimleri güçlü hangileri zayıf, hangi haberler geliyor, bir işlemi açmak ne kadara geliyor ve onu tutmak ne kadara geliyor, hangi pariteler birlikte hareket ediyor. Sana zaman kazandıran ve işlem anında zamanında karar vermeni sağlayan şey budur.',
+    experimentos: 'Ekranda gördüğün yön, Stop-loss ve Take-profit birer DENEYdir: belirli ölçüler ve göstergelerle kurulmuş kurallar; uygulama bunları her gün not eder ve gerçek fiyatlarla sonuçlandırır, işe yarıyorlar mı yaramıyorlar mı diye. Nasıl geliştiklerini görmen için orada duruyorlar, kopyalaman için değil.',
+    liston: ({ meta }) => `Her deneyin sonucunun bir anlam taşıması için ${meta} gerçek işleme ulaşması gerekir. Daha azıyla, yüksek bir sayı ile düşük bir sayı aynı sayıdır — ve bunu aritmetik söylüyor, bir görüş değil.`,
+    quienDecide: 'Bir deney o işlem sayısına ulaştığında kararı uygulamanın geliştiricisi verir: ölçmeye devam etmek, başka deneylere geçmek ya da sonuç iyiyse onu sinyal olarak vermeye başlamak. Sonuç kötüyse, o da bildirilir.',
+    privilegio: 'O zamana kadar ölçümlere içeriden eşlik etme ayrıcalığına sahipsin: geliştiricinin gördüğü sayıları, isabetlerini ve hatalarını, aynı gün görüyorsun. Ve biri eşiği geçerse, o anda abone olanlar abonelik fiyatı artmadan önce o sinyalleri birkaç hafta ücretsiz alacak.',
+    puedeQueNo: 'Ve hiçbiri geçmeyebilir. O da bir sonuçtur ve aynı şekilde anlatılır: bu uygulama kendi sayılarını kötü çıktığında bile gösterir.',
+    riesgo: 'Bunların hiçbiri finansal tavsiye değildir. Forex işlemi yüksek risk taşır ve paranı kaybedebilirsin. Kararlar senin.',
+  },
   barrido: {
     titulo: 'Gün içi tarama (H1)',
     tituloLargo: 'Gün içi tarama (H1) · Forex',
