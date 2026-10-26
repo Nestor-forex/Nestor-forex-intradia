@@ -254,6 +254,29 @@ export function aFechaUTC(ts) {
   return new Date(s.includes('T') ? s + 'Z' : s + 'T00:00:00Z')
 }
 
+// ── Cómo se saca el precio de un par de dos divisas contra el dólar ─────────
+//
+// El precio del par es divisa COTIZADA / divisa BASE, así que su máximo se da
+// con el máximo de la cotizada contra el mínimo de la base.
+//
+// ⚠️ En los 7 pares contra el dólar una de las dos series es constante (=1),
+// así que el resultado es EXACTO. En los 11 cruces (EUR/CHF, AUD/JPY…) es una
+// COTA SUPERIOR del rango real, algo más amplia que la verdadera: combinar el
+// máximo de una con el mínimo de la otra supone que los dos extremos pasaron
+// en el mismo instante. En velas de una hora el error es pequeño; en velas de
+// un DÍA está medido en un 400 % de más sobre el ATR (2026-08-09), que es por
+// lo que Swing pide sus 14 pares directos.
+//
+// ⚠️ ESTÁN EXPORTADAS PARA QUE EL CONVENIO NO ESTÉ EN DOS SITIOS. Las necesita
+// `scripts/publicar-estacionalidad.mjs`, que arma las velas de cada par para
+// perfilarlas por calendario; copiar ahí estas tres líneas es exactamente el
+// fallo que este proyecto lleva arreglando (el umbral de fuerza estaba en nueve
+// sitios, `ATR_REVERSION` en dos, y la geometría de «comprar la caída» se
+// separó de la que su listón juzgaba).
+export const precioDePar = (cierreBase, cierreCotizada) => cierreCotizada / cierreBase
+export const maxDePar = (minBase, maxCotizada) => maxCotizada / minBase
+export const minDePar = (maxBase, minCotizada) => minCotizada / maxBase
+
 // barras: array de timestamps ISO (UTC) ascendentes, uno por vela H1.
 // rates: { [timestamp]: { EUR, GBP, JPY, CHF, AUD, NZD, CAD } } — cuántas
 // unidades de esa divisa vale 1 USD en esa hora (cierre de la vela).
@@ -271,14 +294,9 @@ export function computarBarrido(barras, rates, rangos = null) {
     serieLo[c] = barras.map((t, i) => (c === 'USD' ? 1 : (rangos?.[t]?.[c]?.l ?? serie[c][i])))
   })
   const L = barras.length - 1
-  const px = (b, q, i) => serie[q][i] / serie[b][i]
-  // El precio del par es divisa cotizada / divisa base, así que su máximo se
-  // da con el máximo de la cotizada contra el mínimo de la base. En los 7
-  // pares contra el dólar una de las dos es constante (=1), así que el
-  // resultado es exacto; en los cruces (EUR/CHF, AUD/JPY…) es una cota
-  // superior del rango real, algo más amplia que la verdadera.
-  const pxHi = (b, q, i) => serieHi[q][i] / serieLo[b][i]
-  const pxLo = (b, q, i) => serieLo[q][i] / serieHi[b][i]
+  const px = (b, q, i) => precioDePar(serie[b][i], serie[q][i])
+  const pxHi = (b, q, i) => maxDePar(serieLo[b][i], serieHi[q][i])
+  const pxLo = (b, q, i) => minDePar(serieHi[b][i], serieLo[q][i])
   const chg = (b, q, k) => (px(b, q, L) / px(b, q, Math.max(0, L - k)) - 1) * 100
 
   const raw = {}

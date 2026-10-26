@@ -74,6 +74,16 @@ export const GEMELOS = [
   'src/lib/diagnostico.js',
   'src/components/Diagnostico.jsx',
   'scripts/prueba-diario.mjs',
+
+  // Estacionalidad: cuánto se mueve un par según el calendario.
+  //
+  // GEMELO porque lo que tiene que ser igual en las dos apps es la
+  // ESTADÍSTICA, no el mercado: separar el margen de una media del de una
+  // proporción, no esconder las casillas flojas y no devolver ningún
+  // veredicto. Qué paneles puede enseñar cada app lo decide su publicador,
+  // que es PRIMO — en Swing no hay perfil por hora porque una vela ES un día.
+  'src/lib/estacionalidad.js',
+  'scripts/prueba-estacionalidad.mjs',
   'src/components/Glosario.jsx',
   // De cuándo es el barrido que estás viendo. Gemelo el componente Y las
   // cuentas, pero NO el umbral de cuándo se pinta en ámbar: ése vive en
@@ -433,6 +443,21 @@ export const PRIMOS = {
   'scripts/lib/vigia-nucleo.mjs':
     'El identificador de una señal lleva el tipo en Intradía (que tiene modo ' +
     'rango) y no en Swing.',
+  'src/components/Estacionalidad.jsx':
+    'Intradia tiene panel por HORA y Swing no, porque alli una vela ES un dia. Y los 11 ' +
+      'cruces de Intradia salen sin panel mensual de recorrido, asi que su tarjeta ensena ' +
+      'dos tramos de datos distintos (7 meses de velas H1 y ~14 anos de diarias) en vez de ' +
+      'uno. La matematica, `src/lib/estacionalidad.js`, si es GEMELA.',
+  'src/lib/useEstacionalidad.js':
+    'Cada app lee SU archivo, igual que `useCalendario`: el contenido no es el mismo, y ' +
+      'aunque lo fuera, si una leyera el archivo de la otra un fallo del workflow de la ' +
+      'hermana la dejaria sin tarjeta y nadie sabria donde buscar.',
+  'scripts/publicar-estacionalidad.mjs':
+    'Swing necesita UNA descarga (velas diarias: de ahi salen el perfil por dia y los dos ' +
+      'paneles por mes) e Intradia DOS (H1 para hora y dia, diarias para los meses). Ademas ' +
+      'Intradia pide 7 simbolos y DERIVA los 11 cruces, asi que sus cruces salen sin panel ' +
+      'mensual de recorrido: derivar un maximo y un minimo en velas diarias dio un ATR 400 % ' +
+      'mayor del real (2026-08-09). Y en Swing no hay perfil por hora: una vela ES un dia.',
   'scripts/publicar-barrido.mjs':
     'Mismo nombre y mismo trabajo, y todo lo demás distinto. Intradía publica ' +
     'velas de una HORA ya cerradas —que no se mueven— cada hora y por 7 ' +

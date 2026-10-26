@@ -10,6 +10,7 @@ import AvisosCard from './components/AvisosCard'
 import CotizacionesVivo from './components/CotizacionesVivo'
 import Calendario from './components/Calendario'
 import Tasas from './components/Tasas'
+import Estacionalidad from './components/Estacionalidad'
 import HistorialTab from './components/HistorialTab'
 import TableroCompleto from './components/TableroCompleto'
 import SetupDetalle from './components/SetupDetalle'
@@ -227,6 +228,16 @@ export default function App() {
                       menos una noche (Fase 2, 2026-09-02). La intención era no
                       pagar swap; lo que pasa de verdad es otra cosa. */}
                   <Tasas />
+                  {/* LA ÚLTIMA. Las de arriba dicen algo del AHORA; ésta dice
+                      qué suele pasar a esta HORA y en este mes, que es lo único
+                      que no cambia de un día para otro.
+
+                      ⚠️ Mide CUÁNTO se mueve, nunca hacia dónde, y no apaga ni
+                      reordena ninguna señal. Y sus 11 cruces salen sin panel
+                      mensual de recorrido a propósito: esta app los deriva, y
+                      derivar extremos en velas diarias dio un ATR 400 % mayor
+                      del real. */}
+                  <Estacionalidad />
                 </>
               )}
               {tab === 'diario' && (
