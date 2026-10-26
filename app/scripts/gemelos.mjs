@@ -211,8 +211,11 @@ export const GEMELOS = [
   'scripts/prueba-tasas.mjs',
   // El spread real del broker, via el puente de MetaTrader 5. Identicos porque
   // EL PUENTE ES UNO: `puente-mt5/bridge_mt5.py` vive en el repositorio de
-  // Swing y publica los 18 pares (los 14 de Swing mas los 4 que solo usa
-  // Intradia) en un solo archivo. Las dos apps leen esa MISMA direccion y cada
+  // Swing y publica en un solo archivo los pares de las dos apps, mas algunos
+  // que ninguna usa para dar senales y que estan ahi solo para medirles el
+  // spread (la lista exacta esta en el propio puente, no escrita aqui: un
+  // numero escrito en un comentario envejece solo, y ya paso con el «18»).
+  // Las dos apps leen esa MISMA direccion y cada
   // una filtra sus pares con su propio `PAIR_NAMES`. Dos puentes serian dos
   // programas que Nestor tendria que arrancar cada manana.
   'src/lib/useMT5Quotes.js',

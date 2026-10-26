@@ -10,9 +10,11 @@ import { PAIR_NAMES } from './pairs.js'
 // operación. El spread sale de la diferencia entre el precio al que te compran
 // y el precio al que te venden, y eso solo lo sabe el bróker.
 //
-// ⚠️ EL PUENTE ES UNO Y SIRVE A LAS DOS APPS. Publica los 18 pares (los 14 de
-// Swing más los 4 que solo usa Intradía) en la rama `datos` del repositorio de
-// Swing, que es donde vive `puente-mt5/bridge_mt5.py`. Por eso esta dirección
+// ⚠️ EL PUENTE ES UNO Y SIRVE A LAS DOS APPS. Publica los pares de las dos
+// (los de Swing más los que solo usa Intradía) y, además, algunos que NINGUNA
+// app usa para dar señales y que están ahí solo para medirles el spread. Todo
+// en la rama `datos` del repositorio de Swing, que es donde vive
+// `puente-mt5/bridge_mt5.py` — la lista exacta está allí. Por eso esta dirección
 // es la MISMA en las dos apps —y este archivo es gemelo exacto—: cada una
 // filtra sus pares con su propio `PAIR_NAMES`. Dos puentes serían dos
 // programas que Néstor tendría que arrancar cada mañana.
