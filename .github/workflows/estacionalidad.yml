@@ -1,0 +1,114 @@
+name: Estacionalidad (recorrido por hora, por día y por mes)
+
+# Baja velas de 1 hora y velas diarias, y publica `estado/estacionalidad.json`
+# en la rama `datos`. La app lo lee de ahí.
+#
+# Ver la cabecera de `app/src/lib/estacionalidad.js` para lo que de verdad mide
+# —son DOS preguntas con muestras completamente distintas— y la de
+# `app/scripts/publicar-estacionalidad.mjs` para por qué aquí hacen falta dos
+# descargas y por qué los 11 cruces salen SIN panel mensual de recorrido.
+#
+# ⚠️⚠️ ESTO SÍ GASTA CRÉDITOS DE TWELVE DATA: **14 de los 800 del día** — 7 la
+# descarga de H1 y 7 la de diarias. Gasto total de Intradía en el techo:
+# 168 (publicador del barrido) + 168 (vigía) + 7 (reporte) + 14 (esto) =
+# **357 de 800**. Con la cadencia real medida del reloj son ~127.
+#
+# ⚠️ Y POR ESO NECESITA EL SECRETO. Sin el `env` de abajo, `leerLlave` no
+# encuentra la llave y el guion falla. Cualquier workflow nuevo que llame a
+# estos guiones tiene que pasarle el secreto — ya pasó con `comparar-reglas.yml`
+# el 2026-09-03, que se quedó sin él y habría fallado sin explicación.
+
+on:
+  schedule:
+    # 09:44 UTC, de lunes a viernes.
+    #
+    # LA HORA: 18 minutos después del vigía (:23) y del publicador del barrido
+    # (:26), que en esta app corren CADA hora. Esa distancia es lo que importa:
+    # el plan gratuito da 8 créditos POR MINUTO, así que dos guiones pidiendo
+    # velas en el mismo minuto se estorban con 429 y ninguno da un error claro.
+    # Ya pasó el 2026-10-07 y el que murió fue el vigía, que es el que escribe
+    # el historial.
+    #
+    # Y una hora después que la de Swing (08:41), que comparte la MISMA llave y
+    # por tanto el mismo límite por minuto y los mismos 800 al día.
+    #
+    # EL MINUTO 44: el que le toca en la lista del reloj de fuera, tres minutos
+    # después del de Swing (:41). Los que piden precios van separados de tres
+    # en tres porque cada guion pide sus símbolos de golpe.
+    #
+    # LOS DÍAS: de lunes a viernes. En fin de semana no hay velas nuevas de
+    # mercado, así que correr sábado y domingo gastaría 28 créditos a la semana
+    # para volver a calcular lo mismo.
+    #
+    # ⚠️ Y A DIARIO aunque el dato se mueva poco, por el mismo motivo que el
+    # COT en Swing: el reloj de GitHub se salta corridas y una cadencia semanal
+    # convertiría un salto en una semana sin datos. Correr de más cuesta 14
+    # créditos de 800; saltarse de más deja la tarjeta con el dato viejo.
+    - cron: '44 9 * * 1-5'
+  workflow_dispatch:
+
+# Escribe en la rama `datos`: por defecto el token de Actions es de solo
+# lectura.
+permissions:
+  contents: write
+
+concurrency:
+  group: estacionalidad
+  cancel-in-progress: false
+
+jobs:
+  estacionalidad:
+    runs-on: ubuntu-latest
+    # Sin esto GitHub deja correr un trabajo hasta SEIS HORAS, y con
+    # `concurrency` sin cancelar una corrida atascada bloquearía las
+    # siguientes media jornada.
+    #
+    # Lo normal aquí son ~1,5 minutos: la descarga de H1, 65 s de pausa para
+    # no rozar el límite de créditos por minuto, y la de diarias.
+    timeout-minutes: 10
+    steps:
+      - name: Traer el código
+        uses: actions/checkout@v4
+
+      - name: Traer los datos
+        uses: actions/checkout@v4
+        with:
+          ref: datos
+          path: datos
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # No hace falta `npm ci`: el publicador solo usa `node:fs` y funciones
+      # puras de `src/lib/`.
+      - name: Bajar y calcular
+        working-directory: app
+        env:
+          # ⚠️ SIN ESTO EL GUION FALLA. Ver la cabecera.
+          TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}
+          VIGIA_DATOS: ${{ github.workspace }}/datos
+        run: node scripts/publicar-estacionalidad.mjs
+
+      - name: Guardar
+        working-directory: datos
+        run: |
+          git config user.name 'Estacionalidad Nestor Forex Intradia'
+          git config user.email 'noreply@anthropic.com'
+          git add estado/estacionalidad.json
+          # ⚠️ AQUÍ «no cambió nada» SÍ ES SOSPECHOSO. El archivo lleva
+          # `generadoEl`, que cambia en CADA corrida, así que un diff vacío
+          # solo puede significar que el guion no escribió — y eso no puede
+          # pasar en silencio.
+          if git diff --cached --quiet; then
+            echo '✗ El archivo de estacionalidad no cambió, y `generadoEl` debería cambiar siempre.'
+            echo '  Eso significa que el guion no escribió nada. Mirar el paso anterior.'
+            exit 1
+          fi
+          git commit -m "Estacionalidad $(date -u +'%Y-%m-%d')"
+          for i in 1 2 3; do
+            git pull --rebase origin datos && git push origin HEAD:datos && exit 0
+            sleep $((i * 5))
+          done
+          echo 'No se pudo guardar tras 3 intentos.'
+          exit 1
