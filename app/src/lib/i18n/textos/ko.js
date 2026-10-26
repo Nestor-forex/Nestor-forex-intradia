@@ -54,6 +54,30 @@ export default {
     asia: '아시아 / 시드니',
   },
 
+  // QUÉ ES ESTA APP, Y QUÉ NO ES. Lo pidió Néstor con sus palabras: «mis apps
+  // no venden, por ahora, señales para copiar, y eso quiero que las apps lo
+  // dejen bien claro».
+  //
+  // ⚠️ `liston` es FUNCIÓN y lee el número de `OPS_PARA_CREER`: escrito a mano
+  // envejecería solo en los 13 idiomas, que es lo que le pasó a
+  // `medicion.queSignifica` durante meses.
+  //
+  // ⚠️ Y dice «SI alguno pasa su listón», nunca «cuando»: van nueve familias
+  // medidas y nueve que no pasan, así que prometer el resultado sería afirmar
+  // algo que todavía no existe.
+  queEs: {
+    titulo: '이 앱이 무엇이고, 무엇이 아닌지',
+    desc: '시간을 아껴 주는 정보이며, 따라 할 신호가 아닙니다',
+    paraQue: '돈을 넣기 전에 지금 무엇을 보고 있는지 정확히 알기 위한 설명입니다. 한 번 읽으면 모든 화면에 적용됩니다.',
+    avance: '여기 보이는 어떤 것도 따라 할 신호가 아닙니다. 진행 중인 실험이고, 그 숫자가 의미를 갖기까지 얼마나 남았는지도 앱이 함께 보여 줍니다.',
+    informacion: '이 앱은 정보입니다. 그러지 않으면 차트를 한 시간 들여다봐야 알 수 있는 것을 한곳에 모읍니다. 어떤 통화가 강하고 어떤 통화가 약한지, 어떤 지표 발표가 다가오는지, 거래를 여는 데 얼마가 들고 유지하는 데 얼마가 드는지, 어떤 통화쌍이 같이 움직이는지. 이것이 시간을 아껴 주고, 거래하려는 순간에 제때 결정할 수 있게 해 줍니다.',
+    experimentos: '화면에 보이는 방향과 Stop-loss, Take-profit은 모두 실험입니다. 특정한 측정값과 지표로 만든 규칙을 앱이 매일 기록하고 실제 가격으로 결산해, 작동하는지 아닌지를 확인합니다. 어떻게 변해 가는지 볼 수 있도록 있는 것이고, 따라 하기 위한 것이 아닙니다.',
+    liston: ({ meta }) => `각 실험은 결과에 의미가 생기기 전에 실제 거래 ${meta}건에 도달해야 합니다. 그보다 적으면 높은 숫자와 낮은 숫자가 같은 숫자입니다. 이것은 산수가 말하는 것이고, 누군가의 의견이 아닙니다.`,
+    quienDecide: '실험이 그 건수에 이르면 결정하는 사람은 앱의 개발자입니다. 계속 측정하거나, 다른 실험으로 바꾸거나, 결과가 좋으면 신호로 제공하기 시작합니다. 결과가 나쁘면 그것도 알립니다.',
+    privilegio: '그때까지는 측정을 안에서 함께 지켜보는 특권이 있습니다. 개발자가 보는 것과 같은 숫자를, 맞은 것과 틀린 것 모두, 같은 날에 봅니다. 그리고 어느 하나가 기준을 넘으면 그 시점의 구독자는 몇 주 동안 그 신호를 무료로 받고, 그 뒤에 구독료가 올라갑니다.',
+    puedeQueNo: '그리고 아무것도 넘지 못할 수도 있습니다. 그것도 결과이고 똑같이 알립니다. 이 앱은 자기 숫자가 나빠도 그대로 보여 줍니다.',
+    riesgo: '이 가운데 어떤 것도 투자 조언이 아닙니다. Forex 거래는 위험이 크고 돈을 잃을 수 있습니다. 결정은 본인의 것입니다.',
+  },
   barrido: {
     titulo: '장중 스캔 (H1)',
     tituloLargo: '장중 스캔 (H1) · Forex',

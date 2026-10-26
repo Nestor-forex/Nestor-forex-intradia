@@ -58,6 +58,30 @@ export default {
     asia: 'Asien / Sydney',
   },
 
+  // QUÉ ES ESTA APP, Y QUÉ NO ES. Lo pidió Néstor con sus palabras: «mis apps
+  // no venden, por ahora, señales para copiar, y eso quiero que las apps lo
+  // dejen bien claro».
+  //
+  // ⚠️ `liston` es FUNCIÓN y lee el número de `OPS_PARA_CREER`: escrito a mano
+  // envejecería solo en los 13 idiomas, que es lo que le pasó a
+  // `medicion.queSignifica` durante meses.
+  //
+  // ⚠️ Y dice «SI alguno pasa su listón», nunca «cuando»: van nueve familias
+  // medidas y nueve que no pasan, así que prometer el resultado sería afirmar
+  // algo que todavía no existe.
+  queEs: {
+    titulo: 'Was diese App ist und was nicht',
+    desc: 'Informationen, die Zeit sparen — keine Signale zum Kopieren',
+    paraQue: 'Damit du genau weißt, was du vor dir hast, bevor du Geld einsetzt. Einmal lesen genügt; es gilt für alle Ansichten.',
+    avance: 'Nichts von dem, was du hier siehst, ist ein Signal zum Kopieren: das sind laufende Experimente, und die App zeigt dir, wie weit sie noch davon entfernt sind, etwas zu bedeuten.',
+    informacion: 'Diese App ist INFORMATION. Sie sammelt an einem Ort, was dich sonst eine Stunde Chartarbeit kosten würde: welche Währungen stark und welche schwach sind, welche Nachrichten anstehen, was es kostet, eine Position zu eröffnen, und was es kostet, sie zu halten, welche Paare sich gemeinsam bewegen. Genau das spart dir Zeit und erlaubt dir, rechtzeitig zu entscheiden, wenn du handeln willst.',
+    experimentos: 'Die Richtung, der Stop-loss und der Take-profit auf dem Bildschirm sind EXPERIMENTE: Regeln aus bestimmten Messgrößen und Indikatoren, die die App jeden Tag notiert und mit echten Kursen auswertet, um herauszufinden, ob sie funktionieren oder nicht. Sie sind da, damit du ihre Entwicklung sehen kannst — nicht zum Kopieren.',
+    liston: ({ meta }) => `Jedes Experiment muss ${meta} echte Trades erreichen, bevor sein Ergebnis etwas bedeutet. Mit weniger sind eine hohe und eine niedrige Zahl dieselbe Zahl — und das sagt die Arithmetik, nicht eine Meinung.`,
+    quienDecide: 'Wenn ein Experiment diese Zahl erreicht, entscheidet der Entwickler der App: weiter messen, zu anderen Experimenten wechseln oder — wenn das Ergebnis gut ist — es als Signal herausgeben. Ist das Ergebnis schlecht, wird auch das mitgeteilt.',
+    privilegio: 'Bis dahin hast du das Privileg, die Messungen von innen zu begleiten: du siehst dieselben Zahlen wie der Entwickler, Treffer und Fehlschläge, am selben Tag. Und wenn eines die Hürde schafft, bekommt jeder, der dann abonniert ist, diese Signale einige Wochen gratis, bevor der Abopreis steigt.',
+    puedeQueNo: 'Und möglicherweise schafft es keines. Das ist auch ein Ergebnis und wird genauso berichtet: diese App zeigt ihre eigenen Zahlen, auch wenn sie schlecht aussehen.',
+    riesgo: 'Nichts davon ist eine Finanzberatung. Forex-Handel ist hochriskant und du kannst dein Geld verlieren. Die Entscheidungen liegen bei dir.',
+  },
   barrido: {
     titulo: 'Intraday-Scan (H1)',
     tituloLargo: 'Intraday-Scan (H1) · Forex',

@@ -58,6 +58,30 @@ export default {
     asia: 'Asie / Sydney',
   },
 
+  // QUÉ ES ESTA APP, Y QUÉ NO ES. Lo pidió Néstor con sus palabras: «mis apps
+  // no venden, por ahora, señales para copiar, y eso quiero que las apps lo
+  // dejen bien claro».
+  //
+  // ⚠️ `liston` es FUNCIÓN y lee el número de `OPS_PARA_CREER`: escrito a mano
+  // envejecería solo en los 13 idiomas, que es lo que le pasó a
+  // `medicion.queSignifica` durante meses.
+  //
+  // ⚠️ Y dice «SI alguno pasa su listón», nunca «cuando»: van nueve familias
+  // medidas y nueve que no pasan, así que prometer el resultado sería afirmar
+  // algo que todavía no existe.
+  queEs: {
+    titulo: 'Ce qu’est cette app, et ce qu’elle n’est pas',
+    desc: 'De l’information pour gagner du temps, pas des signaux à copier',
+    paraQue: 'Pour que tu saches exactement ce que tu regardes avant d’y mettre de l’argent. Ça se lit une fois et ça vaut pour tous les écrans.',
+    avance: 'Rien de ce que tu vois ici n’est un signal à copier : ce sont des expériences en cours, et l’app te montre ce qu’il leur manque pour que leur chiffre veuille dire quelque chose.',
+    informacion: 'Cette app, c’est de l’INFORMATION. Elle réunit en un seul endroit ce qui te prendrait sinon une heure de graphiques : quelles devises sont fortes et lesquelles sont faibles, quelles nouvelles arrivent, ce que coûte l’ouverture d’une position et ce que coûte sa conservation, quelles paires bougent ensemble. C’est ça qui te fait gagner du temps et qui te laisse décider à temps au moment d’opérer.',
+    experimentos: 'La direction, le Stop-loss et le Take-profit affichés à l’écran sont des EXPÉRIENCES : des règles bâties sur certaines mesures et certains indicateurs, que l’app note chaque jour et tranche avec de vrais prix pour savoir si elles fonctionnent ou non. Elles sont là pour que tu voies leur évolution, pas pour être copiées.',
+    liston: ({ meta }) => `Chaque expérience doit atteindre ${meta} opérations réelles avant que son résultat veuille dire quelque chose. En dessous, un chiffre élevé et un chiffre bas sont le même chiffre — et c’est l’arithmétique qui le dit, pas une opinion.`,
+    quienDecide: 'Quand une expérience atteint ce nombre, c’est le développeur de l’app qui décide : continuer à la mesurer, passer à d’autres expériences, ou — si le résultat est bon — commencer à la donner comme signal. Si le résultat est mauvais, on le dit aussi.',
+    privilegio: 'En attendant, tu as le privilège d’accompagner les mesures de l’intérieur : tu vois les mêmes chiffres que le développeur, les réussites comme les échecs, le même jour. Et si l’une d’elles passe la barre, les personnes abonnées à ce moment-là auront ces signaux gratuitement pendant quelques semaines avant que le prix de l’abonnement augmente.',
+    puedeQueNo: 'Et il est possible qu’aucune ne la passe. C’est aussi un résultat et il sera dit de la même façon : cette app montre ses propres chiffres même quand ils sont mauvais.',
+    riesgo: 'Rien de tout cela n’est un conseil financier. Opérer sur le Forex comporte un risque élevé et tu peux perdre ton argent. Les décisions sont les tiennes.',
+  },
   barrido: {
     titulo: 'Scan intraday (H1)',
     tituloLargo: 'Scan intraday (H1) · Forex',

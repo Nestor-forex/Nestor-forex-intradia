@@ -58,6 +58,30 @@ export default {
     asia: 'Ásia / Sydney',
   },
 
+  // QUÉ ES ESTA APP, Y QUÉ NO ES. Lo pidió Néstor con sus palabras: «mis apps
+  // no venden, por ahora, señales para copiar, y eso quiero que las apps lo
+  // dejen bien claro».
+  //
+  // ⚠️ `liston` es FUNCIÓN y lee el número de `OPS_PARA_CREER`: escrito a mano
+  // envejecería solo en los 13 idiomas, que es lo que le pasó a
+  // `medicion.queSignifica` durante meses.
+  //
+  // ⚠️ Y dice «SI alguno pasa su listón», nunca «cuando»: van nueve familias
+  // medidas y nueve que no pasan, así que prometer el resultado sería afirmar
+  // algo que todavía no existe.
+  queEs: {
+    titulo: 'O que esta app é, e o que não é',
+    desc: 'Informação para poupar tempo, não sinais para copiar',
+    paraQue: 'Para que saibas exatamente o que estás a ver antes de pôr dinheiro. Lê-se uma vez e vale para todos os ecrãs.',
+    avance: 'Nada do que vês aqui é um sinal para copiar: são experiências em curso, e a app mostra-te quanto lhes falta para que o seu número signifique algo.',
+    informacion: 'Esta app é INFORMAÇÃO. Reúne num só lugar o que de outra forma te levaria uma hora a olhar para gráficos: que divisas estão fortes e quais estão fracas, que notícias vêm, quanto custa abrir uma operação e quanto custa mantê-la, que pares se movem juntos. É isso que te poupa tempo e te deixa decidir a tempo quando vais operar.',
+    experimentos: 'A direção, o Stop-loss e o Take-profit que vês no ecrã são EXPERIÊNCIAS: regras feitas com certas medidas e indicadores, que a app anota todos os dias e resolve com preços reais para saber se funcionam ou não. Estão aí para que vejas como evoluem, não para as copiares.',
+    liston: ({ meta }) => `Cada experiência tem de chegar a ${meta} operações reais antes de o seu resultado significar algo. Com menos, um número alto e um número baixo são o mesmo número — e isso di-lo a aritmética, não uma opinião.`,
+    quienDecide: 'Quando uma experiência chega a essas operações, quem decide é o desenvolvedor da app: continuar a medi-la, mudar para outras experiências ou, se o resultado for bom, começar a dá-la como sinal. Se o resultado for mau, também é informado.',
+    privilegio: 'Entretanto tens o privilégio de acompanhar as medições por dentro: vês os mesmos números que o desenvolvedor vê, acertos e falhas, no mesmo dia. E se alguma passar a sua fasquia, quem estiver subscrito nesse momento terá esses sinais grátis durante algumas semanas antes de o preço da subscrição subir.',
+    puedeQueNo: 'E pode ser que nenhuma passe. Isso também é um resultado e conta-se da mesma maneira: esta app mostra os seus próprios números mesmo quando saem maus.',
+    riesgo: 'Nada disto é consultoria financeira. Operar em Forex tem risco elevado e podes perder o teu dinheiro. As decisões são tuas.',
+  },
   barrido: {
     titulo: 'Varredura intradiária (H1)',
     tituloLargo: 'Varredura intradiária (H1) · Forex',
