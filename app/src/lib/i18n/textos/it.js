@@ -78,6 +78,24 @@ export default {
     puedeQueNo: 'E può essere che nessuno la superi. Anche quello è un risultato e si racconta allo stesso modo: questa app mostra i propri numeri anche quando sono brutti.',
     riesgo: 'Niente di tutto questo è consulenza finanziaria. Operare sul Forex comporta un rischio elevato e puoi perdere i tuoi soldi. Le decisioni sono tue.',
   },
+  compr: {
+    titulo: ({ n }) => "Compressione e range (§)".replace('§', n),
+    desc: "Di quanto si è ristretto il movimento di ogni coppia",
+    paraQue: "Per sapere se la coppia arriva stretta prima di aprire. Conta perché lo stop di questa app esce dall’ATR: se la coppia si è ristretta, lo stop esce più corto del normale e il costo di entrare pesa di più su uno stop corto. NON dice dove andrà il prezzo.",
+    aviso: "⚠️ Questo NON ha direzione. Una coppia stretta può partire verso l’alto o verso il basso, e può anche restare stretta per settimane. Misura solo quanto si muove ora rispetto a prima.",
+    nivel: {
+      muy: "Molto stretta",
+      algo: "Un po’ stretta",
+      normal: "Normale",
+      ancho: "Più larga del normale",
+    },
+    recorrido: ({ atr }) => "range tipico § pips".replace('§', atr),
+    posicion: ({ pct }) => "il prezzo è al § % del suo range".replace('§', pct),
+    avisoStop: "⚠️ Con un movimento così, lo stop esce più corto del normale per questa coppia: il costo di entrare pesa di più.",
+    avisoFiltro: "E su questa coppia, in modalità range, è il numero che può lasciare fuori il suo segnale.",
+    pie: "Le parole («molto stretta», «normale») vengono da soglie scelte a mano, non misurate — per questo il numero sta sempre accanto. E sulle coppie in range questo numero non è solo informazione: è quello che può lasciare fuori il loro segnale.",
+  },
+
   barrido: {
     titulo: 'Scan intraday (H1)',
     tituloLargo: 'Scan intraday (H1) · Forex',

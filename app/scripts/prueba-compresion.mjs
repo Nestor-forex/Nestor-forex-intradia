@@ -116,6 +116,15 @@ const A2 = [10, 10, 10, 10, 10, 10, 2, 3, 10, 10]
 comprobar('las estrechas están en medio, no al final → 0', velasEstrechas(A2, B1, 0.5) === 0)
 comprobar('la racha se corta en la primera ancha', velasEstrechas([10, 10, 10, 2, 10, 2, 2], [0, 0, 0, 0, 0, 0, 0], 0.5) === 2)
 
+console.log('\n5c. ⚠️ Quien llame tiene que quitar la vela EN CURSO antes')
+// Salió mirando la captura: contando la última vela, los CATORCE pares
+// decían «lleva 1 vela estrecha». No era el mercado — la última vela del
+// barrido es la del día en curso, que va a medias y por eso sale corta casi
+// siempre. La función cuenta lo que se le da; el aviso es para quien la usa.
+const ULT_CORTA = [10, 10, 10, 10, 10, 10, 10, 10, 10, 2]
+comprobar('con la vela a medias dentro, cuenta 1', velasEstrechas(ULT_CORTA, B1, 0.5) === 1)
+comprobar('quitándola, cuenta 0 — que es la verdad', velasEstrechas(ULT_CORTA.slice(0, -1), B1.slice(0, -1), 0.5) === 0)
+
 console.log('\n5b. ⚠️ Y devuelve null, no 0, cuando no se puede medir')
 // Un 0 diría «ninguna vela está estrecha», que es distinto de «no lo sé».
 comprobar('listas de distinto largo → null', velasEstrechas([1, 2, 3], [1, 2], 0.5) === null)

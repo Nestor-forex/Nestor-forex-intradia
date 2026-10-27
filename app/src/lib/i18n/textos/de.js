@@ -82,6 +82,24 @@ export default {
     puedeQueNo: 'Und möglicherweise schafft es keines. Das ist auch ein Ergebnis und wird genauso berichtet: diese App zeigt ihre eigenen Zahlen, auch wenn sie schlecht aussehen.',
     riesgo: 'Nichts davon ist eine Finanzberatung. Forex-Handel ist hochriskant und du kannst dein Geld verlieren. Die Entscheidungen liegen bei dir.',
   },
+  compr: {
+    titulo: ({ n }) => "Kompression und Spanne (§)".replace('§', n),
+    desc: "Wie stark sich die Bewegung jedes Paares verengt hat",
+    paraQue: "Um zu wissen, ob ein Paar eng hereinkommt, bevor du eröffnest. Das zählt, weil der Stop dieser App aus dem ATR kommt: hat sich das Paar verengt, fällt der Stop kürzer aus als üblich, und die Einstiegskosten wiegen bei einem kurzen Stop schwerer. Es sagt NICHT, wohin der Kurs geht.",
+    aviso: "⚠️ Das hat KEINE Richtung. Ein enges Paar kann nach oben oder nach unten ausbrechen — und auch wochenlang eng bleiben. Gemessen wird nur, wie viel es jetzt im Vergleich zu vorher bewegt.",
+    nivel: {
+      muy: "Sehr eng",
+      algo: "Etwas eng",
+      normal: "Normal",
+      ancho: "Weiter als üblich",
+    },
+    recorrido: ({ atr }) => "typische Spanne § Pips".replace('§', atr),
+    posicion: ({ pct }) => "Kurs liegt bei § % seiner Spanne".replace('§', pct),
+    avisoStop: "⚠️ Bei dieser Bewegung fällt der Stop für dieses Paar kürzer aus als üblich: die Einstiegskosten wiegen schwerer.",
+    avisoFiltro: "Und bei diesem Paar im Range-Modus ist es die Zahl, die sein Signal aussortieren kann.",
+    pie: "Die Wörter („sehr eng“, „normal“) stammen aus handgewählten, ungemessenen Grenzen — deshalb steht die Zahl immer daneben. Und bei Range-Paaren ist diese Zahl nicht nur Information: sie kann deren Signal aussortieren.",
+  },
+
   barrido: {
     titulo: 'Intraday-Scan (H1)',
     tituloLargo: 'Intraday-Scan (H1) · Forex',

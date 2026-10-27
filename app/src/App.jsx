@@ -9,6 +9,7 @@ import BarridoTab from './components/BarridoTab'
 import AvisosCard from './components/AvisosCard'
 import CotizacionesVivo from './components/CotizacionesVivo'
 import Calendario from './components/Calendario'
+import Compresion from './components/Compresion'
 import Tasas from './components/Tasas'
 import Estacionalidad from './components/Estacionalidad'
 import HistorialTab from './components/HistorialTab'
@@ -228,6 +229,15 @@ export default function App() {
                       menos una noche (Fase 2, 2026-09-02). La intención era no
                       pagar swap; lo que pasa de verdad es otra cosa. */}
                   <Tasas />
+                  {/* Después de las tasas y antes de la estacionalidad: las de
+                      arriba dicen lo que CUESTA la operación, ésta dice de qué
+                      tamaño es el movimiento AHORA — y de ahí sale el stop.
+
+                      ⚠️ Y aquí la compresión NO es solo información: este
+                      número YA decide las señales de rango
+                      (`COMPRESION_MIN`). La tarjeta lo rotula así, porque en
+                      la app hermana no decide nada. */}
+                  <Compresion pares={mercado.compresionPares} />
                   {/* LA ÚLTIMA. Las de arriba dicen algo del AHORA; ésta dice
                       qué suele pasar a esta HORA y en este mes, que es lo único
                       que no cambia de un día para otro.

@@ -199,6 +199,13 @@ export function useMarketData({ thr = 0.5, topN = 3 } = {}) {
     rangos: vista?.rangos ?? [],
     sesion: vista?.sesion ?? null,
     setups: vista?.setups ?? [],
+    // Compresión y posición en el rango.
+    //
+    // ⚠️ Pasa por el hook desde el primer día, que es la lección del
+    // 2026-10-07: en la app hermana dos tarjetas estuvieron MESES sin
+    // pintarse porque `derivarVista` las calculaba y el hook no las
+    // devolvía, y nada fallaba.
+    compresionPares: vista?.compresionPares ?? [],
     corte: vista?.corte ?? '…',
   }
 }

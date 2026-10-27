@@ -1,4 +1,4 @@
-import { compresionDe } from './compresion.js'
+import { compresionDe, nivelDe, posicionEnRango } from './compresion.js'
 import { crearT } from './i18n/crearT.js'
 import { IDIOMA_BASE, localeDe } from './i18n/idiomas.js'
 
@@ -153,6 +153,33 @@ export const rsi = (c, p = 14) => {
 // cociente de 0,70 en velas de una hora no significa lo mismo que en velas de
 // un día.
 export const VELAS_ATRAS_COMPRESION = 12
+
+// ⚠️⚠️ LOS CORTES DE LA ETIQUETA SON DE PRESENTACIÓN Y **NO ESTÁN MEDIDOS**.
+//
+// Viven aquí, en un archivo PRIMO, y no en `compresion.js`, que es GEMELO: un
+// cociente de 0,90 no significa lo mismo en velas de una hora que en velas de
+// un día. Lo que se comparte entre apps es la fórmula, nunca el umbral.
+//
+// ⚠️ Y AQUÍ SON MÁS ESTRECHOS QUE EN LA APP HERMANA, con un motivo
+// estructural: `atrWilder` tiene una ventana DURA de 60 velas, así que el ATR
+// «de antes» (sin las últimas 12) solapa 48 velas con el de ahora y el
+// cociente se mueve mucho menos. Medido sobre el barrido real: los 18 pares de
+// una lectura caían entre 0,88 y 1,12, mientras que en Swing `atrWilder`
+// recorre la serie ENTERA y el rango es más ancho. Copiar los cortes de allá
+// dejaría casi todos los pares en «normal» para siempre.
+//
+// ⚠️ Pero esos 18 números son de UN instante y comparten el mercado entre sí:
+// no son una distribución, son un punto. Así que los cortes están elegidos a
+// mano y la pantalla enseña SIEMPRE el número al lado — la palabra orienta, el
+// número es el dato.
+export const UMBRALES_COMPRESION = { muy: 0.85, algo: 0.93, ancho: 1.1 }
+
+// Hasta dónde llega la barra de la tarjeta. Es PRIMO por la misma razón que
+// los umbrales, y aquí hay un dato REAL que lo decide: en una lectura de
+// producción los 18 pares caían entre 0,88 y 1,12. Con el tope en 2 (el de la
+// app hermana) las 18 barras salían prácticamente idénticas — una barra que se
+// ve igual en todas las filas no informa de nada.
+export const TOPE_BARRA_COMPRESION = 1.3
 
 // ATR real de Wilder sobre 14 velas. Antes se usaba un sustituto
 // (promedio de |cierre − cierre anterior|) porque solo se guardaba el cierre
@@ -1191,9 +1218,45 @@ export function derivarVista(
   // pinta nada. Misma asimetría que `edadEnMinutos`.
   const difMax = difs.length ? Math.max(...difs) : null
 
+  // CUÁNTO SE HA ESTRECHADO EL MOVIMIENTO DE CADA PAR, Y DÓNDE ESTÁ EL PRECIO
+  // DENTRO DE SU RANGO.
+  //
+  // ⚠️⚠️ AQUÍ LA COMPRESIÓN **SÍ DECIDE SEÑALES**, y la tarjeta tiene que
+  // rotularlo así: `clasificarRango` rechaza una señal de rango cuando la
+  // compresión baja de `COMPRESION_MIN`. En la app hermana es solo
+  // información, y presentarlas igual afirmaría algo falso en una de las dos.
+  //
+  // ⚠️ Y AQUÍ NO HAY FIBONACCI NI VELAS ESTRECHAS, por un motivo MEDIDO y no
+  // por comodidad: este barrido no publica el máximo y el mínimo de CADA vela
+  // (solo el extremo de toda la ventana), así que no se puede saber cuál de
+  // los dos extremos vino DESPUÉS — y sin eso los niveles de retroceso se
+  // dibujarían al revés. Publicarlos tampoco vale: en los 11 cruces los
+  // extremos se DERIVAN de los dos pares contra el dólar, y eso dio un ATR un
+  // 400 % mayor del real (2026-08-09). Dibujar niveles sobre eso sería
+  // dibujar sobre datos que este proyecto declara no fiables.
+  const compresionPares = paresRaw
+    .map((p) => ({
+      name: p.name,
+      dec: p.dec,
+      precio: p.c,
+      compresion: Number.isFinite(p.compresion) ? p.compresion : null,
+      nivel: nivelDe(p.compresion, UMBRALES_COMPRESION),
+      posicion: posicionEnRango(p.c, p.lo20, p.hi20),
+      sup: p.lo20,
+      res: p.hi20,
+      atrPips: p.atrAbs / (p.dec === 2 ? 0.01 : 0.0001),
+      // Si este par está en modo rango, su señal de rango DEPENDE de la
+      // compresión. Sirve para que la pantalla pueda decir cuándo el número
+      // que se está mirando es el que puede apagar una señal.
+      enRango: p.tend === 'Rango',
+    }))
+    .filter((x) => Number.isFinite(x.compresion))
+    .sort((a, b) => a.compresion - b.compresion)
+
   return {
     monedas,
     pares,
+    compresionPares,
     compras,
     ventas,
     vigilancia,
