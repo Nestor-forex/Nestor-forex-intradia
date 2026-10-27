@@ -1,3 +1,4 @@
+import { compresionDe } from './compresion.js'
 import { crearT } from './i18n/crearT.js'
 import { IDIOMA_BASE, localeDe } from './i18n/idiomas.js'
 
@@ -137,6 +138,21 @@ export const rsi = (c, p = 14) => {
   }
   return l === 0 ? 100 : 100 - 100 / (1 + g / l)
 }
+
+// Cuántas velas se dejan fuera para calcular el ATR «de antes» con el que se
+// compara el de ahora (la compresión). Estaba escrito a mano dentro del slice,
+// que es el fallo del umbral de fuerza en nueve sitios en pequeño.
+//
+// ⚠️ ES EL MISMO NÚMERO QUE EN LA APP HERMANA, y por una vez eso NO rompe la
+// regla de que lo medido en una app no vale en la otra: la pregunta es «el ATR
+// de esta ventana contra el de la anterior», y la ventana del ATR son 14
+// VELAS en las dos. Doce velas atrás es dejar la ventana anterior casi sin
+// solape — y eso se cuenta en velas, no en horas de reloj.
+//
+// Lo que sí es distinto, y por eso los umbrales de la tarjeta son PRIMOS: un
+// cociente de 0,70 en velas de una hora no significa lo mismo que en velas de
+// un día.
+export const VELAS_ATRAS_COMPRESION = 12
 
 // ATR real de Wilder sobre 14 velas. Antes se usaba un sustituto
 // (promedio de |cierre − cierre anterior|) porque solo se guardaba el cierre
@@ -331,8 +347,19 @@ export function computarBarrido(barras, rates, rangos = null) {
     // Compresión: el ATR de ahora contra su propio promedio reciente. Muy por
     // debajo de 1 significa que el mercado lleva rato quieto — suele ser la
     // antesala de un estallido, no un lateral tranquilo para operar rebotes.
-    const atrMedio = atrWilder(highs.slice(0, -12), lows.slice(0, -12), closes.slice(0, -12))
-    const compresion = atrMedio > 0 ? atrAbs / atrMedio : 1
+    const atrMedio = atrWilder(
+      highs.slice(0, -VELAS_ATRAS_COMPRESION),
+      lows.slice(0, -VELAS_ATRAS_COMPRESION),
+      closes.slice(0, -VELAS_ATRAS_COMPRESION),
+    )
+    // ⚠️ EL `?? 1` NO SE QUITA, y no es por comodidad. `compresionDe` devuelve
+    // `null` cuando no se puede calcular, que es lo correcto para informar —
+    // pero aquí la compresión DECIDE señales (`clasificarRango`), y en
+    // JavaScript `null < 0.75` es **true**, así que un `null` rechazaría la
+    // señal de rango en vez de dejarla pasar. Eso cambiaría lo que la app
+    // propone, y el 1 es lo que esta app ha hecho desde que existe el campo.
+    // En Swing la compresión no decide nada, así que allí sí vale el `null`.
+    const compresion = compresionDe(atrAbs, atrMedio) ?? 1
     return {
       name: b + '/' + q,
       b,

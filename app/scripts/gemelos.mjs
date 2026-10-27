@@ -124,6 +124,25 @@ export const GEMELOS = [
   // aquí son tres reglas de sombra y allá una.
   'src/components/AvisoSombra.jsx',
   'src/lib/sombra.js',
+  // Compresión, posición en el rango y niveles de Fibonacci: la matemática.
+  //
+  // Es gemela porque DENTRO NO HAY UN SOLO UMBRAL —se pasan todos— y porque no
+  // dice «día» ni «hora» en ninguna frase: habla de VELAS. Eso es lo que
+  // permite que la misma fórmula sirva con velas diarias y con velas de una
+  // hora.
+  //
+  // ⚠️ Y hacía falta que fuera UNA sola: la app hermana YA calculaba
+  // `compresion` desde meses antes (`atrAbs / atrMedio`) y allí ese número
+  // **decide señales de rango**. Escribir aquí una definición distinta con el
+  // mismo nombre habría sido la etiqueta equivocada de siempre, con el
+  // agravante de que una de las dos ya está moviendo señales de verdad.
+  //
+  // ⚠️ Lo que NO es gemelo son los UMBRALES de la tarjeta (viven en el
+  // componente de cada app, que es PRIMO): un cociente de 0,70 no significa lo
+  // mismo en velas de un día que en velas de una hora. Misma razón por la que
+  // el clima del par nunca se unificó.
+  'src/lib/compresion.js',
+  'scripts/prueba-compresion.mjs',
   // ¿Esta señal va a favor o en contra del diferencial de tasas? Es gemelo
   // porque NO decide nada propio: llama a `difDePar` de `tasas.js`, que ya es
   // gemelo y lleva dentro el signo y la banda neutra. Lo que no puede haber dos
