@@ -1,7 +1,8 @@
 {
-  "actualizadoEl": "2026-10-27T07:24:08.597Z",
-  "vela": "2026-10-27 07:00:00",
+  "actualizadoEl": "2026-10-27T08:02:19.771Z",
+  "vela": "2026-10-27 08:00:00",
   "senales": [
-    "EUR/GBP|COMPRA|rango"
+    "EUR/GBP|COMPRA|rango",
+    "USD/CHF|VENTA|rango"
   ]
 }
