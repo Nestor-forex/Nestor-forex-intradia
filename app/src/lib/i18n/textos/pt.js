@@ -82,6 +82,24 @@ export default {
     puedeQueNo: 'E pode ser que nenhuma passe. Isso também é um resultado e conta-se da mesma maneira: esta app mostra os seus próprios números mesmo quando saem maus.',
     riesgo: 'Nada disto é consultoria financeira. Operar em Forex tem risco elevado e podes perder o teu dinheiro. As decisões são tuas.',
   },
+  compr: {
+    titulo: ({ n }) => "Compressão e amplitude (§)".replace('§', n),
+    desc: "Quanto o movimento de cada par se estreitou",
+    paraQue: "Para saber se o par vem apertado antes de abrir. Importa porque o stop desta app sai do ATR: se o par se estreitou, o stop sai mais curto do que o normal e o custo de entrar pesa mais sobre um stop curto. NÃO diz para onde o preço vai.",
+    aviso: "⚠️ Isto NÃO tem direção. Um par apertado pode soltar-se para cima ou para baixo, e também pode ficar apertado semanas. Só mede quanto se move agora comparado com antes.",
+    nivel: {
+      muy: "Muito apertado",
+      algo: "Um pouco apertado",
+      normal: "Normal",
+      ancho: "Mais solto do que o normal",
+    },
+    recorrido: ({ atr }) => "amplitude típica § pips".replace('§', atr),
+    posicion: ({ pct }) => "o preço está a § % da sua amplitude".replace('§', pct),
+    avisoStop: "⚠️ Com o movimento assim, o stop sai mais curto do que o normal para este par: o custo de entrar pesa mais.",
+    avisoFiltro: "E neste par, em modo de amplitude, é o número que pode deixar o seu sinal de fora.",
+    pie: "As palavras («muito apertado», «normal») saem de cortes escolhidos à mão, sem medir — por isso o número vai sempre ao lado. E nos pares em amplitude este número não é só informação: é o que pode deixar o seu sinal de fora.",
+  },
+
   barrido: {
     titulo: 'Varredura intradiária (H1)',
     tituloLargo: 'Varredura intradiária (H1) · Forex',

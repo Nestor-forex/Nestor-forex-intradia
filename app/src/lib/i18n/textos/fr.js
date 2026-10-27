@@ -82,6 +82,24 @@ export default {
     puedeQueNo: 'Et il est possible qu’aucune ne la passe. C’est aussi un résultat et il sera dit de la même façon : cette app montre ses propres chiffres même quand ils sont mauvais.',
     riesgo: 'Rien de tout cela n’est un conseil financier. Opérer sur le Forex comporte un risque élevé et tu peux perdre ton argent. Les décisions sont les tiennes.',
   },
+  compr: {
+    titulo: ({ n }) => "Compression et amplitude (§)".replace('§', n),
+    desc: "De combien le mouvement de chaque paire s’est resserré",
+    paraQue: "Pour savoir si une paire arrive resserrée avant d’ouvrir. C’est important parce que le stop de cette app vient de l’ATR : si la paire s’est resserrée, le stop tombe plus court que d’habitude et le coût d’entrée pèse davantage sur un stop court. Cela ne dit PAS où ira le prix.",
+    aviso: "⚠️ Ceci n’a AUCUNE direction. Une paire resserrée peut partir vers le haut ou vers le bas, et elle peut aussi rester resserrée des semaines. On mesure seulement de combien elle bouge maintenant par rapport à avant.",
+    nivel: {
+      muy: "Très resserrée",
+      algo: "Un peu resserrée",
+      normal: "Normale",
+      ancho: "Plus ample que d’habitude",
+    },
+    recorrido: ({ atr }) => "amplitude typique § pips".replace('§', atr),
+    posicion: ({ pct }) => "le prix est à § % de son amplitude".replace('§', pct),
+    avisoStop: "⚠️ Avec un mouvement comme celui-ci, le stop tombe plus court que d’habitude pour cette paire : le coût d’entrée pèse davantage.",
+    avisoFiltro: "Et sur cette paire, en mode range, c’est le chiffre qui peut écarter son signal.",
+    pie: "Les mots (« très resserrée », « normale ») viennent de seuils choisis à la main, non mesurés — c’est pourquoi le chiffre est toujours à côté. Et sur les paires en range, ce chiffre n’est pas seulement une information : c’est lui qui peut écarter leur signal.",
+  },
+
   barrido: {
     titulo: 'Scan intraday (H1)',
     tituloLargo: 'Scan intraday (H1) · Forex',

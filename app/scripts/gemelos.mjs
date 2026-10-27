@@ -124,6 +124,25 @@ export const GEMELOS = [
   // aquí son tres reglas de sombra y allá una.
   'src/components/AvisoSombra.jsx',
   'src/lib/sombra.js',
+  // Compresión, posición en el rango y niveles de Fibonacci: la matemática.
+  //
+  // Es gemela porque DENTRO NO HAY UN SOLO UMBRAL —se pasan todos— y porque no
+  // dice «día» ni «hora» en ninguna frase: habla de VELAS. Eso es lo que
+  // permite que la misma fórmula sirva con velas diarias y con velas de una
+  // hora.
+  //
+  // ⚠️ Y hacía falta que fuera UNA sola: la app hermana YA calculaba
+  // `compresion` desde meses antes (`atrAbs / atrMedio`) y allí ese número
+  // **decide señales de rango**. Escribir aquí una definición distinta con el
+  // mismo nombre habría sido la etiqueta equivocada de siempre, con el
+  // agravante de que una de las dos ya está moviendo señales de verdad.
+  //
+  // ⚠️ Lo que NO es gemelo son los UMBRALES de la tarjeta (viven en el
+  // componente de cada app, que es PRIMO): un cociente de 0,70 no significa lo
+  // mismo en velas de un día que en velas de una hora. Misma razón por la que
+  // el clima del par nunca se unificó.
+  'src/lib/compresion.js',
+  'scripts/prueba-compresion.mjs',
   // ¿Esta señal va a favor o en contra del diferencial de tasas? Es gemelo
   // porque NO decide nada propio: llama a `difDePar` de `tasas.js`, que ya es
   // gemelo y lleva dentro el signo y la banda neutra. Lo que no puede haber dos
@@ -326,6 +345,20 @@ export const PRIMOS = {
     'INVERTIR una cotizacion el maximo pase a ser el inverso del minimo. Si ' +
     'eso se confunde, las velas quedan del reves, todos los barridos se ' +
     'detectan al reves y el resultado es basura creible.',
+
+  'src/components/Compresion.jsx':
+    'La tarjeta de compresion. Difiere en DOS cosas y las dos son medidas, no ' +
+    'de estilo. (1) Aqui lleva Fibonacci y las velas estrechas seguidas; alla ' +
+    'NO, porque su barrido no publica el maximo y el minimo de CADA vela y sin ' +
+    'eso no se puede saber cual de los dos extremos vino DESPUES — los niveles ' +
+    'de retroceso se dibujarian al reves. Y publicarlos tampoco vale: en sus 11 ' +
+    'cruces los extremos se DERIVAN de los dos pares contra el dolar, y eso dio ' +
+    'un ATR un 400 % mayor del real (2026-08-09). (2) Alla la compresion DECIDE ' +
+    'senales de rango (COMPRESION_MIN) y aqui no decide nada, asi que su tarjeta ' +
+    'lo rotula y esta no: presentarlas igual afirmaria algo falso en una de las ' +
+    'dos. La MATEMATICA si es gemela (src/lib/compresion.js); los UMBRALES de la ' +
+    'etiqueta viven en marketCalc.js, que es PRIMO, porque un cociente de 0.90 ' +
+    'no significa lo mismo en velas de un dia que en velas de una hora.',
 
   'src/components/ClimaMercado.jsx':
     'El clima del par (idea tomada de Visual Trader). El DIBUJO es el mismo, ' +

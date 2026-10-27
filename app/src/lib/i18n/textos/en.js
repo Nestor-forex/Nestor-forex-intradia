@@ -82,6 +82,24 @@ export default {
     puedeQueNo: 'And it may be that none of them clears it. That is a result too and it gets reported the same way: this app shows its own numbers even when they look bad.',
     riesgo: 'None of this is financial advice. Trading Forex carries high risk and you can lose your money. The decisions are yours.',
   },
+  compr: {
+    titulo: ({ n }) => "Compression and range (§)".replace('§', n),
+    desc: "How much each pair’s movement has narrowed",
+    paraQue: "To know whether a pair comes in tight before you open. It matters because this app’s stop comes from the ATR: if the pair has narrowed, the stop lands shorter than usual and the cost of entering weighs more on a short stop. It does NOT say which way price will go.",
+    aviso: "⚠️ This has NO direction. A tight pair can break upward or downward, and it can also stay tight for weeks. All it measures is how much it moves now compared with before.",
+    nivel: {
+      muy: "Very tight",
+      algo: "Somewhat tight",
+      normal: "Normal",
+      ancho: "Looser than usual",
+    },
+    recorrido: ({ atr }) => "typical range § pips".replace('§', atr),
+    posicion: ({ pct }) => "price sits at §% of its range".replace('§', pct),
+    avisoStop: "⚠️ With movement like this the stop lands shorter than usual for this pair: the cost of entering weighs more.",
+    avisoFiltro: "And on this pair, in range mode, it is the number that can leave its signal out.",
+    pie: "The words (“very tight”, “normal”) come from cut-offs chosen by hand, unmeasured — which is why the number is always next to them. And on range pairs this number is not just information: it is the one that can leave their signal out.",
+  },
+
   barrido: {
     titulo: 'Intraday scan (H1)',
     tituloLargo: 'Intraday scan (H1) · Forex',
