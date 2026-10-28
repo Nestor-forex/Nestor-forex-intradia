@@ -1,5 +1,10 @@
 {
-  "actualizadoEl": "2026-10-28T13:23:51.624Z",
-  "vela": "2026-10-28 13:00:00",
-  "senales": []
+  "actualizadoEl": "2026-10-28T14:03:54.500Z",
+  "vela": "2026-10-28 14:00:00",
+  "senales": [
+    "EUR/NZD|COMPRA|tendencia",
+    "NZD/CAD|VENTA|tendencia",
+    "NZD/USD|VENTA|retroceso",
+    "AUD/NZD|COMPRA|retroceso"
+  ]
 }
