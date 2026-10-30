@@ -1,0 +1,67 @@
+name: ¿Qué valores toma la compresión?
+
+# Mide la DISTRIBUCIÓN real de la compresión en esta app, para dos cosas que
+# hoy no están medidas:
+#
+#   (a) los cortes de la ETIQUETA de la tarjeta («muy apretado», «normal»…),
+#       que están elegidos a mano y salieron de mirar los 18 pares de UNA
+#       lectura de producción — dieciocho números del mismo instante no son
+#       una distribución, son un punto;
+#
+#   (b) cuánto filtra de verdad `COMPRESION_MIN = 0.75`, que es el ÚNICO sitio
+#       del proyecto donde la compresión decide señales (las de rango) y lleva
+#       meses corriendo sin que nadie sepa en qué parte de la distribución cae.
+#
+# ⚠️⚠️ NO CAMBIA NADA, y no es una promesa: es el permiso. `permissions:
+# contents: read` — no puede escribir en ninguna rama aunque quisiera. No toca
+# un archivo de la app, ni una señal, ni el barrido publicado, ni el historial,
+# ni ninguno de los experimentos que ya corren.
+#
+# ⚠️ Esto dice CUÁNTO filtra el umbral, no si filtrar AYUDA. Lo segundo lo
+# contesta el banco de pruebas, que ya tiene su fila («Sin el filtro de
+# compresión»). Van NUEVE familias de filtros medidas en este proyecto y nueve
+# que no pasan, así que la respuesta por defecto es que no ayuda.
+#
+# ⚠️ SOLO A MANO. Contesta una pregunta de una vez; no vigila nada.
+#
+# ⚠️⚠️ NECESITA EL SECRETO. Son 7 créditos de Twelve Data (una tanda de los 7
+# símbolos), así que sin el `env` de abajo `leerLlave` no encuentra la llave y
+# el guion falla. Cualquier workflow nuevo que llame a estos guiones tiene que
+# pasársela — ya pasó de verdad con `comparar-reglas.yml`.
+
+on:
+  workflow_dispatch:
+
+# Solo lee. No aflojar esto para «aprovechar y guardar el resultado»: lo que
+# este trabajo NO puede hacer es escribir.
+permissions:
+  contents: read
+
+jobs:
+  medir:
+    runs-on: ubuntu-latest
+    # Sin esto GitHub deja correr un trabajo hasta SEIS HORAS. Lo normal aquí
+    # es menos de un minuto: una tanda de velas y aritmética.
+    timeout-minutes: 10
+    steps:
+      - name: Traer el código
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Primero las comprobaciones sin internet. Si la compresión del
+      # diagnóstico no fuera la misma que la de la app, el log daría unos
+      # percentiles creíbles sobre otra cosa — que es la familia de fallo que
+      # este repositorio lleva meses coleccionando.
+      - name: Comprobar las cuentas (sin internet)
+        working-directory: app
+        run: node scripts/prueba-compresion.mjs
+
+      - name: Medir
+        working-directory: app
+        env:
+          # ⚠️ SIN ESTO EL GUION FALLA. Ver la cabecera.
+          TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}
+        run: node scripts/medir-compresion.mjs
