@@ -93,7 +93,7 @@ export default {
     posicion: ({ pct }) => "fiyat aralığının % § seviyesinde".replace('§', pct),
     avisoStop: "⚠️ Bu hareketle, bu parite için Stop-loss normalden kısa çıkar: giriş maliyeti daha fazla ağırlık yapar.",
     avisoFiltro: "Ve aralık modundaki bu paritede, sinyalini dışarıda bırakabilecek sayı bu.",
-    pie: "Kelimeler («çok sıkışık», «normal») elle seçilmiş, ölçülmemiş eşiklerden geliyor — bu yüzden sayı hep yanında. Ve aralık modundaki paritelerde bu sayı sadece bilgi değil: sinyallerini dışarıda bırakabilen sayı.",
+    pie: "Kelimeler («çok sıkışık», «normal») bu piyasanın ölçülmüş dağılımının yüzdeliklerinden geliyor: «çok sıkışık» en dar %10, «normalden gevşek» en geniş %10. Değerin ne kadar NADİR olduğunu söylerler, onunla ne yapılacağını değil — bu yüzden sayı hep yanında. Ve aralık modundaki paritelerde bu sayı sadece bilgi değil: sinyallerini dışarıda bırakabilen sayı.",
   },
 
   barrido: {

@@ -97,7 +97,7 @@ export default {
     posicion: ({ pct }) => "o preço está a § % da sua amplitude".replace('§', pct),
     avisoStop: "⚠️ Com o movimento assim, o stop sai mais curto do que o normal para este par: o custo de entrar pesa mais.",
     avisoFiltro: "E neste par, em modo de amplitude, é o número que pode deixar o seu sinal de fora.",
-    pie: "As palavras («muito apertado», «normal») saem de cortes escolhidos à mão, sem medir — por isso o número vai sempre ao lado. E nos pares em amplitude este número não é só informação: é o que pode deixar o seu sinal de fora.",
+    pie: "As palavras («muito apertado», «normal») saem dos percentis da distribuição medida deste mercado: «muito apertado» é os 10 % mais estreitos e «mais solto» os 10 % mais largos. Dizem quão RARO é o valor, nunca o que fazer com ele — por isso o número vai sempre ao lado. E nos pares em amplitude este número não é só informação: é o que pode deixar o seu sinal de fora.",
   },
 
   barrido: {

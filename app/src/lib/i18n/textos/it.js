@@ -93,7 +93,7 @@ export default {
     posicion: ({ pct }) => "il prezzo è al § % del suo range".replace('§', pct),
     avisoStop: "⚠️ Con un movimento così, lo stop esce più corto del normale per questa coppia: il costo di entrare pesa di più.",
     avisoFiltro: "E su questa coppia, in modalità range, è il numero che può lasciare fuori il suo segnale.",
-    pie: "Le parole («molto stretta», «normale») vengono da soglie scelte a mano, non misurate — per questo il numero sta sempre accanto. E sulle coppie in range questo numero non è solo informazione: è quello che può lasciare fuori il loro segnale.",
+    pie: "Le parole («molto stretta», «normale») vengono dai percentili della distribuzione misurata di questo mercato: «molto stretta» è il 10 % più stretto e «più larga» il 10 % più ampio. Dicono quanto è RARO il valore, mai cosa farne — per questo il numero sta sempre accanto. E sulle coppie in range questo numero non è solo informazione: è quello che può lasciare fuori il loro segnale.",
   },
 
   barrido: {

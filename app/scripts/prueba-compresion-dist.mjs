@@ -17,7 +17,13 @@
 // el contrato del lector de verdad, no.
 
 import { readFileSync } from 'node:fs'
-import { PAIRS, VELAS_ATRAS_COMPRESION, computarBarrido } from '../src/lib/marketCalc.js'
+import {
+  PAIRS,
+  VELAS_ATRAS_COMPRESION,
+  UMBRALES_COMPRESION,
+  TOPE_BARRA_COMPRESION,
+  computarBarrido,
+} from '../src/lib/marketCalc.js'
 import { compresionDe } from '../src/lib/compresion.js'
 import {
   distribucionDeCompresion,
@@ -168,6 +174,41 @@ console.log('\n6. Los no calculables NO se cuentan como 1')
   comprobar('compresionDe(NaN, 1) es null', compresionDe(NaN, 1) === null)
   const corto = distribucionDeCompresion(mercado(VELAS_ATRAS_COMPRESION + 2), { calentamiento: 0 })
   comprobar('ningún valor calculado es exactamente 1 por relleno', !corto.todas.some((x) => x === 1))
+}
+
+console.log('\n7. ⚠️ Los cortes de la etiqueta y la distribución medida no pueden separarse')
+// El mismo guardián que la app hermana. Aquí el número no se puede hacer que
+// se LEA solo —la medición es una corrida a mano de 7 créditos—, así que lo
+// que se exige es que el texto que lo justifica y el código no puedan
+// divergir. Es el fallo de las etiquetas «(hoy)» del banco de pruebas y el de
+// `medicion.queSignifica`, que dijo «55 %» durante meses.
+{
+  const fuente = readFileSync(new URL('../src/lib/marketCalc.js', import.meta.url), 'utf8')
+  const m = fuente.match(/p10\s+([\d,.]+).*?p25\s+([\d,.]+).*?p90\s+([\d,.]+)/)
+  comprobar('el comentario trae la distribución medida (p10 · p25 · p90)', !!m)
+  if (m) {
+    const [p10, p25, p90] = m.slice(1, 4).map((s) => Number(s.replace(',', '.')))
+    const casi = (a, b) => Math.abs(a - b) < 1e-9
+    comprobar(`«muy apretado» es el p10 (${p10})`, casi(UMBRALES_COMPRESION.muy, p10))
+    comprobar(`«algo apretado» es el p25 (${p25})`, casi(UMBRALES_COMPRESION.algo, p25))
+    comprobar(`«más suelto» es el p90 (${p90})`, casi(UMBRALES_COMPRESION.ancho, p90))
+  }
+  // Y la contraria: que YA NO sean los de antes, elegidos a mano sobre una
+  // sola lectura. Sin esto, devolverlos pasaría en verde si alguien reescribe
+  // también el comentario.
+  const viejos = { muy: 0.85, algo: 0.93, ancho: 1.1 }
+  comprobar(
+    'y ya no son los de la lectura suelta (0,85 · 0,93 · 1,1)',
+    ['muy', 'algo', 'ancho'].some((k) => UMBRALES_COMPRESION[k] !== viejos[k]),
+  )
+  // La barra: el tramo donde de verdad vive el dato tiene que ocupar una parte
+  // legible, y el tope tiene que dejar sitio por encima de «más suelto».
+  const util = (UMBRALES_COMPRESION.ancho - UMBRALES_COMPRESION.muy) / TOPE_BARRA_COMPRESION
+  comprobar(`el tramo p10→p90 ocupa el ${(util * 100).toFixed(0)} % de la barra`, util > 0.15)
+  comprobar(
+    `el tope (${TOPE_BARRA_COMPRESION}) deja sitio por encima de «más suelto» (${UMBRALES_COMPRESION.ancho})`,
+    TOPE_BARRA_COMPRESION > UMBRALES_COMPRESION.ancho,
+  )
 }
 
 console.log('')

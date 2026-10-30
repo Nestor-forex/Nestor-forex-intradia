@@ -97,7 +97,7 @@ export default {
     posicion: ({ pct }) => "Kurs liegt bei § % seiner Spanne".replace('§', pct),
     avisoStop: "⚠️ Bei dieser Bewegung fällt der Stop für dieses Paar kürzer aus als üblich: die Einstiegskosten wiegen schwerer.",
     avisoFiltro: "Und bei diesem Paar im Range-Modus ist es die Zahl, die sein Signal aussortieren kann.",
-    pie: "Die Wörter („sehr eng“, „normal“) stammen aus handgewählten, ungemessenen Grenzen — deshalb steht die Zahl immer daneben. Und bei Range-Paaren ist diese Zahl nicht nur Information: sie kann deren Signal aussortieren.",
+    pie: "Die Wörter („sehr eng“, „normal“) stammen aus den Perzentilen der gemessenen Verteilung dieses Marktes: „sehr eng“ sind die engsten 10 %, „lockerer“ die weitesten 10 %. Sie sagen, wie SELTEN der Wert ist, nie was zu tun ist — deshalb steht die Zahl immer daneben. Und bei Range-Paaren ist diese Zahl nicht nur Information: sie kann deren Signal aussortieren.",
   },
 
   barrido: {

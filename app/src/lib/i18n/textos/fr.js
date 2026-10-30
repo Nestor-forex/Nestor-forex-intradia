@@ -97,7 +97,7 @@ export default {
     posicion: ({ pct }) => "le prix est à § % de son amplitude".replace('§', pct),
     avisoStop: "⚠️ Avec un mouvement comme celui-ci, le stop tombe plus court que d’habitude pour cette paire : le coût d’entrée pèse davantage.",
     avisoFiltro: "Et sur cette paire, en mode range, c’est le chiffre qui peut écarter son signal.",
-    pie: "Les mots (« très resserrée », « normale ») viennent de seuils choisis à la main, non mesurés — c’est pourquoi le chiffre est toujours à côté. Et sur les paires en range, ce chiffre n’est pas seulement une information : c’est lui qui peut écarter leur signal.",
+    pie: "Les mots (« très resserrée », « normale ») viennent des percentiles de la distribution mesurée de ce marché : « très resserrée », ce sont les 10 % les plus étroits, et « plus ample » les 10 % les plus larges. Ils disent à quel point la valeur est RARE, jamais quoi en faire — c’est pourquoi le chiffre est toujours à côté. Et sur les paires en range, ce chiffre n’est pas seulement une information : c’est lui qui peut écarter leur signal.",
   },
 
   barrido: {
