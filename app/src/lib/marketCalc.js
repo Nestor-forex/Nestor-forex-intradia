@@ -154,32 +154,56 @@ export const rsi = (c, p = 14) => {
 // un día.
 export const VELAS_ATRAS_COMPRESION = 12
 
-// ⚠️⚠️ LOS CORTES DE LA ETIQUETA SON DE PRESENTACIÓN Y **NO ESTÁN MEDIDOS**.
+// LOS CORTES DE LA ETIQUETA. Son de PRESENTACIÓN: dicen qué tan RARO es el
+// valor, nunca qué hacer con él.
 //
 // Viven aquí, en un archivo PRIMO, y no en `compresion.js`, que es GEMELO: un
 // cociente de 0,90 no significa lo mismo en velas de una hora que en velas de
 // un día. Lo que se comparte entre apps es la fórmula, nunca el umbral.
 //
-// ⚠️ Y AQUÍ SON MÁS ESTRECHOS QUE EN LA APP HERMANA, con un motivo
-// estructural: `atrWilder` tiene una ventana DURA de 60 velas, así que el ATR
-// «de antes» (sin las últimas 12) solapa 48 velas con el de ahora y el
-// cociente se mueve mucho menos. Medido sobre el barrido real: los 18 pares de
-// una lectura caían entre 0,88 y 1,12, mientras que en Swing `atrWilder`
-// recorre la serie ENTERA y el rango es más ancho. Copiar los cortes de allá
-// dejaría casi todos los pares en «normal» para siempre.
+// ⚠️⚠️ DESDE EL 2026-10-30 SALEN DE LOS DATOS, Y LA VERSIÓN ANTERIOR ESTABA
+// EQUIVOCADA EN EL SENTIDO CONTRARIO AL QUE YO CREÍA.
 //
-// ⚠️ Pero esos 18 números son de UN instante y comparten el mercado entre sí:
-// no son una distribución, son un punto. Así que los cortes están elegidos a
-// mano y la pantalla enseña SIEMPRE el número al lado — la palabra orienta, el
-// número es el dato.
-export const UMBRALES_COMPRESION = { muy: 0.85, algo: 0.93, ancho: 1.1 }
+// Aquel comentario decía que aquí el cociente «se mueve mucho menos» que en la
+// app hermana, razonando que `atrWilder` tiene ventana DURA de 60 velas y el
+// ATR «de antes» solapa 48 con el de ahora. Sonaba estructural y es FALSO: en
+// Swing `atrWilder` recorre la serie ENTERA, o sea que allí el solape es casi
+// total y el cociente se mueve MUCHO MENOS. Medido, el de aquí es 2,7 veces
+// más ancho:
+//
+//   Intradía (25.380 obs, 18 pares × 1.410 velas H1, 2026-08-29 a 2026-10-30):
+//     mín 0,46 · p10 0,67 · p25 0,82 · mediana 0,97 · p75 1,17 · p90 1,48 · máx 9,79
+//   Swing, para comparar: p10 0,87 · mediana 0,99 · p90 1,17
+//
+// Con los cortes viejos (0,85 · 0,93 · 1,1) la tarjeta repartía 30 % «muy
+// apretado», 13 % «algo», 25 % «normal» y 33 % «más suelto»: o sea que la
+// palabra que debía ser rara salía en uno de cada tres pares y dejaba de decir
+// nada. Es el mismo defecto que en Swing pero por el otro lado — allí dos
+// etiquetas casi no salían nunca.
+//
+// ⚠️ La unidad de observación es UN PAR Y UNA VELA, que es lo que la tarjeta
+// enseña. Los 18 números de una sola lectura —de donde salieron los cortes
+// viejos— comparten el mercado entre sí: no son una distribución, son un punto,
+// y por eso daban un rango diez veces más estrecho que el real.
+//
+// La regla: p10 / p25 / p90, o sea ~10 % / ~15 % / ~65 % / ~10 %. Se vuelve a
+// medir con `scripts/medir-compresion.mjs` (7 créditos), y `prueba-compresion-
+// dist.mjs` falla si estos tres números y la línea de arriba se separan.
+export const UMBRALES_COMPRESION = { muy: 0.67, algo: 0.82, ancho: 1.48 }
 
 // Hasta dónde llega la barra de la tarjeta. Es PRIMO por la misma razón que
-// los umbrales, y aquí hay un dato REAL que lo decide: en una lectura de
-// producción los 18 pares caían entre 0,88 y 1,12. Con el tope en 2 (el de la
-// app hermana) las 18 barras salían prácticamente idénticas — una barra que se
-// ve igual en todas las filas no informa de nada.
-export const TOPE_BARRA_COMPRESION = 1.3
+// los umbrales.
+//
+// ⚠️ Sube de 1,3 a 1,8 por la misma medición: con 1,3 todo lo que pasara de ahí
+// salía con la barra llena, y eso le pasa a más del 10 % de las lecturas
+// (p90 = 1,48). Una barra que se ve igual en muchas filas no informa de nada,
+// que es el mismo defecto por el que bajó de 2 a 1,3 — entonces con un punto
+// por distribución, ahora con 25.380 observaciones.
+//
+// Tiene que quedar POR ENCIMA del corte de «más suelto» para que esa etiqueta
+// tenga sitio donde dibujarse, y dejar el tramo p10→p90 ocupando una parte
+// legible de la barra: 0,81 de 1,8 es el 45 %.
+export const TOPE_BARRA_COMPRESION = 1.8
 
 // ATR real de Wilder sobre 14 velas. Antes se usaba un sustituto
 // (promedio de |cierre − cierre anterior|) porque solo se guardaba el cierre

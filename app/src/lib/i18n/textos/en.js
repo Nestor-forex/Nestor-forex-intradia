@@ -97,7 +97,7 @@ export default {
     posicion: ({ pct }) => "price sits at §% of its range".replace('§', pct),
     avisoStop: "⚠️ With movement like this the stop lands shorter than usual for this pair: the cost of entering weighs more.",
     avisoFiltro: "And on this pair, in range mode, it is the number that can leave its signal out.",
-    pie: "The words (“very tight”, “normal”) come from cut-offs chosen by hand, unmeasured — which is why the number is always next to them. And on range pairs this number is not just information: it is the one that can leave their signal out.",
+    pie: "The words (“very tight”, “normal”) come from the percentiles of this market’s measured distribution: “very tight” is the narrowest 10 % and “looser” the widest 10 %. They say how RARE the value is, never what to do with it — which is why the number is always next to them. And on range pairs this number is not just information: it is the one that can leave their signal out.",
   },
 
   barrido: {

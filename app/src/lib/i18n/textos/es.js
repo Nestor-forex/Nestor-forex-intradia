@@ -135,7 +135,7 @@ export default {
     posicion: ({ pct }) => "el precio va al § % de su rango".replace('§', pct),
     avisoStop: "⚠️ Con el movimiento así, el stop sale más corto de lo normal para este par: el costo de entrar pesa más.",
     avisoFiltro: "Y en este par, en modo rango, es el número que puede dejar su señal fuera.",
-    pie: "Las palabras («muy apretado», «normal») salen de cortes elegidos a mano, sin medir — por eso el número va siempre al lado. Y en los pares de rango este número no es solo información: es el que puede dejar su señal fuera.",
+    pie: "Las palabras («muy apretado», «normal») salen de los percentiles de la distribución medida de este mercado: «muy apretado» es el 10 % más estrecho y «más suelto» el 10 % más ancho. Dicen qué tan RARO es el valor, nunca qué hacer con él — por eso el número va siempre al lado. Y en los pares de rango este número no es solo información: es el que puede dejar su señal fuera.",
   },
 
   barrido: {
