@@ -283,6 +283,20 @@ export const GEMELOS = [
 // empeora en Swing; está medido. Unificar umbrales sería el peor error posible
 // aquí.
 export const PRIMOS = {
+  'scripts/medir-compresion.mjs':
+    'Las dos apps miden la compresion y NO miden lo mismo, porque la ' +
+    'compresion no juega el mismo papel. En Swing es INFORMACION pura: no ' +
+    'decide ninguna senal, asi que su guion parte las senales que ya existen ' +
+    'en montones (comprimido / medio / expandido) y pregunta si unas miden ' +
+    'distinto de otras, con su liston escrito antes. En Intradia la ' +
+    'compresion YA DECIDE senales (`COMPRESION_MIN` rechaza las de rango), ' +
+    'asi que alli la pregunta util es otra: que VALORES toma de verdad, para ' +
+    'saber donde cae ese umbral dentro de la distribucion y si los cortes de ' +
+    'la etiqueta estan en su sitio. Y la unidad de observacion tambien ' +
+    'difiere: alla se midio sobre las SENALES y aqui sobre un par y una vela, ' +
+    'que es lo que la tarjeta enseña de verdad. Copiar cualquiera de los dos ' +
+    'guiones al otro repositorio daria numeros creibles de otra pregunta.',
+
   'scripts/lib/preregistro-cruces.mjs':
     'El liston del corte dolar/cruces. La pregunta es la misma y los listones ' +
     'NO pueden serlo, por donde salio cada uno. En Swing el corte se encontro ' +
