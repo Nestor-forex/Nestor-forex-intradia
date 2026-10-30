@@ -243,6 +243,25 @@ export const GEMELOS = [
   // programas que Nestor tendria que arrancar cada manana.
   'src/lib/useMT5Quotes.js',
   'src/components/CotizacionesVivo.jsx',
+  // LOS AVISOS QUE PROGRAMA EL USUARIO. Lo pidio Nestor el 2026-10-30: que la
+  // pantalla sea una herramienta donde cada uno ponga sus propios parametros.
+  //
+  // Es gemelo porque la DECISION es la misma en las dos apps: un aviso suena
+  // una vez, no suena con un precio viejo, y «no se sabe» no es «no ha
+  // llegado». Lo que cambia entre apps son dos numeros y NINGUNO vive aqui
+  // dentro:
+  //
+  //   · que pares existen, que sale de `pairs.js` (PRIMO) y se le pasa;
+  //   · y cada cuanto se queda viejo el barrido —26 horas en Swing, 2 en
+  //     Intradia—, que se le pasa como opcion desde `useMarketData.js`
+  //     (PRIMO). Copiar ese numero de la app hermana seria traerse una
+  //     suposicion que aqui es falsa: es la leccion de `barridoSwap`.
+  //
+  // La edad maxima del PRECIO si es la misma en las dos, y por un motivo
+  // estructural y no por gusto: el puente es UNO y publica cada 15 minutos
+  // para las dos apps.
+  'src/lib/alertas.js',
+  'scripts/prueba-alertas.mjs',
   // El NFX-LSS: el indicador que Nestor escribio en Pine para el concurso de
   // TradingView, traducido a JavaScript. La LOGICA es la misma en las dos apps
   // —pivotes, barrido, ruptura, stop y objetivo— y por eso es gemela; lo que
