@@ -292,10 +292,33 @@ export const PRIMOS = {
     'compresion YA DECIDE senales (`COMPRESION_MIN` rechaza las de rango), ' +
     'asi que alli la pregunta util es otra: que VALORES toma de verdad, para ' +
     'saber donde cae ese umbral dentro de la distribucion y si los cortes de ' +
-    'la etiqueta estan en su sitio. Y la unidad de observacion tambien ' +
-    'difiere: alla se midio sobre las SENALES y aqui sobre un par y una vela, ' +
-    'que es lo que la tarjeta enseña de verdad. Copiar cualquiera de los dos ' +
-    'guiones al otro repositorio daria numeros creibles de otra pregunta.',
+    'la etiqueta estan en su sitio. Desde el 2026-10-30 por la tarde LOS DOS ' +
+    'miden tambien la distribucion por par y por vela, que es la poblacion ' +
+    'que la tarjeta enseña de verdad; lo que sigue siendo distinto es todo lo ' +
+    'demas. Copiar cualquiera de los dos guiones al otro repositorio daria ' +
+    'numeros creibles de otra pregunta.',
+
+  'scripts/lib/compresion-dist.mjs':
+    'La distribucion de la compresion por par y por vela. La pregunta es la ' +
+    'misma en las dos apps y el codigo NO puede serlo, por dos razones ' +
+    'medidas. (1) EL LECTOR DE VELAS: aqui devuelve `{ fechas, rates, ' +
+    'rangosPar }` con los rangos indexados por NOMBRE DE PAR, porque esta app ' +
+    'pide los 14 pares directos; alla devuelve `{ barras, rates, rangos }` por ' +
+    'DIVISA y los cruces se derivan. Confundirlos ya costo 7 creditos en ' +
+    'produccion el 2026-10-30, y cada prueba exige el contrato de SU lector. ' +
+    '(2) LA VENTANA: el `atrWilder` de Swing recorre TODO lo que recibe, asi ' +
+    'que hay que darle el mismo tramo que el barrido de produccion (~214 dias ' +
+    'de mercado) o el numero sale distinto; el de Intradia tiene ventana DURA ' +
+    'de 60 velas, asi que alli da igual. De ahi que aqui exista ' +
+    '`ventanaDeProduccion` y alli no.',
+
+  'scripts/prueba-compresion-dist.mjs':
+    'La prueba de lo anterior. Comprueba el contrato del lector de SU app ' +
+    '(que los nombres que la libreria lee sean los que `velas.mjs` arma, y que ' +
+    'NO sean los de la hermana), asi que por construccion no puede ser la ' +
+    'misma en las dos. Y aqui lleva una comprobacion que alla no tiene ' +
+    'sentido: que con la serie ENTERA el numero CAMBIE, porque si no cambiara ' +
+    'la ventana seria decorativa y la fidelidad saldria por casualidad.',
 
   'scripts/lib/preregistro-cruces.mjs':
     'El liston del corte dolar/cruces. La pregunta es la misma y los listones ' +
