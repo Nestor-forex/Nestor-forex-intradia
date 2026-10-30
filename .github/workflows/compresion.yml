@@ -55,9 +55,17 @@ jobs:
       # diagnóstico no fuera la misma que la de la app, el log daría unos
       # percentiles creíbles sobre otra cosa — que es la familia de fallo que
       # este repositorio lleva meses coleccionando.
+      # ⚠️ Las dos, y la segunda existe por un fallo real: la primera versión
+      # de este guion leía los nombres del lector de velas de la app HERMANA
+      # (`fechas`/`rangosPar` en vez de `barras`/`rangos`) y falló aquí mismo
+      # gastando 7 créditos. `prueba-compresion-dist.mjs` ata las dos puntas:
+      # exige que lo que `velas.mjs` devuelve sea exactamente lo que la
+      # librería lee.
       - name: Comprobar las cuentas (sin internet)
         working-directory: app
-        run: node scripts/prueba-compresion.mjs
+        run: |
+          node scripts/prueba-compresion.mjs
+          node scripts/prueba-compresion-dist.mjs
 
       - name: Medir
         working-directory: app
