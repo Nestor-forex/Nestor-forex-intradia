@@ -18,6 +18,7 @@
 
 import { doc, updateDoc } from 'firebase/firestore'
 import { db } from './firebase'
+import { APP } from './identidad'
 import { MAX_AVISOS, cabeOtro, valida } from './alertas'
 
 // Cuántos pares puede seguir una persona. No es un límite de gusto: la lista
@@ -84,6 +85,22 @@ export function useAvisos(uid, perfil) {
         nivel: Number(aviso.nivel),
         activa: true,
         creadoEl: new Date().toISOString(),
+        // ⚠️⚠️ DE QUÉ APP SALIÓ, Y SIN ESTO UN AVISO DE RSI NO SE PUEDE JUZGAR.
+        //
+        // «RSI 30» no significa lo mismo en las dos apps: aquí es el RSI de
+        // velas DIARIAS y en la hermana el de velas de UNA HORA. El programa
+        // que manda los avisos corre en un solo sitio y lee los dos barridos,
+        // así que necesita saber cuál de los dos le toca a cada aviso.
+        //
+        // Sin este campo tendría que adivinar qué pidió la persona, y adivinar
+        // hacia el lado que SUENA es el aviso falso que `alertas.js` evita por
+        // todos los demás caminos. Por eso los de indicador sin `app` no
+        // disparan — ver `appDe` en `scripts/lib/avisos-usuario.mjs`.
+        //
+        // Los de PRECIO no lo necesitan (el bid y el ask salen del puente de
+        // MT5, que es uno para las dos), pero se guarda igual en todos: un
+        // campo que está siempre no deja un caso raro por el que colarse.
+        app: APP,
       }
       // ⚠️ Se escribe CAMPO POR CAMPO y no `...aviso`, a propósito. Con el
       // objeto entero, cualquier cosa que la pantalla llevara pegada —un
