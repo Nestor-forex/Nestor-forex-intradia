@@ -351,14 +351,14 @@ export function mensajeDe(aviso, estado, dato) {
   const base = { par: aviso.par, nivel: nivelDe(aviso.nivel) }
   if (aviso.tipo === 'precio') {
     return {
-      clave: aviso.lado === 'sube' ? 'avisos.msgSubio' : 'avisos.msgBajo',
+      clave: aviso.lado === 'sube' ? 'misAvisos.msgSubio' : 'misAvisos.msgBajo',
       params: { ...base, bid: Number(dato?.bid), ask: Number(dato?.ask), minutos: estado?.edad ?? null },
     }
   }
   if (aviso.tipo === 'banda') {
-    return { clave: aviso.lado === 'arriba' ? 'avisos.msgBandaArriba' : 'avisos.msgBandaAbajo', params: { ...base, valor: estado?.valor } }
+    return { clave: aviso.lado === 'arriba' ? 'misAvisos.msgBandaArriba' : 'misAvisos.msgBandaAbajo', params: { ...base, valor: estado?.valor } }
   }
-  return { clave: aviso.lado === 'arriba' ? 'avisos.msgRsiArriba' : 'avisos.msgRsiAbajo', params: { ...base, valor: estado?.valor } }
+  return { clave: aviso.lado === 'arriba' ? 'misAvisos.msgRsiArriba' : 'misAvisos.msgRsiAbajo', params: { ...base, valor: estado?.valor } }
 }
 
 // ─────────────────────────────────────────────────────────────────────────

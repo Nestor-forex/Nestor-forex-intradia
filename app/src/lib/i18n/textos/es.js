@@ -57,7 +57,98 @@ export default {
     detalle: 'Detalle técnico',
   },
 
+  // MIS AVISOS — la pantalla donde cada persona programa lo suyo.
+  //
+  // ⚠️ SE LLAMA `misAvisos` Y NO `avisos` A PROPOSITO: `avisos` ya existe mas
+  // abajo y es el del interruptor de notificaciones. Al escribir esto meti un
+  // segundo bloque `avisos` sin verlo, y JavaScript **se queda con el ultimo y
+  // tira el otro en silencio** — habria dejado el interruptor sin textos en
+  // los 13 idiomas. Hay una comprobacion en `prueba-idiomas.mjs` que ahora
+  // falla si una clave de primer nivel aparece dos veces.
+  //
+  // ⚠️ El aviso de que esto NO son señales va PRIMERO, antes de cualquier
+  // control. Aqui lo caro no es leer mal un numero: es creer que lo que suena
+  // es una recomendacion de la app. Mismo criterio que en las tasas y el COT.
+  misAvisos: {
+    titulo: 'Mis avisos',
+    aviso:
+      'Esto NO son señales de la app: los niveles los pones tú. La app te avisa de que pasó lo que pediste, y no te dice qué hacer con ello.',
+    desc: 'Eliges tus pares y pones tus propios niveles. Cuando el mercado llega ahí, te llega un aviso al celular.',
+
+    seguimientoTitulo: 'Mis pares',
+    seguimientoDesc: 'Toca los pares que te interesan. Los avisos y el tablero se quedan solo con ésos.',
+    seguimientoVacio: 'Sin ninguno elegido se ven TODOS los pares. Elige los tuyos para quitar ruido.',
+    seguimientoPie: 'Toca otra vez un par para quitarlo de la lista.',
+
+    nuevoTitulo: 'Poner un aviso nuevo',
+    campoPar: 'Par',
+    campoTipo: 'De qué',
+    campoLado: 'Cuándo',
+    campoNivel: 'Nivel',
+    tipoPrecio: 'Precio',
+    tipoBanda: 'Banda de Bollinger (%B)',
+    tipoRsi: 'RSI',
+    lado_sube: 'si sube hasta',
+    lado_baja: 'si baja hasta',
+    lado_arriba: 'si llega o pasa de',
+    lado_abajo: 'si llega o baja de',
+    ejemplo_precio: 'por ejemplo 1.1550',
+    ejemplo_banda: 'por ejemplo -1',
+    ejemplo_rsi: 'por ejemplo 30',
+    anadir: 'Añadir el aviso',
+
+    listaTitulo: (v) => `Mis avisos (${v.n} de ${v.max})`,
+    listaVacia: 'Todavía no has puesto ninguno.',
+    frase_precio_sube: 'si el precio sube hasta',
+    frase_precio_baja: 'si el precio baja hasta',
+    frase_banda_arriba: 'si el %B llega o pasa de',
+    frase_banda_abajo: 'si el %B llega o baja de',
+    frase_rsi_arriba: 'si el RSI llega o pasa de',
+    frase_rsi_abajo: 'si el RSI llega o baja de',
+    estadoEsperando: 'Esperando. Todavía no ha pasado.',
+    estadoApagado: 'Apagado. No va a sonar.',
+    estadoSono: (v) => `Ya sonó (${v.veces} de ${v.max} veces). Vuelve a armarlo para que suene otra vez.`,
+    encender: 'Encender',
+    apagar: 'Apagar',
+    rearmar: 'Volver a armar',
+    borrar: 'Borrar',
+
+    // ⚠️ El pie dice las tres cosas que la persona tiene derecho a saber antes
+    // de fiarse de un aviso: de donde sale el precio, cada cuanto se mira y
+    // que puede llegar con retraso. Callarlas lo haria mas bonito y menos
+    // honesto.
+    pie: 'El precio sale del bróker del desarrollador de las apps, no del tuyo, y se mira cada 15 minutos — así que un aviso puede llegar con unos minutos de diferencia. Si no lo ves, se repite a los 15 y a los 30 minutos, y se calla en cuanto abres esta pantalla.',
+
+    // Los mensajes del aviso que llega al celular. Van como funciones porque
+    // llevan numeros dentro y cada idioma ordena la frase distinto.
+    msgSubio: (v) => `${v.par} subió hasta ${v.nivel}. Compra ${v.bid}, venta ${v.ask} (precio de hace ${v.minutos} min).`,
+    msgBajo: (v) => `${v.par} bajó hasta ${v.nivel}. Compra ${v.bid}, venta ${v.ask} (precio de hace ${v.minutos} min).`,
+    msgBandaArriba: (v) => `${v.par}: el %B llegó a ${v.valor} (pediste ${v.nivel} o más).`,
+    msgBandaAbajo: (v) => `${v.par}: el %B llegó a ${v.valor} (pediste ${v.nivel} o menos).`,
+    msgRsiArriba: (v) => `${v.par}: el RSI llegó a ${v.valor} (pediste ${v.nivel} o más).`,
+    msgRsiAbajo: (v) => `${v.par}: el RSI llegó a ${v.valor} (pediste ${v.nivel} o menos).`,
+
+    // Lo que puede salir mal al guardar. Son CODIGOS y no frases porque los
+    // decide `alertas.js`, que corre tambien fuera del navegador.
+    err_vacio: 'Falta llenar el aviso.',
+    err_sinPar: 'Elige un par.',
+    err_parDesconocido: 'Ese par no está en esta app.',
+    err_tipoDesconocido: 'Elige de qué quieres el aviso.',
+    err_ladoDesconocido: 'Elige cuándo quieres que suene.',
+    err_nivelNoEsNumero: 'Escribe un número en el nivel.',
+    err_precioNoPositivo: 'El precio tiene que ser mayor que cero.',
+    err_rsiFueraDeRango: 'El RSI va de 0 a 100.',
+    err_bandaFueraDeRango: 'El %B normal va entre -3 y 3.',
+    err_demasiados: 'Ya tienes el máximo de avisos. Borra uno para poner otro.',
+    err_demasiadosPares: 'Demasiados pares seguidos.',
+    err_sinSesion: 'No se pudo guardar: no hay sesión.',
+    err_sinPermiso:
+      'No se pudo guardar. Las reglas de seguridad de la base de datos todavía no permiten guardar avisos — hay que publicarlas.',
+    err_noSeGuardo: 'No se pudo guardar. Prueba otra vez.',
+  },
+
   nav: {
+    avisos: 'Avisos',
     historial: 'Historial',
     barrido: 'Barrido',
     diario: 'Diario',

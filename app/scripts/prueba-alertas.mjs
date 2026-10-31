@@ -366,7 +366,7 @@ console.log('\n9. El mensaje va como CLAVE y HUECOS, nunca como frase')
   const a = { par: 'EUR/USD', tipo: 'precio', lado: 'sube', nivel: 1.115 }
   const st = estadoDe({ ...a, activa: true }, datoFresco, { ahora: AHORA })
   const m = mensajeDe(a, st, datoFresco)
-  comprobar('la clave es de i18n', m.clave === 'avisos.msgSubio')
+  comprobar('la clave es de i18n', m.clave === 'misAvisos.msgSubio')
   comprobar('lleva el par y el nivel', m.params.par === 'EUR/USD' && m.params.nivel === 1.115)
   // ⚠️ Lleva los DOS precios: el bid es el que el usuario ve en el gráfico y el
   // ask es el que pagaría al comprar. Enseñar solo uno esconde el spread.
@@ -376,10 +376,10 @@ console.log('\n9. El mensaje va como CLAVE y HUECOS, nunca como frase')
   comprobar('y los minutos que tenía el precio', m.params.minutos === 8)
   comprobar('el mensaje NO trae ninguna frase en español', !JSON.stringify(m).includes('tocó'))
 
-  comprobar('bajar tiene su propia clave', mensajeDe({ ...a, lado: 'baja' }, st, datoFresco).clave === 'avisos.msgBajo')
+  comprobar('bajar tiene su propia clave', mensajeDe({ ...a, lado: 'baja' }, st, datoFresco).clave === 'misAvisos.msgBajo')
   const banda = { par: 'EUR/USD', tipo: 'banda', lado: 'abajo', nivel: -1 }
-  comprobar('la banda también', mensajeDe(banda, { valor: -1.2 }, datoFresco).clave === 'avisos.msgBandaAbajo')
-  comprobar('y el RSI', mensajeDe({ ...banda, tipo: 'rsi', lado: 'arriba', nivel: 70 }, { valor: 72 }, datoFresco).clave === 'avisos.msgRsiArriba')
+  comprobar('la banda también', mensajeDe(banda, { valor: -1.2 }, datoFresco).clave === 'misAvisos.msgBandaAbajo')
+  comprobar('y el RSI', mensajeDe({ ...banda, tipo: 'rsi', lado: 'arriba', nivel: 70 }, { valor: 72 }, datoFresco).clave === 'misAvisos.msgRsiArriba')
   // ⚠️ Ninguna clave puede sugerir qué hacer. Un aviso informa; no aconseja.
   const todas = [
     mensajeDe(a, st, datoFresco).clave,

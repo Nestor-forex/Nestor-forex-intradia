@@ -225,5 +225,46 @@ console.log('\nCada tarjeta plegable explica para qué sirve')
   comprobar(usuarias.length >= 5, `solo ${usuarias.length} componentes usan TarjetaPlegable: ¿se renombró?`)
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+// ⚠️⚠️ NINGÚN DICCIONARIO PUEDE TENER DOS VECES LA MISMA CLAVE DE PRIMER NIVEL
+// ─────────────────────────────────────────────────────────────────────────
+//
+// Esto se añadió el 2026-10-31 después de estar a punto de romper los textos
+// del interruptor de notificaciones en los 13 idiomas sin enterarme.
+//
+// Al escribir la pantalla «Mis avisos» metí un bloque `avisos: { … }` nuevo
+// sin ver que **ya existía uno** más abajo, el del interruptor que lleva
+// meses funcionando. En JavaScript eso es legal: un objeto con la misma clave
+// dos veces **se queda con la última y tira la otra en silencio**. Ni el
+// build, ni el linter, ni ninguna de las otras comprobaciones lo ven.
+//
+// Y el daño habría sido total y mudo: `t()` de una clave que no existe **no
+// da error, devuelve vacío**, así que la pantalla del interruptor se habría
+// quedado con los textos en blanco en los 13 idiomas.
+//
+// 📌 Lo cacé por casualidad —conté las claves y salieron 16 en vez de 45—, y
+// una comprobación no puede depender de que a alguien se le ocurra contar.
+{
+  console.log('\nClaves de primer nivel repetidas (JavaScript se queda con la última)')
+  const dirTextos = new URL('../src/lib/i18n/textos/', import.meta.url)
+  for (const cod of IDIOMAS.map((i) => i.codigo)) {
+    const src = readFileSync(new URL(`${cod}.js`, dirTextos), 'utf8')
+    // Las claves de primer nivel son las que van con exactamente dos espacios
+    // de sangría, que es como está escrito todo este diccionario.
+    const vistas = new Map()
+    const repes = []
+    for (const m of src.matchAll(/^ {2}([A-Za-z_$][\w$]*): /gm)) {
+      const clave = m[1]
+      if (vistas.has(clave)) repes.push(clave)
+      else vistas.set(clave, true)
+    }
+    comprobar(repes.length === 0, `${cod}.js: clave(s) de primer nivel repetida(s): ${repes.join(', ')}`)
+    // Y la guarda de siempre: si un día el diccionario se escribe con otra
+    // sangría, el bucle de arriba no encontraría nada y esto pasaría en verde
+    // sin haber mirado ni una clave.
+    comprobar(vistas.size >= 20, `${cod}.js: solo se leyeron ${vistas.size} claves de primer nivel, ¿cambió el formato?`)
+  }
+}
+
 console.log(fallos ? `\n✗ ${fallos} comprobaciones fallaron\n` : '\n✓ todo bien\n')
 process.exit(fallos ? 1 : 0)

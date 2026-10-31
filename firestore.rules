@@ -63,9 +63,36 @@ service cloud.firestore {
       //
       // Hoy ninguna de las dos apps escribe en su propia ficha: se comprobó
       // buscando en `src/` de las dos antes de apretar la regla.
+      //
+      // ⚠️ AMPLIADA EL 2026-10-31 con `seguimiento` y `avisos`, que son los
+      // pares que la persona elige seguir y los avisos que se programa. Los
+      // escribe `src/lib/useAvisos.js` y los LEE el programa que manda los
+      // avisos al celular, que corre en un servidor — por eso van aquí y no
+      // en el navegador.
+      //
+      // Se añaden SOLO esos dos y nada más: la lista sigue siendo blanca, así
+      // que `estado`, `email` y `venceEl` siguen fuera del alcance de la
+      // persona. Esto último no es teórico: antes de apretar esta regla
+      // cualquiera podía regalarse una fecha de vencimiento desde la consola
+      // del navegador.
+      //
+      // ⚠️ Y CON UN TOPE DE TAMAÑO, que es lo que una regla puede comprobar y
+      // la app no. La app limita a 20 avisos, pero la app es código que corre
+      // en el teléfono de la persona y se puede saltar; esto no. Sin el tope,
+      // alguien podría escribirse una lista enorme y el programa que los lee
+      // tendría que recorrerla entera en cada vuelta. Los números son los
+      // mismos que `MAX_AVISOS` y `MAX_SEGUIMIENTO` — si allí cambian, aquí
+      // también, y hay que volver a publicar las reglas.
       allow update: if esAdmin()
         || (esPropio(uid)
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nombre']));
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['nombre', 'seguimiento', 'avisos'])
+            && (!('avisos' in request.resource.data)
+                || (request.resource.data.avisos is list
+                    && request.resource.data.avisos.size() <= 20))
+            && (!('seguimiento' in request.resource.data)
+                || (request.resource.data.seguimiento is list
+                    && request.resource.data.seguimiento.size() <= 40)));
 
       allow delete: if esAdmin();
 

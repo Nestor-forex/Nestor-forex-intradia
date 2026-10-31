@@ -262,6 +262,15 @@ export const GEMELOS = [
   // para las dos apps.
   'src/lib/alertas.js',
   'scripts/prueba-alertas.mjs',
+  // La pantalla «Mis avisos» y su guardado. Identicos porque lo que hacen es
+  // lo mismo en las dos apps: elegir tus pares, poner tus niveles y guardarlos
+  // en la ficha de Firestore de esa persona — y el proyecto de Firebase es UNO
+  // solo para las dos, asi que la forma de lo guardado tiene que ser una.
+  //
+  // Lo que cambia entre apps NO vive aqui dentro: que pares existen sale de
+  // `pairs.js` (PRIMO) y la pantalla lo pide, nunca lo escribe.
+  'src/lib/useAvisos.js',
+  'src/components/MisAvisos.jsx',
   // El NFX-LSS: el indicador que Nestor escribio en Pine para el concurso de
   // TradingView, traducido a JavaScript. La LOGICA es la misma en las dos apps
   // —pivotes, barrido, ruptura, stop y objetivo— y por eso es gemela; lo que
