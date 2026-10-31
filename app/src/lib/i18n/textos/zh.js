@@ -463,7 +463,7 @@ export default {
   vivo: {
     titulo: '开仓要花多少',
     desc: (v) => `直接来自 MetaTrader 5 的买价和卖价。只有这里能看到经纪商实际收取的真实点差——上面的扫描用的是K线，看不到这个。⚠️ 这些来自${v.cuenta}：如果你用别的经纪商，你的数字会不一样。`,
-    cuentaGenerica: '一个真实账户',
+    cuentaGenerica: "应用开发者一个真实账户的价格",
     cargando: '正在获取最新价格…',
     sinDatos: '还没有经纪商的价格。只有运行 MetaTrader 5 的那台电脑开着时，桥才会发布。',
     vieja: (v) => `这些价格是 ${v.h} 小时以前的。当时桥是关的；仅供参考，不是当前价。`,

@@ -472,7 +472,7 @@ export default {
   vivo: {
     titulo: 'Was die Eröffnung kostet',
     desc: (v) => `Geld- und Briefkurs direkt aus MetaTrader 5. Nur das zeigt den ECHTEN Spread, den der Broker nimmt — der Scan oben arbeitet mit Kerzen und kennt ihn nicht. ⚠️ Sie stammen von ${v.cuenta}: bei einem anderen Broker sind Ihre Zahlen andere.`,
-    cuentaGenerica: 'einem Echtgeldkonto',
+    cuentaGenerica: "die eines Echtgeldkontos des App-Entwicklers",
     cargando: 'Aktuelle Kurse werden geholt…',
     sinDatos: 'Noch keine Broker-Kurse. Die Brücke veröffentlicht sie nur, solange der Rechner mit MetaTrader 5 eingeschaltet ist.',
     vieja: (v) => `Diese Kurse sind über ${v.h} Std. alt. Die Brücke war aus; nehmen Sie sie als Anhaltspunkt, nicht als aktuellen Kurs.`,

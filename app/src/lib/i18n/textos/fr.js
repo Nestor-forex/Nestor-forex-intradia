@@ -472,7 +472,7 @@ export default {
   vivo: {
     titulo: 'Ce que coûte l\'ouverture',
     desc: (v) => `Prix d'achat et de vente directement depuis MetaTrader 5. C'est la seule chose qui montre le spread RÉEL que prend le courtier — le balayage ci-dessus travaille sur des bougies et ne le sait pas. ⚠️ Ils viennent de ${v.cuenta} : si votre courtier est un autre, vos chiffres seront différents.`,
-    cuentaGenerica: 'un compte réel',
+    cuentaGenerica: "ceux du compte réel du développeur des applis",
     cargando: 'Récupération des derniers prix…',
     sinDatos: 'Pas encore de prix du courtier. Le pont ne les publie que pendant que l\'ordinateur qui fait tourner MetaTrader 5 est allumé.',
     vieja: (v) => `Ces prix ont été relevés il y a plus de ${v.h} h. Le pont était éteint ; à prendre comme référence, pas comme prix actuel.`,

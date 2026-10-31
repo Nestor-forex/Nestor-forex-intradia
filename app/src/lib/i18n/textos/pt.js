@@ -472,7 +472,7 @@ export default {
   vivo: {
     titulo: 'O que custa abrir a operação',
     desc: (v) => `Preço de compra e de venda direto do MetaTrader 5. É a única coisa que mostra o spread REAL que o corretor cobra — a varredura acima trabalha com velas e não o sabe. ⚠️ São os de ${v.cuenta}: se o seu corretor for outro, os seus números serão diferentes.`,
-    cuentaGenerica: 'uma conta real',
+    cuentaGenerica: "os de uma conta real do desenvolvedor dos aplicativos",
     cargando: 'A procurar os últimos preços…',
     sinDatos: 'Ainda não há preços do corretor. A ponte só os publica enquanto o computador onde corre o MetaTrader 5 estiver ligado.',
     vieja: (v) => `Estes preços foram tomados há mais de ${v.h} h. A ponte estava desligada; servem de referência, não como preço de agora.`,
