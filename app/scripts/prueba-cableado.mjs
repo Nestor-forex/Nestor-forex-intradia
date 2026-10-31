@@ -97,7 +97,16 @@ const APP = leer('../src/App.jsx')
 const HOOK = leer('../src/lib/useMarketData.js')
 
 // Lo que `App.jsx` le pide al hook.
-const pedidos = [...new Set([...APP.matchAll(/\bmercado\.([a-zA-Z_$][\w$]*)/g)].map((m) => m[1]))].sort()
+// ⚠️ SE MIRAN DOS NOMBRES, y hay que mantenerlo así. Desde el 2026-10-31 la
+// app pinta `vista.*` —el mercado con el filtro de «mis pares» puesto— y
+// reserva `mercado.*` para lo que NO se puede filtrar (el detalle de una
+// señal, la calculadora). Pero `vista` sale de `mercado`, así que el
+// invariante es el mismo: lo que la pantalla pide, el hook tiene que
+// devolverlo. Contando solo uno de los dos, esta prueba se quedaría mirando
+// media app sin decirlo — y eso lo cazó ella misma el día del cambio.
+const pedidos = [
+  ...new Set([...APP.matchAll(/\b(?:mercado|vista)\.([a-zA-Z_$][\w$]*)/g)].map((m) => m[1])),
+].sort()
 
 // Lo que el hook devuelve.
 const devueltos = clavesDelReturn(HOOK)
@@ -195,6 +204,57 @@ comprobar(
   excusasMuertas.length === 0
 )
 for (const [k, porque] of Object.entries(NO_SE_PASAN)) console.log(`       fuera a propósito · ${k}: ${porque}`)
+
+console.log('\n7. ⚠️⚠️ EL FILTRO DE «MIS PARES» ESTÁ ENCHUFADO, Y NADA SE QUEDA SIN CLASIFICAR')
+// ─────────────────────────────────────────────────────────────────────────
+// El 2026-10-31 Néstor eligió tres pares y en el tablero siguió viendo los
+// catorce. La tarjeta decía «los avisos y el tablero se quedan solo con
+// ésos», la función que filtraba estaba escrita Y PROBADA, y **no la llamaba
+// nadie**. Una etiqueta que describe algo que el código no hace.
+//
+// Es el mismo fallo que el bloque 6, por otra cara: allí un dato calculado se
+// perdía antes de la pantalla; aquí una capacidad existía y no se usaba. Y
+// ninguna comprobación podía cazarlo, porque las pruebas de la función
+// pasaban todas.
+const VISTA = leer('../src/lib/vistaPares.js')
+
+comprobar('`App.jsx` importa el filtro', /from '\.\/lib\/vistaPares'/.test(APP))
+comprobar('…y lo LLAMA de verdad', /filtrarMercado\s*\(/.test(APP))
+comprobar('…y lo que se pinta sale de la vista filtrada', /pares=\{vista\.pares\}/.test(APP))
+comprobar('el control se pinta', /<FiltroPares\b/.test(APP))
+// ⚠️ En las DOS pantallas. Si el contador solo saliera en una, la otra
+// enseñaría tres filas de dieciocho sin explicar por qué.
+comprobar('…y el tablero completo recibe el mismo control', /filtro=\{filtroPares\}/.test(APP))
+comprobar(
+  '`TableroCompleto` tiene su ranura y la pinta',
+  /\bfiltro = null\b/.test(leer('../src/components/TableroCompleto.jsx')) &&
+    /\{filtro\}/.test(leer('../src/components/TableroCompleto.jsx'))
+)
+
+// ⚠️ Y LA PARTE QUE DE VERDAD PROTEGE A FUTURO: cada cosa que `derivarVista`
+// calcula tiene que tener una respuesta ESCRITA a «¿esto se filtra?». Sin
+// esto, la lista de pares que alguien añada mañana se quedaría sin filtrar en
+// silencio — exactamente lo que pasó.
+const enManifiesto = new Set()
+for (const re of [/LISTAS_POR_PAR = \[([\s\S]*?)\]/, /LISTAS_POR_PAREJA = \[([\s\S]*?)\]/]) {
+  const m = VISTA.match(re)
+  if (m) for (const x of m[1].matchAll(/'([^']+)'/g)) enManifiesto.add(x[1])
+}
+const noFiltran = VISTA.match(/NO_SE_FILTRAN = \{([\s\S]*?)\n\}/)
+if (noFiltran) for (const x of noFiltran[1].matchAll(/^\s{2}([a-zA-Z_$][\w$]*):/gm)) enManifiesto.add(x[1])
+
+comprobar(`se leyó el manifiesto entero (${enManifiesto.size} claves)`, enManifiesto.size >= 15)
+const sinClasificar = calculados.filter((c) => !enManifiesto.has(c))
+comprobar(
+  sinClasificar.length === 0
+    ? 'todo lo que calcula `derivarVista` dice si se filtra o no'
+    : `SIN CLASIFICAR en vistaPares.js: ${sinClasificar.join(', ')}`,
+  sinClasificar.length === 0
+)
+// ⚠️ El ranking de fuerza, nombrado aparte: es el único que si se filtrara no
+// enseñaría menos, sino OTRA COSA — se calcula comparando cada divisa contra
+// las otras siete y sus valores cambiarían.
+comprobar('`monedas` está entre lo que NO se filtra', /NO_SE_FILTRAN = \{[\s\S]*?\n {2}monedas:/.test(VISTA))
 
 console.log(fallos === 0 ? '\n✓ todo bien.\n' : `\n✗ ${fallos} comprobación(es) fallaron.\n`)
 process.exit(fallos === 0 ? 0 : 1)

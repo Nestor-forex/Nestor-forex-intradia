@@ -72,14 +72,24 @@ export default function BarridoTab({ loading, error, sinConfigurar, stale, guard
                   fontSize: 13,
                 }}
               >
-                <span className="mono" style={{ fontWeight: 600 }}>
+                {/* ⚠️ `dir="ltr"` FIJO. En árabe esta celda heredaba `rtl` y el
+                    código de par se dibujaba al revés — pre-existente, lo
+                    encontró el banco de navegador del filtro de «mis pares»
+                    (2026-10-31). Es la novena vez que este error aparece en el
+                    repositorio (el gráfico, el clima, la correlación, el
+                    calendario, el Diario, el Historial, el COT, el oro). */}
+                <span className="mono" dir="ltr" style={{ fontWeight: 600 }}>
                   {p.name}
                 </span>
                 <span className="mono" style={{ fontWeight: 700, fontSize: 12, color: sesgoColor(p.sesgo) }}>
                   {t(`sesgo.${p.sesgo}`)}
                 </span>
                 <span style={{ color: tendColor(p.tend) }}>{t(`tend.${p.tend}`)}</span>
-                <span className="mono" style={{ color: 'var(--text-secondary)' }}>
+                {/* «RSI» es jerga invariante y lo de al lado es un número: no
+                    hay nada de idioma en esta celda, así que va en `ltr` como
+                    la sigla del COT. Lo que NO se toca son `sesgo` y `tend`,
+                    que sí están traducidos. */}
+                <span className="mono" dir="ltr" style={{ color: 'var(--text-secondary)' }}>
                   RSI {p.rsi}
                 </span>
               </div>

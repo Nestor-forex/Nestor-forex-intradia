@@ -57,6 +57,23 @@ export default {
     detalle: 'Detalle técnico',
   },
 
+  // VER TODOS LOS PARES O SOLO LOS MIOS.
+  //
+  // El contador («viendo 3 de 14») se ve SIEMPRE, tambien sin filtrar: sin
+  // el, un filtro que alguien puso hace meses se lee como una app rota.
+  // Y `nota` no es letra pequena — dice que el ranking de fuerza y las
+  // tarjetas de informacion NO se filtran, que es la diferencia entre «esto
+  // no filtra» y «esto se nos olvido filtrar».
+  vista: {
+    sinLista: ({ total }) => `Estás viendo los ${total} pares. Si operas solo unos cuantos, elígelos y el Barrido se queda con ésos.`,
+    elegir: 'Elegir mis pares',
+    viendo: ({ viendo, total }) => `Viendo ${viendo} de ${total} pares`,
+    mis: ({ n }) => `Mis pares (${n})`,
+    todos: ({ n }) => `Todos (${n})`,
+    nota: 'El ranking de fuerza de las divisas y las tarjetas de información se quedan enteros: comparan unos pares con otros, así que recortarlos cambiaría lo que dicen.',
+    vacio: 'Ninguno de tus pares está en el barrido de hoy. Toca «Todos» para verlos.',
+  },
+
   // MIS AVISOS — la pantalla donde cada persona programa lo suyo.
   //
   // ⚠️ SE LLAMA `misAvisos` Y NO `avisos` A PROPOSITO: `avisos` ya existe mas
@@ -76,7 +93,7 @@ export default {
     desc: 'Eliges tus pares y pones tus propios niveles. Cuando el mercado llega ahí, te llega un aviso al celular.',
 
     seguimientoTitulo: 'Mis pares',
-    seguimientoDesc: 'Toca los pares que te interesan. Los avisos y el tablero se quedan solo con ésos.',
+    seguimientoDesc: 'Toca los pares que te interesan. Después, en el Barrido, puedes ver solo ésos o verlos todos — tú eliges.',
     seguimientoVacio: 'Sin ninguno elegido se ven TODOS los pares. Elige los tuyos para quitar ruido.',
     seguimientoPie: 'Toca otra vez un par para quitarlo de la lista.',
 

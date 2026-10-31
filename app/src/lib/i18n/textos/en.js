@@ -42,12 +42,29 @@ export default {
     detalle: 'Technical details',
   },
 
+  // VER TODOS LOS PARES O SOLO LOS MIOS.
+  //
+  // El contador («viendo 3 de 14») se ve SIEMPRE, tambien sin filtrar: sin
+  // el, un filtro que alguien puso hace meses se lee como una app rota.
+  // Y `nota` no es letra pequena — dice que el ranking de fuerza y las
+  // tarjetas de informacion NO se filtran, que es la diferencia entre «esto
+  // no filtra» y «esto se nos olvido filtrar».
+  vista: {
+    sinLista: ({ total }) => `You are seeing all ${total} pairs. If you trade only a few, pick them and the scan will keep just those.`,
+    elegir: 'Pick my pairs',
+    viendo: ({ viendo, total }) => `Showing ${viendo} of ${total} pairs`,
+    mis: ({ n }) => `My pairs (${n})`,
+    todos: ({ n }) => `All (${n})`,
+    nota: 'The currency strength ranking and the information cards stay whole: they compare pairs against each other, so trimming them would change what they say.',
+    vacio: 'None of your pairs is in today’s scan. Tap "All" to see them.',
+  },
+
   misAvisos: {
     titulo: "My alerts",
     aviso: "These are NOT the app's signals: you set the levels. The app tells you that what you asked for happened, and does not tell you what to do about it.",
     desc: "You pick your pairs and set your own levels. When the market gets there, an alert reaches your phone.",
     seguimientoTitulo: "My pairs",
-    seguimientoDesc: "Tap the pairs you care about. Alerts and the board keep only those.",
+    seguimientoDesc: 'Tap the pairs you care about. Then, in the scan, you can see only those or see them all — your choice.',
     seguimientoVacio: "With none selected you see ALL pairs. Pick yours to cut the noise.",
     seguimientoPie: "Tap a pair again to take it off the list.",
     nuevoTitulo: "Add a new alert",

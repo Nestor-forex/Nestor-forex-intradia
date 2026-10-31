@@ -38,12 +38,29 @@ export default {
     detalle: '기술 세부정보',
   },
 
+  // VER TODOS LOS PARES O SOLO LOS MIOS.
+  //
+  // El contador («viendo 3 de 14») se ve SIEMPRE, tambien sin filtrar: sin
+  // el, un filtro que alguien puso hace meses se lee como una app rota.
+  // Y `nota` no es letra pequena — dice que el ranking de fuerza y las
+  // tarjetas de informacion NO se filtran, que es la diferencia entre «esto
+  // no filtra» y «esto se nos olvido filtrar».
+  vista: {
+    sinLista: ({ total }) => `${total}개 통화쌍을 모두 보고 있습니다. 몇 개만 거래한다면 그것들을 고르세요. 스캔이 그것만 남깁니다.`,
+    elegir: '내 통화쌍 고르기',
+    viendo: ({ viendo, total }) => `${total}개 중 ${viendo}개 표시 중`,
+    mis: ({ n }) => `내 통화쌍 (${n})`,
+    todos: ({ n }) => `전체 (${n})`,
+    nota: '통화 강도 순위와 정보 카드는 그대로 둡니다. 통화쌍끼리 비교해서 나오는 값이라 줄이면 뜻이 달라집니다.',
+    vacio: '오늘 스캔에 당신의 통화쌍이 하나도 없습니다. 「전체」를 누르면 보입니다.',
+  },
+
   misAvisos: {
     titulo: "내 알림",
     aviso: "이것은 앱의 신호가 아닙니다. 기준은 당신이 정합니다. 앱은 당신이 요청한 일이 일어났다고 알려줄 뿐, 무엇을 하라고 말하지 않습니다.",
     desc: "원하는 통화쌍을 고르고 기준을 직접 정하세요. 시장이 거기에 닿으면 휴대폰으로 알림이 갑니다.",
     seguimientoTitulo: "내 통화쌍",
-    seguimientoDesc: "관심 있는 통화쌍을 누르세요. 알림과 보드가 그것만 남깁니다.",
+    seguimientoDesc: '관심 있는 통화쌍을 누르세요. 그다음 스캔에서 그것만 볼 수도, 전체를 볼 수도 있습니다 — 선택은 당신 몫입니다.',
     seguimientoVacio: "하나도 고르지 않으면 모든 통화쌍이 보입니다. 당신 것을 골라 소음을 줄이세요.",
     seguimientoPie: "다시 누르면 목록에서 빠집니다.",
     nuevoTitulo: "새 알림 추가",

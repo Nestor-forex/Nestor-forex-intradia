@@ -25,7 +25,6 @@ import {
   mensajeDe,
   pendientes,
   queMandar,
-  soloSeguidos,
   tocaRepetir,
   valida,
 } from '../src/lib/alertas.js'
@@ -394,22 +393,6 @@ console.log('\n9. El mensaje va como CLAVE y HUECOS, nunca como frase')
     !todas.some((c) => /compra|venta|vender|recomend|sugier|entra|señal/i.test(c)),
   )
   comprobar('y son seis claves distintas', new Set(todas).size === 6)
-}
-
-console.log('\n10. ⚠️ LA LISTA DE SEGUIMIENTO VACÍA ENSEÑA TODO, no nada')
-{
-  const pares = [{ par: 'EUR/USD' }, { par: 'GBP/USD' }, { par: 'USD/JPY' }]
-  comprobar('sin lista → los tres', soloSeguidos(pares, []).length === 3)
-  comprobar('sin lista (null) → los tres', soloSeguidos(pares, null).length === 3)
-  comprobar('con dos elegidos → dos', soloSeguidos(pares, ['EUR/USD', 'USD/JPY']).length === 2)
-  comprobar('y son los elegidos', soloSeguidos(pares, ['USD/JPY'])[0].par === 'USD/JPY')
-  comprobar('un par elegido que ya no existe no inventa filas', soloSeguidos(pares, ['EUR/XYZ']).length === 0)
-  comprobar('sin items → lista vacía', soloSeguidos(null, ['EUR/USD']).length === 0)
-  // Sirve para cualquier forma de fila, no solo `{par}`.
-  comprobar(
-    'funciona con otra forma de fila',
-    soloSeguidos([{ name: 'EUR/USD' }, { name: 'GBP/USD' }], ['GBP/USD'], (x) => x.name).length === 1,
-  )
 }
 
 console.log('')

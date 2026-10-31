@@ -42,12 +42,29 @@ export default {
     detalle: 'Technische Details',
   },
 
+  // VER TODOS LOS PARES O SOLO LOS MIOS.
+  //
+  // El contador («viendo 3 de 14») se ve SIEMPRE, tambien sin filtrar: sin
+  // el, un filtro que alguien puso hace meses se lee como una app rota.
+  // Y `nota` no es letra pequena — dice que el ranking de fuerza y las
+  // tarjetas de informacion NO se filtran, que es la diferencia entre «esto
+  // no filtra» y «esto se nos olvido filtrar».
+  vista: {
+    sinLista: ({ total }) => `Du siehst alle ${total} Paare. Wenn du nur wenige handelst, wähle sie aus und der Marktüberblick zeigt nur diese.`,
+    elegir: 'Meine Paare wählen',
+    viendo: ({ viendo, total }) => `${viendo} von ${total} Paaren`,
+    mis: ({ n }) => `Meine Paare (${n})`,
+    todos: ({ n }) => `Alle (${n})`,
+    nota: 'Das Stärke-Ranking der Währungen und die Infokarten bleiben vollständig: Sie vergleichen Paare miteinander, ein Kürzen würde ihre Aussage verändern.',
+    vacio: 'Keines deiner Paare ist im heutigen Marktüberblick. Tippe auf „Alle“, um sie zu sehen.',
+  },
+
   misAvisos: {
     titulo: "Meine Alarme",
     aviso: "Das sind KEINE Signale der App: die Marken setzt du. Die App meldet, dass eingetreten ist, worum du gebeten hast, und sagt dir nicht, was du tun sollst.",
     desc: "Du wählst deine Paare und setzt deine eigenen Marken. Erreicht der Markt sie, kommt eine Meldung aufs Handy.",
     seguimientoTitulo: "Meine Paare",
-    seguimientoDesc: "Tippe die Paare an, die dich interessieren. Alarme und Tafel behalten nur diese.",
+    seguimientoDesc: 'Tippe die Paare an, die dich interessieren. Im Marktüberblick kannst du dann nur diese oder alle sehen — du entscheidest.',
     seguimientoVacio: "Ohne Auswahl siehst du ALLE Paare. Wähle deine, um Rauschen zu entfernen.",
     seguimientoPie: "Tippe ein Paar erneut an, um es zu entfernen.",
     nuevoTitulo: "Neuen Alarm anlegen",

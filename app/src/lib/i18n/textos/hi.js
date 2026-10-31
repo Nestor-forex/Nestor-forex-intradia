@@ -38,12 +38,29 @@ export default {
     detalle: 'तकनीकी विवरण',
   },
 
+  // VER TODOS LOS PARES O SOLO LOS MIOS.
+  //
+  // El contador («viendo 3 de 14») se ve SIEMPRE, tambien sin filtrar: sin
+  // el, un filtro que alguien puso hace meses se lee como una app rota.
+  // Y `nota` no es letra pequena — dice que el ranking de fuerza y las
+  // tarjetas de informacion NO se filtran, que es la diferencia entre «esto
+  // no filtra» y «esto se nos olvido filtrar».
+  vista: {
+    sinLista: ({ total }) => `आप सभी ${total} जोड़े देख रहे हैं। अगर आप सिर्फ़ कुछ में ट्रेड करते हैं, उन्हें चुनें और स्कैन सिर्फ़ वही रखेगा।`,
+    elegir: 'मेरे जोड़े चुनें',
+    viendo: ({ viendo, total }) => `${total} में से ${viendo} जोड़े दिख रहे हैं`,
+    mis: ({ n }) => `मेरे जोड़े (${n})`,
+    todos: ({ n }) => `सभी (${n})`,
+    nota: 'मुद्राओं की ताक़त की सूची और जानकारी वाले कार्ड पूरे रहते हैं: वे जोड़ों की आपस में तुलना करते हैं, इसलिए उन्हें काटने से उनका मतलब बदल जाएगा।',
+    vacio: 'आज के स्कैन में आपका कोई जोड़ा नहीं है। उन्हें देखने के लिए «सभी» दबाएँ।',
+  },
+
   misAvisos: {
     titulo: "मेरे अलर्ट",
     aviso: "ये ऐप के सिग्नल नहीं हैं: स्तर आप तय करते हैं। ऐप बताता है कि जो आपने माँगा वह हो गया, यह नहीं बताता कि क्या करें।",
     desc: "आप अपनी जोड़ियाँ चुनते हैं और अपने स्तर तय करते हैं। बाज़ार वहाँ पहुँचने पर आपके फ़ोन पर सूचना आती है।",
     seguimientoTitulo: "मेरी जोड़ियाँ",
-    seguimientoDesc: "जो जोड़ियाँ आपको चाहिए उन्हें दबाएँ। अलर्ट और बोर्ड सिर्फ़ वही रखेंगे।",
+    seguimientoDesc: 'जिन जोड़ों में आपकी दिलचस्पी है उन्हें दबाएँ। फिर स्कैन में आप सिर्फ़ वही देख सकते हैं या सभी — चुनाव आपका है।',
     seguimientoVacio: "कोई न चुनने पर सभी जोड़ियाँ दिखती हैं। शोर कम करने के लिए अपनी चुनें।",
     seguimientoPie: "सूची से हटाने के लिए जोड़ी को फिर दबाएँ।",
     nuevoTitulo: "नया अलर्ट जोड़ें",
