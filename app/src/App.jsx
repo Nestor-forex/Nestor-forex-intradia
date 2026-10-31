@@ -7,6 +7,7 @@ import Header from './components/Header'
 import BottomNav from './components/BottomNav'
 import BarridoTab from './components/BarridoTab'
 import AvisosCard from './components/AvisosCard'
+import MisAvisos from './components/MisAvisos'
 import CotizacionesVivo from './components/CotizacionesVivo'
 import Calendario from './components/Calendario'
 import Compresion from './components/Compresion'
@@ -47,7 +48,7 @@ function SinConfigurar() {
 
 export default function App() {
   const t = useT()
-  const { authUser, cargandoAuth, perfilEstado, esAdmin, registrar, ingresar, salir } = useAuthUser()
+  const { authUser, cargandoAuth, perfil, perfilEstado, esAdmin, registrar, ingresar, salir } = useAuthUser()
   const mercado = useMarketData()
   // El calendario va en su propio archivo y con su propio horario: el barrido
   // se publica cada 30 minutos y el calendario cada cuatro horas TODOS los
@@ -263,6 +264,7 @@ export default function App() {
                 />
               )}
               {tab === 'historial' && <HistorialTab />}
+              {tab === 'avisos' && <MisAvisos uid={authUser.uid} perfil={perfil} />}
               {tab === 'calc' && (
                 <CalculadoraTab
                   ratesUSD={mercado.ratesUSD}

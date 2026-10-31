@@ -7,6 +7,15 @@ const ITEMS = [
   { tab: 'diario', icon: '≡', clave: 'nav.diario' },
   { tab: 'historial', icon: '◷', clave: 'nav.historial' },
   { tab: 'calc', icon: '%', clave: 'nav.riesgo' },
+  // Los avisos que programa cada persona. Es una pestaña y no otra tarjeta de
+  // la pestaña Barrido por la misma razón que lo son el Diario y la
+  // calculadora: es una HERRAMIENTA que se usa, no información que se lee. Y
+  // la pestaña Barrido ya lleva ocho tarjetas — una novena la enterraría.
+  //
+  // ⚠️ La etiqueta tiene que ser CORTA en los 13 idiomas: con el admin son
+  // seis pestañas en 390 px, o sea 65 px cada una. Hay una comprobación en el
+  // navegador de que ninguna se sale.
+  { tab: 'avisos', icon: '◔', clave: 'nav.avisos' },
 ]
 
 export default function BottomNav({ tab, onTab, esAdmin }) {
