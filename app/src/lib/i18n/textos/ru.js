@@ -38,12 +38,29 @@ export default {
     detalle: 'Технические подробности',
   },
 
+  // VER TODOS LOS PARES O SOLO LOS MIOS.
+  //
+  // El contador («viendo 3 de 14») se ve SIEMPRE, tambien sin filtrar: sin
+  // el, un filtro que alguien puso hace meses se lee como una app rota.
+  // Y `nota` no es letra pequena — dice que el ranking de fuerza y las
+  // tarjetas de informacion NO se filtran, que es la diferencia entre «esto
+  // no filtra» y «esto se nos olvido filtrar».
+  vista: {
+    sinLista: ({ total }) => `Показаны все ${total} пар. Если вы торгуете только несколькими, выберите их — и обзор оставит только их.`,
+    elegir: 'Выбрать свои пары',
+    viendo: ({ viendo, total }) => `Показано ${viendo} из ${total} пар`,
+    mis: ({ n }) => `Мои пары (${n})`,
+    todos: ({ n }) => `Все (${n})`,
+    nota: 'Рейтинг силы валют и информационные карточки остаются целиком: они сравнивают пары между собой, и урезание изменило бы их смысл.',
+    vacio: 'Ни одной вашей пары нет в сегодняшнем обзоре. Нажмите «Все», чтобы увидеть их.',
+  },
+
   misAvisos: {
     titulo: "Мои алерты",
     aviso: "Это НЕ сигналы приложения: уровни задаёте вы. Приложение сообщает, что произошло то, о чём вы просили, и не говорит, что с этим делать.",
     desc: "Вы выбираете свои пары и задаёте свои уровни. Когда рынок доходит туда, на телефон приходит уведомление.",
     seguimientoTitulo: "Мои пары",
-    seguimientoDesc: "Нажмите на интересные вам пары. Алерты и таблица оставят только их.",
+    seguimientoDesc: 'Нажмите на пары, которые вам интересны. Потом в обзоре можно смотреть только их или все сразу — решаете вы.',
     seguimientoVacio: "Если не выбрано ничего, видны ВСЕ пары. Выберите свои, чтобы убрать шум.",
     seguimientoPie: "Нажмите на пару ещё раз, чтобы убрать её из списка.",
     nuevoTitulo: "Добавить новый алерт",

@@ -38,12 +38,29 @@ export default {
     detalle: 'Dettaglio tecnico',
   },
 
+  // VER TODOS LOS PARES O SOLO LOS MIOS.
+  //
+  // El contador («viendo 3 de 14») se ve SIEMPRE, tambien sin filtrar: sin
+  // el, un filtro que alguien puso hace meses se lee como una app rota.
+  // Y `nota` no es letra pequena — dice que el ranking de fuerza y las
+  // tarjetas de informacion NO se filtran, que es la diferencia entre «esto
+  // no filtra» y «esto se nos olvido filtrar».
+  vista: {
+    sinLista: ({ total }) => `Stai vedendo tutte le ${total} coppie. Se ne operi solo alcune, scegliile e la scansione terrà solo quelle.`,
+    elegir: 'Scegli le mie coppie',
+    viendo: ({ viendo, total }) => `${viendo} di ${total} coppie`,
+    mis: ({ n }) => `Le mie coppie (${n})`,
+    todos: ({ n }) => `Tutte (${n})`,
+    nota: 'La classifica di forza delle valute e le schede informative restano intere: confrontano le coppie tra loro, ridurle cambierebbe quello che dicono.',
+    vacio: 'Nessuna delle tue coppie è nella scansione di oggi. Tocca «Tutte» per vederle.',
+  },
+
   misAvisos: {
     titulo: "I miei avvisi",
     aviso: "Questi NON sono segnali dell'app: i livelli li metti tu. L'app ti avvisa che è successo quello che hai chiesto, e non ti dice cosa farne.",
     desc: "Scegli le tue coppie e metti i tuoi livelli. Quando il mercato ci arriva, ti arriva un avviso sul telefono.",
     seguimientoTitulo: "Le mie coppie",
-    seguimientoDesc: "Tocca le coppie che ti interessano. Gli avvisi e il tabellone tengono solo quelle.",
+    seguimientoDesc: 'Tocca le coppie che ti interessano. Poi, nella scansione, puoi vedere solo quelle o vederle tutte — scegli tu.',
     seguimientoVacio: "Senza nessuna scelta vedi TUTTE le coppie. Scegli le tue per togliere rumore.",
     seguimientoPie: "Tocca di nuovo una coppia per toglierla.",
     nuevoTitulo: "Mettere un avviso nuovo",

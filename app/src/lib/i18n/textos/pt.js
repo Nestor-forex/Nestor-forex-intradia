@@ -42,12 +42,29 @@ export default {
     detalle: 'Detalhe técnico',
   },
 
+  // VER TODOS LOS PARES O SOLO LOS MIOS.
+  //
+  // El contador («viendo 3 de 14») se ve SIEMPRE, tambien sin filtrar: sin
+  // el, un filtro que alguien puso hace meses se lee como una app rota.
+  // Y `nota` no es letra pequena — dice que el ranking de fuerza y las
+  // tarjetas de informacion NO se filtran, que es la diferencia entre «esto
+  // no filtra» y «esto se nos olvido filtrar».
+  vista: {
+    sinLista: ({ total }) => `Você está vendo os ${total} pares. Se opera só alguns, escolha-os e a varredura fica só com esses.`,
+    elegir: 'Escolher meus pares',
+    viendo: ({ viendo, total }) => `Vendo ${viendo} de ${total} pares`,
+    mis: ({ n }) => `Meus pares (${n})`,
+    todos: ({ n }) => `Todos (${n})`,
+    nota: 'O ranking de força das moedas e os cartões de informação ficam inteiros: comparam uns pares com outros, então recortá-los mudaria o que dizem.',
+    vacio: 'Nenhum dos seus pares está na varredura de hoje. Toque em «Todos» para vê-los.',
+  },
+
   misAvisos: {
     titulo: "Meus alertas",
     aviso: "Isto NÃO são sinais do aplicativo: os níveis quem põe é você. O aplicativo avisa que aconteceu o que você pediu, e não diz o que fazer com isso.",
     desc: "Você escolhe seus pares e põe seus próprios níveis. Quando o mercado chega lá, chega um aviso no seu celular.",
     seguimientoTitulo: "Meus pares",
-    seguimientoDesc: "Toque nos pares que te interessam. Os alertas e o painel ficam só com esses.",
+    seguimientoDesc: 'Toque nos pares que te interessam. Depois, na varredura, você pode ver só esses ou ver todos — você escolhe.',
     seguimientoVacio: "Sem nenhum escolhido você vê TODOS os pares. Escolha os seus para tirar ruído.",
     seguimientoPie: "Toque de novo num par para tirá-lo da lista.",
     nuevoTitulo: "Pôr um alerta novo",

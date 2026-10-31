@@ -271,6 +271,22 @@ export const GEMELOS = [
   // `pairs.js` (PRIMO) y la pantalla lo pide, nunca lo escribe.
   'src/lib/useAvisos.js',
   'src/components/MisAvisos.jsx',
+  // Ver todos los pares o solo los mios. Identicos porque la DECISION es la
+  // misma en las dos apps: que mira cada quien, nunca que calcula la app.
+  //
+  // ⚠️ Y lo que de verdad hace falta que no se separe es el MANIFIESTO de
+  // `vistaPares.js` —que listas se filtran y cuales no, cada una con su
+  // motivo escrito—. Si una app filtrara su ranking de fuerza y la otra no,
+  // las dos ensenarian el mismo rotulo sobre dos cosas distintas, que es el
+  // fallo que este archivo entero existe para evitar.
+  //
+  // La lista de claves es la UNION de las dos apps (`rangos` y `retrocesos`
+  // solo existen en Intradia, `correlaciones` y `riesgoSenales` solo en
+  // Swing): la que no exista se salta sola, y `prueba-cableado.mjs` de cada
+  // app comprueba que ninguna de las SUYAS se quede sin clasificar.
+  'src/lib/vistaPares.js',
+  'src/components/FiltroPares.jsx',
+  'scripts/prueba-vista-pares.mjs',
   // El NFX-LSS: el indicador que Nestor escribio en Pine para el concurso de
   // TradingView, traducido a JavaScript. La LOGICA es la misma en las dos apps
   // —pivotes, barrido, ruptura, stop y objetivo— y por eso es gemela; lo que

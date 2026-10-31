@@ -39,12 +39,29 @@ export default {
     detalle: 'التفاصيل التقنية',
   },
 
+  // VER TODOS LOS PARES O SOLO LOS MIOS.
+  //
+  // El contador («viendo 3 de 14») se ve SIEMPRE, tambien sin filtrar: sin
+  // el, un filtro que alguien puso hace meses se lee como una app rota.
+  // Y `nota` no es letra pequena — dice que el ranking de fuerza y las
+  // tarjetas de informacion NO se filtran, que es la diferencia entre «esto
+  // no filtra» y «esto se nos olvido filtrar».
+  vista: {
+    sinLista: ({ total }) => `تظهر لك كل الأزواج الـ ${total}. إذا كنت تتداول عددًا قليلًا فقط، اخترها وسيكتفي المسح بها.`,
+    elegir: 'اختيار أزواجي',
+    viendo: ({ viendo, total }) => `عرض ${viendo} من ${total} زوجًا`,
+    mis: ({ n }) => `أزواجي (${n})`,
+    todos: ({ n }) => `الكل (${n})`,
+    nota: 'ترتيب قوة العملات وبطاقات المعلومات تبقى كاملة: فهي تقارن الأزواج ببعضها، وتقليصها يغيّر ما تقوله.',
+    vacio: 'لا يوجد أي من أزواجك في مسح اليوم. اضغط «الكل» لرؤيتها.',
+  },
+
   misAvisos: {
     titulo: "تنبيهاتي",
     aviso: "هذه ليست إشارات من التطبيق: المستويات تحددها أنت. التطبيق يخبرك بأن ما طلبته قد حدث، ولا يخبرك بما يجب فعله.",
     desc: "تختار أزواجك وتضع مستوياتك. عندما يصل السوق إلى هناك، يصلك تنبيه على الهاتف.",
     seguimientoTitulo: "أزواجي",
-    seguimientoDesc: "اضغط على الأزواج التي تهمك. التنبيهات واللوحة تبقي هذه فقط.",
+    seguimientoDesc: 'اضغط على الأزواج التي تهمك. بعدها في المسح يمكنك رؤيتها وحدها أو رؤيتها كلها — القرار لك.',
     seguimientoVacio: "بدون اختيار أي زوج تظهر كل الأزواج. اختر أزواجك لتقليل الضجيج.",
     seguimientoPie: "اضغط على الزوج مرة أخرى لإزالته من القائمة.",
     nuevoTitulo: "إضافة تنبيه جديد",

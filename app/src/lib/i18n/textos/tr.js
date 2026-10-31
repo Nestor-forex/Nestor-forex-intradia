@@ -38,12 +38,29 @@ export default {
     detalle: 'Teknik ayrıntı',
   },
 
+  // VER TODOS LOS PARES O SOLO LOS MIOS.
+  //
+  // El contador («viendo 3 de 14») se ve SIEMPRE, tambien sin filtrar: sin
+  // el, un filtro que alguien puso hace meses se lee como una app rota.
+  // Y `nota` no es letra pequena — dice que el ranking de fuerza y las
+  // tarjetas de informacion NO se filtran, que es la diferencia entre «esto
+  // no filtra» y «esto se nos olvido filtrar».
+  vista: {
+    sinLista: ({ total }) => `${total} paritenin tamamını görüyorsun. Yalnızca birkaçında işlem yapıyorsan onları seç, tarama sadece onları gösterir.`,
+    elegir: 'Paritelerimi seç',
+    viendo: ({ viendo, total }) => `${total} pariteden ${viendo} tanesi`,
+    mis: ({ n }) => `Paritelerim (${n})`,
+    todos: ({ n }) => `Tümü (${n})`,
+    nota: 'Para birimi güç sıralaması ve bilgi kartları olduğu gibi kalır: pariteleri birbiriyle karşılaştırırlar, kısaltmak söylediklerini değiştirir.',
+    vacio: 'Paritelerinden hiçbiri bugünkü taramada yok. Hepsini görmek için «Tümü»ne dokun.',
+  },
+
   misAvisos: {
     titulo: "Uyarılarım",
     aviso: "Bunlar uygulamanın sinyalleri DEĞİL: seviyeleri sen koyuyorsun. Uygulama istediğin şeyin olduğunu haber verir, ne yapman gerektiğini söylemez.",
     desc: "Kendi paritelerini seçer, kendi seviyelerini koyarsın. Piyasa oraya geldiğinde telefonuna bir uyarı gelir.",
     seguimientoTitulo: "Paritelerim",
-    seguimientoDesc: "İlgilendiğin paritelere dokun. Uyarılar ve tablo sadece onları tutar.",
+    seguimientoDesc: 'İlgilendiğin paritelere dokun. Sonra taramada sadece onları da görebilirsin, hepsini de — seçim senin.',
     seguimientoVacio: "Hiçbiri seçili değilken TÜM pariteler görünür. Gürültüyü azaltmak için kendi paritelerini seç.",
     seguimientoPie: "Listeden çıkarmak için pariteye tekrar dokun.",
     nuevoTitulo: "Yeni uyarı ekle",

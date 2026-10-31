@@ -38,12 +38,29 @@ export default {
     detalle: '技術的な詳細',
   },
 
+  // VER TODOS LOS PARES O SOLO LOS MIOS.
+  //
+  // El contador («viendo 3 de 14») se ve SIEMPRE, tambien sin filtrar: sin
+  // el, un filtro que alguien puso hace meses se lee como una app rota.
+  // Y `nota` no es letra pequena — dice que el ranking de fuerza y las
+  // tarjetas de informacion NO se filtran, que es la diferencia entre «esto
+  // no filtra» y «esto se nos olvido filtrar».
+  vista: {
+    sinLista: ({ total }) => `${total} 通貨ペアをすべて表示しています。数ペアだけ取引するなら選んでください。スキャンはそれだけになります。`,
+    elegir: '自分のペアを選ぶ',
+    viendo: ({ viendo, total }) => `${total} ペア中 ${viendo} ペアを表示`,
+    mis: ({ n }) => `自分のペア（${n}）`,
+    todos: ({ n }) => `すべて（${n}）`,
+    nota: '通貨の強弱ランキングと情報カードはそのままです。ペア同士を比べて出す数字なので、絞ると意味が変わります。',
+    vacio: '今日のスキャンにあなたのペアはありません。「すべて」を押すと表示されます。',
+  },
+
   misAvisos: {
     titulo: "マイアラート",
     aviso: "これはアプリのシグナルではありません。水準を決めるのはあなたです。アプリはあなたが頼んだことが起きたと知らせるだけで、どうすべきかは言いません。",
     desc: "自分の通貨ペアを選び、自分で水準を決めます。相場がそこに届くと、スマホに通知が届きます。",
     seguimientoTitulo: "マイ通貨ペア",
-    seguimientoDesc: "気になる通貨ペアをタップしてください。アラートとボードはそれだけになります。",
+    seguimientoDesc: '気になるペアをタップしてください。スキャンではそれだけを見ることも、すべてを見ることもできます。選ぶのはあなたです。',
     seguimientoVacio: "ひとつも選ばないと全ペアが表示されます。自分のものを選んでノイズを減らしましょう。",
     seguimientoPie: "もう一度タップするとリストから外せます。",
     nuevoTitulo: "新しいアラートを追加",

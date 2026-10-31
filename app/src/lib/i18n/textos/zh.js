@@ -38,12 +38,29 @@ export default {
     detalle: '技术详情',
   },
 
+  // VER TODOS LOS PARES O SOLO LOS MIOS.
+  //
+  // El contador («viendo 3 de 14») se ve SIEMPRE, tambien sin filtrar: sin
+  // el, un filtro que alguien puso hace meses se lee como una app rota.
+  // Y `nota` no es letra pequena — dice que el ranking de fuerza y las
+  // tarjetas de informacion NO se filtran, que es la diferencia entre «esto
+  // no filtra» y «esto se nos olvido filtrar».
+  vista: {
+    sinLista: ({ total }) => `正在显示全部 ${total} 个货币对。如果你只交易其中几个，把它们选出来，扫描就只保留这些。`,
+    elegir: '选择我的货币对',
+    viendo: ({ viendo, total }) => `显示 ${total} 个中的 ${viendo} 个`,
+    mis: ({ n }) => `我的货币对（${n}）`,
+    todos: ({ n }) => `全部（${n}）`,
+    nota: '货币强弱排名和信息卡片保持完整：它们是把各个货币对互相比较得出的，裁剪之后含义就变了。',
+    vacio: '今天的扫描里没有你选的任何货币对。点「全部」查看。',
+  },
+
   misAvisos: {
     titulo: "我的提醒",
     aviso: "这些不是应用的信号：价位是你自己设定的。应用只告诉你你要求的事情发生了，不会告诉你该怎么做。",
     desc: "你选择自己的货币对并设定自己的价位。市场到达时，提醒会发到你的手机上。",
     seguimientoTitulo: "我的货币对",
-    seguimientoDesc: "点选你关心的货币对。提醒和面板只保留这些。",
+    seguimientoDesc: '点选你关注的货币对。之后在扫描里，你可以只看这些，也可以全部都看——由你决定。',
     seguimientoVacio: "一个都不选时会显示全部货币对。选出你的，去掉噪音。",
     seguimientoPie: "再次点选可以把货币对移出列表。",
     nuevoTitulo: "添加新提醒",

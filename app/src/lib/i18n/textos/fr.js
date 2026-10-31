@@ -42,12 +42,29 @@ export default {
     detalle: 'Détail technique',
   },
 
+  // VER TODOS LOS PARES O SOLO LOS MIOS.
+  //
+  // El contador («viendo 3 de 14») se ve SIEMPRE, tambien sin filtrar: sin
+  // el, un filtro que alguien puso hace meses se lee como una app rota.
+  // Y `nota` no es letra pequena — dice que el ranking de fuerza y las
+  // tarjetas de informacion NO se filtran, que es la diferencia entre «esto
+  // no filtra» y «esto se nos olvido filtrar».
+  vista: {
+    sinLista: ({ total }) => `Vous voyez les ${total} paires. Si vous n’en tradez que quelques-unes, choisissez-les et le balayage ne gardera que celles-là.`,
+    elegir: 'Choisir mes paires',
+    viendo: ({ viendo, total }) => `${viendo} paires sur ${total}`,
+    mis: ({ n }) => `Mes paires (${n})`,
+    todos: ({ n }) => `Toutes (${n})`,
+    nota: 'Le classement de force des devises et les fiches d’information restent entiers : ils comparent les paires entre elles, les réduire changerait ce qu’ils disent.',
+    vacio: 'Aucune de vos paires n’est dans le balayage d’aujourd’hui. Touchez « Toutes » pour les voir.',
+  },
+
   misAvisos: {
     titulo: "Mes alertes",
     aviso: "Ce ne sont PAS des signaux de l'appli : les niveaux, c'est toi qui les mets. L'appli te prévient que ce que tu as demandé est arrivé, et ne te dit pas quoi en faire.",
     desc: "Tu choisis tes paires et tu mets tes propres niveaux. Quand le marché y arrive, une alerte arrive sur ton téléphone.",
     seguimientoTitulo: "Mes paires",
-    seguimientoDesc: "Touche les paires qui t'intéressent. Les alertes et le tableau ne gardent que celles-là.",
+    seguimientoDesc: 'Touchez les paires qui vous intéressent. Ensuite, dans le balayage, vous pouvez ne voir que celles-là ou toutes les voir — c’est vous qui choisissez.',
     seguimientoVacio: "Sans aucune sélection, tu vois TOUTES les paires. Choisis les tiennes pour enlever le bruit.",
     seguimientoPie: "Touche une paire à nouveau pour la retirer.",
     nuevoTitulo: "Mettre une nouvelle alerte",

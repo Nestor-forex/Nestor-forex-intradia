@@ -364,17 +364,17 @@ export function mensajeDe(aviso, estado, dato) {
 // ─────────────────────────────────────────────────────────────────────────
 // LA LISTA DE SEGUIMIENTO
 // ─────────────────────────────────────────────────────────────────────────
-
-/**
- * Deja solo los pares que la persona eligió seguir.
- *
- * ⚠️ UNA LISTA VACÍA DEVUELVE TODO, no nada. Es el valor por defecto de quien
- * nunca ha entrado a la pantalla, y si devolviera una lista vacía la app
- * aparecería en blanco el primer día — indistinguible de estar rota. Ante la
- * duda, enseñar de más: lo contrario esconde la app entera.
- */
-export function soloSeguidos(items, seguimiento, dameElPar = (x) => x?.par) {
-  if (!Array.isArray(items)) return []
-  if (!Array.isArray(seguimiento) || !seguimiento.length) return items
-  return items.filter((x) => seguimiento.includes(dameElPar(x)))
-}
+//
+// ⚠️ AQUÍ NO HAY NADA, Y ESO ES EL ARREGLO DE UN FALLO REAL (2026-10-31).
+//
+// Hubo aquí un `soloSeguidos(items, seguimiento)` escrito y probado… que **no
+// llamaba nadie**. Mientras tanto la pantalla decía «los avisos y el tablero
+// se quedan solo con ésos». Néstor eligió tres pares, fue al tablero y vio los
+// catorce. Es la familia de siempre —una etiqueta que describe algo que el
+// código no hace— y la cazó él, no una comprobación.
+//
+// El filtro de verdad vive ahora en `vistaPares.js`, que además lleva el
+// MANIFIESTO de qué se filtra y qué no, con el motivo de cada cosa escrito.
+// Tener dos funciones que filtran pares en dos archivos distintos era la
+// duplicación que este proyecto lleva meses cerrando (el umbral en nueve
+// sitios, `ATR_REVERSION` en dos).

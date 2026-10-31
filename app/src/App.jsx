@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Splash from './components/Splash'
 import CargandoApp from './components/CargandoApp'
 import Auth from './components/Auth'
@@ -8,6 +8,7 @@ import BottomNav from './components/BottomNav'
 import BarridoTab from './components/BarridoTab'
 import AvisosCard from './components/AvisosCard'
 import MisAvisos from './components/MisAvisos'
+import FiltroPares from './components/FiltroPares'
 import CotizacionesVivo from './components/CotizacionesVivo'
 import Calendario from './components/Calendario'
 import Compresion from './components/Compresion'
@@ -26,6 +27,7 @@ import { useMembers } from './lib/useMembers'
 import { useTrades } from './lib/useTrades'
 import { useMarketData } from './lib/useMarketData'
 import { useCalendario } from './lib/useCalendario'
+import { decidirModo, filtrarMercado, guardarModo, leerModo, resumenVista } from './lib/vistaPares'
 
 const NOMBRE_APP = 'NESTOR FOREX INTRADÍA'
 
@@ -67,6 +69,31 @@ export default function App() {
   // Datos con los que llega precargado el formulario del Diario cuando se
   // anota un setup desde su detalle.
   const [prellenarDiario, setPrellenarDiario] = useState(null)
+
+  // VER TODOS LOS PARES O SOLO LOS MÍOS.
+  //
+  // La preferencia vive en el TELÉFONO y no en Firestore, a propósito: es una
+  // conveniencia de quien mira, como el idioma. Guardarla en la ficha
+  // obligaría a ampliar otra vez las reglas de seguridad para algo que no es
+  // un dato, y haría que cambiar la vista en el celular cambiara la del
+  // computador. La LISTA de pares sí es de la persona y sí va en Firestore.
+  //
+  // ⚠️ El filtro es solo de PINTADO: `mercado` sigue entero y es lo que se
+  // usa para abrir el detalle de una señal y para la calculadora. Si filtrara
+  // el cálculo, el ranking de fuerza cambiaría de valor y dejaría de medir lo
+  // que dice medir.
+  const [modoVista, setModoVista] = useState(leerModo)
+  const seguimiento = perfil?.seguimiento
+  const modo = decidirModo(modoVista.valor, seguimiento, { pudoLeer: modoVista.pudoLeer })
+  const vista = useMemo(() => filtrarMercado(mercado, seguimiento, modo), [mercado, seguimiento, modo])
+  const resumenPares = useMemo(() => resumenVista(mercado, seguimiento, modo), [mercado, seguimiento, modo])
+  const cambiarVista = (m) => {
+    guardarModo(m)
+    setModoVista({ valor: m, pudoLeer: true })
+  }
+  const filtroPares = (
+    <FiltroPares resumen={resumenPares} modo={modo} onModo={cambiarVista} onIrAvisos={() => setTab('avisos')} />
+  )
 
   useEffect(() => {
     if (authUser) setScreen('app')
@@ -186,18 +213,19 @@ export default function App() {
             <main style={{ flex: 1, padding: '18px 18px 96px', display: 'flex', flexDirection: 'column', gap: 16 }}>
               {tab === 'barrido' && (
                 <>
+                  {filtroPares}
                   <BarridoTab
-                    loading={mercado.loading}
-                    error={mercado.error}
-                    sinConfigurar={mercado.sinConfigurar}
-                    stale={mercado.stale}
-                    guardadoEl={mercado.guardadoEl}
-                    generadoEl={mercado.generadoEl}
-                    horasViejo={mercado.horasViejo}
-                    costePorAntiguedad={mercado.costePorAntiguedad}
-                    monedas={mercado.monedas}
-                    pares={mercado.pares}
-                    corte={mercado.corte}
+                    loading={vista.loading}
+                    error={vista.error}
+                    sinConfigurar={vista.sinConfigurar}
+                    stale={vista.stale}
+                    guardadoEl={vista.guardadoEl}
+                    generadoEl={vista.generadoEl}
+                    horasViejo={vista.horasViejo}
+                    costePorAntiguedad={vista.costePorAntiguedad}
+                    monedas={vista.monedas}
+                    pares={vista.pares}
+                    corte={vista.corte}
                     onVerTablero={() => setTab('tablero')}
                   />
                   {/* Va aquí y no en una pestaña propia porque es donde
@@ -288,23 +316,24 @@ export default function App() {
           <TableroCompleto
             onVolver={() => setTab('barrido')}
             onVerSetup={(s) => setDetalleId(s.name + s.lado)}
-            loading={mercado.loading}
-            error={mercado.error}
-            sinConfigurar={mercado.sinConfigurar}
-            stale={mercado.stale}
-            guardadoEl={mercado.guardadoEl}
-            generadoEl={mercado.generadoEl}
-            horasViejo={mercado.horasViejo}
-            costePorAntiguedad={mercado.costePorAntiguedad}
-            monedas={mercado.monedas}
-            pares={mercado.pares}
-            compras={mercado.compras}
-            ventas={mercado.ventas}
-            vigilancia={mercado.vigilancia}
-            rangos={mercado.rangos}
-            sesion={mercado.sesion}
-            setups={mercado.setups}
-            corte={mercado.corte}
+            filtro={filtroPares}
+            loading={vista.loading}
+            error={vista.error}
+            sinConfigurar={vista.sinConfigurar}
+            stale={vista.stale}
+            guardadoEl={vista.guardadoEl}
+            generadoEl={vista.generadoEl}
+            horasViejo={vista.horasViejo}
+            costePorAntiguedad={vista.costePorAntiguedad}
+            monedas={vista.monedas}
+            pares={vista.pares}
+            compras={vista.compras}
+            ventas={vista.ventas}
+            vigilancia={vista.vigilancia}
+            rangos={vista.rangos}
+            sesion={vista.sesion}
+            setups={vista.setups}
+            corte={vista.corte}
           />
         )}
       </div>
