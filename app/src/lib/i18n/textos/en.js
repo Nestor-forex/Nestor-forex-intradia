@@ -472,7 +472,7 @@ export default {
   vivo: {
     titulo: 'What it costs to open the trade',
     desc: (v) => `Bid and ask straight from MetaTrader 5. It is the only thing that shows the REAL spread the broker charges — the scan above works on candles and cannot know it. ⚠️ These are from ${v.cuenta}: if your broker is another one, your numbers will differ.`,
-    cuentaGenerica: 'a live account',
+    cuentaGenerica: "those of a live account held by the developer of the apps",
     cargando: 'Fetching the latest prices…',
     sinDatos: 'No broker prices yet. The bridge publishes them only while the computer running MetaTrader 5 is switched on.',
     vieja: (v) => `These prices were taken over ${v.h} h ago. The bridge was off; treat them as a reference, not as the price right now.`,

@@ -467,7 +467,7 @@ export default {
   vivo: {
     titulo: 'İşlemi açmanın maliyeti',
     desc: (v) => `Doğrudan MetaTrader 5'ten alış ve satış fiyatı. Aracı kurumun aldığı GERÇEK spread'i gösteren tek yer burasıdır — yukarıdaki tarama mumlarla çalışır ve bunu bilemez. ⚠️ Bunlar ${v.cuenta} rakamları: aracı kurumunuz başkaysa sizin rakamlarınız farklı olur.`,
-    cuentaGenerica: 'gerçek bir hesabın',
+    cuentaGenerica: "uygulamaların geliştiricisine ait gerçek bir hesabın fiyatları",
     cargando: 'Son fiyatlar alınıyor…',
     sinDatos: 'Henüz aracı kurum fiyatı yok. Köprü bunları yalnızca MetaTrader 5’in çalıştığı bilgisayar açıkken yayımlar.',
     vieja: (v) => `Bu fiyatların üzerinden ${v.h} saatten fazla geçti. Köprü kapalıydı; şu anki fiyat değil, referans sayın.`,

@@ -53,6 +53,33 @@ export const MAX_AVISOS = 20
 // puede ser simétrica.
 export const EDAD_MAXIMA_PRECIO_MIN = 45
 
+// ⚠️⚠️ CUÁNTAS VECES SUENA UN AVISO, Y POR QUÉ NO ES UNA SOLA.
+//
+// Néstor lo pidió el 2026-10-30 con el caso contado paso a paso: «sonó en este
+// momento y si el suscriptor no ha abierto la app para mirarla sonará otra vez
+// a los 15 minutos, y si tampoco la ha visto sonará por segunda y última vez a
+// los siguientes 15 minutos».
+//
+// O sea: el aviso original **más dos recordatorios**, separados 15 minutos, y
+// **los recordatorios paran en cuanto la persona lo ve**. Tiene sentido: un
+// aviso que suena una sola vez con el teléfono en silencio es un aviso que no
+// existió.
+//
+// Los 15 minutos no son un número redondo elegido a gusto: es **la cadencia a
+// la que publica el puente de MT5**, así que un recordatorio cae justo entre
+// dos lecturas y no hay forma de que suene más seguido que el dato.
+export const MINUTOS_ENTRE_REPETICIONES = 15
+export const MAX_REPETICIONES = 2
+
+// ⚠️ Y UN TECHO, que es lo que impide que esto se vuelva el problema que vino
+// a resolver: pasado este rato desde el primer aviso, **ya no se recuerda
+// nada**. Sin él, un programa que estuviera caído un día entero despertaría al
+// volver y mandaría «recordatorio» de un precio de ayer — que es exactamente
+// el aviso falso que `EDAD_MAXIMA_PRECIO_MIN` existe para impedir, colado por
+// la puerta de atrás. 90 minutos dejan sitio de sobra a los dos recordatorios
+// (15 y 30) y cierran la ventana.
+export const MINUTOS_MAX_RECORDATORIO = 90
+
 // Los tipos que existen. Va ENUMERADO a propósito: un tipo que alguien añada
 // mañana y que no esté aquí **no dispara**, en vez de caer en el último `else`
 // y sonar por un motivo que nadie programó. Es la familia de fallo que en este
@@ -241,7 +268,7 @@ export function estadoDe(aviso, dato, { ahora = new Date(), edadMaximaTecnicoMin
 }
 
 /**
- * De una lista de avisos, los que tienen que sonar AHORA.
+ * De una lista de avisos, los que tienen que sonar AHORA **por primera vez**.
  *
  * Devuelve `{ aviso, estado }` para que quien manda el mensaje tenga el valor
  * y la edad delante y pueda escribirlos en el texto.
@@ -254,6 +281,59 @@ export function pendientes(avisos, datosPorPar, opciones = {}) {
     if (st.estado === 'dispara') salida.push({ aviso, estado: st })
   }
   return salida
+}
+
+/**
+ * ¿Toca RECORDAR un aviso que ya sonó y que nadie ha visto?
+ *
+ * ⚠️⚠️ ESTO NO VUELVE A MIRAR EL PRECIO, Y ES A PROPÓSITO. Un recordatorio no
+ * es un aviso nuevo: es el MISMO aviso repetido porque no se ha visto, y lleva
+ * el precio y la hora del original. Si volviera a mirar el precio diría «tocó
+ * 1.1550» con un número de ahora que a lo mejor ya no lo toca — un aviso que
+ * se contradice a sí mismo. Y así tampoco depende de que el puente siga
+ * encendido: lo que se recuerda ya pasó.
+ *
+ * ⚠️ ANTE LA DUDA, **NO** SE REPITE — y esta asimetría va al revés que la de
+ * `yaCorrioHoy`, donde ante la duda se corre. Aquí los dos errores no son los
+ * de allí: no recordar cuesta un recordatorio perdido, de algo que ya sonó una
+ * vez; recordar de más es un celular que suena sin motivo, y una alarma que
+ * suena sin motivo enseña a ignorar todas las demás. Por eso una fecha
+ * ilegible, un contador raro o un `disparadaEl` que falta devuelven `false`.
+ */
+export function tocaRepetir(aviso, { ahora = new Date() } = {}) {
+  if (!aviso || aviso.activa === false) return false
+  // Nunca sonó: eso no es un recordatorio, es un aviso nuevo.
+  if (!aviso.disparadaEl) return false
+  // Ya lo vio: se acabaron los recordatorios. Es la condición que Néstor puso.
+  if (aviso.vistoEl) return false
+
+  // Cuántas veces ha sonado ya, contando el original. Un contador que falta se
+  // lee como 1 —sonó el original— y no como 0: leerlo como 0 regalaría un
+  // recordatorio de más.
+  const veces = Number.isFinite(Number(aviso.veces)) ? Number(aviso.veces) : 1
+  if (veces >= 1 + MAX_REPETICIONES) return false
+
+  const desdeElPrimero = minutosDesde(aviso.disparadaEl, ahora)
+  if (desdeElPrimero === null || desdeElPrimero > MINUTOS_MAX_RECORDATORIO) return false
+
+  // `sonadaEl` es la ÚLTIMA vez que sonó; sin ella, la primera.
+  const desdeLaUltima = minutosDesde(aviso.sonadaEl || aviso.disparadaEl, ahora)
+  if (desdeLaUltima === null) return false
+  return desdeLaUltima >= MINUTOS_ENTRE_REPETICIONES
+}
+
+/**
+ * Todo lo que hay que mandar en esta vuelta: los nuevos y los recordatorios.
+ *
+ * Cada fila dice cuál es cuál en `motivo`, para que el mensaje pueda llevar la
+ * palabra «recordatorio» y la persona no crea que el precio volvió a tocar.
+ */
+export function queMandar(avisos, datosPorPar, opciones = {}) {
+  const nuevos = pendientes(avisos, datosPorPar, opciones).map((x) => ({ ...x, motivo: 'nuevo' }))
+  const recordar = (Array.isArray(avisos) ? avisos : [])
+    .filter((a) => tocaRepetir(a, opciones))
+    .map((aviso) => ({ aviso, estado: null, motivo: 'recordatorio' }))
+  return [...nuevos, ...recordar]
 }
 
 /**

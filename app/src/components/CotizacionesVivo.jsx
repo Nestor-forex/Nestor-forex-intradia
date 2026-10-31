@@ -59,7 +59,7 @@ const CABECERA = { fontSize: 11, color: 'var(--text-muted)', textTransform: 'upp
 
 export default function CotizacionesVivo() {
   const { t, locale } = useIdioma()
-  const { quotes, estado, actualizadoEl, cuenta } = useMT5Quotes()
+  const { quotes, estado, actualizadoEl } = useMT5Quotes()
 
   const filas = Object.values(quotes)
   const minutos = actualizadoEl ? minutosDesde(actualizadoEl) : null
@@ -77,8 +77,20 @@ export default function CotizacionesVivo() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ fontSize: 13.5, fontWeight: 600 }}>{t('vivo.titulo')}</div>
 
-        {/* De quién es. Arriba, no en la letra pequeña. */}
-        <p style={TEXTO}>{t('vivo.desc', { cuenta: cuenta || t('vivo.cuentaGenerica') })}</p>
+        {/* De quién es. Arriba, no en la letra pequeña.
+
+            ⚠️ LA FRASE SALE DEL DICCIONARIO, NO DEL ARCHIVO PUBLICADO, y se
+            cambió así el 2026-10-30. `mt5.json` trae un campo `cuenta` y la
+            app lo pintaba tal cual: texto en ESPAÑOL, escrito dentro del
+            puente, enseñado igual a quien tiene la app en coreano o en árabe.
+            Un rótulo que nadie puede leer no rotula nada.
+
+            Lo que hay que decir —que este precio NO es el de tu bróker— se
+            dice entero con la frase traducida, y además sin nombrar a ninguna
+            empresa: lo pidió Néstor y es lo correcto en un repositorio
+            público. El campo `cuenta` se sigue publicando porque documenta el
+            origen DENTRO del archivo, para quien lo lea fuera de la app. */}
+        <p style={TEXTO}>{t('vivo.desc', { cuenta: t('vivo.cuentaGenerica') })}</p>
 
         {estado === 'cargando' && <p style={TEXTO}>{t('vivo.cargando')}</p>}
 

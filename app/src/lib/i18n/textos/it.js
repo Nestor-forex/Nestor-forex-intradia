@@ -468,7 +468,7 @@ export default {
   vivo: {
     titulo: 'Quanto costa aprire l\'operazione',
     desc: (v) => `Prezzo di acquisto e di vendita direttamente da MetaTrader 5. È l'unica cosa che mostra lo spread REALE che applica il broker — la scansione qui sopra lavora su candele e non lo sa. ⚠️ Sono quelli di ${v.cuenta}: se il tuo broker è un altro, i tuoi numeri saranno diversi.`,
-    cuentaGenerica: 'un conto reale',
+    cuentaGenerica: "quelli di un conto reale dello sviluppatore delle app",
     cargando: 'Recupero degli ultimi prezzi…',
     sinDatos: 'Ancora nessun prezzo del broker. Il ponte li pubblica solo mentre il computer su cui gira MetaTrader 5 è acceso.',
     vieja: (v) => `Questi prezzi sono di oltre ${v.h} h fa. Il ponte era spento; valgono come riferimento, non come prezzo di adesso.`,

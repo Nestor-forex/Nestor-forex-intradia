@@ -16,12 +16,17 @@ import {
   LADOS_INDICADOR,
   LADOS_PRECIO,
   MAX_AVISOS,
+  MAX_REPETICIONES,
+  MINUTOS_ENTRE_REPETICIONES,
+  MINUTOS_MAX_RECORDATORIO,
   TIPOS,
   cabeOtro,
   estadoDe,
   mensajeDe,
   pendientes,
+  queMandar,
   soloSeguidos,
+  tocaRepetir,
   valida,
 } from '../src/lib/alertas.js'
 
@@ -266,6 +271,94 @@ console.log('\n8. `pendientes` saca solo los que suenan')
   // se añade uno a una app y no al puente, la pantalla tiene que decir «sin
   // dato», no caerse.
   comprobar('un par que el puente no trae no revienta', p.every((x) => x.aviso.par !== 'USD/JPY'))
+}
+
+console.log('\n8b. ⚠️⚠️ SUENA, Y SI NADIE LO VE, RECUERDA DOS VECES MÁS')
+{
+  // El caso tal como lo conto Nestor: «sono en este momento y si el
+  // suscriptor no ha abierto la app para mirarla sonara otra vez a los 15
+  // minutos, y si tampoco la ha visto sonara por segunda y ultima vez a los
+  // siguientes 15 minutos».
+  const base = { par: 'EUR/USD', tipo: 'precio', lado: 'sube', nivel: 1.115, activa: true }
+
+  const recienSonado = { ...base, disparadaEl: hace(0), sonadaEl: hace(0), veces: 1 }
+  comprobar('recién sonado, no se repite enseguida', tocaRepetir(recienSonado, { ahora: AHORA }) === false)
+  comprobar(
+    `a los ${MINUTOS_ENTRE_REPETICIONES - 1} min todavía no`,
+    tocaRepetir({ ...base, disparadaEl: hace(14), sonadaEl: hace(14), veces: 1 }, { ahora: AHORA }) === false,
+  )
+  comprobar(
+    `a los ${MINUTOS_ENTRE_REPETICIONES} min sí: primer recordatorio`,
+    tocaRepetir({ ...base, disparadaEl: hace(15), sonadaEl: hace(15), veces: 1 }, { ahora: AHORA }) === true,
+  )
+  comprobar(
+    'a los 30 min, con uno ya mandado: segundo recordatorio',
+    tocaRepetir({ ...base, disparadaEl: hace(30), sonadaEl: hace(15), veces: 2 }, { ahora: AHORA }) === true,
+  )
+  // ⚠️ Y SE ACABA. Dos recordatorios y nada más.
+  comprobar(
+    '⚠️ a los 45 min, con los dos ya mandados, YA NO suena',
+    tocaRepetir({ ...base, disparadaEl: hace(45), sonadaEl: hace(15), veces: 3 }, { ahora: AHORA }) === false,
+  )
+  comprobar(
+    'en total suena 3 veces: el aviso y 2 recordatorios',
+    1 + MAX_REPETICIONES === 3,
+  )
+
+  // ⚠️ LO QUE LOS PARA: que la persona lo haya visto.
+  comprobar(
+    '⚠️ si abrió la app y lo vio, NO se repite',
+    tocaRepetir({ ...base, disparadaEl: hace(15), sonadaEl: hace(15), veces: 1, vistoEl: hace(2) }, { ahora: AHORA }) === false,
+  )
+  comprobar(
+    'y si lo apagó, tampoco',
+    tocaRepetir({ ...base, activa: false, disparadaEl: hace(15), sonadaEl: hace(15), veces: 1 }, { ahora: AHORA }) === false,
+  )
+
+  // ⚠️⚠️ EL TECHO, que es lo que impide que esto se vuelva un aviso falso. Un
+  // programa caído un día entero despertaria y mandaria «recordatorio» de un
+  // precio de ayer.
+  comprobar(
+    `⚠️ pasados ${MINUTOS_MAX_RECORDATORIO} min del primero, ya no se recuerda nada`,
+    tocaRepetir({ ...base, disparadaEl: hace(MINUTOS_MAX_RECORDATORIO + 1), sonadaEl: hace(20), veces: 1 }, { ahora: AHORA }) === false,
+  )
+  comprobar(
+    'un día entero después, desde luego que no',
+    tocaRepetir({ ...base, disparadaEl: hace(1440), sonadaEl: hace(1440), veces: 1 }, { ahora: AHORA }) === false,
+  )
+
+  // ⚠️ ANTE LA DUDA NO SE REPITE, al revés que `yaCorrioHoy`: aquí el error
+  // barato es callarse, porque una alarma que suena sin motivo ensena a
+  // ignorar todas las demas.
+  comprobar('sin `disparadaEl` no hay nada que recordar', tocaRepetir({ ...base }, { ahora: AHORA }) === false)
+  comprobar(
+    'con la fecha ilegible, no se repite',
+    tocaRepetir({ ...base, disparadaEl: 'ayer', sonadaEl: 'ayer', veces: 1 }, { ahora: AHORA }) === false,
+  )
+  comprobar(
+    'con el contador en basura se trata como si ya hubiera sonado una vez',
+    tocaRepetir({ ...base, disparadaEl: hace(15), sonadaEl: hace(15), veces: 'muchas' }, { ahora: AHORA }) === true,
+  )
+  comprobar('sin aviso ninguno, false', tocaRepetir(null, { ahora: AHORA }) === false)
+
+  // `queMandar` junta las dos cosas y dice cuál es cuál.
+  const datos = { 'EUR/USD': datoFresco }
+  const lista = queMandar(
+    [
+      { ...base }, // nuevo: dispara
+      { ...base, nivel: 1.116, disparadaEl: hace(15), sonadaEl: hace(15), veces: 1 }, // recordatorio
+      { ...base, nivel: 1.117, disparadaEl: hace(15), sonadaEl: hace(15), veces: 1, vistoEl: hace(1) }, // visto
+    ],
+    datos,
+    { ahora: AHORA },
+  )
+  comprobar(`manda 2 de 3 (son ${lista.length})`, lista.length === 2)
+  comprobar('y distingue el nuevo del recordatorio', lista.map((x) => x.motivo).sort().join() === 'nuevo,recordatorio')
+  // ⚠️ El recordatorio NO vuelve a mirar el precio: lleva el del original.
+  comprobar(
+    'el recordatorio no trae un estado nuevo del precio',
+    lista.find((x) => x.motivo === 'recordatorio').estado === null,
+  )
 }
 
 console.log('\n9. El mensaje va como CLAVE y HUECOS, nunca como frase')
