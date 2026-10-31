@@ -109,14 +109,43 @@ export async function pedirToken(cuenta, ambito = AMBITO) {
 // Firestore devuelve cada campo etiquetado con su tipo
 // ({ stringValue: 'x' }). Solo guardamos texto en pushSubs, pero el número y
 // el booleano van por si acaso: un campo inesperado no debe reventar el envío.
+//
+// ⚠️⚠️ LAS LISTAS Y LOS OBJETOS SE AÑADIERON EL 2026-10-31, Y NO ERA UNA
+// MEJORA: era un fallo silencioso esperando a ocurrir.
+//
+// Los avisos que programa cada persona viven en `users/{uid}.avisos`, que es
+// una LISTA DE OBJETOS. Antes de esto, ningún `else if` casaba con
+// `arrayValue`, así que el campo **no aparecía en el resultado**: no daba
+// error, no daba lista vacía — desaparecía. El programa que manda los avisos
+// habría leído cero avisos para todo el mundo y habría terminado en verde
+// diciendo «nada que mandar», que es indistinguible de que todo va bien.
+//
+// Es la familia de fallo que este proyecto lleva meses coleccionando, y de la
+// peor clase: el silencio que se lee como éxito.
+function valorDe(v) {
+  if (!v || typeof v !== 'object') return undefined
+  // `nullValue` va primero y SÍ devuelve null, no `undefined`: `rearmar`
+  // escribe `disparadaEl: null` a propósito para decir «este aviso no ha
+  // sonado», y tirar el campo haría que ese «no» no se pudiera distinguir de
+  // «nunca se escribió».
+  if ('nullValue' in v) return null
+  if ('stringValue' in v) return v.stringValue
+  if ('integerValue' in v) return Number(v.integerValue)
+  if ('doubleValue' in v) return v.doubleValue
+  if ('booleanValue' in v) return v.booleanValue
+  if ('timestampValue' in v) return v.timestampValue
+  if ('arrayValue' in v) return (v.arrayValue?.values || []).map(valorDe)
+  if ('mapValue' in v) return planchar(v.mapValue?.fields || {})
+  // Un tipo que no conocemos (geoPoint, bytes, referencia) no se inventa.
+  return undefined
+}
+
 export function planchar(campos = {}) {
   const salida = {}
   for (const [k, v] of Object.entries(campos)) {
-    if ('stringValue' in v) salida[k] = v.stringValue
-    else if ('integerValue' in v) salida[k] = Number(v.integerValue)
-    else if ('doubleValue' in v) salida[k] = v.doubleValue
-    else if ('booleanValue' in v) salida[k] = v.booleanValue
-    else if ('timestampValue' in v) salida[k] = v.timestampValue
+    const x = valorDe(v)
+    // `undefined` es «no supe leerlo»; `null` es un valor de verdad y pasa.
+    if (x !== undefined) salida[k] = x
   }
   return salida
 }
@@ -128,16 +157,23 @@ export function planchar(campos = {}) {
 // entero mandado como número se rechaza con un error que no dice por qué.
 // Y los enteros van antes que los decimales porque `1` mandado como
 // `doubleValue` vuelve leído como `1.0`.
+// ⚠️ El ORDEN de las ramas no es estético: `Date` y `Array` son objetos, así
+// que si la rama genérica de objeto fuera antes, una fecha se guardaría como
+// un mapa vacío y una lista como un objeto con claves «0», «1», «2»… En los
+// dos casos sin dar ningún error.
+function sobreDe(v) {
+  if (v === null || v === undefined) return { nullValue: null }
+  if (typeof v === 'boolean') return { booleanValue: v }
+  if (typeof v === 'number') return Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v }
+  if (v instanceof Date) return { timestampValue: v.toISOString() }
+  if (Array.isArray(v)) return { arrayValue: { values: v.map(sobreDe) } }
+  if (typeof v === 'object') return { mapValue: { fields: etiquetar(v) } }
+  return { stringValue: String(v) }
+}
+
 export function etiquetar(campos = {}) {
   const salida = {}
-  for (const [k, v] of Object.entries(campos)) {
-    if (v === null || v === undefined) salida[k] = { nullValue: null }
-    else if (typeof v === 'boolean') salida[k] = { booleanValue: v }
-    else if (typeof v === 'number') {
-      salida[k] = Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v }
-    } else if (v instanceof Date) salida[k] = { timestampValue: v.toISOString() }
-    else salida[k] = { stringValue: String(v) }
-  }
+  for (const [k, v] of Object.entries(campos)) salida[k] = sobreDe(v)
   return salida
 }
 
