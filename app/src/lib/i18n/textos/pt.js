@@ -93,6 +93,9 @@ export default {
     frase_rsi_abajo: "se o RSI chegar ou cair abaixo de",
     estadoEsperando: "Esperando. Ainda não aconteceu.",
     estadoApagado: "Desligado. Não vai tocar.",
+    // ⚠️ Un aviso que NO PUEDE sonar: ver `avisoMudo` en `src/lib/alertas.js`.
+    estadoMudo: 'Não vai tocar: falta um dado.',
+    mudoPorque: 'Este aviso foi criado antes de o app passar a guardar de qual dos dois apps ele saiu, e “RSI 30” não significa o mesmo em velas diárias e em velas de uma hora. Para que toque: apague-o e crie-o de novo.',
     estadoSono: (v) => `Já tocou (${v.veces} de ${v.max} vezes). Arme de novo para tocar outra vez.`,
     encender: "Ligar",
     apagar: "Desligar",

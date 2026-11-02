@@ -11,7 +11,10 @@
 //   · y confundir «no se sabe» con «no ha llegado», que en pantalla se lee
 //     como una afirmación sobre el mercado donde no hay ningún dato.
 
+import { readFileSync } from 'node:fs'
+
 import {
+  APPS,
   EDAD_MAXIMA_PRECIO_MIN,
   LADOS_INDICADOR,
   LADOS_PRECIO,
@@ -20,9 +23,13 @@ import {
   MINUTOS_ENTRE_REPETICIONES,
   MINUTOS_MAX_RECORDATORIO,
   TIPOS,
+  TIPOS_SIN_APP,
+  appDe,
+  avisoMudo,
   cabeOtro,
   estadoDe,
   mensajeDe,
+  necesitaApp,
   pendientes,
   queMandar,
   tocaRepetir,
@@ -393,6 +400,108 @@ console.log('\n9. El mensaje va como CLAVE y HUECOS, nunca como frase')
     !todas.some((c) => /compra|venta|vender|recomend|sugier|entra|señal/i.test(c)),
   )
   comprobar('y son seis claves distintas', new Set(todas).size === 6)
+}
+
+console.log('\n10. ⚠️ UN AVISO QUE NO PUEDE SONAR SE RECONOCE, Y NO SE LE ADIVINA LA APP')
+{
+  // ⚠️ Esta condición la usan DOS sitios: el programa que manda los avisos
+  // (para no mandarlos) y la pantalla (para marcarlos). Vive aquí, en un
+  // GEMELO, porque dos copias dejarían avisos marcados que sí suenan y avisos
+  // que no suenan sin marcar — y nada fallaría. Es el fallo del umbral de
+  // fuerza copiado en nueve guiones.
+  comprobar('las dos apps son swing e intradia', APPS.length === 2 && APPS.includes('swing') && APPS.includes('intradia'))
+  comprobar('`appDe` lee la app guardada', appDe({ app: 'swing' }) === 'swing')
+  comprobar('una app que no existe es `null`, no se acepta', appDe({ app: 'scalping' }) === null)
+  comprobar('sin app es `null`', appDe({}) === null)
+
+  // ⚠️ EL PRECIO ES LA EXCEPCIÓN, y por un motivo concreto: el bid y el ask
+  // salen del puente de MT5, que es UNO para las dos apps.
+  comprobar('un aviso de PRECIO no necesita saber de qué app salió', necesitaApp({ tipo: 'precio' }) === false)
+  comprobar('uno de RSI sí', necesitaApp({ tipo: 'rsi' }) === true)
+  comprobar('y uno de banda también', necesitaApp({ tipo: 'banda' }) === true)
+
+  // ⚠️⚠️ LA ASIMETRÍA, Y ES LA COMPROBACIÓN QUE MÁS VALE DEL BLOQUE.
+  //
+  // La lista enumera LA EXCEPCIÓN (los que no necesitan app), no la regla. Así
+  // un tipo de aviso que se añada mañana NECESITA la app hasta que alguien
+  // venga a escribir que no. Al revés —enumerar los que sí— lo dejaría sonando
+  // con el dato de la app equivocada, y «RSI 30» es el RSI de velas DIARIAS en
+  // Swing y el de velas de UNA HORA en Intradía.
+  for (const t of TIPOS) {
+    comprobar(
+      `el tipo «${t}»: necesitaApp = !TIPOS_SIN_APP.includes(«${t}»)`,
+      necesitaApp({ tipo: t }) === !TIPOS_SIN_APP.includes(t),
+    )
+  }
+
+  // ⚠️⚠️ Y LA ASIMETRÍA SE COMPRUEBA LEYENDO EL CÓDIGO, no llamando a la
+  // función, y el motivo importa: la propiedad es sobre un tipo que TODAVÍA NO
+  // EXISTE («uno que se añada mañana necesita app por defecto»), así que
+  // recorrer `TIPOS` no la puede ver — con una lista positiva equivalente los
+  // tres tipos de hoy dan exactamente lo mismo.
+  //
+  // Comprobado: al sustituir `!TIPOS_SIN_APP.includes(t)` por
+  // `['banda','rsi'].includes(t)` las comprobaciones de arriba seguían TODAS en
+  // verde mientras `necesitaApp({tipo:'loQueVenga'})` pasaba a decir «no
+  // necesita app», que es el lado peligroso. Es el mismo agujero que la
+  // comprobación de la hora que no podía morder corriendo en UTC.
+  const fuente = readFileSync(new URL('../src/lib/alertas.js', import.meta.url), 'utf8')
+  const cuerpo = fuente.slice(fuente.indexOf('export function necesitaApp'))
+  comprobar(
+    'enumera LA EXCEPCIÓN: `!TIPOS_SIN_APP.includes(...)`',
+    /return\s+!TIPOS_SIN_APP\.includes\(/.test(cuerpo.slice(0, 400)),
+  )
+  comprobar(
+    'y NO una lista positiva de los que sí la necesitan',
+    !/return\s+\[[^\]]*\]\.includes\(/.test(cuerpo.slice(0, 400)),
+  )
+  comprobar('la excepción es solo el precio', TIPOS_SIN_APP.length === 1 && TIPOS_SIN_APP[0] === 'precio')
+
+  comprobar('un aviso de RSI SIN app está mudo', avisoMudo({ tipo: 'rsi', nivel: 30 }) === true)
+  comprobar('uno de banda SIN app también', avisoMudo({ tipo: 'banda', nivel: 1 }) === true)
+  comprobar('con la app puesta ya no', avisoMudo({ tipo: 'rsi', nivel: 30, app: 'swing' }) === false)
+  comprobar('con una app inventada sigue mudo', avisoMudo({ tipo: 'rsi', app: 'scalping' }) === true)
+  comprobar('un aviso de PRECIO sin app NO está mudo', avisoMudo({ tipo: 'precio', nivel: 1.15 }) === false)
+  comprobar('un tipo que no existe no se marca mudo (no suena por otro motivo)', avisoMudo({ tipo: 'volumen' }) === false)
+  comprobar('sin aviso devuelve false en vez de reventar', avisoMudo(null) === false)
+
+  // 📌 Y la comprobación que fija la DECISIÓN de diseño: no hay ninguna función
+  // que rellene la app sola. Rellenarla con la de la pantalla que está
+  // enseñando el aviso sería adivinar, y `appDe` existe justo para no hacerlo.
+  // Si alguien añade una, tiene que venir a borrar esto a mano.
+  const alertas = await import('../src/lib/alertas.js')
+  const arregladores = Object.keys(alertas).filter((k) => /^(arregla|repara|complet|rellena)/i.test(k))
+  comprobar(
+    `no existe ninguna función que arregle la app sola (había ${arregladores.length})`,
+    arregladores.length === 0,
+  )
+}
+
+console.log('\n10b. ⚠️ Y LA PANTALLA LO USA DE VERDAD')
+{
+  // 📌 `avisoMudo` podría estar escrita, probada y no llamarla NADIE — que es
+  // exactamente lo que pasó con `soloSeguidos` el 2026-10-31: la tarjeta
+  // decía que filtraba, el código estaba probado, y nadie lo invocaba. Lo
+  // encontró Néstor eligiendo tres pares y viendo los catorce.
+  //
+  // La pantalla se lee como TEXTO porque importarla pediría React y DOM.
+  const pantalla = readFileSync(new URL('../src/components/MisAvisos.jsx', import.meta.url), 'utf8')
+  comprobar('la pantalla importa `avisoMudo`', /import \{[^}]*\bavisoMudo\b[^}]*\} from '\.\.\/lib\/alertas'/.test(pantalla))
+  comprobar('y la llama', /avisoMudo\(/.test(pantalla))
+
+  // Las dos claves de texto. ⚠️ Un `t()` de una clave que no existe NO da
+  // error: sale en blanco, que es la peor forma de romperse.
+  const es = (await import('../src/lib/i18n/textos/es.js')).default
+  for (const clave of ['estadoMudo', 'mudoPorque']) {
+    comprobar(`la pantalla usa \`misAvisos.${clave}\``, pantalla.includes(`misAvisos.${clave}`))
+    comprobar(`y la clave existe en es.js`, typeof es?.misAvisos?.[clave] === 'string')
+  }
+
+  // ⚠️ El estado de un aviso mudo NO puede seguir diciendo «esperando»: eso
+  // afirma que va a sonar. Es lo que había antes y era falso para este caso.
+  const i = pantalla.indexOf('estadoMudo')
+  const j = pantalla.indexOf('estadoEsperando')
+  comprobar('y el estado mudo se decide ANTES que «esperando»', i > 0 && j > 0 && i < j)
 }
 
 console.log('')

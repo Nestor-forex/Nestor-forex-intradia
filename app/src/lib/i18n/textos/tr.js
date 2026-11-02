@@ -89,6 +89,9 @@ export default {
     frase_rsi_abajo: "RSI ulaşır veya altına inerse",
     estadoEsperando: "Bekliyor. Henüz olmadı.",
     estadoApagado: "Kapalı. Çalmayacak.",
+    // ⚠️ Un aviso que NO PUEDE sonar: ver `avisoMudo` en `src/lib/alertas.js`.
+    estadoMudo: 'Çalmayacak: bir veri eksik.',
+    mudoPorque: 'Bu uyarı, uygulama hangi uygulamadan geldiğini kaydetmeye başlamadan önce oluşturuldu ve “RSI 30” günlük mumlarda ile bir saatlik mumlarda aynı şeyi ifade etmiyor. Çalması için: sil ve yeniden oluştur.',
     estadoSono: (v) => `Zaten çaldı (${v.max} kezden ${v.veces} kez). Tekrar çalması için yeniden kur.`,
     encender: "Aç",
     apagar: "Kapat",

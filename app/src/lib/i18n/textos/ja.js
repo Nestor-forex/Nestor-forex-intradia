@@ -89,6 +89,9 @@ export default {
     frase_rsi_abajo: "RSI が以下になったら",
     estadoEsperando: "待機中。まだ起きていません。",
     estadoApagado: "オフ。鳴りません。",
+    // ⚠️ Un aviso que NO PUEDE sonar: ver `avisoMudo` en `src/lib/alertas.js`.
+    estadoMudo: '鳴りません：データが一つ足りません。',
+    mudoPorque: 'このアラートは、アプリがどちらのアプリから作られたかを保存し始める前に作られました。「RSI 30」は日足と時間足で意味が違います。鳴らすには、削除して同じものをもう一度登録してください。',
     estadoSono: (v) => `すでに鳴りました (${v.max} 回中 ${v.veces} 回)。もう一度鳴らすには再設定してください。`,
     encender: "オンにする",
     apagar: "オフにする",

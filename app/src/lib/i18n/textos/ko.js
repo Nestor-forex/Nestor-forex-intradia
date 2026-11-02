@@ -89,6 +89,9 @@ export default {
     frase_rsi_abajo: "RSI 가 이하가 되면",
     estadoEsperando: "대기 중. 아직 일어나지 않았습니다.",
     estadoApagado: "꺼짐. 울리지 않습니다.",
+    // ⚠️ Un aviso que NO PUEDE sonar: ver `avisoMudo` en `src/lib/alertas.js`.
+    estadoMudo: '여리지 않습니다: 정보 하나가 빠졌어요.',
+    mudoPorque: '이 알림은 얱이 두 얱 중 어느 얱에서 나왔는지 저장하기 전에 만들어졌고, “RSI 30”은 일봉과 1시간봉에서 같은 뜼이 아닙니다. 울리게 하려면: 지우고 다시 만들어 주세요.',
     estadoSono: (v) => `이미 울렸습니다 (${v.max} 번 중 ${v.veces} 번). 다시 울리게 하려면 다시 설정하세요.`,
     encender: "켜기",
     apagar: "끄기",

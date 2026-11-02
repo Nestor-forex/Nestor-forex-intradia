@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useT } from '../lib/i18n'
 import { PAIR_NAMES } from '../lib/pairs'
-import { LADOS_INDICADOR, LADOS_PRECIO, MAX_REPETICIONES } from '../lib/alertas'
+import { LADOS_INDICADOR, LADOS_PRECIO, MAX_REPETICIONES, avisoMudo } from '../lib/alertas'
 import { useAvisos } from '../lib/useAvisos'
 
 // MIS AVISOS — la pantalla donde cada persona programa lo suyo.
@@ -226,6 +226,15 @@ export default function MisAvisos({ uid, perfil }) {
 
         {a.avisos.map((av) => {
           const sono = Boolean(av.disparadaEl)
+          // ⚠️ Un aviso que NO PUEDE SONAR tal como está guardado. Hoy solo
+          // pasa con los de indicador creados antes del 2026-10-31, que no
+          // dicen de qué app salieron.
+          //
+          // La condición sale de `alertas.js`, que es la MISMA que usa el
+          // programa que manda los avisos para no mandarlos. Dos copias
+          // dejarían avisos marcados que sí suenan y avisos que no suenan sin
+          // marcar, y nada fallaría.
+          const mudo = avisoMudo(av)
           return (
             <div key={av.id} style={CAJA}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
@@ -241,14 +250,56 @@ export default function MisAvisos({ uid, perfil }) {
               {/* El estado, en palabras. ⚠️ No se pinta de verde ni de rojo: un
                   aviso que sonó no es «bueno» ni «malo» — solo pasó. Pintar
                   dinero de color está bien; pintar esto afirmaría algo que el
-                  dato no dice. */}
-              <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                  dato no dice.
+
+                  ⚠️ Y un aviso mudo NO dice «esperando»: estaría afirmando que
+                  va a sonar cuando no puede. Esto no es añadir una línea a lo
+                  que ya había — es que lo que había era falso para este caso.
+
+                  ⚠️ El estado mudo SÍ va en ámbar, y es la excepción a la línea
+                  de arriba. Salió mirando la captura: «No va a sonar» en el
+                  mismo gris que «Esperando» deja cuatro renglones iguales en los
+                  que la única diferencia es leer la frase entera. El ámbar aquí
+                  no afirma nada del mercado —no dice si el par sube o baja—,
+                  dice «este de aquí necesita que hagas algo», que es
+                  exactamente lo que significa el ámbar en el resto de la app. */}
+              <div style={{ fontSize: 12, color: mudo ? 'var(--amber)' : 'var(--text-secondary)' }}>
                 {av.activa === false
                   ? t('misAvisos.estadoApagado')
                   : sono
                     ? t('misAvisos.estadoSono', { veces: Number(av.veces) || 1, max: 1 + MAX_REPETICIONES })
-                    : t('misAvisos.estadoEsperando')}
+                    : mudo
+                      ? t('misAvisos.estadoMudo')
+                      : t('misAvisos.estadoEsperando')}
               </div>
+
+              {/* ⚠️ EL MOTIVO Y EL CAMINO, EN ÁMBAR. El ámbar en esta app
+                  significa «este dato no es de fiar», que es exactamente lo
+                  que pasa aquí. No rojo: el rojo es dinero.
+
+                  📌 Y a propósito NO hay un botón que lo arregle solo. Ponerle
+                  la app de la pantalla que lo está enseñando sería adivinar, y
+                  `appDe` existe justo para no hacerlo: pudo crearse en la app
+                  hermana, donde «RSI 30» es el RSI de velas de UNA HORA y no de
+                  velas diarias. Un aviso callado cuesta volverlo a escribir;
+                  uno que suena con el dato de la otra app le dice a su dueño
+                  que pasó algo que no pasó.
+
+                  Sin `dir="ltr"`: es una frase traducida, así que en árabe tiene
+                  que heredar `rtl`. Forzarlo es el fallo del calendario, que
+                  partía «24.5K» en dos. */}
+              {mudo && (
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: 'var(--amber)',
+                    borderInlineStart: '2px solid var(--amber)',
+                    paddingInlineStart: 8,
+                  }}
+                >
+                  {t('misAvisos.mudoPorque')}
+                </div>
+              )}
 
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 <Pastilla activo={av.activa !== false} onClick={() => hacer(a.encender(av.id, av.activa === false))}>
