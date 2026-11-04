@@ -796,3 +796,4 @@
 {"en":"2026-11-03T21:00:24.728Z","hora":21,"minuto":0,"vela":"2026-11-03 20:00:00","factorHora":1.01,"total":0,"nuevas":0,"disparo":"schedule"}
 {"en":"2026-11-03T22:21:36.242Z","hora":22,"minuto":21,"vela":"2026-11-03 22:00:00","factorHora":0.9,"total":0,"nuevas":0,"disparo":"schedule"}
 {"en":"2026-11-03T23:29:42.269Z","hora":23,"minuto":29,"vela":"2026-11-03 23:00:00","factorHora":0.85,"total":1,"nuevas":1,"disparo":"schedule"}
+{"en":"2026-11-04T00:01:58.835Z","hora":0,"minuto":1,"vela":"2026-11-04 00:00:00","factorHora":1.04,"total":0,"nuevas":0,"disparo":"schedule"}
