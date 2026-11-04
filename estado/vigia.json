@@ -1,5 +1,8 @@
 {
-  "actualizadoEl": "2026-11-04T22:23:51.705Z",
-  "vela": "2026-11-04 22:00:00",
-  "senales": []
+  "actualizadoEl": "2026-11-04T23:24:09.430Z",
+  "vela": "2026-11-04 23:00:00",
+  "senales": [
+    "USD/JPY|VENTA|rango",
+    "EUR/NZD|COMPRA|rango"
+  ]
 }

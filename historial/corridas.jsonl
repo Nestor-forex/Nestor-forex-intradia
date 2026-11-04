@@ -819,3 +819,4 @@
 {"en":"2026-11-04T20:24:01.527Z","hora":20,"minuto":24,"vela":"2026-11-04 20:00:00","factorHora":0.95,"total":0,"nuevas":0,"disparo":"workflow_dispatch"}
 {"en":"2026-11-04T21:20:52.502Z","hora":21,"minuto":20,"vela":"2026-11-04 21:00:00","factorHora":0.85,"total":0,"nuevas":0,"disparo":"schedule"}
 {"en":"2026-11-04T22:23:51.705Z","hora":22,"minuto":23,"vela":"2026-11-04 22:00:00","factorHora":0.88,"total":0,"nuevas":0,"disparo":"workflow_dispatch"}
+{"en":"2026-11-04T23:24:09.430Z","hora":23,"minuto":24,"vela":"2026-11-04 23:00:00","factorHora":0.89,"total":2,"nuevas":2,"disparo":"workflow_dispatch"}
