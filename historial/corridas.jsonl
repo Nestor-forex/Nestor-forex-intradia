@@ -809,3 +809,4 @@
 {"en":"2026-11-04T10:23:52.612Z","hora":10,"minuto":23,"vela":"2026-11-04 10:00:00","factorHora":0.83,"total":3,"nuevas":2,"disparo":"workflow_dispatch"}
 {"en":"2026-11-04T11:07:37.615Z","hora":11,"minuto":7,"vela":"2026-11-04 11:00:00","factorHora":0.85,"total":1,"nuevas":0,"disparo":"schedule"}
 {"en":"2026-11-04T12:17:08.917Z","hora":12,"minuto":17,"vela":"2026-11-04 12:00:00","factorHora":0.98,"total":0,"nuevas":0,"disparo":"schedule"}
+{"en":"2026-11-04T13:02:41.035Z","hora":13,"minuto":2,"vela":"2026-11-04 13:00:00","factorHora":1.11,"total":0,"nuevas":0,"disparo":"schedule"}
