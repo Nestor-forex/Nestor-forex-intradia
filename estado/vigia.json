@@ -1,5 +1,8 @@
 {
-  "actualizadoEl": "2026-11-04T03:00:34.060Z",
-  "vela": "2026-11-04 02:00:00",
-  "senales": []
+  "actualizadoEl": "2026-11-04T04:23:47.611Z",
+  "vela": "2026-11-04 04:00:00",
+  "senales": [
+    "NZD/CAD|VENTA|tendencia",
+    "USD/CHF|VENTA|tendencia"
+  ]
 }
