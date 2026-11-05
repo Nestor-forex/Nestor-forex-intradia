@@ -1,5 +1,8 @@
 {
-  "actualizadoEl": "2026-11-05T14:23:59.865Z",
-  "vela": "2026-11-05 14:00:00",
-  "senales": []
+  "actualizadoEl": "2026-11-05T15:24:11.260Z",
+  "vela": "2026-11-05 15:00:00",
+  "senales": [
+    "AUD/USD|VENTA|tendencia",
+    "NZD/CHF|VENTA|tendencia"
+  ]
 }
