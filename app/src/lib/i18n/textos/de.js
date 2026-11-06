@@ -93,6 +93,9 @@ export default {
     frase_rsi_abajo: "wenn RSI erreicht oder unterschreitet",
     estadoEsperando: "Wartet. Noch nicht eingetreten.",
     estadoApagado: "Aus. Wird nicht klingeln.",
+    // ⚠️ Un aviso que NO PUEDE sonar: ver `avisoMudo` en `src/lib/alertas.js`.
+    estadoMudo: 'Wird nicht klingeln: eine Angabe fehlt.',
+    mudoPorque: 'Dieser Hinweis wurde erstellt, bevor die App gespeichert hat, aus welcher der beiden Apps er kam, und „RSI 30“ bedeutet bei Tageskerzen nicht dasselbe wie bei Stundenkerzen. Damit er klingelt: löschen und erneut anlegen.',
     estadoSono: (v) => `Hat schon geklingelt (${v.veces} von ${v.max} Mal). Stelle ihn neu scharf, damit er wieder klingelt.`,
     encender: "Einschalten",
     apagar: "Ausschalten",

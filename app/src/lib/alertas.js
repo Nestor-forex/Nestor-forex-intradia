@@ -94,6 +94,68 @@ export const LADOS_PRECIO = Object.freeze(['sube', 'baja'])
 export const LADOS_INDICADOR = Object.freeze(['arriba', 'abajo'])
 
 // ─────────────────────────────────────────────────────────────────────────
+// ¿DE QUÉ APP SALIÓ EL AVISO, Y HACE FALTA SABERLO?
+// ─────────────────────────────────────────────────────────────────────────
+//
+// ⚠️⚠️ ESTO VIVE AQUÍ, EN UN GEMELO, Y NO EN EL GUION QUE MANDA LOS AVISOS.
+//
+// El guion (`scripts/lib/avisos-usuario.mjs`) decide con esto si un aviso
+// puede sonar; la pantalla decide con esto si lo marca como mudo. Si fueran
+// dos copias, el día que una se moviera habría avisos marcados que sí suenan y
+// avisos que no suenan sin marcar — y nada fallaría. Es el fallo del umbral de
+// fuerza copiado en nueve guiones (2026-10-12) y el de `ATR_REVERSION` en dos.
+//
+// `src/lib/` es lo único que pueden importar los dos: el navegador no tiene
+// `scripts/`. Mismo patrón que `perforaExtremo` y que `bollinger.js`.
+
+export const APPS = Object.freeze(['swing', 'intradia'])
+
+/** La app que creó el aviso, o `null` si no lo dice o dice algo que no existe. */
+export function appDe(aviso) {
+  return APPS.includes(aviso?.app) ? aviso.app : null
+}
+
+// Los tipos que NO necesitan saber de qué app vienen. Se enumera LA EXCEPCIÓN,
+// no la regla, y eso es deliberado: así un tipo de aviso que se añada mañana
+// **necesita la app** hasta que alguien venga aquí a escribir que no.
+//
+// ⚠️ Los dos errores no cuestan lo mismo. Equivocarse hacia «necesita app» deja
+// un aviso callado que se arregla volviéndolo a crear; hacia «no la necesita»
+// lo deja sonando con un dato de la app equivocada — «RSI 30» es el RSI de
+// velas DIARIAS en Swing y el de velas de UNA HORA en Intradía. Por eso la
+// condición no puede ser simétrica.
+//
+// El precio es la excepción porque el bid y el ask salen del puente de MT5, que
+// es uno y el mismo para las dos apps: ahí no hay nada que adivinar.
+export const TIPOS_SIN_APP = Object.freeze(['precio'])
+
+/** ¿Este aviso necesita saber de qué app salió para poder juzgarse? */
+export function necesitaApp(aviso) {
+  const t = aviso?.tipo
+  // Un tipo que no existe no suena por otro motivo (`estadoDe` no sabría qué
+  // mirar), así que aquí no se le inventa una necesidad.
+  if (!TIPOS.includes(t)) return false
+  return !TIPOS_SIN_APP.includes(t)
+}
+
+/**
+ * ¿Este aviso NO PUEDE SONAR NUNCA tal como está guardado?
+ *
+ * Hoy solo hay un caso: un aviso de indicador creado antes del 2026-10-31, que
+ * es cuando se empezó a guardar la app. Se arregla borrándolo y volviéndolo a
+ * poner.
+ *
+ * ⚠️ A PROPÓSITO NO HAY NINGUNA FUNCIÓN QUE LO ARREGLE SOLA. Rellenar la app
+ * con la de la pantalla que lo está enseñando sería adivinar, y `appDe` existe
+ * justo para no hacerlo: alguien pudo crearlo en la app hermana. Un aviso
+ * callado cuesta volverlo a escribir; uno que suena con el dato de la otra app
+ * le dice a su dueño que pasó algo que no pasó.
+ */
+export function avisoMudo(aviso) {
+  return necesitaApp(aviso) && appDe(aviso) == null
+}
+
+// ─────────────────────────────────────────────────────────────────────────
 // ¿ESTÁ BIEN ESCRITO EL AVISO?
 // ─────────────────────────────────────────────────────────────────────────
 

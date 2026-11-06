@@ -93,6 +93,9 @@ export default {
     frase_rsi_abajo: "si le RSI atteint ou passe sous",
     estadoEsperando: "En attente. Ce n'est pas encore arrivé.",
     estadoApagado: "Éteinte. Elle ne sonnera pas.",
+    // ⚠️ Un aviso que NO PUEDE sonar: ver `avisoMudo` en `src/lib/alertas.js`.
+    estadoMudo: 'Ne sonnera pas : une donnée manque.',
+    mudoPorque: 'Cette alerte a été créée avant que l\'app n\'enregistre de laquelle des deux apps elle venait, et « RSI 30 » ne veut pas dire la même chose sur des bougies journalières que sur des bougies d\'une heure. Pour qu\'elle sonne : supprimez-la et recréez-la.',
     estadoSono: (v) => `A déjà sonné (${v.veces} fois sur ${v.max}). Réarme-la pour qu’elle sonne à nouveau.`,
     encender: "Allumer",
     apagar: "Éteindre",

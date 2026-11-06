@@ -93,6 +93,9 @@ export default {
     frase_rsi_abajo: "if RSI reaches or drops below",
     estadoEsperando: "Waiting. It hasn't happened yet.",
     estadoApagado: "Off. It won't ring.",
+    // ⚠️ Un aviso que NO PUEDE sonar: ver `avisoMudo` en `src/lib/alertas.js`.
+    estadoMudo: 'It won\'t ring: a piece of data is missing.',
+    mudoPorque: 'This alert was created before the app started saving which of the two apps it came from, and “RSI 30” doesn\'t mean the same thing on daily candles as on one-hour candles. To make it ring: delete it and set it up again.',
     estadoSono: (v) => `Already rang (${v.veces} of ${v.max} times). Re-arm it to make it ring again.`,
     encender: "Turn on",
     apagar: "Turn off",

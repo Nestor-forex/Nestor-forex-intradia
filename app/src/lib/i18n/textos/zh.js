@@ -89,6 +89,9 @@ export default {
     frase_rsi_abajo: "如果 RSI 达到或低于",
     estadoEsperando: "等待中。还没有发生。",
     estadoApagado: "已关闭。不会响。",
+    // ⚠️ Un aviso que NO PUEDE sonar: ver `avisoMudo` en `src/lib/alertas.js`.
+    estadoMudo: '不会提醒：缺少一项数据。',
+    mudoPorque: '该提醒建立于应用开始记录它来自哪个应用之前，而“RSI 30”在日线和小时线上的含义并不相同。要让它生效：删除并重新设置。',
     estadoSono: (v) => `已经响过（${v.max} 次中的 ${v.veces} 次）。重新启用才会再响。`,
     encender: "打开",
     apagar: "关闭",

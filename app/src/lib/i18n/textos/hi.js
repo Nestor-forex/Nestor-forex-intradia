@@ -89,6 +89,9 @@ export default {
     frase_rsi_abajo: "अगर RSI पहुँचे या नीचे जाए",
     estadoEsperando: "इंतज़ार में। अभी नहीं हुआ।",
     estadoApagado: "बंद है। नहीं बजेगा।",
+    // ⚠️ Un aviso que NO PUEDE sonar: ver `avisoMudo` en `src/lib/alertas.js`.
+    estadoMudo: 'यह नहीं बजेगा: इसमें एक जानकारी नहीं है।',
+    mudoPorque: 'यह अलर्ट तब बना था जब ऐप ने यह सहेजना शुरू नहीं किया था कि यह दो ऐप में से किस से आया, और “RSI 30” दैनिक कैंडल और एक घंटे की कैंडल में एक जैसा नहीं होता। बजाने के लिए: इसे मिटाकर दुबारा बनाएं।',
     estadoSono: (v) => `पहले ही बज चुका (${v.max} में से ${v.veces} बार)। दोबारा बजाने के लिए फिर लगाएँ।`,
     encender: "चालू करें",
     apagar: "बंद करें",

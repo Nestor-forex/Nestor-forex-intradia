@@ -89,6 +89,9 @@ export default {
     frase_rsi_abajo: "se il RSI arriva o scende sotto",
     estadoEsperando: "In attesa. Non è ancora successo.",
     estadoApagado: "Spento. Non suonerà.",
+    // ⚠️ Un aviso que NO PUEDE sonar: ver `avisoMudo` en `src/lib/alertas.js`.
+    estadoMudo: 'Non suonerà: manca un dato.',
+    mudoPorque: 'Questo avviso è stato creato prima che l\'app iniziasse a salvare da quale delle due app proveniva, e «RSI 30» non significa la stessa cosa sulle candele giornaliere e su quelle di un\'ora. Per farlo suonare: cancellalo e rimettilo.',
     estadoSono: (v) => `Ha già suonato (${v.veces} di ${v.max} volte). Riarmalo perché suoni di nuovo.`,
     encender: "Accendi",
     apagar: "Spegni",

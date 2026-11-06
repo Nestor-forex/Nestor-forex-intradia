@@ -90,6 +90,9 @@ export default {
     frase_rsi_abajo: "إذا بلغ RSI أو نزل تحت",
     estadoEsperando: "في الانتظار. لم يحدث بعد.",
     estadoApagado: "مُطفأ. لن يرن.",
+    // ⚠️ Un aviso que NO PUEDE sonar: ver `avisoMudo` en `src/lib/alertas.js`.
+    estadoMudo: 'لن يرن: تنقصه معلومة.',
+    mudoPorque: 'أُنشئ هذا التنبيه قبل أن يبدأ التطبيق بحفظ من أيّ التطبيقين خرج، و«RSI 30» لا تعني الشيء نفسه على الشمعات اليومية والشمعات الساعية. لكي يرن: احذفه وأعد إنشاءه.',
     estadoSono: (v) => `رنّ بالفعل (${v.veces} من ${v.max} مرات). أعد تفعيله ليرن مجدداً.`,
     encender: "تشغيل",
     apagar: "إطفاء",
