@@ -1,9 +1,9 @@
 {
-  "actualizadoEl": "2026-11-06T12:13:35.937Z",
+  "actualizadoEl": "2026-11-06T13:00:08.415Z",
   "vela": "2026-11-06 12:00:00",
   "senales": [
     "NZD/CHF|VENTA|tendencia",
-    "AUD/JPY|VENTA|tendencia",
-    "NZD/JPY|VENTA|tendencia"
+    "NZD/JPY|VENTA|tendencia",
+    "AUD/JPY|VENTA|retroceso"
   ]
 }
