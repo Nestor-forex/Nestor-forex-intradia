@@ -1,5 +1,8 @@
 {
-  "actualizadoEl": "2026-11-11T05:24:24.072Z",
-  "vela": "2026-11-11 05:00:00",
-  "senales": []
+  "actualizadoEl": "2026-11-11T06:24:24.703Z",
+  "vela": "2026-11-11 06:00:00",
+  "senales": [
+    "USD/CHF|COMPRA|tendencia",
+    "GBP/USD|VENTA|tendencia"
+  ]
 }
