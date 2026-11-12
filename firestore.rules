@@ -36,6 +36,20 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(uid)).data.estado == 'aprobado';
     }
 
+    // El perfil de riesgo de una persona: los cuatro campos, ni uno más ni uno
+    // menos, cada uno dentro de sus límites. ⚠️ Los números son los de
+    // `LIMITES` en `src/lib/perfilRiesgo.js`: si cambian allí, cambian aquí y
+    // hay que volver a publicar estas reglas.
+    function perfilRiesgoValido(p) {
+      return p is map
+        && p.keys().hasOnly(['capital', 'riesgoPct', 'limiteDiarioPct', 'maxPerdidasSeguidas'])
+        && p.keys().hasAll(['capital', 'riesgoPct', 'limiteDiarioPct', 'maxPerdidasSeguidas'])
+        && p.capital is number && p.capital >= 1 && p.capital <= 10000000
+        && p.riesgoPct is number && p.riesgoPct >= 0.1 && p.riesgoPct <= 10
+        && p.limiteDiarioPct is number && p.limiteDiarioPct >= 0.5 && p.limiteDiarioPct <= 20
+        && p.maxPerdidasSeguidas is int && p.maxPerdidasSeguidas >= 1 && p.maxPerdidasSeguidas <= 20;
+    }
+
     match /users/{uid} {
       allow get: if esPropio(uid) || esAdmin();
       allow list: if esAdmin();
@@ -83,10 +97,20 @@ service cloud.firestore {
       // tendría que recorrerla entera en cada vuelta. Los números son los
       // mismos que `MAX_AVISOS` y `MAX_SEGUIMIENTO` — si allí cambian, aquí
       // también, y hay que volver a publicar las reglas.
+      //
+      // ⚠️ AMPLIADA EL 2026-11-12 con `perfilRiesgo`: el capital, el riesgo
+      // por operación y los dos frenos de cada persona (fase 1 del plan del
+      // Analizador). Lo escribe `src/lib/usePerfilRiesgo.js`. Se comprueba
+      // ENTERO aquí —los cuatro campos, ni uno más, y cada uno dentro de sus
+      // límites— porque la app los comprueba también, pero la app se puede
+      // saltar. Los límites son los de `LIMITES` en `src/lib/perfilRiesgo.js`
+      // y `prueba-perfil.mjs` falla si los dos se separan.
       allow update: if esAdmin()
         || (esPropio(uid)
             && request.resource.data.diff(resource.data).affectedKeys()
-                 .hasOnly(['nombre', 'seguimiento', 'avisos'])
+                 .hasOnly(['nombre', 'seguimiento', 'avisos', 'perfilRiesgo'])
+            && (!('perfilRiesgo' in request.resource.data)
+                || perfilRiesgoValido(request.resource.data.perfilRiesgo))
             && (!('avisos' in request.resource.data)
                 || (request.resource.data.avisos is list
                     && request.resource.data.avisos.size() <= 20))

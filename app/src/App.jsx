@@ -298,6 +298,8 @@ export default function App() {
                   ratesUSD={mercado.ratesUSD}
                   loadingTasas={mercado.loading}
                   errorTasas={mercado.sinConfigurar ? t('barrido.sinConfigurar') : mercado.error}
+                  uid={authUser.uid}
+                  ficha={perfil}
                 />
               )}
               {tab === 'admin' && esAdmin && (
