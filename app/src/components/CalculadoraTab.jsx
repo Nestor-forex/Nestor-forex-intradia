@@ -2,18 +2,30 @@ import { useState } from 'react'
 import { PAIR_NAMES } from '../lib/pairs'
 import { calcularLote } from '../lib/calc'
 import { useT } from '../lib/i18n'
+import { leerPerfil } from '../lib/perfilRiesgo'
+import MiPerfil from './MiPerfil'
 
-export default function CalculadoraTab({ ratesUSD, loadingTasas, errorTasas }) {
+export default function CalculadoraTab({ ratesUSD, loadingTasas, errorTasas, uid, ficha }) {
   const t = useT()
-  const [capital, setCapital] = useState('')
-  const [riesgo, setRiesgo] = useState('')
+  const perfil = leerPerfil(ficha?.perfilRiesgo)
+
+  // ⚠️ `null` = «la persona no ha tocado esta casilla: usa su perfil». En
+  // cuanto escribe algo —también si la vacía— manda lo escrito. Así el perfil
+  // rellena la calculadora sin que un cambio puntual aquí lo modifique, y sin
+  // un efecto que reescriba lo que la persona acaba de borrar.
+  const [capitalTxt, setCapital] = useState(null)
+  const [riesgoTxt, setRiesgo] = useState(null)
+  const capital = capitalTxt ?? (perfil.capital !== null ? String(perfil.capital) : '')
+  const riesgo = riesgoTxt ?? (perfil.riesgoPct !== null ? String(perfil.riesgoPct) : '')
+  const tienePerfil = perfil.capital !== null && perfil.riesgoPct !== null
+  const usaPerfil = tienePerfil && capitalTxt === null && riesgoTxt === null
   const [pips, setPips] = useState('')
   const [par, setPar] = useState(PAIR_NAMES[0])
 
   const r = ratesUSD
     ? calcularLote({
-        capital: parseFloat(capital),
-        riesgoPct: parseFloat(riesgo),
+        capital: parseFloat(String(capital).replace(',', '.')),
+        riesgoPct: parseFloat(String(riesgo).replace(',', '.')),
         pips: parseFloat(pips),
         par,
         tasas: ratesUSD,
@@ -22,6 +34,8 @@ export default function CalculadoraTab({ ratesUSD, loadingTasas, errorTasas }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <MiPerfil uid={uid} ficha={ficha} />
+
       <h2 style={{ margin: 0, fontSize: 18 }}>{t('calc.titulo')}</h2>
 
       <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -41,6 +55,9 @@ export default function CalculadoraTab({ ratesUSD, loadingTasas, errorTasas }) {
             <option key={p}>{p}</option>
           ))}
         </select>
+        <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+          {t(usaPerfil ? 'calc.desdePerfil' : tienePerfil ? 'calc.distintoAlPerfil' : 'calc.sinPerfil')}
+        </p>
       </div>
 
       <div className="card mono" style={{ borderColor: 'oklch(0.32 0.05 155)', display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px 16px', fontSize: 14 }}>

@@ -271,6 +271,16 @@ export const GEMELOS = [
   // `pairs.js` (PRIMO) y la pantalla lo pide, nunca lo escribe.
   'src/lib/useAvisos.js',
   'src/components/MisAvisos.jsx',
+  // El perfil de riesgo de cada persona (capital, riesgo por operacion y sus
+  // dos frenos) y su tarjeta encima de la calculadora. Identicos porque se
+  // guardan en la MISMA ficha de Firestore —el proyecto es uno solo— y el
+  // capital de alguien no cambia segun que app abra. Los limites de
+  // `perfilRiesgo.js` estan tambien en `firestore.rules` (gemelo) y
+  // `prueba-perfil.mjs` falla si se separan.
+  'src/lib/perfilRiesgo.js',
+  'src/lib/usePerfilRiesgo.js',
+  'src/components/MiPerfil.jsx',
+  'scripts/prueba-perfil.mjs',
   // Ver todos los pares o solo los mios. Identicos porque la DECISION es la
   // misma en las dos apps: que mira cada quien, nunca que calcula la app.
   //
