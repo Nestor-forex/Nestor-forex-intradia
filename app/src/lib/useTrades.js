@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore'
 import { db } from './firebase'
+import { diaLocal } from './guardianRiesgo'
 
 // Diario de operaciones intradía del usuario logueado, sincronizado en vivo
 // por Firestore. Usa una colección separada (`trades_intradia`) de la app
@@ -30,7 +31,10 @@ export function useTrades(uid) {
 
   const guardar = (t) => addDoc(collection(db, 'users', uid, 'trades_intradia'), { ...t, creado: serverTimestamp() })
   const borrar = (id) => deleteDoc(doc(db, 'users', uid, 'trades_intradia', id))
-  const cerrar = (id, pl) => updateDoc(doc(db, 'users', uid, 'trades_intradia', id), { estado: 'cerrada', pl })
+  // El día y el momento del CIERRE, que es cuando el resultado cuenta: los lee
+  // el guardián de riesgo del Diario. El día es el local del teléfono.
+  const cerrar = (id, pl) =>
+    updateDoc(doc(db, 'users', uid, 'trades_intradia', id), { estado: 'cerrada', pl, cerradaEl: diaLocal(), cerradaEnMs: Date.now() })
 
   return { trades, cargando, guardar, borrar, cerrar }
 }

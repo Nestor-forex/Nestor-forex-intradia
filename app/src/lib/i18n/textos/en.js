@@ -399,6 +399,20 @@ export default {
     err_sinSesion: 'Sign in to save your profile.',
   },
 
+  guardian: {
+    titulo: 'Today\'s stop',
+    sinPerfil: 'Set your capital and your two limits in "My risk profile" and every day you will see here how much you have lost against your own rule.',
+    irPerfil: 'Go to my risk profile',
+    perdidoHoy: 'Lost today',
+    seguidas: 'Losses in a row today',
+    motivoDia: 'You reached your maximum loss for the day.',
+    motivoRacha: 'You reached your limit of losses in a row.',
+    freno: 'Your own rule says not to open any more trades until tomorrow.',
+    cercaDia: ({ margen }) => `Little room left today: ${margen} before the stop.`,
+    cercaRacha: 'One more loss and you reach your limit of losses in a row.',
+    pie: 'Counts only the trades closed today in this Journal, using your phone\'s date. The app is not connected to your broker: it blocks nothing, it only reminds you of your own rule.',
+  },
+
   miembros: {
     titulo: 'Members',
     intro: 'Approve requests to grant access, or remove anyone whenever you want. Changes apply instantly for everyone.',

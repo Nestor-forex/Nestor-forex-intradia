@@ -465,6 +465,20 @@ export default {
     err_sinSesion: 'Inicia sesión para guardar tu perfil.',
   },
 
+  guardian: {
+    titulo: 'Tu freno de hoy',
+    sinPerfil: 'Pon tu capital y tus dos frenos en «Mi perfil de riesgo» y aquí verás cada día cuánto llevas perdido frente a tu propia regla.',
+    irPerfil: 'Ir a mi perfil de riesgo',
+    perdidoHoy: 'Perdido hoy',
+    seguidas: 'Pérdidas seguidas hoy',
+    motivoDia: 'Llegaste a tu pérdida máxima del día.',
+    motivoRacha: 'Llegaste a tu límite de pérdidas seguidas.',
+    freno: 'Tu propia regla dice que no abras más operaciones hasta mañana.',
+    cercaDia: ({ margen }) => `Te queda poco margen hoy: ${margen} antes del freno.`,
+    cercaRacha: 'Una pérdida más y llegas a tu límite de pérdidas seguidas.',
+    pie: 'Cuenta solo las operaciones cerradas hoy en este Diario, con el día de tu teléfono. La app no está conectada a tu bróker: no bloquea nada, solo te recuerda tu propia regla.',
+  },
+
   miembros: {
     titulo: 'Miembros',
     intro: 'Aprueba las solicitudes para dar acceso, o retira a cualquiera cuando quieras. Los cambios se aplican al instante para todos.',
