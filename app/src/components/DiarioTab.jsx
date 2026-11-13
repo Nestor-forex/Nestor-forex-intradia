@@ -22,13 +22,17 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
   const [porBorrar, setPorBorrar] = useState(null)
 
   // Cuando se llega aquí desde el detalle de un setup, el formulario arranca
-  // con el par, la dirección y la nota ya puestos. Falta el lote, que depende
-  // de cuánto quiera arriesgar Néstor.
+  // con el par, la dirección y la nota ya puestos. Desde una señal falta el
+  // lote, que depende de cuánto quiera arriesgar cada uno; desde el Analizador
+  // llega calculado con su perfil.
   useEffect(() => {
     if (!prellenar) return
     if (PAIR_NAMES.includes(prellenar.par)) setPar(prellenar.par)
     if (prellenar.dir) setDir(prellenar.dir)
     if (prellenar.nota) setNota(prellenar.nota)
+    // El lote solo llega desde el Analizador, que lo calcula con el perfil;
+    // desde las señales no viene y la casilla se queda como estaba.
+    if (prellenar.lote) setLote(prellenar.lote)
     setAbierta(Boolean(prellenar.abierta))
     setPl('')
     onPrellenado?.()

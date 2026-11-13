@@ -288,6 +288,14 @@ export const GEMELOS = [
   'src/lib/guardianRiesgo.js',
   'src/components/GuardianRiesgo.jsx',
   'scripts/prueba-guardian.mjs',
+  // El Analizador (fase 3, 2026-11-13). Las cuentas, la pantalla, el guardado
+  // de plantillas y su prueba son iguales en las dos: lo que cada app sabe de
+  // sí misma (sus medias, su geometría, su pivote) llega ya resuelto en las
+  // fichas que arma su `marketCalc.js`, que sigue siendo PRIMO.
+  'src/lib/analizador.js',
+  'src/lib/usePlantillas.js',
+  'src/components/AnalizadorTab.jsx',
+  'scripts/prueba-analizador.mjs',
   // Ver todos los pares o solo los mios. Identicos porque la DECISION es la
   // misma en las dos apps: que mira cada quien, nunca que calcula la app.
   //

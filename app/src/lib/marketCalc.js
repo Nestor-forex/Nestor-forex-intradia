@@ -1,3 +1,4 @@
+import { pivoteClasico } from './analizador.js'
 import { compresionDe, nivelDe, posicionEnRango } from './compresion.js'
 import { crearT } from './i18n/crearT.js'
 import { IDIOMA_BASE, localeDe } from './i18n/idiomas.js'
@@ -298,15 +299,10 @@ function calcularPivots(highs, lows, closes, L) {
   const hasta = Math.max(desde, L - BARRAS_POR_DIA)
   const hi = Math.max(...highs.slice(desde, hasta + 1))
   const lo = Math.min(...lows.slice(desde, hasta + 1))
-  const cierre = closes[hasta]
-  const p = (hi + lo + cierre) / 3
-  return {
-    p,
-    r1: 2 * p - lo,
-    s1: 2 * p - hi,
-    r2: p + (hi - lo),
-    s2: p - (hi - lo),
-  }
+  // La fórmula vive en `analizador.js` (GEMELO) desde el 2026-11-13, para
+  // que el pivote diario de Swing y el de sesión de aquí salgan de la MISMA
+  // cuenta en vez de tener una copia cada app. El resultado es idéntico.
+  return pivoteClasico(hi, lo, closes[hasta])
 }
 
 // Twelve Data devuelve la hora como "2026-07-30 02:00:00", sin zona. Se le
@@ -884,11 +880,15 @@ const ATR_STOP = 1.5
 // 100% de los casos: un número constante no informa nada. Tomando el nivel
 // más cercano, la relación vuelve a depender de cuánto recorrido real tiene
 // cada par, que es lo que hay que mirar antes de entrar.
+// ⚠️ Los `?.` de los pivotes no cambian nada en producción —el barrido
+// publicado los trae siempre—, pero sin ellos un par con un archivo viejo
+// tumbaría el Analizador entero en vez de quedarse sin ese nivel. `undefined`
+// no pasa ninguno de los dos filtros, así que se descarta solo.
 const objetivo = (p, compra) => {
   const min = p.c + (compra ? 1 : -1) * p.atrAbs
   const niveles = compra
-    ? [p.hi20, p.pivots.r1, p.pivots.r2].filter((x) => x > min)
-    : [p.lo20, p.pivots.s1, p.pivots.s2].filter((x) => x < min)
+    ? [p.hi20, p.pivots?.r1, p.pivots?.r2].filter((x) => x > min)
+    : [p.lo20, p.pivots?.s1, p.pivots?.s2].filter((x) => x < min)
   if (!niveles.length) return p.c + (compra ? 1 : -1) * 2.5 * p.atrAbs
   return compra ? Math.min(...niveles) : Math.max(...niveles)
 }
@@ -905,6 +905,64 @@ const nivelesRango = (p, compra) => {
     : { sl: p.rangoHi + 0.5 * p.atrAbs, tp: p.rangoLo + 0.2 * amplitud }
 }
 
+// La geometría de las señales de tendencia de la app: stop a 1,5 ATR y
+// objetivo en el primer obstáculo real (ver `objetivo`).
+//
+// ⚠️ Se exporta para que el ANALIZADOR use exactamente esta cuenta en su
+// método «la de la app». Una copia allí se separaría en silencio.
+export const nivelesApp = (p, compra) => ({
+  sl: compra ? p.c - ATR_STOP * p.atrAbs : p.c + ATR_STOP * p.atrAbs,
+  tp: objetivo(p, compra),
+})
+
+// La vara neutra: 1,5 ATR a cada lado. Es con la que se miden las reglas en
+// pruebas de las dos apps (en Swing, `ATR_REVERSION`). Aquí solo la usa el
+// Analizador.
+const nivelesSimetricos = (p, compra) => ({
+  sl: compra ? p.c - ATR_STOP * p.atrAbs : p.c + ATR_STOP * p.atrAbs,
+  tp: compra ? p.c + ATR_STOP * p.atrAbs : p.c - ATR_STOP * p.atrAbs,
+})
+
+/**
+ * Lo que el ANALIZADOR necesita saber de un par, en la forma que entiende
+ * `analizador.js` (GEMELO). Aquí se resuelve lo propio de ESTA app: sus medias
+ * rápidas (EMA9/EMA21), su geometría y su pivote de sesión.
+ *
+ * ⚠️ Bollinger va `null`: esta app no lo calcula, y la tarjeta lo dice en vez
+ * de inventarlo.
+ *
+ * ⚠️ En los CRUCES el soporte, la resistencia y el pivote salen de máximos y
+ * mínimos DERIVADOS (ver `computarBarrido`), algo más anchos que los reales.
+ * `esCruce` viaja en la ficha para que la tarjeta lo pueda decir.
+ */
+export function fichaAnalisis(p, esc = {}) {
+  return {
+    name: p.name,
+    b: p.b,
+    q: p.q,
+    dec: p.dec,
+    precio: p.c,
+    atr: p.atrAbs,
+    atrPct: p.atrPctH,
+    rsi: Number.isFinite(p.rsiV) ? Math.round(p.rsiV) : null,
+    tend: p.tend,
+    emas: { corta: p.e9, larga: p.e21, nombres: ['EMA9', 'EMA21'] },
+    sop: p.lo20,
+    res: p.hi20,
+    pivote: p.pivots ?? null,
+    compresion: p.compresion,
+    nivelCompresion: nivelDe(p.compresion, UMBRALES_COMPRESION),
+    fuerzaB: esc[p.b],
+    fuerzaQ: esc[p.q],
+    bollinger: null,
+    esCruce: Boolean(p.esCruce),
+    niveles: {
+      app: { COMPRA: nivelesApp(p, true), VENTA: nivelesApp(p, false) },
+      simetrica: { COMPRA: nivelesSimetricos(p, true), VENTA: nivelesSimetricos(p, false) },
+    },
+  }
+}
+
 const mkSetup = (p, lado, esc = {}, t, tipo = 'tendencia') => {
   const d = p.dec
   const compra = lado === 'COMPRA'
@@ -913,7 +971,7 @@ const mkSetup = (p, lado, esc = {}, t, tipo = 'tendencia') => {
     ? nivelesRango(p, compra)
     : tipo === 'retroceso'
       ? nivelesRetroceso(p, compra)
-      : { sl: compra ? p.c - ATR_STOP * p.atrAbs : p.c + ATR_STOP * p.atrAbs, tp: objetivo(p, compra) }
+      : nivelesApp(p, compra)
   const rr = Math.abs(tp - p.c) / Math.abs(p.c - sl)
   return {
     name: p.name,
@@ -1277,9 +1335,14 @@ export function derivarVista(
     .filter((x) => Number.isFinite(x.compresion))
     .sort((a, b) => a.compresion - b.compresion)
 
+  // Lo que necesita el Analizador, un par por ficha. SIN filtrar por «Mis
+  // pares»: ahí la persona elige el par a mano.
+  const fichas = paresRaw.map((p) => fichaAnalisis(p, esc))
+
   return {
     monedas,
     pares,
+    fichas,
     compresionPares,
     compras,
     ventas,

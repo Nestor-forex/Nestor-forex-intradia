@@ -4,6 +4,9 @@ import { useT } from '../lib/i18n'
 // cuando cambia el idioma, sin reconstruir la lista.
 const ITEMS = [
   { tab: 'barrido', icon: '▦', clave: 'nav.barrido' },
+  // El Analizador (fase 3, 2026-11-13). Va segundo, al lado del barrido: es
+  // donde se pasa de «qué destaca hoy» a «cómo quedaría mi operación».
+  { tab: 'analizar', icon: '◎', clave: 'nav.analizar' },
   { tab: 'diario', icon: '≡', clave: 'nav.diario' },
   { tab: 'historial', icon: '◷', clave: 'nav.historial' },
   { tab: 'calc', icon: '%', clave: 'nav.riesgo' },
@@ -13,7 +16,7 @@ const ITEMS = [
   // la pestaña Barrido ya lleva ocho tarjetas — una novena la enterraría.
   //
   // ⚠️ La etiqueta tiene que ser CORTA en los 13 idiomas: con el admin son
-  // seis pestañas en 390 px, o sea 65 px cada una. Hay una comprobación en el
+  // SIETE pestañas en 390 px (desde el Analizador), o sea 55 px cada una. Hay una comprobación en el
   // navegador de que ninguna se sale.
   { tab: 'avisos', icon: '◔', clave: 'nav.avisos' },
 ]
@@ -54,7 +57,9 @@ export default function BottomNav({ tab, onTab, esAdmin }) {
             justifyContent: 'center',
             gap: 3,
             color: tab === it.tab ? 'var(--green)' : 'oklch(0.55 0.02 255)',
-            fontSize: 11.5,
+            // Con siete pestañas (el admin) la letra baja un punto para que
+            // ninguna etiqueta se salga de sus 55 px.
+            fontSize: items.length > 6 ? 10.5 : 11.5,
             fontWeight: 600,
           }}
         >
