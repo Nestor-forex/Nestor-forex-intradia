@@ -211,7 +211,7 @@ export function armarAnalisis({
     // Solo los eventos de las dos divisas del par. `null` si no hay calendario
     // publicado; `[]` si lo hay y no trae nada para estas dos — son dos cosas
     // distintas y se dicen distinto.
-    h.calendario = calendario ? proximos(calendario, ahora).filter((ev) => ev.c === ficha.b || ev.c === ficha.q) : null
+    h.calendario = Array.isArray(calendario?.eventos) ? proximos(calendario, ahora).filter((ev) => ev.c === ficha.b || ev.c === ficha.q) : null
   }
   if (si('swap')) h.swap = tasas && monedasDe && LADOS.includes(lado) ? carryDeSenal({ par: ficha.name, lado }, tasas, monedasDe) : null
 

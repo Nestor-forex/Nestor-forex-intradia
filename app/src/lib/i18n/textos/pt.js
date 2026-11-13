@@ -549,6 +549,17 @@ export default {
     nada: 'Sem dados importantes nas próximas 48 horas',
     nadaDetalle: 'O app não está com defeito: simplesmente não há dados de impacto alto ou médio das nossas moedas nesse prazo. Acontece muito nos fins de semana. Assim que houver algum, ele aparecerá aqui com o horário.',
     siguiente: (v) => `O próximo do calendário: ${v.dia}, às ${v.hora} (${v.div}).`,
+    cargando: 'Carregando o calendário…',
+    falloQue: 'Isso não quer dizer que não haja dados importantes: quer dizer que o app não conseguiu consultá-los. Abra o app de novo daqui a pouco ou quando tiver conexão.',
+    falloCache: 'Mostrando o último calendário salvo neste telefone, que pode estar desatualizado.',
+    fallo: {
+      sinRed: 'Não foi possível carregar o calendário: o telefone está sem conexão com a internet.',
+      conexion: 'Não foi possível conectar ao servidor do calendário. O mais provável é que a conexão com a internet esteja falhando.',
+      tiempo: 'O calendário demorou demais para responder. Pode ser uma conexão lenta.',
+      http: (v) => `O servidor do calendário respondeu com um erro (código ${v.status}).`,
+      formato: 'O arquivo do calendário chegou danificado ou em um formato que o app não entende.',
+      desconocido: 'Não foi possível carregar o calendário por uma falha inesperada.',
+    },
     pie: 'Só se mostram os dados de impacto alto e médio das 8 moedas da varredura; os de impacto baixo ficam de fora porque encobririam os que importam. As horas são as do seu telemóvel. Fonte: ForexFactory.',
   },
   glosario: {

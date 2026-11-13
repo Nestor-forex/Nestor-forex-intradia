@@ -549,6 +549,17 @@ export default {
     nada: 'Keine wichtigen Daten in den nächsten 48 Stunden',
     nadaDetalle: 'Die App ist nicht kaputt: In diesem Zeitraum gibt es einfach keine Daten mit hoher oder mittlerer Wirkung für unsere Währungen. Am Wochenende kommt das oft vor. Sobald es welche gibt, erscheinen sie hier mit Uhrzeit.',
     siguiente: (v) => `Nächster Termin im Kalender: ${v.dia}, um ${v.hora} (${v.div}).`,
+    cargando: 'Kalender wird geladen…',
+    falloQue: 'Das heißt nicht, dass es keine wichtigen Daten gibt: Die App konnte sie nur nicht abrufen. Öffne die App später wieder oder wenn du eine Verbindung hast.',
+    falloCache: 'Es wird der zuletzt auf diesem Telefon gespeicherte Kalender angezeigt, der veraltet sein kann.',
+    fallo: {
+      sinRed: 'Der Kalender konnte nicht geladen werden: Das Telefon hat keine Internetverbindung.',
+      conexion: 'Keine Verbindung zum Kalenderserver. Wahrscheinlich funktioniert die Internetverbindung nicht.',
+      tiempo: 'Der Kalender hat zu lange gebraucht. Vielleicht ist die Verbindung langsam.',
+      http: (v) => `Der Kalenderserver hat mit einem Fehler geantwortet (Code ${v.status}).`,
+      formato: 'Die Kalenderdatei kam beschädigt oder in einem Format an, das die App nicht versteht.',
+      desconocido: 'Der Kalender konnte wegen eines unerwarteten Fehlers nicht geladen werden.',
+    },
     pie: 'Gezeigt werden nur Termine mit hoher und mittlerer Wirkung für die 8 Währungen des Scans; geringe Wirkung bleibt außen vor, weil sie die wichtigen überdecken würde. Die Zeiten sind die Ihres Telefons. Quelle: ForexFactory.',
   },
   glosario: {

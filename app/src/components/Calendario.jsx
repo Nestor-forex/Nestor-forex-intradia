@@ -53,6 +53,17 @@ import {
 
 // El color va con la PALABRA, nunca solo. Y va sobre el impacto, no sobre la
 // divisa: rojo aquí significa «esto salta mucho», no «esto va a bajar».
+// La caja de aviso: ámbar, como el resto de avisos de la app que piden mirar
+// algo. No es rojo: un calendario que no carga no impide operar.
+const CAJA_AMBAR = {
+  padding: '10px 12px',
+  border: '1px solid var(--amber)',
+  borderRadius: 6,
+  color: 'var(--amber)',
+  fontSize: 12,
+  lineHeight: 1.5,
+}
+
 const IMPACTO = {
   [ALTO]: { color: 'oklch(0.7 0.16 25)', clave: 'calendario.alto' },
   [MEDIO]: { color: 'var(--amber)', clave: 'calendario.medio' },
@@ -65,26 +76,55 @@ export default function Calendario({ cal, ahora = new Date() }) {
   const eventos = proximos(cal, ahora)
   const estado = estadoTarjeta(cal, ahora)
 
-  // Sin archivo no se pinta NADA: no sabemos si hay datos o no, y decir «no
-  // hay» sería inventarlo. Ver `estadoTarjeta`.
-  if (estado === 'nada') return null
+  // ⚠️⚠️ LA TARJETA NO DESAPARECE NUNCA (Néstor, 2026-11-13). Sin archivo
+  // dice que está cargando o QUÉ falló; nunca «no hay datos», porque eso sería
+  // afirmar algo del mercado sin haberlo mirado. Ver `estadoTarjeta`.
+  const cargando = estado === 'cargando'
+  const sinArchivo = cargando || estado === 'fallo'
+  const vacia = estado === 'vacia'
 
-  const viejo = estaViejo(cal, ahora)
+  // `fallo` puede venir SOLO (no hay copia en el teléfono) o pegado a la copia
+  // guardada: entonces se enseña la copia y se dice que no se pudo actualizar.
+  const fallo = cal?.fallo ?? null
+  const textoFallo = fallo
+    ? t(`calendario.fallo.${fallo.codigo}`, { status: fallo.status ?? '' })
+    : null
+  const AVISO_FALLO = { color: 'var(--amber)', fontWeight: 500 }
+
+  const viejo = !sinArchivo && estaViejo(cal, ahora)
   const hora = (iso) =>
     new Date(iso).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
 
   // (2026-11-13) Con el archivo cargado y nada en 48 horas, la tarjeta SE
   // QUEDA y lo dice, visible sin abrir. Antes desaparecía, y Néstor creyó que
-  // se había quitado el calendario. Es UNA sola tarjeta para los dos casos: lo
-  // único que cambia es el título, el avance y lo de dentro.
-  const vacia = estado === 'vacia'
+  // se había quitado el calendario. Es UNA sola tarjeta para todos los casos:
+  // lo único que cambia es el título, el avance y lo de dentro.
   const sig = vacia ? siguienteFuera(cal, ahora) : null
   const urgente = masUrgente(eventos)
   const horas = urgente ? horasHasta(urgente, ahora) : null
 
+  // Lo que se ve SIN abrir. El fallo va siempre, aunque haya copia guardada:
+  // quien mira tiene que saber que lo que ve puede no estar al día.
+  const lineaPrincipal = cargando ? (
+    <span style={{ color: 'var(--text-muted)' }}>{t('calendario.cargando')}</span>
+  ) : estado === 'fallo' ? null : vacia ? (
+    <span style={{ color: 'var(--text-secondary)' }}>{t('calendario.nada')}</span>
+  ) : urgente ? (
+    <span style={{ color: IMPACTO[ALTO].color, fontWeight: 500 }}>
+      {t('calendario.aviso', { h: horas, div: urgente.c })}
+    </span>
+  ) : null
+  const avance =
+    lineaPrincipal || textoFallo ? (
+      <span style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {lineaPrincipal}
+        {textoFallo && <span style={AVISO_FALLO}>{textoFallo}</span>}
+      </span>
+    ) : null
+
   return (
     <TarjetaPlegable
-      titulo={vacia ? t('calendario.tituloSin') : t('calendario.titulo', { n: eventos.length })}
+      titulo={vacia || sinArchivo ? t('calendario.tituloSin') : t('calendario.titulo', { n: eventos.length })}
       desc={t('calendario.desc')}
       paraQue={t('calendario.paraQue')}
       // ⚠️ EL AVISO DE NOTICIA URGENTE TIENE QUE VERSE SIN ABRIR, y por eso
@@ -98,16 +138,36 @@ export default function Calendario({ cal, ahora = new Date() }) {
       // sus anclas coincidían, no que no se perdiera nada — y las siete
       // cabeceras iguales hicieron creer que la octava también lo era. Lo cazó
       // el linter, avisando de que `horas` se había quedado sin usar.
-      avance={
-        vacia ? (
-          <span style={{ color: 'var(--text-secondary)' }}>{t('calendario.nada')}</span>
-        ) : urgente ? (
-          <span style={{ color: IMPACTO[ALTO].color, fontWeight: 500 }}>
-            {t('calendario.aviso', { h: horas, div: urgente.c })}
-          </span>
-        ) : null
-      }
+      avance={avance}
     >
+      {sinArchivo ? (
+        <>
+          {cargando ? (
+            <p style={{ margin: 0, fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              {t('calendario.cargando')}
+            </p>
+          ) : (
+            <>
+              <div style={CAJA_AMBAR}>{textoFallo ?? t('calendario.fallo.desconocido')}</div>
+              <p style={{ margin: 0, fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                {t('calendario.falloQue')}
+              </p>
+            </>
+          )}
+          <p style={{ margin: 0, fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+            {t('calendario.pie')}
+          </p>
+        </>
+      ) : (
+        <>
+          {/* Hay copia guardada pero no se pudo actualizar: se dice, con el
+              motivo, ANTES de los eventos. */}
+          {textoFallo && (
+            <div style={CAJA_AMBAR}>
+              {textoFallo} {t('calendario.falloCache')}
+            </div>
+          )}
+
           <p style={{ margin: 0, fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
             {vacia ? t('calendario.nadaDetalle') : t('calendario.intro')}
           </p>
@@ -270,6 +330,8 @@ export default function Calendario({ cal, ahora = new Date() }) {
           <p style={{ margin: 0, fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.5 }}>
             {t('calendario.pie')}
           </p>
+        </>
+      )}
     </TarjetaPlegable>
   )
 }

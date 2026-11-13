@@ -549,6 +549,17 @@ export default {
     nada: 'Aucune publication importante dans les 48 prochaines heures',
     nadaDetalle: 'L’app n’est pas en panne : il n’y a simplement aucune publication à impact fort ou moyen pour nos devises sur cette période. C’est fréquent le week-end. Dès qu’il y en aura une, elle apparaîtra ici avec son heure.',
     siguiente: (v) => `Prochaine publication du calendrier : ${v.dia}, à ${v.hora} (${v.div}).`,
+    cargando: 'Chargement du calendrier…',
+    falloQue: 'Cela ne veut pas dire qu’il n’y a pas de publications importantes : l’app n’a simplement pas pu les consulter. Rouvre l’app dans un moment ou quand tu auras une connexion.',
+    falloCache: 'Le dernier calendrier enregistré sur ce téléphone est affiché ; il peut ne pas être à jour.',
+    fallo: {
+      sinRed: 'Impossible de charger le calendrier : le téléphone n’a pas de connexion internet.',
+      conexion: 'Impossible de joindre le serveur du calendrier. Le plus probable est que la connexion internet ne fonctionne pas.',
+      tiempo: 'Le calendrier a mis trop de temps à répondre. La connexion est peut-être lente.',
+      http: (v) => `Le serveur du calendrier a répondu par une erreur (code ${v.status}).`,
+      formato: 'Le fichier du calendrier est arrivé endommagé ou dans un format que l’app ne comprend pas.',
+      desconocido: 'Impossible de charger le calendrier à cause d’une erreur inattendue.',
+    },
     pie: 'Seules les données à fort et moyen impact des 8 devises du balayage sont affichées ; celles à faible impact sont écartées car elles masqueraient celles qui comptent. Les heures sont celles de votre téléphone. Source : ForexFactory.',
   },
   glosario: {

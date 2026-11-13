@@ -327,15 +327,39 @@ export function proximos(cal, ahora = new Date(), { horas = HORAS_VISTA } = {}) 
 //   'con'   → hay eventos en el horizonte: la tarjeta de siempre.
 //   'vacia' → el archivo LLEGÓ y no hay nada en 48 h: se dice con esas
 //             palabras («sin datos importantes en las próximas 48 horas»).
-//   'nada'  → no hay archivo (todavía cargando, 404, sin red).
+//   'cargando' → todavía no ha llegado nada (ni la copia del teléfono).
+//   'fallo'    → no se pudo bajar y no hay copia: se dice QUÉ falló.
+//
+// ⚠️⚠️ LA TARJETA NO DESAPARECE NUNCA (pedido por Néstor el 2026-11-13: «la
+// tarjeta no debe desaparecer nunca y si es porque no hay internet solamente
+// debe notificar ese fallo»). Una tarjeta que no está no se puede distinguir
+// de una que se quitó.
 //
 // ⚠️ SIN ARCHIVO NO SE DICE «NO HAY DATOS». Eso sería afirmar algo del
 // mercado sin haberlo mirado: «no pude leer el calendario» y «no hay nada que
 // publicar» no son lo mismo. Misma asimetría que `veredictoBusqueda`. Solo el
-// archivo cargado y con lista de eventos autoriza la frase.
+// archivo cargado y con lista de eventos autoriza «sin datos importantes».
 export function estadoTarjeta(cal, ahora = new Date()) {
-  if (!cal || !Array.isArray(cal.eventos)) return 'nada'
+  if (!cal) return 'cargando'
+  if (!Array.isArray(cal.eventos)) return 'fallo'
   return proximos(cal, ahora).length ? 'con' : 'vacia'
+}
+
+// Qué falló al bajar el calendario, para decirlo con palabras.
+//
+// ⚠️ Solo se afirma «no hay internet» cuando el propio teléfono lo dice
+// (`enLinea === false`). Un `TypeError` de `fetch` puede ser falta de red,
+// pero también un servidor caído o un DNS que no responde, así que se dice
+// «no se pudo conectar», que es lo que de verdad se sabe.
+export function clasificarFallo(err, { enLinea } = {}) {
+  if (enLinea === false) return { codigo: 'sinRed' }
+  const nombre = err?.name
+  if (nombre === 'TimeoutError' || nombre === 'AbortError') return { codigo: 'tiempo' }
+  const m = /^HTTP (\d{3})$/.exec(String(err?.message ?? ''))
+  if (m) return { codigo: 'http', status: Number(m[1]) }
+  if (err?.message === 'sin eventos' || nombre === 'SyntaxError') return { codigo: 'formato' }
+  if (nombre === 'TypeError') return { codigo: 'conexion' }
+  return { codigo: 'desconocido' }
 }
 
 // El primer evento que el archivo trae MÁS ALLÁ del horizonte, o `null`.
