@@ -110,6 +110,11 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
   const [msgPl, setMsgPl] = useState(null)
   const [porBorrar, setPorBorrar] = useState(null)
 
+  // Solo se ofrecen las herramientas que ESTA app calcula para algún par. La
+  // app de intradía no tiene Bollinger: ofrecer el botón para que diga siempre
+  // «Sin dato» sería prometer algo que no hay.
+  const disponibles = HERRAMIENTAS.filter((x) => x !== 'bollinger' || fichas.some((f) => Number.isFinite(f.bollinger)))
+
   const parActual = par && nombres.includes(par) ? par : nombres[0] ?? null
   const fichaPar = fichas.find((f) => f.name === parActual) ?? null
 
@@ -208,7 +213,7 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
       <div className="card" style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
         <span style={ROTULO}>{t('an.paso4')}</span>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {HERRAMIENTAS.map((x) => (
+          {disponibles.map((x) => (
             <Chip key={x} activo={herr.includes(x)} onClick={() => alternar(x)}>
               {t(`an.h.${x}`)}
             </Chip>
@@ -293,10 +298,17 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
               <N>{fmt(a.precio, d)}</N>
             </Fila>
             <Fila rotulo={t('an.stop')}>
-              <N color="var(--red)">{fmt(a.niveles.sl, d)}</N> <N>({a.niveles.pipRiesgo.toFixed(0)} pips)</N>
+              {/* Precio y pips van en UN bloque ltr: sueltos dentro de una fila
+                  árabe, el navegador los ponía al revés («(42 pips) 1.1012»).
+                  Lo enseñó la captura en árabe, no el build. */}
+              <span dir="ltr">
+                <N color="var(--red)">{fmt(a.niveles.sl, d)}</N> <N>({a.niveles.pipRiesgo.toFixed(0)} pips)</N>
+              </span>
             </Fila>
             <Fila rotulo={t('an.objetivo')}>
-              <N color="var(--green)">{fmt(a.niveles.tp, d)}</N> <N>({a.niveles.pipBeneficio.toFixed(0)} pips)</N>
+              <span dir="ltr">
+                <N color="var(--green)">{fmt(a.niveles.tp, d)}</N> <N>({a.niveles.pipBeneficio.toFixed(0)} pips)</N>
+              </span>
             </Fila>
             <Fila rotulo="R/B">
               <N color={a.niveles.rr < RR_AVISO ? 'var(--amber)' : undefined}>1 : {a.niveles.rr.toFixed(2)}</N>
