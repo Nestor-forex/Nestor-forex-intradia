@@ -302,6 +302,30 @@ if (estaAppApagaUnLado) {
   bien(true, 'esta app no apaga ningún lado: no hay línea que exigir')
 }
 
+// ⚠️ LAS VENTAS EN PAUSA SE ENSEÑAN CON SUS NIVELES (2026-11-13), y son las
+// MISMAS que anota el vigía. Néstor: «si pasan los umbrales quiero que se
+// vean». Tres cosas que no pueden romperse en silencio:
+//   · que nunca se cuelen en `setups`, que es lo que la app PROPONE;
+//   · que cada una diga que está en pausa (`pausada`);
+//   · que coincidan, par por par y nivel por nivel, con las que el vigía anota
+//     (`incluirVentas: true`, mismo `topN`). Si se separaran, la app enseñaría
+//     unas y el historial mediría otras.
+// Condicionado como el resto del bloque: en la app que no pausa nada no existe.
+if (estaAppApagaUnLado && Array.isArray(v.setupsPausados)) {
+  bien(v.setupsPausados.length > 0, `la venta que pasó el umbral sale con sus niveles (${v.setupsPausados.length})`)
+  bien(v.setupsPausados.every((s) => s.pausada === true), 'cada una lleva la marca de pausa')
+  bien(!v.setups.some((s) => s.pausada || s.lado === 'VENTA'), 'ninguna se cuela entre lo que la app propone')
+  const delVigia = derivarVista(soloVentas, { incluirVentas: true }).setups.filter((s) => s.lado === 'VENTA')
+  const huella = (s) => `${s.name}|${s.lado}|${s.tipo}|${s.entrada}|${s.sl}|${s.tp}|${s.rr}`
+  bien(
+    JSON.stringify(v.setupsPausados.map(huella)) === JSON.stringify(delVigia.map(huella)),
+    'son exactamente las que anota el vigía, con los mismos niveles',
+  )
+  bien(/\$\{bloquePausadas\(setupsPausados\)\}/.test(rep), 'y el reporte las pinta')
+} else if (estaAppApagaUnLado) {
+  bien(false, 'esta app apaga un lado y `derivarVista` no devuelve `setupsPausados`')
+}
+
 // ── 7. NINGUNA FRASE AFIRMA «NO HAY SEÑALES» SIN SABER SI LAS HAY ───────
 //
 // ⚠️⚠️ POR QUÉ: el 2026-10-20 las dos apps publicaron en el chat de Néstor una

@@ -144,6 +144,7 @@ export const LISTAS_POR_PAR = [
   'retrocesos',
   'setups',
   'setupsReversion',
+  'setupsPausados',
   'setupsCaida',
   'setupsBollinger',
 ]
