@@ -49,8 +49,12 @@ import {
   normalizarImpacto,
   prepararCalendario,
   proximos,
+  estadoTarjeta,
+  siguienteFuera,
+  clasificarFallo,
   totalSemana,
 } from '../src/lib/calendario.js'
+import { readFileSync } from 'node:fs'
 
 let fallos = 0
 const comprobar = (que, bien) => {
@@ -420,6 +424,70 @@ console.log('\n12. Cuando no hay nada que publicar: POR QUÉ, y si eso es grave'
   // salir en ROJO, no colarse por el lado silencioso.
   comprobar('una causa desconocida alarma', juzgarPublicacion({ causa: 'loQueVengaMañana' }, SABADO).alarma === true)
   comprobar('y un diagnóstico nulo también', juzgarPublicacion(null, SABADO).alarma === true)
+}
+
+console.log('\n13. Sin nada en 48 h la tarjeta lo DICE; sin archivo, nunca dice «no hay datos» (2026-11-13)')
+{
+  // Néstor no vio la tarjeta un viernes por la noche y creyó que se había
+  // quitado el calendario. Desaparecer en silencio se lee como «lo quitaron».
+  // Pero sin archivo tampoco se puede decir «no hay datos»: sería inventarlo.
+  const ev = (h) => ({ t: 'X', c: 'USD', i: ALTO, d: enHoras(h) })
+  comprobar('con un evento dentro del horizonte → con', estadoTarjeta({ eventos: [ev(3)] }, AHORA) === 'con')
+  comprobar('archivo con solo eventos pasados → vacia', estadoTarjeta({ eventos: [ev(-5)] }, AHORA) === 'vacia')
+  comprobar('archivo con la lista vacía → vacia', estadoTarjeta({ eventos: [] }, AHORA) === 'vacia')
+  comprobar('evento más allá de 48 h → vacia', estadoTarjeta({ eventos: [ev(HORAS_VISTA + 5)] }, AHORA) === 'vacia')
+  comprobar('todavía nada → cargando (no se afirma que no hay datos)', estadoTarjeta(null, AHORA) === 'cargando')
+  comprobar('solo un fallo → fallo', estadoTarjeta({ fallo: { codigo: 'sinRed' } }, AHORA) === 'fallo')
+  comprobar('objeto sin lista → fallo, nunca «vacia»', estadoTarjeta({}, AHORA) === 'fallo')
+  comprobar('lista que no es lista → fallo', estadoTarjeta({ eventos: 'x' }, AHORA) === 'fallo')
+  comprobar('copia guardada CON fallo → se juzga por la copia', estadoTarjeta({ eventos: [ev(3)], fallo: { codigo: 'tiempo' } }, AHORA) === 'con')
+
+  const lejos = { eventos: [ev(-2), ev(HORAS_VISTA + 30), ev(HORAS_VISTA + 6), ev(1), { d: 'roto' }] }
+  comprobar('siguienteFuera da el PRIMERO más allá del horizonte', siguienteFuera(lejos, AHORA)?.d === enHoras(HORAS_VISTA + 6))
+  comprobar('sin nada más allá → null (no se inventa)', siguienteFuera({ eventos: [ev(1), ev(-3)] }, AHORA) === null)
+  comprobar('sin archivo → null', siguienteFuera(null, AHORA) === null)
+
+  // Y que la pantalla de verdad lo use, no solo que la función exista.
+  const jsx = readFileSync(new URL('../src/components/Calendario.jsx', import.meta.url), 'utf8')
+  comprobar('la tarjeta decide con estadoTarjeta', /estadoTarjeta\(cal, ahora\)/.test(jsx))
+  comprobar("la tarjeta pinta el estado 'vacia' con su frase", /estado === 'vacia'/.test(jsx) && /calendario\.nada'/.test(jsx))
+  comprobar('ya NO se esconde solo porque no haya eventos', !/if \(!eventos\.length\) return null/.test(jsx))
+}
+
+console.log('\n14. La tarjeta NO DESAPARECE NUNCA: si falla, dice QUÉ falló (2026-11-13)')
+{
+  // Néstor: «la tarjeta no debe desaparecer nunca y si es porque no hay
+  // internet solamente debe notificar ese fallo o el fallo que sea».
+  const err = (name, message) => Object.assign(new Error(message ?? ''), { name })
+  comprobar('el teléfono dice que no hay red → sinRed', clasificarFallo(err('TypeError', 'Failed to fetch'), { enLinea: false }).codigo === 'sinRed')
+  comprobar('TypeError con red → conexion (no se afirma «sin internet»)', clasificarFallo(err('TypeError', 'Failed to fetch'), { enLinea: true }).codigo === 'conexion')
+  comprobar('se pasó el tiempo → tiempo', clasificarFallo(err('TimeoutError'), {}).codigo === 'tiempo')
+  comprobar('abortado → tiempo', clasificarFallo(err('AbortError'), {}).codigo === 'tiempo')
+  const h = clasificarFallo(new Error('HTTP 404'), {})
+  comprobar('HTTP 404 → http con su código', h.codigo === 'http' && h.status === 404)
+  comprobar('JSON roto → formato', clasificarFallo(err('SyntaxError', 'Unexpected token'), {}).codigo === 'formato')
+  comprobar('sin eventos → formato', clasificarFallo(new Error('sin eventos'), {}).codigo === 'formato')
+  comprobar('cualquier otra cosa → desconocido', clasificarFallo(err('RangeError', 'x'), {}).codigo === 'desconocido')
+  comprobar('sin error → desconocido, no revienta', clasificarFallo(undefined).codigo === 'desconocido')
+
+  // Cada código tiene su frase en es.js: un `t()` sin clave sale en blanco.
+  const es = readFileSync(new URL('../src/lib/i18n/textos/es.js', import.meta.url), 'utf8')
+  const bloque = es.slice(es.indexOf('\n  calendario: {'), es.indexOf('\n  correl: {'))
+  for (const c of ['sinRed', 'conexion', 'tiempo', 'http', 'formato', 'desconocido']) {
+    comprobar(`es.js tiene la frase del fallo «${c}»`, new RegExp(`\\n      ${c}: `).test(bloque))
+  }
+
+  // La tarjeta: ningún `return null` fuera de la explicación de cada evento.
+  const jsx = readFileSync(new URL('../src/components/Calendario.jsx', import.meta.url), 'utf8')
+  const cuerpo = jsx.slice(jsx.indexOf('export default function Calendario'), jsx.indexOf('function ExplicaEvento'))
+  comprobar('la tarjeta no tiene ningún «return null»', !/return null/.test(cuerpo))
+  comprobar('la tarjeta enseña el texto del fallo', /calendario\.fallo\.\$\{fallo\.codigo\}/.test(cuerpo))
+  comprobar('y dice que está cargando', /calendario\.cargando/.test(cuerpo))
+
+  // Y el hook ya no se calla los fallos.
+  const hook = readFileSync(new URL('../src/lib/useCalendario.js', import.meta.url), 'utf8')
+  comprobar('el hook clasifica el fallo', /clasificarFallo\(err/.test(hook))
+  comprobar('el hook conserva la copia guardada si falla', /\.\.\.previo, fallo/.test(hook))
 }
 
 console.log('')

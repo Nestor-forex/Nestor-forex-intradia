@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { clave } from './identidad.js'
+import { clasificarFallo } from './calendario.js'
 
 // Baja el calendario económico que publica `scripts/publicar-calendario.mjs`.
 //
@@ -27,16 +28,21 @@ const URL_CALENDARIO =
 const CACHE_KEY = clave('calendario_v1')
 const LIMITE_MS = 12_000
 
-// ⚠️ ESTE HOOK NUNCA DEVUELVE UN ERROR A LA PANTALLA.
+// ⚠️ SI NO SE PUEDE BAJAR, SE DICE QUÉ FALLÓ (cambiado el 2026-11-13).
 //
-// Si el calendario no se puede bajar, se devuelve `null` y la tarjeta
-// sencillamente no sale. Es la misma decisión que con `correl` y la CONTRARIA
-// a la de `setupsCaida`, y el criterio es el mismo de siempre: aquí una
-// ausencia solo cuesta una tarjeta que no se ve; allá se confundiría con «hoy
-// no hubo señales» y se perdería historial.
+// Antes este hook callaba los fallos y la tarjeta desaparecía. Néstor no la
+// vio un viernes, creyó que se había quitado el calendario, y pidió: «la
+// tarjeta no debe desaparecer nunca y si es porque no hay internet solamente
+// debe notificar ese fallo o el fallo que sea». Así que:
 //
-// Poner un mensaje de error rojo por un calendario sería peor que no tenerlo:
-// asustaría por algo que no impide operar.
+//  · sin copia guardada → se devuelve `{ fallo }`, sin `eventos`, y la tarjeta
+//    dice el motivo;
+//  · con copia guardada → se devuelve la copia CON `fallo` pegado, y la
+//    tarjeta enseña la copia y avisa de que no se pudo actualizar.
+//
+// En ámbar y no en rojo: un calendario que no carga no impide operar. Y nunca
+// «no hay datos»: eso solo se dice con el archivo leído (`estadoTarjeta`).
+// La copia guardada NUNCA lleva `fallo` dentro: solo se guarda lo que llegó.
 export function useCalendario() {
   const [cal, setCal] = useState(null)
 
@@ -74,8 +80,11 @@ export function useCalendario() {
           // Sin espacio o en modo privado: da igual, es solo la copia.
         }
       })
-      .catch(() => {
-        // A propósito en silencio. Ver el comentario de arriba.
+      .catch((err) => {
+        if (cancelado) return
+        const enLinea = typeof navigator !== 'undefined' ? navigator.onLine : undefined
+        const fallo = clasificarFallo(err, { enLinea })
+        setCal((previo) => (Array.isArray(previo?.eventos) ? { ...previo, fallo } : { fallo }))
       })
 
     return () => {
