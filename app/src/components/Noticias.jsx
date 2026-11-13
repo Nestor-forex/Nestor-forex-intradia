@@ -44,26 +44,46 @@ export default function Noticias() {
       <p style={{ margin: 0, fontSize: 12.5, color: 'var(--amber)', lineHeight: 1.55 }}>{t('noticias.aviso')}</p>
       <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
         {datos.noticias.map((n) => (
-          <li key={n.u} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <span style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>
-              {cuando(n.d)} · {nombre[n.f] ?? n.f}
-              {Array.isArray(n.div) && n.div.length > 0 && (
-                <>
-                  {' · '}
-                  <span className="mono" dir="ltr">
-                    {n.div.join(' ')}
-                  </span>
-                </>
-              )}
-            </span>
-            <a
-              href={n.u}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ fontSize: 13, lineHeight: 1.45, color: 'var(--text-primary)' }}
+          <li key={n.u} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+            {/* LA DIVISA VA DELANTE, como el código del calendario (pedido por
+                Néstor el 2026-11-13, pensando en los principiantes): de un
+                vistazo se sabe de qué moneda habla la noticia. La de un banco
+                central es su divisa; la de ING, las que nombra el titular.
+                En color neutro: decir de qué divisa habla no dice si le va
+                bien o mal. Siempre ocupa su columna, aunque vaya vacía, para
+                que los titulares queden alineados. */}
+            <span
+              className="mono"
+              dir="ltr"
+              style={{
+                fontSize: 11.5,
+                fontWeight: 700,
+                color: 'var(--text)',
+                flexShrink: 0,
+                width: 34,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
+                paddingTop: 1,
+              }}
             >
-              <bdi>{n.t}</bdi>
-            </a>
+              {(Array.isArray(n.div) ? n.div : []).map((c) => (
+                <span key={c}>{c}</span>
+              ))}
+            </span>
+            <span style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
+              <span style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>
+                {cuando(n.d)} · {nombre[n.f] ?? n.f}
+              </span>
+              <a
+                href={n.u}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: 13, lineHeight: 1.45, color: 'var(--text-primary)' }}
+              >
+                <bdi>{n.t}</bdi>
+              </a>
+            </span>
           </li>
         ))}
       </ul>
