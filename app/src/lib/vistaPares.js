@@ -169,6 +169,7 @@ export const NO_SE_FILTRAN = {
   bloqueados: 'Explica por qué hoy no hay señales mirando el mercado entero; va de la mano de `difMax` y se lee con él.',
   corte: 'No es una lista de pares: es la fecha del dato.',
   sesion: 'No es una lista de pares: es la sesión del mercado abierta ahora.',
+  fichas: 'Son los datos del Analizador, donde la persona elige el par a mano. Recortarlas a «Mis pares» le impediría analizar un par que no sigue todavía.',
 }
 
 /**

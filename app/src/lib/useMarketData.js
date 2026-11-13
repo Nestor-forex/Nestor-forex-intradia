@@ -193,6 +193,9 @@ export function useMarketData({ thr = 0.5, topN = 3 } = {}) {
     ratesUSD: data?.ratesUSD ?? null,
     monedas: vista?.monedas ?? [],
     pares: vista?.pares ?? [],
+    // Lo que necesita el Analizador (fase 3, 2026-11-13): una ficha por par,
+    // con la geometría y el pivote propios de esta app ya resueltos.
+    fichas: vista?.fichas ?? [],
     compras: vista?.compras ?? [],
     ventas: vista?.ventas ?? [],
     vigilancia: vista?.vigilancia ?? [],

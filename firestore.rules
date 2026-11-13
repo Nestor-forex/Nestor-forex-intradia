@@ -105,10 +105,18 @@ service cloud.firestore {
       // límites— porque la app los comprueba también, pero la app se puede
       // saltar. Los límites son los de `LIMITES` en `src/lib/perfilRiesgo.js`
       // y `prueba-perfil.mjs` falla si los dos se separan.
+      //
+      // ⚠️ AMPLIADA EL 2026-11-13 con `plantillas`: las combinaciones de
+      // herramientas que cada persona guarda en el Analizador (fase 3). Lo
+      // escribe `src/lib/usePlantillas.js`. Aquí solo se comprueba que sea una
+      // lista de 10 como mucho —el `MAX_PLANTILLAS` de `analizador.js`—; lo de
+      // dentro lo limpia la app al leer, así que una plantilla rara no rompe
+      // nada, y lo que de verdad importa (que nadie se escriba una lista
+      // enorme) sí lo puede comprobar una regla.
       allow update: if esAdmin()
         || (esPropio(uid)
             && request.resource.data.diff(resource.data).affectedKeys()
-                 .hasOnly(['nombre', 'seguimiento', 'avisos', 'perfilRiesgo'])
+                 .hasOnly(['nombre', 'seguimiento', 'avisos', 'perfilRiesgo', 'plantillas'])
             && (!('perfilRiesgo' in request.resource.data)
                 || perfilRiesgoValido(request.resource.data.perfilRiesgo))
             && (!('avisos' in request.resource.data)
@@ -116,7 +124,10 @@ service cloud.firestore {
                     && request.resource.data.avisos.size() <= 20))
             && (!('seguimiento' in request.resource.data)
                 || (request.resource.data.seguimiento is list
-                    && request.resource.data.seguimiento.size() <= 40)));
+                    && request.resource.data.seguimiento.size() <= 40))
+            && (!('plantillas' in request.resource.data)
+                || (request.resource.data.plantillas is list
+                    && request.resource.data.plantillas.size() <= 10)));
 
       allow delete: if esAdmin();
 
