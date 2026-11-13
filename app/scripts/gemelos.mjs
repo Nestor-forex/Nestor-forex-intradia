@@ -229,6 +229,11 @@ export const GEMELOS = [
   'src/lib/explicacion.js',
   'src/components/Explica.jsx',
   'scripts/prueba-explicacion.mjs',
+  // Las noticias de los bancos centrales y de ING (2026-11-13). Las DOS apps
+  // leen el archivo que publica Swing: las noticias son las mismas para velas
+  // diarias que para velas de una hora.
+  'src/lib/useNoticias.js',
+  'src/components/Noticias.jsx',
   // Las tasas de referencia de los bancos centrales. Identicos por la misma
   // razon que el calendario: son las MISMAS 8 divisas en las dos apps y la
   // misma fuente (BIS, dataflow WS_CBPOL, en CSV — elegida con la sonda del

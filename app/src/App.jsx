@@ -11,6 +11,7 @@ import MisAvisos from './components/MisAvisos'
 import FiltroPares from './components/FiltroPares'
 import CotizacionesVivo from './components/CotizacionesVivo'
 import Calendario from './components/Calendario'
+import Noticias from './components/Noticias'
 import Compresion from './components/Compresion'
 import Tasas from './components/Tasas'
 import Estacionalidad from './components/Estacionalidad'
@@ -245,6 +246,10 @@ export default function App() {
                       abre algo AHORA. Un aviso que hay que ir a buscar dos
                       pantallas más adentro no es un aviso. */}
                   <Calendario cal={calendario} />
+                  {/* Justo debajo del calendario: aquél dice qué se va a
+                      publicar; éste, qué publicaron ya los bancos centrales. Lee el
+                      archivo que publica Swing (ver `useNoticias.js`). */}
+                  <Noticias />
                   {/* Debajo de los avisos y no arriba del barrido: el barrido
                       es lo que se viene a mirar, y esto es una herramienta de
                       apoyo para el momento de entrar. */}

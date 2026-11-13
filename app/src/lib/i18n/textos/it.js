@@ -510,6 +510,13 @@ export default {
     venceAyuda: 'La data di scadenza dice fino a quando questa persona può entrare. Ogni notte un robot chiude la porta a chi l’ha superata (con un giorno di margine). Senza data = accesso aperto, che è ciò che hanno tutti oggi. Il pulsante +30 giorni somma alla data già presente, quindi rinnovare in anticipo non costa giorni. Vale per entrambe le app: condividono la stessa lista di membri.',
   },
 
+  noticias: {
+    titulo: ({ n }) => `Notizie delle banche centrali (${n})`,
+    desc: 'Cosa hanno pubblicato la Fed, la BCE, la Reserve Bank of New Zealand e ING',
+    paraQue: 'I trader le leggono per sapere cosa ha appena detto una banca centrale prima di operare sulla sua valuta: una decisione sui tassi o un discorso può cambiare la giornata. Qui sono riunite e con la data, così non devi cercarle su quattro siti diversi.',
+    aviso: 'Una notizia non è un segnale. Dice cosa è successo e quando, mai dove va il prezzo. I titoli compaiono esattamente come li pubblica ogni fonte, nella loro lingua; la decisione di operare è tua.',
+    pie: 'Sono mostrate solo le fonti le cui condizioni permettono di riprodurre i titoli. Il testo completo è sulla pagina di ogni fonte: tocca il titolo per leggerlo lì.',
+  },
   calendario: {
     paraQue: 'I trader lo guardano per scegliere l\'ORA in cui entrare: pochi minuti prima di un dato importante il prezzo fa salti e lo spread si allarga, quindi è quando sbagliare costa di più. Non dice dove andrà il prezzo, solo quando ci sarà scossa.',
     titulo: ({ n }) => `Calendario economico (${n})`,

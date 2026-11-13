@@ -514,6 +514,13 @@ export default {
     venceAyuda: 'Das Ablaufdatum sagt, bis wann diese Person hineinkommt. Jede Nacht schließt ein Roboter die Tür für alle, deren Datum vorbei ist (mit einem Tag Puffer). Kein Datum = offener Zugang, was heute alle haben. Die Schaltfläche +30 Tage rechnet ab dem bereits vorhandenen Datum, frühes Verlängern kostet also keine Tage. Gilt für beide Apps: sie teilen sich dieselbe Mitgliederliste.',
   },
 
+  noticias: {
+    titulo: ({ n }) => `Nachrichten der Zentralbanken (${n})`,
+    desc: 'Was die Fed, die EZB, die Reserve Bank of New Zealand und ING veröffentlicht haben',
+    paraQue: 'Trader lesen sie, um zu wissen, was eine Zentralbank gerade gesagt hat, bevor sie ihre Währung handeln: Ein Zinsentscheid oder eine Rede kann den Tag verändern. Hier stehen sie zusammen und mit Datum, damit du sie nicht auf vier verschiedenen Seiten suchen musst.',
+    aviso: 'Eine Nachricht ist kein Signal. Sie sagt, was wann passiert ist, nie, wohin sich der Kurs bewegt. Die Schlagzeilen erscheinen genau so, wie jede Quelle sie veröffentlicht, in ihrer Sprache; die Entscheidung zu handeln liegt bei dir.',
+    pie: 'Es werden nur Quellen gezeigt, deren Bedingungen die Wiedergabe ihrer Schlagzeilen erlauben. Der vollständige Text steht auf der Seite der jeweiligen Quelle: Tippe auf die Schlagzeile, um ihn dort zu lesen.',
+  },
   calendario: {
     paraQue: 'Trader schauen darauf, um die UHRZEIT für den Einstieg zu wählen: Minuten vor einer wichtigen Veröffentlichung springt der Kurs und der Spread weitet sich, dann kostet ein Fehler am meisten. Es sagt nicht, wohin der Kurs geht, nur wann es ruckelt.',
     titulo: ({ n }) => `Wirtschaftskalender (${n})`,
