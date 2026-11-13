@@ -545,6 +545,10 @@ export default {
     previsto: 'forecast',
     anterior: 'previous',
     viejo: 'This calendar has not been updated in over a day. Something upcoming may be missing.',
+    tituloSin: 'Economic calendar',
+    nada: 'No important releases in the next 48 hours',
+    nadaDetalle: 'The app is not broken: there are simply no high- or medium-impact releases for our currencies in that window. It often happens at weekends. As soon as there is one, it will show up here with its time.',
+    siguiente: (v) => `Next one in the calendar: ${v.dia}, at ${v.hora} (${v.div}).`,
     pie: 'Only high and medium impact releases for the 8 currencies of the scan are shown; low impact ones are left out because they would bury the ones that matter. Times are your phone’s. Source: ForexFactory.',
   },
   glosario: {

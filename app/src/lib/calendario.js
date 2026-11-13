@@ -317,6 +317,45 @@ export function proximos(cal, ahora = new Date(), { horas = HORAS_VISTA } = {}) 
   })
 }
 
+// ¿Qué pinta la tarjeta? (2026-11-13)
+//
+// Hasta hoy, sin eventos en las próximas 48 horas la tarjeta desaparecía
+// entera. Néstor abrió las dos apps un viernes por la noche, no la vio y
+// preguntó si se había quitado el calendario. Desaparecer sin decir por qué se
+// lee como «lo quitaron» o «se rompió».
+//
+//   'con'   → hay eventos en el horizonte: la tarjeta de siempre.
+//   'vacia' → el archivo LLEGÓ y no hay nada en 48 h: se dice con esas
+//             palabras («sin datos importantes en las próximas 48 horas»).
+//   'nada'  → no hay archivo (todavía cargando, 404, sin red).
+//
+// ⚠️ SIN ARCHIVO NO SE DICE «NO HAY DATOS». Eso sería afirmar algo del
+// mercado sin haberlo mirado: «no pude leer el calendario» y «no hay nada que
+// publicar» no son lo mismo. Misma asimetría que `veredictoBusqueda`. Solo el
+// archivo cargado y con lista de eventos autoriza la frase.
+export function estadoTarjeta(cal, ahora = new Date()) {
+  if (!cal || !Array.isArray(cal.eventos)) return 'nada'
+  return proximos(cal, ahora).length ? 'con' : 'vacia'
+}
+
+// El primer evento que el archivo trae MÁS ALLÁ del horizonte, o `null`.
+// Sirve para que la tarjeta vacía diga cuándo es el siguiente si ya se sabe.
+// Sin él no se inventa ninguno: el feed solo cubre la semana en curso.
+export function siguienteFuera(cal, ahora = new Date(), { horas = HORAS_VISTA } = {}) {
+  const lista = Array.isArray(cal?.eventos) ? cal.eventos : []
+  const hasta = ahora.getTime() + horas * 3600_000
+  let mejor = null
+  let mejorMs = Infinity
+  for (const ev of lista) {
+    const ms = new Date(ev?.d).getTime()
+    if (Number.isFinite(ms) && ms > hasta && ms < mejorMs) {
+      mejor = ev
+      mejorMs = ms
+    }
+  }
+  return mejor
+}
+
 // El evento de alto impacto más cercano, o `null`.
 //
 // Sirve para el TÍTULO de la tarjeta: la tarjeta va plegada, así que si el

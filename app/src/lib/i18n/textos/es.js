@@ -611,6 +611,10 @@ export default {
     previsto: 'previsto',
     anterior: 'anterior',
     viejo: 'Este calendario lleva más de un día sin actualizarse. Puede que falte algo de lo que viene.',
+    tituloSin: 'Calendario económico',
+    nada: 'Sin datos importantes en las próximas 48 horas',
+    nadaDetalle: 'La app no está rota: simplemente no hay datos de impacto alto o medio de nuestras divisas en ese plazo. Pasa a menudo los fines de semana. En cuanto haya alguno, aparecerá aquí con su hora.',
+    siguiente: (v) => `El siguiente que trae el calendario: ${v.dia}, a las ${v.hora} (${v.div}).`,
     pie: 'Solo se muestran los datos de impacto alto y medio de las 8 divisas del barrido; los de impacto bajo se omiten porque taparían los que sí importan. Las horas son las de tu teléfono. Fuente: ForexFactory.',
   },
   glosario: {

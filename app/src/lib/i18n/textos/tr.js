@@ -540,6 +540,10 @@ export default {
     previsto: 'beklenti',
     anterior: 'önceki',
     viejo: 'Bu takvim bir günden uzun süredir güncellenmedi. Gelecek olanlardan bazıları eksik olabilir.',
+    tituloSin: 'Ekonomik takvim',
+    nada: 'Önümüzdeki 48 saatte önemli veri yok',
+    nadaDetalle: 'Uygulama bozuk değil: bu sürede para birimlerimiz için yüksek veya orta etkili veri yok. Hafta sonları sık olur. Bir veri olduğunda saatiyle birlikte burada görünecek.',
+    siguiente: (v) => `Takvimdeki sıradaki: ${v.dia}, saat ${v.hora} (${v.div}).`,
     pie: 'Yalnızca taramadaki 8 para biriminin yüksek ve orta etkili verileri gösterilir; düşük etkili olanlar gerçekten önemli olanları gölgeleyecekleri için dışarıda bırakılır. Saatler telefonunuzun saatidir. Kaynak: ForexFactory.',
   },
   glosario: {

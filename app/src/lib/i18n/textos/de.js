@@ -545,6 +545,10 @@ export default {
     previsto: 'Prognose',
     anterior: 'zuvor',
     viejo: 'Dieser Kalender wurde seit über einem Tag nicht aktualisiert. Es könnte etwas fehlen.',
+    tituloSin: 'Wirtschaftskalender',
+    nada: 'Keine wichtigen Daten in den nächsten 48 Stunden',
+    nadaDetalle: 'Die App ist nicht kaputt: In diesem Zeitraum gibt es einfach keine Daten mit hoher oder mittlerer Wirkung für unsere Währungen. Am Wochenende kommt das oft vor. Sobald es welche gibt, erscheinen sie hier mit Uhrzeit.',
+    siguiente: (v) => `Nächster Termin im Kalender: ${v.dia}, um ${v.hora} (${v.div}).`,
     pie: 'Gezeigt werden nur Termine mit hoher und mittlerer Wirkung für die 8 Währungen des Scans; geringe Wirkung bleibt außen vor, weil sie die wichtigen überdecken würde. Die Zeiten sind die Ihres Telefons. Quelle: ForexFactory.',
   },
   glosario: {

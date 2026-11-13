@@ -545,6 +545,10 @@ export default {
     previsto: 'prévu',
     anterior: 'précédent',
     viejo: 'Ce calendrier n\'a pas été mis à jour depuis plus d\'un jour. Il peut manquer quelque chose.',
+    tituloSin: 'Calendrier économique',
+    nada: 'Aucune publication importante dans les 48 prochaines heures',
+    nadaDetalle: 'L’app n’est pas en panne : il n’y a simplement aucune publication à impact fort ou moyen pour nos devises sur cette période. C’est fréquent le week-end. Dès qu’il y en aura une, elle apparaîtra ici avec son heure.',
+    siguiente: (v) => `Prochaine publication du calendrier : ${v.dia}, à ${v.hora} (${v.div}).`,
     pie: 'Seules les données à fort et moyen impact des 8 devises du balayage sont affichées ; celles à faible impact sont écartées car elles masqueraient celles qui comptent. Les heures sont celles de votre téléphone. Source : ForexFactory.',
   },
   glosario: {

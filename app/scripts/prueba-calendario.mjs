@@ -49,8 +49,11 @@ import {
   normalizarImpacto,
   prepararCalendario,
   proximos,
+  estadoTarjeta,
+  siguienteFuera,
   totalSemana,
 } from '../src/lib/calendario.js'
+import { readFileSync } from 'node:fs'
 
 let fallos = 0
 const comprobar = (que, bien) => {
@@ -420,6 +423,32 @@ console.log('\n12. Cuando no hay nada que publicar: POR QUÉ, y si eso es grave'
   // salir en ROJO, no colarse por el lado silencioso.
   comprobar('una causa desconocida alarma', juzgarPublicacion({ causa: 'loQueVengaMañana' }, SABADO).alarma === true)
   comprobar('y un diagnóstico nulo también', juzgarPublicacion(null, SABADO).alarma === true)
+}
+
+console.log('\n13. Sin nada en 48 h la tarjeta lo DICE; sin archivo, no dice nada (2026-11-13)')
+{
+  // Néstor no vio la tarjeta un viernes por la noche y creyó que se había
+  // quitado el calendario. Desaparecer en silencio se lee como «lo quitaron».
+  // Pero sin archivo tampoco se puede decir «no hay datos»: sería inventarlo.
+  const ev = (h) => ({ t: 'X', c: 'USD', i: ALTO, d: enHoras(h) })
+  comprobar('con un evento dentro del horizonte → con', estadoTarjeta({ eventos: [ev(3)] }, AHORA) === 'con')
+  comprobar('archivo con solo eventos pasados → vacia', estadoTarjeta({ eventos: [ev(-5)] }, AHORA) === 'vacia')
+  comprobar('archivo con la lista vacía → vacia', estadoTarjeta({ eventos: [] }, AHORA) === 'vacia')
+  comprobar('evento más allá de 48 h → vacia', estadoTarjeta({ eventos: [ev(HORAS_VISTA + 5)] }, AHORA) === 'vacia')
+  comprobar('sin archivo → nada (no se afirma que no hay datos)', estadoTarjeta(null, AHORA) === 'nada')
+  comprobar('objeto sin lista → nada', estadoTarjeta({}, AHORA) === 'nada')
+  comprobar('lista que no es lista → nada', estadoTarjeta({ eventos: 'x' }, AHORA) === 'nada')
+
+  const lejos = { eventos: [ev(-2), ev(HORAS_VISTA + 30), ev(HORAS_VISTA + 6), ev(1), { d: 'roto' }] }
+  comprobar('siguienteFuera da el PRIMERO más allá del horizonte', siguienteFuera(lejos, AHORA)?.d === enHoras(HORAS_VISTA + 6))
+  comprobar('sin nada más allá → null (no se inventa)', siguienteFuera({ eventos: [ev(1), ev(-3)] }, AHORA) === null)
+  comprobar('sin archivo → null', siguienteFuera(null, AHORA) === null)
+
+  // Y que la pantalla de verdad lo use, no solo que la función exista.
+  const jsx = readFileSync(new URL('../src/components/Calendario.jsx', import.meta.url), 'utf8')
+  comprobar('la tarjeta decide con estadoTarjeta', /estadoTarjeta\(cal, ahora\)/.test(jsx))
+  comprobar("la tarjeta pinta el estado 'vacia' con su frase", /estado === 'vacia'/.test(jsx) && /calendario\.nada'/.test(jsx))
+  comprobar('ya NO se esconde solo porque no haya eventos', !/if \(!eventos\.length\) return null/.test(jsx))
 }
 
 console.log('')

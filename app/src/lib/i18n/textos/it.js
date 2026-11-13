@@ -541,6 +541,10 @@ export default {
     previsto: 'previsto',
     anterior: 'precedente',
     viejo: 'Questo calendario non si aggiorna da più di un giorno. Potrebbe mancare qualcosa.',
+    tituloSin: 'Calendario economico',
+    nada: 'Nessun dato importante nelle prossime 48 ore',
+    nadaDetalle: 'L’app non è rotta: semplicemente non ci sono dati ad impatto alto o medio per le nostre valute in questo periodo. Succede spesso nel fine settimana. Appena ce ne sarà uno, comparirà qui con il suo orario.',
+    siguiente: (v) => `Il prossimo nel calendario: ${v.dia}, alle ${v.hora} (${v.div}).`,
     pie: 'Si mostrano solo i dati ad alto e medio impatto delle 8 valute della scansione; quelli a basso impatto restano fuori perché coprirebbero quelli che contano. Gli orari sono quelli del tuo telefono. Fonte: ForexFactory.',
   },
   glosario: {

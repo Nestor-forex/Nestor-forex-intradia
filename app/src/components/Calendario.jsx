@@ -8,10 +8,12 @@ import {
   MEDIO,
   agruparPorDia,
   categoriaDe,
+  estadoTarjeta,
   estaViejo,
   horasHasta,
   masUrgente,
   proximos,
+  siguienteFuera,
   totalSemana,
 } from '../lib/calendario'
 
@@ -61,23 +63,28 @@ export default function Calendario({ cal, ahora = new Date() }) {
   const { t, locale } = useIdioma()
 
   const eventos = proximos(cal, ahora)
+  const estado = estadoTarjeta(cal, ahora)
 
-  // Sin nada que enseñar no se pinta NADA — ni el título, ni un «no hay
-  // eventos». Misma decisión que en la tarjeta de correlación: un barrido de
-  // antes de que esto existiera no puede dejar una tarjeta huérfana que haga
-  // pensar que la app está rota.
-  if (!eventos.length) return null
+  // Sin archivo no se pinta NADA: no sabemos si hay datos o no, y decir «no
+  // hay» sería inventarlo. Ver `estadoTarjeta`.
+  if (estado === 'nada') return null
 
-  const urgente = masUrgente(eventos)
-  const horas = urgente ? horasHasta(urgente, ahora) : null
   const viejo = estaViejo(cal, ahora)
-
   const hora = (iso) =>
     new Date(iso).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
 
+  // (2026-11-13) Con el archivo cargado y nada en 48 horas, la tarjeta SE
+  // QUEDA y lo dice, visible sin abrir. Antes desaparecía, y Néstor creyó que
+  // se había quitado el calendario. Es UNA sola tarjeta para los dos casos: lo
+  // único que cambia es el título, el avance y lo de dentro.
+  const vacia = estado === 'vacia'
+  const sig = vacia ? siguienteFuera(cal, ahora) : null
+  const urgente = masUrgente(eventos)
+  const horas = urgente ? horasHasta(urgente, ahora) : null
+
   return (
     <TarjetaPlegable
-      titulo={t('calendario.titulo', { n: eventos.length })}
+      titulo={vacia ? t('calendario.tituloSin') : t('calendario.titulo', { n: eventos.length })}
       desc={t('calendario.desc')}
       paraQue={t('calendario.paraQue')}
       // ⚠️ EL AVISO DE NOTICIA URGENTE TIENE QUE VERSE SIN ABRIR, y por eso
@@ -92,7 +99,9 @@ export default function Calendario({ cal, ahora = new Date() }) {
       // cabeceras iguales hicieron creer que la octava también lo era. Lo cazó
       // el linter, avisando de que `horas` se había quedado sin usar.
       avance={
-        urgente ? (
+        vacia ? (
+          <span style={{ color: 'var(--text-secondary)' }}>{t('calendario.nada')}</span>
+        ) : urgente ? (
           <span style={{ color: IMPACTO[ALTO].color, fontWeight: 500 }}>
             {t('calendario.aviso', { h: horas, div: urgente.c })}
           </span>
@@ -100,8 +109,20 @@ export default function Calendario({ cal, ahora = new Date() }) {
       }
     >
           <p style={{ margin: 0, fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-            {t('calendario.intro')}
+            {vacia ? t('calendario.nadaDetalle') : t('calendario.intro')}
           </p>
+
+          {/* Si el archivo ya trae algo más allá de las 48 horas, se dice
+              cuándo. Si no trae nada, no se inventa nada. */}
+          {sig && (
+            <p style={{ margin: 0, fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              {t('calendario.siguiente', {
+                dia: new Date(sig.d).toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' }),
+                hora: hora(sig.d),
+                div: sig.c,
+              })}
+            </p>
+          )}
 
           {/* Un archivo viejo se DELATA. Sin esto, un publicador averiado se
               vería igual que una semana tranquila y nadie sabría por qué. Es
@@ -241,9 +262,11 @@ export default function Calendario({ cal, ahora = new Date() }) {
           {/* «Se enseñan 6 de los 17 de esta semana». Nació de una confusión
               real: los dos números eran ciertos y medían cosas distintas, y
               sin decirlo al lado se lee como que la app se equivoca. */}
-          <p style={{ margin: 0, fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-            {t('calendario.cuantos', { n: eventos.length, total: totalSemana(cal) })}
-          </p>
+          {!vacia && (
+            <p style={{ margin: 0, fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+              {t('calendario.cuantos', { n: eventos.length, total: totalSemana(cal) })}
+            </p>
+          )}
           <p style={{ margin: 0, fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.5 }}>
             {t('calendario.pie')}
           </p>
