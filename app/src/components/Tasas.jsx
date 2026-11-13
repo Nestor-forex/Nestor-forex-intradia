@@ -1,5 +1,6 @@
 import { useT } from '../lib/i18n'
 import TarjetaPlegable from './TarjetaPlegable'
+import Explica from './Explica'
 import { PAIR_NAMES, monedasDe } from '../lib/pairs'
 import { diasDelDatoMasViejo, diasVigente, difsPorPar, tasasOrdenadas } from '../lib/tasas'
 import { useTasas } from '../lib/useTasas'
@@ -133,15 +134,13 @@ export default function Tasas() {
           {/* ── La diferencia por par ───────────────────────────────── */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {filas.map(({ par, dif, lado }) => (
+              <div key={par} style={{ paddingBottom: 8, borderBottom: '1px solid var(--border)' }}>
               <div
-                key={par}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   gap: 10,
-                  paddingBottom: 8,
-                  borderBottom: '1px solid var(--border)',
                 }}
               >
                 <div style={{ minWidth: 0 }}>
@@ -168,6 +167,8 @@ export default function Tasas() {
                 >
                   {conSigno(dif)}
                 </div>
+              </div>
+              <ExplicaPar par={par} dif={dif} lado={lado} tasas={tasas} t={t} />
               </div>
             ))}
           </div>
@@ -265,6 +266,40 @@ function Suelta({ divisa, v, f, cambio, t }) {
           </bdi>
         </div>
       )}
+
+      <div>
+        <Explica sangria={42}>
+          <p style={{ margin: 0 }}>{t('explica.tasa.que', { banco: t(`explica.banco.${divisa}`), divisa, v: v.toFixed(3) })}</p>
+          <p style={{ margin: 0 }}>{t('explica.tasa.mecanismo')}</p>
+          {cambio && dias != null && (
+            <p style={{ margin: 0 }}>
+              {t(cambio.sentido === 'subio' ? 'explica.tasa.subio' : 'explica.tasa.bajo', { de: cambio.de, v: v.toFixed(3) })}
+            </p>
+          )}
+          <p style={{ margin: 0 }}>{t('explica.tasa.fecha', { f })}</p>
+        </Explica>
+      </div>
     </div>
+  )
+}
+
+// La explicación de la diferencia de UN par.
+//
+// ⚠️ Dice de qué lado juega el interés al mantenerla abierta, que es un COSTE,
+// y lo dice como coste: no es una razón para abrir la operación, y la frase lo
+// dice. Y no es la cifra del bróker, que le suma su margen.
+function ExplicaPar({ par, dif, lado, tasas, t }) {
+  const [b, q] = monedasDe(par)
+  const tb = tasas?.[b]?.v
+  const tq = tasas?.[q]?.v
+  if (!Number.isFinite(tb) || !Number.isFinite(tq)) return null
+  return (
+    <Explica>
+      <p style={{ margin: 0 }}>
+        {t('explica.par.que', { par, b, q, tb: tb.toFixed(3), tq: tq.toFixed(3), dif: Math.abs(dif).toFixed(2) })}
+      </p>
+      <p style={{ margin: 0 }}>{t(`explica.par.${lado}`, { par, b, q })}</p>
+      <p style={{ margin: 0 }}>{t('explica.par.coste')}</p>
+    </Explica>
   )
 }

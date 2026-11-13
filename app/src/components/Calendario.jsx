@@ -1,5 +1,7 @@
 import { useIdioma } from '../lib/i18n'
 import TarjetaPlegable from './TarjetaPlegable'
+import Explica from './Explica'
+import { explicacionEvento } from '../lib/explicacion'
 import {
   ALTO,
   FERIADO,
@@ -225,6 +227,11 @@ export default function Calendario({ cal, ahora = new Date() }) {
                         </span>
                       )}
                     </div>
+
+                    {/* «¿Qué significa?»: la explicación para quien no sabe
+                        leer la línea de arriba. El botón va sangrado a la
+                        altura del nombre; la explicación, a lo ancho. */}
+                    <ExplicaEvento ev={ev} t={t} />
                   </div>
                 )
               })}
@@ -241,5 +248,49 @@ export default function Calendario({ cal, ahora = new Date() }) {
             {t('calendario.pie')}
           </p>
     </TarjetaPlegable>
+  )
+}
+
+// La explicación de UNA noticia. Las frases salen de `explicacionEvento`, que
+// solo decide QUÉ decir; aquí se dice en el idioma de quien mira.
+//
+// ⚠️ La comparación entre previsto y anterior dice ALTO o BAJO y nada más. Ver
+// la cabecera de `lib/explicacion.js`: hacia dónde iría el precio es una señal
+// sin medir, y no se dice.
+function ExplicaEvento({ ev, t }) {
+  const x = explicacionEvento(ev)
+  if (!x) return null
+  const P = { margin: 0 }
+  return (
+    <Explica sangria={88}>
+      <p style={P}>{t(`explica.familia.${x.familia}`)}</p>
+
+      {x.terminos.length > 0 && (
+        <div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.4 }}>
+            {t('explica.terminos')}
+          </div>
+          <ul style={{ margin: '4px 0 0', paddingInlineStart: 18, display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {x.terminos.map((k) => (
+              <li key={k}>{t(`explica.termino.${k}`)}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {(x.impacto === ALTO || x.impacto === MEDIO) && <p style={P}>{t(`explica.impacto.${x.impacto}`)}</p>}
+
+      {x.previsto && x.anterior && x.comparacion && (
+        <p style={P}>{t(`explica.comparacion.${x.comparacion}`, { f: x.previsto, p: x.anterior })}</p>
+      )}
+      {x.previsto && x.anterior && !x.comparacion && (
+        <p style={P}>{t('explica.ambos', { f: x.previsto, p: x.anterior })}</p>
+      )}
+      {x.previsto && !x.anterior && <p style={P}>{t('explica.soloPrevisto', { f: x.previsto })}</p>}
+      {!x.previsto && x.anterior && <p style={P}>{t('explica.soloAnterior', { p: x.anterior })}</p>}
+
+      {/* La sorpresa solo tiene sentido cuando hay un número que esperar. */}
+      {x.previsto && <p style={P}>{t('explica.sorpresa')}</p>}
+    </Explica>
   )
 }

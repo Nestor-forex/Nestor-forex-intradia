@@ -221,6 +221,14 @@ export const GEMELOS = [
   'src/components/Calendario.jsx',
   'scripts/publicar-calendario.mjs',
   'scripts/prueba-calendario.mjs',
+  // «¿Qué significa?» (2026-11-13): la explicación ampliada de cada noticia,
+  // tasa y fila del COT. Idéntica en las dos porque explica el calendario y las
+  // tasas, que ya son gemelos, y porque lo que NO puede decir —compra o venta—
+  // tiene que ser la misma regla en las dos. La prueba sabe que Intradía no
+  // tiene COT y no falla por eso.
+  'src/lib/explicacion.js',
+  'src/components/Explica.jsx',
+  'scripts/prueba-explicacion.mjs',
   // Las tasas de referencia de los bancos centrales. Identicos por la misma
   // razon que el calendario: son las MISMAS 8 divisas en las dos apps y la
   // misma fuente (BIS, dataflow WS_CBPOL, en CSV — elegida con la sonda del
