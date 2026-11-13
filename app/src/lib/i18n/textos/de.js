@@ -399,6 +399,20 @@ export default {
     err_sinSesion: 'Melde dich an, um dein Profil zu speichern.',
   },
 
+  guardian: {
+    titulo: 'Deine Grenze für heute',
+    sinPerfil: 'Trage dein Kapital und deine zwei Grenzen unter „Mein Risikoprofil“ ein, dann siehst du hier jeden Tag, wie viel du gegenüber deiner eigenen Regel verloren hast.',
+    irPerfil: 'Zu meinem Risikoprofil',
+    perdidoHoy: 'Heute verloren',
+    seguidas: 'Verluste in Folge heute',
+    motivoDia: 'Du hast deinen maximalen Tagesverlust erreicht.',
+    motivoRacha: 'Du hast deine Grenze für Verluste in Folge erreicht.',
+    freno: 'Deine eigene Regel sagt: bis morgen keine weiteren Trades eröffnen.',
+    cercaDia: ({ margen }) => `Heute bleibt wenig Spielraum: ${margen} bis zur Grenze.`,
+    cercaRacha: 'Noch ein Verlust, und du erreichst deine Grenze für Verluste in Folge.',
+    pie: 'Zählt nur die heute in diesem Journal geschlossenen Trades, nach dem Datum deines Telefons. Die App ist nicht mit deinem Broker verbunden: Sie blockiert nichts, sie erinnert dich nur an deine eigene Regel.',
+  },
+
   miembros: {
     titulo: 'Mitglieder',
     intro: 'Gib Anfragen frei, um Zugang zu gewähren, oder entferne jemanden jederzeit. Änderungen gelten sofort für alle.',

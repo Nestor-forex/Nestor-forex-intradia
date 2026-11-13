@@ -391,6 +391,20 @@ export default {
     err_sinSesion: '请登录以保存你的档案。',
   },
 
+  guardian: {
+    titulo: '今天的止损线',
+    sinPerfil: '在「我的风险档案」中填写资金和两条止损线，这里每天会显示你相对自己的规则亏了多少。',
+    irPerfil: '前往我的风险档案',
+    perdidoHoy: '今日亏损',
+    seguidas: '今日连续亏损',
+    motivoDia: '你已达到当日最大亏损。',
+    motivoRacha: '你已达到连续亏损上限。',
+    freno: '按你自己的规则，今天不要再开新仓，等到明天。',
+    cercaDia: ({ margen }) => `今天余地不多：距止损线还有 ${margen}。`,
+    cercaRacha: '再亏一笔就达到连续亏损上限。',
+    pie: '只统计本日志中今天平仓的交易，按你手机上的日期计算。本应用未连接你的经纪商：不会阻止任何操作，只是提醒你自己定的规则。',
+  },
+
   miembros: {
     titulo: '成员',
     intro: '批准申请以授予访问权限，或随时移除任何人。更改对所有人立即生效。',

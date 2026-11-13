@@ -395,6 +395,20 @@ export default {
     err_sinSesion: 'Accedi per salvare il tuo profilo.',
   },
 
+  guardian: {
+    titulo: 'Il tuo limite di oggi',
+    sinPerfil: 'Inserisci il tuo capitale e i tuoi due limiti in «Il mio profilo di rischio» e qui vedrai ogni giorno quanto hai perso rispetto alla tua regola.',
+    irPerfil: 'Vai al mio profilo di rischio',
+    perdidoHoy: 'Perso oggi',
+    seguidas: 'Perdite consecutive oggi',
+    motivoDia: 'Hai raggiunto la tua perdita massima del giorno.',
+    motivoRacha: 'Hai raggiunto il tuo limite di perdite consecutive.',
+    freno: 'La tua stessa regola dice di non aprire altre operazioni fino a domani.',
+    cercaDia: ({ margen }) => `Oggi resta poco margine: ${margen} prima del limite.`,
+    cercaRacha: 'Ancora una perdita e raggiungi il tuo limite di perdite consecutive.',
+    pie: 'Conta solo le operazioni chiuse oggi in questo Diario, con la data del tuo telefono. L\'app non è collegata al tuo broker: non blocca nulla, ti ricorda solo la tua regola.',
+  },
+
   miembros: {
     titulo: 'Membri',
     intro: 'Approva le richieste per dare accesso, o rimuovi chiunque quando vuoi. Le modifiche valgono subito per tutti.',

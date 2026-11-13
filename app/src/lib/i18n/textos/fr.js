@@ -399,6 +399,20 @@ export default {
     err_sinSesion: 'Connecte-toi pour enregistrer ton profil.',
   },
 
+  guardian: {
+    titulo: 'Ta limite d\'aujourd\'hui',
+    sinPerfil: 'Indique ton capital et tes deux limites dans « Mon profil de risque » et tu verras ici chaque jour combien tu as perdu par rapport à ta propre règle.',
+    irPerfil: 'Aller à mon profil de risque',
+    perdidoHoy: 'Perdu aujourd\'hui',
+    seguidas: 'Pertes d\'affilée aujourd\'hui',
+    motivoDia: 'Tu as atteint ta perte maximale du jour.',
+    motivoRacha: 'Tu as atteint ta limite de pertes d\'affilée.',
+    freno: 'Ta propre règle dit de ne plus ouvrir de positions jusqu\'à demain.',
+    cercaDia: ({ margen }) => `Peu de marge aujourd'hui : ${margen} avant la limite.`,
+    cercaRacha: 'Encore une perte et tu atteins ta limite de pertes d\'affilée.',
+    pie: 'Ne compte que les positions clôturées aujourd\'hui dans ce Journal, selon la date de ton téléphone. L\'app n\'est pas connectée à ton courtier : elle ne bloque rien, elle te rappelle seulement ta propre règle.',
+  },
+
   miembros: {
     titulo: 'Membres',
     intro: "Valide les demandes pour donner l'accès, ou retire quelqu'un quand tu veux. Les changements s'appliquent instantanément pour tout le monde.",

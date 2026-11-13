@@ -281,6 +281,13 @@ export const GEMELOS = [
   'src/lib/usePerfilRiesgo.js',
   'src/components/MiPerfil.jsx',
   'scripts/prueba-perfil.mjs',
+  // El guardian de riesgo del Diario: cuanto lleva perdido hoy la persona
+  // frente a los dos frenos de su perfil. Identico porque lee el MISMO perfil
+  // y la cuenta es la misma en las dos apps; lo unico que cambia es de que
+  // coleccion sale el Diario, y eso vive en `useTrades.js` (PRIMO).
+  'src/lib/guardianRiesgo.js',
+  'src/components/GuardianRiesgo.jsx',
+  'scripts/prueba-guardian.mjs',
   // Ver todos los pares o solo los mios. Identicos porque la DECISION es la
   // misma en las dos apps: que mira cada quien, nunca que calcula la app.
   //

@@ -2,11 +2,14 @@ import { useEffect, useMemo, useState } from 'react'
 import { PAIR_NAMES, monedasDe } from '../lib/pairs'
 import { useT } from '../lib/i18n'
 import Diagnostico from './Diagnostico'
+import GuardianRiesgo from './GuardianRiesgo'
 import ImportarBroker from './ImportarBroker'
+import { diaLocal } from '../lib/guardianRiesgo'
+import { leerPerfil } from '../lib/perfilRiesgo'
 
 const esAbierta = (t) => t.estado === 'abierta'
 
-export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCerrar, prellenar, onPrellenado, onVerSenales }) {
+export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCerrar, prellenar, onPrellenado, onVerSenales, perfilRiesgo, onIrAlPerfil }) {
   const tr = useT()
   const [par, setPar] = useState(PAIR_NAMES[0])
   const [dir, setDir] = useState('Compra')
@@ -31,6 +34,7 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
     onPrellenado?.()
   }, [prellenar, onPrellenado])
 
+  const perfilGuardado = useMemo(() => leerPerfil(perfilRiesgo), [perfilRiesgo])
   const cerradas = trades.filter((t) => !esAbierta(t))
   const abiertas = trades.filter(esAbierta)
   const wins = cerradas.filter((t) => t.pl > 0).length
@@ -62,7 +66,13 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
       plNum = parseFloat(pl)
       if (!isFinite(plNum)) return
     }
-    onGuardar({ par, dir, lote: loteNum, pl: plNum, nota: nota.trim(), fecha: new Date().toISOString().slice(0, 10), estado: abierta ? 'abierta' : 'cerrada' })
+    // ⚠️ El día es el LOCAL del teléfono, no `toISOString()` (que da el de UTC
+    // y en Colombia, desde las 7 de la tarde, ya es mañana). Y una operación
+    // que se apunta ya cerrada lleva su día y su momento de cierre, que es lo
+    // que lee el guardián de riesgo.
+    const hoy = diaLocal()
+    const cierre = abierta ? {} : { cerradaEl: hoy, cerradaEnMs: Date.now() }
+    onGuardar({ par, dir, lote: loteNum, pl: plNum, nota: nota.trim(), fecha: hoy, estado: abierta ? 'abierta' : 'cerrada', ...cierre })
     setLote('')
     setPl('')
     setNota('')
@@ -102,6 +112,10 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
         {stat(statWin === '—' ? '—' : statWin + '%', tr('diario.ganadas'), 'var(--text)')}
         {stat(statPl, tr('diario.pl'), plTot >= 0 ? 'var(--green)' : 'var(--red)')}
       </div>
+
+      {/* El guardián va justo debajo de los totales y antes de todo lo demás:
+          es lo que hay que leer ANTES de apuntar la siguiente operación. */}
+      <GuardianRiesgo trades={trades} perfil={perfilGuardado} onIrAlPerfil={onIrAlPerfil} />
 
       {/* ⚠️ EL ESTADO VACÍO VA ARRIBA DEL FORMULARIO, no debajo de la lista.
           Antes era una línea gris al final de la pantalla («Aún no has

@@ -394,6 +394,20 @@ export default {
     err_sinSesion: 'Profilini kaydetmek için giriş yap.',
   },
 
+  guardian: {
+    titulo: 'Bugünkü sınırın',
+    sinPerfil: 'Sermayeni ve iki sınırını «Risk profilim» bölümüne gir; burada her gün kendi kuralına göre ne kadar kaybettiğini göreceksin.',
+    irPerfil: 'Risk profilime git',
+    perdidoHoy: 'Bugünkü kayıp',
+    seguidas: 'Bugün art arda kayıp',
+    motivoDia: 'Günlük azami kaybına ulaştın.',
+    motivoRacha: 'Art arda kayıp sınırına ulaştın.',
+    freno: 'Kendi kuralın yarına kadar yeni işlem açmamanı söylüyor.',
+    cercaDia: ({ margen }) => `Bugün az pay kaldı: sınıra ${margen}.`,
+    cercaRacha: 'Bir kayıp daha ve art arda kayıp sınırına ulaşırsın.',
+    pie: 'Yalnızca bu Günlükte bugün kapatılan işlemler, telefonunun tarihine göre sayılır. Uygulama aracı kurumuna bağlı değil: hiçbir şeyi engellemez, sadece kendi kuralını hatırlatır.',
+  },
+
   miembros: {
     titulo: 'Üyeler',
     intro: 'Erişim vermek için talepleri onayla, ya da istediğin zaman birini çıkar. Değişiklikler herkes için anında geçerli olur.',
