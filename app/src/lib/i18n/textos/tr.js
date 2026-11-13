@@ -509,6 +509,13 @@ export default {
     venceAyuda: 'Bitiş tarihi, bu kişinin ne zamana kadar girebileceğini söyler. Her gece bir robot, tarihi geçenlerin kapısını kapatır (bir günlük payla). Tarih yoksa erişim süresizdir; bugün herkes böyledir. +30 gün düğmesi mevcut tarihin üzerine ekler, bu yüzden erken yenilemek gün kaybettirmez. İki uygulama için de geçerlidir: aynı üye listesini paylaşırlar.',
   },
 
+  noticias: {
+    titulo: ({ n }) => `Merkez bankası haberleri (${n})`,
+    desc: "Fed, ECB, Yeni Zelanda Merkez Bankası ve ING'nin yayımladıkları",
+    paraQue: 'Yatırımcılar, bir merkez bankasının para birimiyle işlem yapmadan önce o bankanın az önce ne söylediğini öğrenmek için bunlara bakar: bir faiz kararı ya da bir konuşma günü değiştirebilir. Burada tarihleriyle birlikte bir arada, dört farklı sitede aramana gerek kalmasın diye.',
+    aviso: 'Bir haber sinyal değildir. Ne olduğunu ve ne zaman olduğunu söyler, fiyatın nereye gideceğini asla söylemez. Başlıklar her kaynağın yayımladığı gibi, kendi dillerinde gösterilir; işlem yapma kararı senin.',
+    pie: 'Yalnızca koşulları başlıklarının yeniden yayımlanmasına izin veren kaynaklar gösterilir. Tam metin her kaynağın kendi sayfasındadır: orada okumak için başlığa dokun.',
+  },
   calendario: {
     paraQue: 'Yatırımcılar giriş SAATİNİ seçmek için bakar: önemli bir veri açıklanmadan dakikalar önce fiyat sıçrar ve spread açılır, yani yanılmanın en pahalı olduğu andır. Fiyatın nereye gideceğini söylemez, sadece ne zaman sarsıntı olacağını.',
     titulo: ({ n }) => `Ekonomik takvim (${n})`,

@@ -514,6 +514,13 @@ export default {
     venceAyuda: 'The expiry date is how long this person can get in. Every night a robot closes the door on anyone past it (with one day of margin). No date = open access, which is what everyone has today. The +30 days button adds to the date they already had, so renewing early does not cost days. It applies to both apps: they share the same member list.',
   },
 
+  noticias: {
+    titulo: ({ n }) => `Central bank news (${n})`,
+    desc: 'What the Fed, the ECB, the Reserve Bank of New Zealand and ING published',
+    paraQue: "Traders check them to know what a central bank has just said before trading its currency: a rate decision or a speech can change the day. Here they are together and dated, so you don't have to look them up on four different sites.",
+    aviso: 'A news item is not a signal. It says what happened and when, never where the price is going. Headlines appear exactly as each source publishes them, in their own language; the decision to trade is yours.',
+    pie: "Only sources whose terms allow reproducing their headlines are shown. The full text is on each source's page: tap the headline to read it there.",
+  },
   calendario: {
     paraQue: 'Traders check it to pick the HOUR to enter: minutes before a big release the price jumps and the spread widens, so that is when being wrong costs the most. It does not say which way the price will go, only when the shaking is coming.',
     titulo: ({ n }) => `Economic calendar (${n})`,
