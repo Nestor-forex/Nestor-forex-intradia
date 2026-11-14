@@ -24,6 +24,7 @@ import {
   MAX_FVG,
   bollingerDe,
   mediasParaTarjeta,
+  fibDe,
   herramientasDisponibles,
   oroDe,
   spreadDe,
@@ -329,6 +330,23 @@ console.log('\n5d. Las bandas de Bollinger y las medias móviles')
   comprobar('Bollinger se ofrece si alguna ficha trae bandas, y no si ninguna', herramientasDisponibles({ fichas: [ficha] }).includes('bollinger') && !herramientasDisponibles({ fichas: [{ ...ficha, bandas: null }] }).includes('bollinger'))
 }
 
+console.log('\n5e. Fibonacci')
+{
+  comprobar('la ficha de esta app trae Fibonacci (o dice que el movimiento es chico)', ficha.fib !== null && typeof ficha.fib === 'object')
+  const sinExt = fichaAnalisis({ ...PAR, altos20: undefined, bajos20: undefined, pivots: undefined }, ESC)
+  comprobar('sin extremos → null («no lo sé»), no «movimiento chico»', sinExt.fib === null)
+  // Un movimiento al alza de 1.1000 a 1.1100; precio 1.1060.
+  const f = { dec: 4, precio: 1.106, fib: { desde: 1.1, hasta: 1.11, subiendo: true, niveles: [0.236, 0.382, 0.5, 0.618, 0.786].map((r) => ({ ratio: r, precio: 1.11 - 0.01 * r })) } }
+  const r = fibDe(f)
+  comprobar('el 38,2 % de un alza de 1.1000 a 1.1100 está en 1.10618', cerca(r.niveles[1].precio, 1.10618, 1e-9))
+  comprobar('el más cercano al precio 1.1060 es el 38,2 % (1.8 pips)', r.cercano === 0.382 && cerca(r.niveles[1].pips, 1.8, 1e-6))
+  comprobar('el 23,6 % queda por encima del precio y el 50 % por debajo', r.niveles[0].lado === 'arriba' && r.niveles[2].lado === 'abajo')
+  comprobar('movimiento chico → se dice, no se esconde', fibDe({ ...f, fib: { sinMovimiento: true } }).sinMovimiento === true)
+  comprobar('sin datos → null', fibDe({ ...f, fib: null }) === null)
+  comprobar('nada dice compra o venta', !/COMPRA|VENTA/i.test(JSON.stringify(r)))
+  comprobar('Fibonacci se ofrece si alguna ficha lo trae, y no si ninguna', herramientasDisponibles({ fichas: [f] }).includes('fibonacci') && !herramientasDisponibles({ fichas: [{ ...f, fib: null }] }).includes('fibonacci'))
+}
+
 console.log('\n6. Las plantillas')
 {
   comprobar('una plantilla sin nombre o sin herramientas no vale', normalizarPlantilla({ nombre: ' ', herramientas: ['rsi'] }) === null && normalizarPlantilla({ nombre: 'x', herramientas: [] }) === null)
@@ -376,6 +394,8 @@ console.log('\n8. Los textos')
   comprobar('el aviso dice que la app NO elige la dirección', /NO elige la dirección/.test(an?.aviso ?? ''))
   const nuevas = ['actividad', 'sinPuente', 'spreadNota', 'oroR', 'oro20', 'oroNota', 'correlNinguna', 'correlNota', 'estNota', 'diarioPar', 'diarioSin', 'diarioAbiertas', 'diarioMismaApuesta']
   comprobar('los textos de las seis nuevas existen', nuevas.every((k) => typeof an?.[k] === 'string'), nuevas.filter((k) => typeof an?.[k] !== 'string').join(', '))
+  const delFib = ['fibChico', 'fibSube', 'fibBaja', 'fibCercano', 'fibNota']
+  comprobar('los textos de Fibonacci existen', delFib.every((k) => typeof an?.[k] === 'string'), delFib.filter((k) => typeof an?.[k] !== 'string').join(', '))
   const delBm = ['bandaArriba', 'bandaMedia', 'bandaAbajo', 'bandaAncho', 'bollNota', 'mediaSin', 'mediasNota']
   comprobar('los textos de Bollinger y de las medias existen', delBm.every((k) => typeof an?.[k] === 'string'), delBm.filter((k) => typeof an?.[k] !== 'string').join(', '))
   comprobar('las distancias a las medias son funciones', typeof an?.mediaEncima === 'function' && typeof an?.mediaDebajo === 'function')

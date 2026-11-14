@@ -72,6 +72,8 @@ export const HERRAMIENTAS = Object.freeze([
   // Las medias móviles simples y exponenciales (2026-11-15). Los periodos los
   // pone cada app: días en Swing, horas en Intradía.
   'medias',
+  // Fibonacci (2026-11-15): los niveles del último movimiento de 20 velas.
+  'fibonacci',
 ])
 
 /**
@@ -89,6 +91,7 @@ export const HERRAMIENTAS = Object.freeze([
 export function herramientasDisponibles({ fichas = [], cot = null, oro = null, correlaciones, estacionalidad = null } = {}) {
   return HERRAMIENTAS.filter((x) => {
     if (x === 'bollinger') return fichas.some((f) => bollingerDe(f) !== null)
+    if (x === 'fibonacci') return fichas.some((f) => f?.fib && typeof f.fib === 'object')
     if (x === 'medias') return fichas.some((f) => Array.isArray(f?.medias?.sma) || Array.isArray(f?.medias?.ema))
     if (x === 'cot') return !!cot?.divisas
     if (x === 'oro') return !!oro?.correl
@@ -222,6 +225,36 @@ export function mediasParaTarjeta(ficha) {
     return { p: x?.p, v, pips: ok ? Math.abs(c - v) / pip : null, precio: ok ? (c > v ? 'encima' : c < v ? 'debajo' : 'igual') : null }
   }
   return { sma: (m.sma ?? []).map(una), ema: (m.ema ?? []).map(una) }
+}
+
+/**
+ * Los niveles de Fibonacci del par, con la distancia del precio a cada uno.
+ *
+ * @returns null sin datos; `{ sinMovimiento: true }` si el movimiento es
+ *          demasiado pequeño (se dice, no se esconde); si no, `{ desde, hasta,
+ *          subiendo, niveles: [{ ratio, precio, pips, lado }], cercano }`.
+ *
+ * ⚠️ `subiendo` describe el movimiento que YA pasó; `lado` es geometría. Nada
+ * de esto dice hacia dónde irá el precio.
+ */
+export function fibDe(ficha) {
+  const f = ficha?.fib
+  if (!f || typeof f !== 'object') return null
+  if (f.sinMovimiento) return { sinMovimiento: true }
+  if (!Array.isArray(f.niveles) || !num(f.desde) || !num(f.hasta)) return null
+  const pip = tamanoPip(ficha.dec)
+  const c = ficha.precio
+  const niveles = f.niveles
+    .filter((n) => num(n?.precio) && num(n?.ratio))
+    .map((n) => ({
+      ratio: n.ratio,
+      precio: n.precio,
+      pips: num(c) ? Math.abs(c - n.precio) / pip : null,
+      lado: num(c) ? (n.precio > c ? 'arriba' : n.precio < c ? 'abajo' : 'igual') : null,
+    }))
+  const conPips = niveles.filter((n) => n.pips !== null)
+  const cercano = conPips.length ? conPips.reduce((a, b) => (b.pips < a.pips ? b : a)).ratio : null
+  return { desde: f.desde, hasta: f.hasta, subiendo: !!f.subiendo, niveles, cercano }
 }
 
 // EL FVG (brecha de valor justo)
@@ -495,6 +528,7 @@ export function armarAnalisis({
   if (si('diario')) h.diario = diarioDe(trades, ficha.name, monedasDe)
   if (si('fvg')) h.fvg = fvgDe(ficha)
   if (si('medias')) h.medias = mediasParaTarjeta(ficha)
+  if (si('fibonacci')) h.fibonacci = fibDe(ficha)
 
   return {
     par: ficha.name,
