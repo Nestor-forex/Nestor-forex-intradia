@@ -1,5 +1,7 @@
 import { pivoteClasico } from './analizador.js'
 import { huecosVivos } from './fvg.js'
+import { bandas, posicionDe } from './bollinger.js'
+import { mediasDe } from './medias.js'
 import { compresionDe, nivelDe, posicionEnRango } from './compresion.js'
 import { crearT } from './i18n/crearT.js'
 import { IDIOMA_BASE, localeDe } from './i18n/idiomas.js'
@@ -116,6 +118,14 @@ function perfilPorHora(barras, serieHi, serieLo, serie) {
 // Mientras estuvieron privados nada comprobaba que el RSI siguiera siendo el
 // RSI. Estaban bien, pero por buen trabajo, no por protección — y de ellos
 // salen el stop, el objetivo y las señales.
+// Las medias que enseña el Analizador (2026-11-15). En esta app cada vela es
+// UNA HORA: 9 y 21 son las de la tendencia de siempre, 20 ≈ un día de mercado,
+// 50 ≈ dos días y 200 ≈ semana y media. ⚠️ La EMA de 200 sale vacía: haría
+// falta el triple de velas de las que se bajan (ver `VECES_EMA` en `medias.js`).
+//
+// ⚠️ PRIMO: en Swing las velas son DÍAS y los periodos son otros.
+export const PERIODOS_MEDIAS = Object.freeze({ sma: [20, 50, 200], ema: [9, 21, 50, 200] })
+
 export const emaLast = (c, p) => {
   const k = 2 / (p + 1)
   let e = c.slice(0, p).reduce((a, b) => a + b) / p
@@ -443,6 +453,9 @@ export function computarBarrido(barras, rates, rangos = null) {
       // (ver la nota de `highs` abajo), y `esCruce` lo marca.
       altos20: highs.slice(-20),
       bajos20: lows.slice(-20),
+      // Las medias del Analizador, ya calculadas: necesitan la serie entera de
+      // cierres y el barrido publicado solo lleva los últimos 20.
+      medias: mediasDe(closes, PERIODOS_MEDIAS),
       // Las series completas de máximos y mínimos, alineadas con `barras`.
       // Las usa `scripts/lib/resolver.mjs` para saber si una señal llegó a su
       // objetivo o a su stop: hace falta el recorrido entero, no solo el
@@ -936,8 +949,8 @@ const nivelesSimetricos = (p, compra) => ({
  * `analizador.js` (GEMELO). Aquí se resuelve lo propio de ESTA app: sus medias
  * rápidas (EMA9/EMA21), su geometría y su pivote de sesión.
  *
- * ⚠️ Bollinger va `null`: esta app no lo calcula, y la tarjeta lo dice en vez
- * de inventarlo.
+ * Bollinger sale de las últimas 20 velas de una hora (`serie20`), desde el
+ * 2026-11-15.
  *
  * ⚠️ En los CRUCES el soporte, la resistencia y el pivote salen de máximos y
  * mínimos DERIVADOS (ver `computarBarrido`), algo más anchos que los reales.
@@ -962,7 +975,11 @@ export function fichaAnalisis(p, esc = {}) {
     nivelCompresion: nivelDe(p.compresion, UMBRALES_COMPRESION),
     fuerzaB: esc[p.b],
     fuerzaQ: esc[p.q],
-    bollinger: null,
+    // Bollinger sobre las últimas 20 velas de UNA HORA (2026-11-15). Hasta hoy
+    // esta app no lo calculaba y el botón no salía; Néstor lo pidió.
+    bollinger: posicionDe(p),
+    bandas: bandas(p.serie20),
+    medias: p.medias ?? null,
     // Los huecos (FVG) vivos en las 20 velas publicadas. La última va a medias
     // (el publicador corre con la hora sin cerrar), así que no puede confirmar
     // un hueco pero sí cuenta para decir si uno ya se tocó. `null` sin extremos.

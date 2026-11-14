@@ -377,8 +377,10 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
           </button>
         )}
 
-        {/* las herramientas encendidas */}
-        {herr.length > 0 && (
+        {/* las herramientas encendidas que caben en un renglón. Si no hay
+            ninguna, la lista no se pinta: una raya sola sobre un hueco vacío
+            parecía un fallo (salió mirando la captura). */}
+        {['niveles', 'pivote', 'tendencia', 'rsi', 'atr', 'fuerza', 'compresion', 'swap'].some((k) => k in h) && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '6px 12px', fontSize: 13, alignItems: 'baseline', borderTop: '1px solid var(--border)', paddingTop: 10 }}>
             {'niveles' in h && (
               <Fila rotulo={t('an.h.niveles')}>
@@ -447,7 +449,6 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
                 )}
               </Fila>
             )}
-            {'bollinger' in h && <Fila rotulo={t('an.h.bollinger')}>{h.bollinger ? <N>{h.bollinger.pctB.toFixed(2)}</N> : t('an.sinDato')}</Fila>}
             {'swap' in h && (
               <Fila rotulo={t('an.h.swap')}>{h.swap ? t(`an.swap.${h.swap}`) : t(a.lado ? 'an.sinDato' : 'an.swapSinLado')}</Fila>
             )}
@@ -624,6 +625,74 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
               ))
             )}
             {h.fvg && <p style={NOTA}>{t('an.fvgNota')}</p>}
+          </Bloque>
+        )}
+
+        {/* Las bandas de Bollinger en precio y el %B de verdad (de 0 a 1). */}
+        {'bollinger' in h && (
+          <Bloque titulo={t('an.h.bollinger')}>
+            {!h.bollinger ? (
+              <p style={TEXTO}>{t('an.sinDato')}</p>
+            ) : (
+              <>
+                <Rejilla>
+                  <Fila rotulo={t('an.bandaArriba')}>
+                    <N>{fmt(h.bollinger.arriba, a.dec)}</N>
+                  </Fila>
+                  <Fila rotulo={t('an.bandaMedia')}>
+                    <N>{fmt(h.bollinger.media, a.dec)}</N>
+                  </Fila>
+                  <Fila rotulo={t('an.bandaAbajo')}>
+                    <N>{fmt(h.bollinger.abajo, a.dec)}</N>
+                  </Fila>
+                  <Fila rotulo={<span dir="ltr">%B</span>}>
+                    <N>{h.bollinger.pctB === null ? '—' : h.bollinger.pctB.toFixed(2)}</N>
+                  </Fila>
+                  <Fila rotulo={t('an.bandaAncho')}>
+                    <N>{h.bollinger.anchoPips.toFixed(0)} pips</N>
+                  </Fila>
+                </Rejilla>
+                <p style={NOTA}>{t('an.bollNota')}</p>
+              </>
+            )}
+          </Bloque>
+        )}
+
+        {/* Las medias móviles. Ningún número de color: estar por encima de una
+            media no es «lo bueno». */}
+        {'medias' in h && (
+          <Bloque titulo={t('an.h.medias')}>
+            {!h.medias ? (
+              <p style={TEXTO}>{t('an.sinDato')}</p>
+            ) : (
+              <>
+                <Rejilla>
+                  {[
+                    ['SMA', h.medias.sma],
+                    ['EMA', h.medias.ema],
+                  ].flatMap(([nombre, lista]) =>
+                    lista.map((x) => (
+                      <Fila key={nombre + x.p} rotulo={<span dir="ltr">{`${nombre} ${x.p}`}</span>}>
+                        {x.v === null ? (
+                          <span style={{ color: 'var(--text-muted)' }}>{t('an.mediaSin')}</span>
+                        ) : (
+                          <>
+                            <N>{fmt(x.v, a.dec)}</N>
+                            {x.precio && x.precio !== 'igual' && (
+                              <span style={{ color: 'var(--text-muted)', fontSize: 11.5 }}>
+                                {' '}
+                                · {t(x.precio === 'encima' ? 'an.mediaEncima' : 'an.mediaDebajo', { pips: x.pips.toFixed(0) })}
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </Fila>
+                    )),
+                  )}
+                </Rejilla>
+                <p style={NOTA}>{t('an.mediasNota')}</p>
+              </>
+            )}
           </Bloque>
         )}
 
