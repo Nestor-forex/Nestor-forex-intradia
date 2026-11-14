@@ -2,7 +2,7 @@ import { pivoteClasico } from './analizador.js'
 import { huecosVivos } from './fvg.js'
 import { bandas, posicionDe } from './bollinger.js'
 import { mediasDe } from './medias.js'
-import { compresionDe, nivelDe, posicionEnRango } from './compresion.js'
+import { compresionDe, fibonacci, nivelDe, posicionEnRango } from './compresion.js'
 import { crearT } from './i18n/crearT.js'
 import { IDIOMA_BASE, localeDe } from './i18n/idiomas.js'
 
@@ -124,6 +124,12 @@ function perfilPorHora(barras, serieHi, serieLo, serie) {
 // falta el triple de velas de las que se bajan (ver `VECES_EMA` en `medias.js`).
 //
 // ⚠️ PRIMO: en Swing las velas son DÍAS y los periodos son otros.
+// El movimiento mínimo, en veces el ATR de UNA HORA, para dibujar Fibonacci en
+// el Analizador (2026-11-15). Por debajo, los cinco niveles caen a décimas de
+// pip: ruido con cinco etiquetas encima. Mismo número que Swing, pero OTRO ATR
+// (horas, no días): no es un número prestado, es la misma regla en su escala.
+export const MIN_ATR_FIBONACCI = 2
+
 export const PERIODOS_MEDIAS = Object.freeze({ sma: [20, 50, 200], ema: [9, 21, 50, 200] })
 
 export const emaLast = (c, p) => {
@@ -980,6 +986,11 @@ export function fichaAnalisis(p, esc = {}) {
     bollinger: posicionDe(p),
     bandas: bandas(p.serie20),
     medias: p.medias ?? null,
+    // Fibonacci del último movimiento de las 20 velas de una hora publicadas.
+    // `null` = sin extremos; `{ sinMovimiento }` = movimiento demasiado chico.
+    fib: Array.isArray(p.altos20) && Array.isArray(p.bajos20)
+      ? (fibonacci({ altos: p.altos20, bajos: p.bajos20, atrAbs: p.atrAbs, minATR: MIN_ATR_FIBONACCI }) ?? { sinMovimiento: true })
+      : null,
     // Los huecos (FVG) vivos en las 20 velas publicadas. La última va a medias
     // (el publicador corre con la hora sin cerrar), así que no puede confirmar
     // un hueco pero sí cuenta para decir si uno ya se tocó. `null` sin extremos.

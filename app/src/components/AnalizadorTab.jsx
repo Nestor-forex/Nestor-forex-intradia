@@ -696,6 +696,41 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
           </Bloque>
         )}
 
+        {/* Fibonacci: los niveles del último movimiento. Ninguno de color. */}
+        {'fibonacci' in h && (
+          <Bloque titulo={t('an.h.fibonacci')}>
+            {!h.fibonacci ? (
+              <p style={TEXTO}>{t('an.sinDato')}</p>
+            ) : h.fibonacci.sinMovimiento ? (
+              <p style={TEXTO}>{t('an.fibChico')}</p>
+            ) : (
+              <>
+                <p style={TEXTO}>
+                  {t(h.fibonacci.subiendo ? 'an.fibSube' : 'an.fibBaja')}{' '}
+                  <N>
+                    {fmt(h.fibonacci.desde, a.dec)} → {fmt(h.fibonacci.hasta, a.dec)}
+                  </N>
+                </p>
+                <Rejilla>
+                  {h.fibonacci.niveles.map((n) => (
+                    <Fila key={n.ratio} rotulo={<span dir="ltr">{`${(n.ratio * 100).toFixed(1)} %`}</span>}>
+                      <N>{fmt(n.precio, a.dec)}</N>
+                      {n.pips !== null && n.lado !== 'igual' && (
+                        <span style={{ color: 'var(--text-muted)', fontSize: 11.5 }}>
+                          {' '}
+                          · {t(n.lado === 'arriba' ? 'an.fvgArriba' : 'an.fvgAbajo', { pips: n.pips.toFixed(0) })}
+                        </span>
+                      )}
+                      {n.ratio === h.fibonacci.cercano && <span style={{ fontWeight: 600, fontSize: 11.5 }}> · {t('an.fibCercano')}</span>}
+                    </Fila>
+                  ))}
+                </Rejilla>
+              </>
+            )}
+            {h.fibonacci && <p style={NOTA}>{t('an.fibNota')}</p>}
+          </Bloque>
+        )}
+
         {'calendario' in h && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, borderTop: '1px solid var(--border)', paddingTop: 10 }}>
             <span style={ROTULO}>{t('an.h.calendario')}</span>
