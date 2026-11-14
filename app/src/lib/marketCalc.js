@@ -1,4 +1,5 @@
 import { pivoteClasico } from './analizador.js'
+import { huecosVivos } from './fvg.js'
 import { compresionDe, nivelDe, posicionEnRango } from './compresion.js'
 import { crearT } from './i18n/crearT.js'
 import { IDIOMA_BASE, localeDe } from './i18n/idiomas.js'
@@ -435,6 +436,13 @@ export function computarBarrido(barras, rates, rangos = null) {
       rangoLo: Math.min(...lows.slice(-BARRAS_POR_DIA)),
       dec: b === 'JPY' || q === 'JPY' ? 2 : 4,
       serie20: last20,
+      // Los máximos y mínimos de esas MISMAS 20 velas, para el FVG del
+      // Analizador. SÍ viajan en `barrido.json` (son cortas: ~4 KB los 18
+      // pares), al revés que `highs`/`lows` completos, que se quitan al
+      // publicar. En los cruces son una cota algo más ancha que el rango real
+      // (ver la nota de `highs` abajo), y `esCruce` lo marca.
+      altos20: highs.slice(-20),
+      bajos20: lows.slice(-20),
       // Las series completas de máximos y mínimos, alineadas con `barras`.
       // Las usa `scripts/lib/resolver.mjs` para saber si una señal llegó a su
       // objetivo o a su stop: hace falta el recorrido entero, no solo el
@@ -955,6 +963,10 @@ export function fichaAnalisis(p, esc = {}) {
     fuerzaB: esc[p.b],
     fuerzaQ: esc[p.q],
     bollinger: null,
+    // Los huecos (FVG) vivos en las 20 velas publicadas. La última va a medias
+    // (el publicador corre con la hora sin cerrar), así que no puede confirmar
+    // un hueco pero sí cuenta para decir si uno ya se tocó. `null` sin extremos.
+    fvg: huecosVivos(p.altos20, p.bajos20, { velaEnCurso: true }),
     esCruce: Boolean(p.esCruce),
     niveles: {
       app: { COMPRA: nivelesApp(p, true), VENTA: nivelesApp(p, false) },

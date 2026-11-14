@@ -20,6 +20,8 @@ import {
   cotDe,
   diarioDe,
   estacionalidadHoy,
+  fvgDe,
+  MAX_FVG,
   herramientasDisponibles,
   oroDe,
   spreadDe,
@@ -254,6 +256,43 @@ console.log('\n5b. Las seis herramientas del 2026-11-15')
   comprobar('con los datos, se ofrecen las seis', ['spread', 'cot', 'oro', 'correlacion', 'estacionalidad', 'diario'].every((x) => conSwing.includes(x)))
 }
 
+console.log('\n5c. El FVG (brecha de valor justo)')
+{
+  // La ficha de esta app trae los huecos vivos de sus 20 velas publicadas.
+  comprobar('la ficha trae los huecos (lista, aunque esté vacía)', Array.isArray(ficha.fvg))
+  const sinExtremos = fichaAnalisis({ ...PAR, altos20: undefined, bajos20: undefined, pivots: undefined }, ESC)
+  comprobar('sin extremos publicados los huecos son null («no lo sé»), no []', sinExtremos.fvg === null)
+
+  // Un caso a mano: precio 1.1000, un hueco por encima, uno por debajo y uno
+  // que contiene el precio.
+  const f = {
+    ...ficha,
+    precio: 1.1,
+    dec: 4,
+    fvg: [
+      { tipo: 'bajista', abajo: 1.103, arriba: 1.105, estado: 'abierto', velasAtras: 3 },
+      { tipo: 'alcista', abajo: 1.095, arriba: 1.098, estado: 'tocado', velasAtras: 7 },
+      { tipo: 'alcista', abajo: 1.099, arriba: 1.101, estado: 'abierto', velasAtras: 1 },
+    ],
+  }
+  const r = fvgDe(f)
+  comprobar('el que contiene el precio sale DENTRO y a 0 pips, el primero', r.huecos[0].dentro === true && r.huecos[0].pips === 0)
+  comprobar('el de abajo: 20 pips por debajo (1.1000 − 1.0980)', r.huecos[1].lado === 'abajo' && cerca(r.huecos[1].pips, 20, 1e-6))
+  comprobar('el de arriba: 30 pips por encima (1.1030 − 1.1000)', r.huecos[2].lado === 'arriba' && cerca(r.huecos[2].pips, 30, 1e-6))
+  comprobar('van ordenados del más cercano al más lejano', r.huecos.every((x, i) => i === 0 || r.huecos[i - 1].pips <= x.pips))
+  const muchos = { ...f, fvg: Array.from({ length: 9 }, (_, i) => ({ tipo: 'alcista', abajo: 1.09 - i * 0.001, arriba: 1.0905 - i * 0.001, estado: 'abierto', velasAtras: i + 1 })) }
+  comprobar(`se enseñan como mucho ${MAX_FVG}, y se dice cuántos hay`, fvgDe(muchos).huecos.length === MAX_FVG && fvgDe(muchos).total === 9)
+  comprobar('sin huecos vivos → lista vacía, no null', JSON.stringify(fvgDe({ ...f, fvg: [] }).huecos) === '[]')
+  comprobar('sin datos → null', fvgDe({ ...f, fvg: null }) === null && fvgDe(null) === null)
+  // ⚠️ El lado es GEOMETRÍA, no una dirección: nada dice compra o venta.
+  comprobar('lo que devuelve no tiene ningún campo de dirección para operar', !/COMPRA|VENTA|compra|venta/.test(JSON.stringify(r)))
+
+  comprobar('el FVG se ofrece si alguna ficha trae huecos', herramientasDisponibles({ fichas: [f] }).includes('fvg'))
+  comprobar('y NO si ninguna los trae (un barrido viejo)', !herramientasDisponibles({ fichas: [{ ...f, fvg: null }] }).includes('fvg'))
+  const a = armarAnalisis({ ficha: f, lado: 'COMPRA', herramientas: ['fvg'] })
+  comprobar('sale dentro de la tarjeta, y pasa por JSON', 'fvg' in a.herramientas && JSON.stringify(JSON.parse(JSON.stringify(a))) === JSON.stringify(a))
+}
+
 console.log('\n6. Las plantillas')
 {
   comprobar('una plantilla sin nombre o sin herramientas no vale', normalizarPlantilla({ nombre: ' ', herramientas: ['rsi'] }) === null && normalizarPlantilla({ nombre: 'x', herramientas: [] }) === null)
@@ -301,6 +340,10 @@ console.log('\n8. Los textos')
   comprobar('el aviso dice que la app NO elige la dirección', /NO elige la dirección/.test(an?.aviso ?? ''))
   const nuevas = ['actividad', 'sinPuente', 'spreadNota', 'oroR', 'oro20', 'oroNota', 'correlNinguna', 'correlNota', 'estNota', 'diarioPar', 'diarioSin', 'diarioAbiertas', 'diarioMismaApuesta']
   comprobar('los textos de las seis nuevas existen', nuevas.every((k) => typeof an?.[k] === 'string'), nuevas.filter((k) => typeof an?.[k] !== 'string').join(', '))
+  const delFvg = ['fvgNinguno', 'fvgAlcista', 'fvgBajista', 'fvgDentro', 'fvgTocado', 'fvgAbierto', 'fvgVelas', 'fvgNota']
+  comprobar('los textos del FVG existen', delFvg.every((k) => typeof an?.[k] === 'string'), delFvg.filter((k) => typeof an?.[k] !== 'string').join(', '))
+  comprobar('las distancias del FVG son funciones (llevan el número dentro)', typeof an?.fvgArriba === 'function' && typeof an?.fvgAbajo === 'function')
+  comprobar('la nota del FVG dice que no dice hacia dónde irá el precio', /no hacia dónde irá el precio/.test(an?.fvgNota ?? ''))
   const funciones = ['puenteViejo', 'cotNota', 'estHora', 'estDia', 'estMes', 'estDir']
   comprobar('las que llevan un número o un nombre dentro son funciones', funciones.every((k) => typeof an?.[k] === 'function'), funciones.filter((k) => typeof an?.[k] !== 'function').join(', '))
   comprobar('la nota del spread dice de QUIÉN es (no es el tuyo)', /no los de tu bróker/.test(an?.spreadNota ?? ''))
