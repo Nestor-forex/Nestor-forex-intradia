@@ -486,7 +486,7 @@ export default {
     actividad: "Activity (vs. the most active pair)",
     sinPuente: "The MT5 bridge is off: there is no real broker spread right now.",
     puenteViejo: ({ tiempo }) => "Broker snapshot from " + tiempo + " ago: it may not be the current one.",
-    spreadNota: "Spread and activity from the app developer's AvaTrade account, not your broker's. Activity counts how many times the price changed today: it is not volume and does not say which way.",
+    spreadNota: "Spread and activity from a live account held by the app developer, not your broker's. Activity counts how many times the price changed today: it is not volume and does not say which way.",
     cotNota: ({ fecha }) => "Speculative funds: long (+) or short (−), as % of open interest. Report of " + fecha + " (it arrives days late). It does not say where the price will go.",
     oroR: "Gold's correlation with this pair",
     oro20: "Gold over 20 sessions",

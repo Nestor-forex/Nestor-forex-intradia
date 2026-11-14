@@ -486,7 +486,7 @@ export default {
     actividad: "Activité (face à la paire la plus active)",
     sinPuente: "Le pont MT5 est éteint : pas de spread réel du courtier pour l'instant.",
     puenteViejo: ({ tiempo }) => "Photo du courtier d'il y a " + tiempo + ": ce n'est peut-être plus l'actuelle.",
-    spreadNota: "Spread et activité du compte AvaTrade du développeur de l'app, pas ceux de ton courtier. L'activité compte combien de fois le prix a changé aujourd'hui : ce n'est pas du volume et cela ne dit pas le sens.",
+    spreadNota: "Spread et activité d'un compte réel du développeur de l'app, pas ceux de ton courtier. L'activité compte combien de fois le prix a changé aujourd'hui : ce n'est pas du volume et cela ne dit pas le sens.",
     cotNota: ({ fecha }) => "Fonds spéculatifs : acheteurs (+) ou vendeurs (−), en % de l'intérêt ouvert. Rapport du " + fecha + " (il arrive avec des jours de retard). Il ne dit pas où ira le prix.",
     oroR: "Corrélation de l'or avec cette paire",
     oro20: "L'or sur 20 séances",

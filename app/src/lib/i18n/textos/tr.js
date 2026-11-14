@@ -481,7 +481,7 @@ export default {
     actividad: "Aktivite (en aktif pariteye göre)",
     sinPuente: "MT5 köprüsü kapalı: şu anda aracı kurumun gerçek spread'i yok.",
     puenteViejo: ({ tiempo }) => "Aracı kurum verisi " + tiempo + " önceye ait: güncel olmayabilir.",
-    spreadNota: "Spread ve aktivite, uygulama geliştiricisinin AvaTrade hesabından gelir, senin aracı kurumundan değil. Aktivite bugün fiyatın kaç kez değiştiğini sayar: hacim değildir ve yön söylemez.",
+    spreadNota: "Spread ve aktivite, uygulama geliştiricisinin gerçek bir hesabından gelir, senin aracı kurumundan değil. Aktivite bugün fiyatın kaç kez değiştiğini sayar: hacim değildir ve yön söylemez.",
     cotNota: ({ fecha }) => "Spekülatif fonlar: alım (+) ya da satım (−), açık pozisyonun %'si olarak. " + fecha + " raporu (birkaç gün gecikmeli gelir). Fiyatın nereye gideceğini söylemez.",
     oroR: "Altının bu pariteyle korelasyonu",
     oro20: "Altın, 20 seansta",

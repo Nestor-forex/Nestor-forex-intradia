@@ -304,6 +304,12 @@ console.log('\n8. Los textos')
   const funciones = ['puenteViejo', 'cotNota', 'estHora', 'estDia', 'estMes', 'estDir']
   comprobar('las que llevan un número o un nombre dentro son funciones', funciones.every((k) => typeof an?.[k] === 'function'), funciones.filter((k) => typeof an?.[k] !== 'function').join(', '))
   comprobar('la nota del spread dice de QUIÉN es (no es el tuyo)', /no los de tu bróker/.test(an?.spreadNota ?? ''))
+  // ⚠️ Néstor, 2026-11-15: «jamás debe decir cuál es el nombre de mi bróker,
+  // no le voy a hacer publicidad». Ningún texto que ve el suscriptor, en
+  // ningún idioma, nombra a la empresa. Se mira el diccionario ENTERO.
+  const nombres = /avatrade|ava\s*trade/i
+  const conNombre = ['es', 'en', 'de', 'fr', 'pt', 'it', 'zh', 'ja', 'ru', 'ar', 'tr', 'hi', 'ko'].filter((l) => nombres.test(leer(`../src/lib/i18n/textos/${l}.js`)))
+  comprobar('ningún texto de la app nombra al bróker, en ningún idioma', conNombre.length === 0, conNombre.join(', '))
   comprobar('la nota del COT dice que no da dirección', /No dice hacia dónde/.test(an?.cotNota?.({ fecha: 'x' }) ?? ''))
   comprobar('la nota de la estacionalidad dice que mide cuánto, no hacia dónde', /no hacia dónde/.test(an?.estNota ?? ''))
 }

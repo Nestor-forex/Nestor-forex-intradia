@@ -552,7 +552,7 @@ export default {
     actividad: "Actividad (frente al par más activo)",
     sinPuente: "El puente de MT5 está apagado: ahora no hay spread real del bróker.",
     puenteViejo: ({ tiempo }) => "Foto del bróker de hace " + tiempo + ": puede no ser el de ahora.",
-    spreadNota: "Spread y actividad de la cuenta del desarrollador de la app en AvaTrade, no los de tu bróker. La actividad cuenta cuántas veces cambió el precio hoy: no es volumen ni dice hacia dónde.",
+    spreadNota: "Spread y actividad de una cuenta real del desarrollador de la app, no los de tu bróker. La actividad cuenta cuántas veces cambió el precio hoy: no es volumen ni dice hacia dónde.",
     cotNota: ({ fecha }) => "Fondos especulativos: comprados (+) o vendidos (−), en % del interés abierto. Informe del " + fecha + " (llega con días de retraso). No dice hacia dónde irá el precio.",
     oroR: "Correlación del oro con este par",
     oro20: "Oro en 20 sesiones",
