@@ -69,6 +69,9 @@ export const HERRAMIENTAS = Object.freeze([
   // que el precio dejó y si siguen vivos; no dice hacia dónde ir. Su medición
   // está en `scripts/medir-fvg.mjs`, con su listón escrito antes.
   'fvg',
+  // Las medias móviles simples y exponenciales (2026-11-15). Los periodos los
+  // pone cada app: días en Swing, horas en Intradía.
+  'medias',
 ])
 
 /**
@@ -85,7 +88,8 @@ export const HERRAMIENTAS = Object.freeze([
  */
 export function herramientasDisponibles({ fichas = [], cot = null, oro = null, correlaciones, estacionalidad = null } = {}) {
   return HERRAMIENTAS.filter((x) => {
-    if (x === 'bollinger') return fichas.some((f) => num(f?.bollinger))
+    if (x === 'bollinger') return fichas.some((f) => bollingerDe(f) !== null)
+    if (x === 'medias') return fichas.some((f) => Array.isArray(f?.medias?.sma) || Array.isArray(f?.medias?.ema))
     if (x === 'cot') return !!cot?.divisas
     if (x === 'oro') return !!oro?.correl
     if (x === 'correlacion') return Array.isArray(correlaciones)
@@ -173,6 +177,53 @@ export function nivelesDe(ficha, lado, metodo) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
+// LAS BANDAS DE BOLLINGER Y LAS MEDIAS (2026-11-15)
+// ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * Las bandas en precio y el %B de verdad.
+ *
+ * ⚠️⚠️ HASTA HOY LA TARJETA DECÍA «%B» Y ENSEÑABA OTRA COSA. Enseñaba
+ * `posicionDe`, que va de −1 (banda de abajo) a +1 (banda de arriba). El %B de
+ * Bollinger va de 0 a 1: %B = (precio − banda de abajo) / (arriba − abajo). Un
+ * precio en la media salía «0.00» cuando su %B es 0,50. Un número bien calculado
+ * con la etiqueta de otro — la familia que este proyecto colecciona.
+ *
+ * @returns null si no hay bandas (nunca ceros).
+ */
+export function bollingerDe(ficha) {
+  const b = ficha?.bandas
+  if (!b || ![b.arriba, b.media, b.abajo].every(num) || !(b.arriba > b.abajo)) return null
+  const c = ficha.precio
+  const pip = tamanoPip(ficha.dec)
+  return {
+    pctB: num(c) ? (c - b.abajo) / (b.arriba - b.abajo) : null,
+    arriba: b.arriba,
+    media: b.media,
+    abajo: b.abajo,
+    anchoPips: (b.arriba - b.abajo) / pip,
+  }
+}
+
+/**
+ * Las medias de la ficha con dónde queda el precio respecto de cada una.
+ * Un periodo sin valor sale con `v: null` (faltan velas), no desaparece.
+ *
+ * ⚠️ `precio: 'encima' | 'debajo'` es GEOMETRÍA, no una dirección para operar.
+ */
+export function mediasParaTarjeta(ficha) {
+  const m = ficha?.medias
+  if (!m || (!Array.isArray(m.sma) && !Array.isArray(m.ema))) return null
+  const pip = tamanoPip(ficha.dec)
+  const c = ficha.precio
+  const una = (x) => {
+    const v = num(x?.v) ? x.v : null
+    const ok = v !== null && num(c)
+    return { p: x?.p, v, pips: ok ? Math.abs(c - v) / pip : null, precio: ok ? (c > v ? 'encima' : c < v ? 'debajo' : 'igual') : null }
+  }
+  return { sma: (m.sma ?? []).map(una), ema: (m.ema ?? []).map(una) }
+}
+
 // EL FVG (brecha de valor justo)
 // ─────────────────────────────────────────────────────────────────────────
 
@@ -428,7 +479,7 @@ export function armarAnalisis({
   if (si('atr')) h.atr = num(ficha.atr) ? { abs: ficha.atr, pct: num(ficha.atrPct) ? ficha.atrPct : null, pips: ficha.atr / pip } : null
   if (si('fuerza')) h.fuerza = num(ficha.fuerzaB) && num(ficha.fuerzaQ) ? { b: ficha.b, q: ficha.q, vb: ficha.fuerzaB, vq: ficha.fuerzaQ } : null
   if (si('compresion')) h.compresion = num(ficha.compresion) ? { v: ficha.compresion, nivel: ficha.nivelCompresion ?? null } : null
-  if (si('bollinger')) h.bollinger = num(ficha.bollinger) ? { pctB: ficha.bollinger } : null
+  if (si('bollinger')) h.bollinger = bollingerDe(ficha)
   if (si('calendario')) {
     // Solo los eventos de las dos divisas del par. `null` si no hay calendario
     // publicado; `[]` si lo hay y no trae nada para estas dos — son dos cosas
@@ -443,6 +494,7 @@ export function armarAnalisis({
   if (si('estacionalidad')) h.estacionalidad = estacionalidadHoy(estacionalidad, ficha.name, ahora)
   if (si('diario')) h.diario = diarioDe(trades, ficha.name, monedasDe)
   if (si('fvg')) h.fvg = fvgDe(ficha)
+  if (si('medias')) h.medias = mediasParaTarjeta(ficha)
 
   return {
     par: ficha.name,

@@ -311,6 +311,12 @@ export const GEMELOS = [
   // con velas de una hora; lo que cambia entre apps es de dónde salen los
   // extremos (en Intradía los cruces son aproximados), y eso lo dice la ficha.
   'src/lib/fvg.js',
+  // Las medias móviles y las bandas de Bollinger del Analizador (2026-11-15).
+  // La CUENTA es la misma en las dos apps; los PERIODOS los pone cada
+  // `marketCalc.js` (días en Swing, horas en Intradía). `bollinger.js` lleva
+  // además la regla de sombra de Swing, que en Intradía no se usa.
+  'src/lib/medias.js',
+  'src/lib/bollinger.js',
   'src/lib/usePlantillas.js',
   'src/components/AnalizadorTab.jsx',
   'scripts/prueba-analizador.mjs',

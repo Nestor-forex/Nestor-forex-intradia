@@ -22,6 +22,8 @@ import {
   estacionalidadHoy,
   fvgDe,
   MAX_FVG,
+  bollingerDe,
+  mediasParaTarjeta,
   herramientasDisponibles,
   oroDe,
   spreadDe,
@@ -36,7 +38,8 @@ import {
 import { calcularLote } from '../src/lib/calc.js'
 import { carryDeSenal } from '../src/lib/carrySenal.js'
 import { monedasDe } from '../src/lib/pairs.js'
-import { fichaAnalisis, nivelesApp } from '../src/lib/marketCalc.js'
+import { fichaAnalisis, nivelesApp, PERIODOS_MEDIAS } from '../src/lib/marketCalc.js'
+import { VECES_EMA, emaUltima, mediasDe, smaUltima } from '../src/lib/medias.js'
 import es from '../src/lib/i18n/textos/es.js'
 
 let fallos = 0
@@ -293,6 +296,39 @@ console.log('\n5c. El FVG (brecha de valor justo)')
   comprobar('sale dentro de la tarjeta, y pasa por JSON', 'fvg' in a.herramientas && JSON.stringify(JSON.parse(JSON.stringify(a))) === JSON.stringify(a))
 }
 
+console.log('\n5d. Las bandas de Bollinger y las medias móviles')
+{
+  // Bollinger: 10 cierres a 100 y 10 a 110 → media 105, desviación 5, bandas 95 y 115.
+  const b = bollingerDe({ dec: 2, precio: 105, bandas: { arriba: 115, media: 105, abajo: 95 } })
+  comprobar('en la media el %B es 0.50 (NO 0: eso era la posición de −1 a +1)', cerca(b.pctB, 0.5))
+  comprobar('en la banda de abajo %B = 0 y en la de arriba %B = 1', cerca(bollingerDe({ dec: 2, precio: 95, bandas: { arriba: 115, media: 105, abajo: 95 } }).pctB, 0) && cerca(bollingerDe({ dec: 2, precio: 115, bandas: { arriba: 115, media: 105, abajo: 95 } }).pctB, 1))
+  comprobar('fuera de la banda sale por encima de 1', bollingerDe({ dec: 2, precio: 120, bandas: { arriba: 115, media: 105, abajo: 95 } }).pctB > 1)
+  comprobar('el ancho va en pips (20 de precio con 2 decimales = 2000 pips)', cerca(b.anchoPips, 2000))
+  comprobar('sin bandas → null, nunca ceros', bollingerDe({ dec: 4, precio: 1 }) === null && bollingerDe({ dec: 4, precio: 1, bandas: { arriba: 1, media: 1, abajo: 1 } }) === null)
+  comprobar('la ficha de esta app trae las bandas en precio', ficha.bandas && [ficha.bandas.arriba, ficha.bandas.media, ficha.bandas.abajo].every(Number.isFinite))
+  comprobar('la tarjeta cuadra con la ficha: %B = (posición + 1) / 2', cerca(bollingerDe(ficha).pctB, (ficha.bollinger + 1) / 2, 1e-9))
+
+  // Las medias, contra cuentas a mano.
+  const serie = Array.from({ length: 30 }, (_, i) => i + 1) // 1..30
+  comprobar('SMA 10 de 1..30 = media de 21..30 = 25.5', cerca(smaUltima(serie, 10), 25.5))
+  comprobar('SMA con menos velas que el periodo → null', smaUltima(serie, 50) === null)
+  comprobar(`EMA con menos de ${VECES_EMA}× el periodo → null (no un número que no es)`, emaUltima(serie, 20) === null && emaUltima(serie, 10) !== null)
+  const larga = Array.from({ length: 400 }, () => 7)
+  comprobar('EMA de una serie constante = esa constante', cerca(emaUltima(larga, 50), 7))
+  const m = mediasDe(larga, { sma: [20, 200], ema: [20, 200] })
+  comprobar('un periodo sin velas suficientes sale con v null, NO desaparece', m.ema.length === 2 && m.ema[1].v === null && m.ema[1].p === 200)
+  comprobar('esta app tiene sus periodos escritos (SMA y EMA)', Array.isArray(PERIODOS_MEDIAS.sma) && Array.isArray(PERIODOS_MEDIAS.ema) && PERIODOS_MEDIAS.sma.length > 0)
+
+  const t = mediasParaTarjeta({ dec: 4, precio: 1.1, medias: { sma: [{ p: 20, v: 1.099 }], ema: [{ p: 50, v: 1.102 }, { p: 200, v: null }] } })
+  comprobar('el precio 10 pips por encima de la SMA 20', t.sma[0].precio === 'encima' && cerca(t.sma[0].pips, 10, 1e-6))
+  comprobar('el precio 20 pips por debajo de la EMA 50', t.ema[0].precio === 'debajo' && cerca(t.ema[0].pips, 20, 1e-6))
+  comprobar('la que falta sigue en la lista, sin pips', t.ema[1].v === null && t.ema[1].pips === null)
+  comprobar('sin medias → null', mediasParaTarjeta({ dec: 4, precio: 1 }) === null)
+  comprobar('nada dice compra o venta', !/COMPRA|VENTA/i.test(JSON.stringify(t)))
+  comprobar('las medias se ofrecen si alguna ficha las trae', herramientasDisponibles({ fichas: [{ ...ficha, medias: { sma: [], ema: [] } }] }).includes('medias'))
+  comprobar('Bollinger se ofrece si alguna ficha trae bandas, y no si ninguna', herramientasDisponibles({ fichas: [ficha] }).includes('bollinger') && !herramientasDisponibles({ fichas: [{ ...ficha, bandas: null }] }).includes('bollinger'))
+}
+
 console.log('\n6. Las plantillas')
 {
   comprobar('una plantilla sin nombre o sin herramientas no vale', normalizarPlantilla({ nombre: ' ', herramientas: ['rsi'] }) === null && normalizarPlantilla({ nombre: 'x', herramientas: [] }) === null)
@@ -340,6 +376,9 @@ console.log('\n8. Los textos')
   comprobar('el aviso dice que la app NO elige la dirección', /NO elige la dirección/.test(an?.aviso ?? ''))
   const nuevas = ['actividad', 'sinPuente', 'spreadNota', 'oroR', 'oro20', 'oroNota', 'correlNinguna', 'correlNota', 'estNota', 'diarioPar', 'diarioSin', 'diarioAbiertas', 'diarioMismaApuesta']
   comprobar('los textos de las seis nuevas existen', nuevas.every((k) => typeof an?.[k] === 'string'), nuevas.filter((k) => typeof an?.[k] !== 'string').join(', '))
+  const delBm = ['bandaArriba', 'bandaMedia', 'bandaAbajo', 'bandaAncho', 'bollNota', 'mediaSin', 'mediasNota']
+  comprobar('los textos de Bollinger y de las medias existen', delBm.every((k) => typeof an?.[k] === 'string'), delBm.filter((k) => typeof an?.[k] !== 'string').join(', '))
+  comprobar('las distancias a las medias son funciones', typeof an?.mediaEncima === 'function' && typeof an?.mediaDebajo === 'function')
   const delFvg = ['fvgNinguno', 'fvgAlcista', 'fvgBajista', 'fvgDentro', 'fvgTocado', 'fvgAbierto', 'fvgVelas', 'fvgNota']
   comprobar('los textos del FVG existen', delFvg.every((k) => typeof an?.[k] === 'string'), delFvg.filter((k) => typeof an?.[k] !== 'string').join(', '))
   comprobar('las distancias del FVG son funciones (llevan el número dentro)', typeof an?.fvgArriba === 'function' && typeof an?.fvgAbajo === 'function')
