@@ -18,11 +18,13 @@
 
 import { useMemo, useState } from 'react'
 import { useIdioma } from '../lib/i18n'
-import { HERRAMIENTAS, HERRAMIENTAS_INICIALES, LADOS, MAX_NOMBRE, METODOS, RR_AVISO, armarAnalisis, notaDeAnalisis } from '../lib/analizador'
+import { HERRAMIENTAS, HERRAMIENTAS_INICIALES, LADOS, MAX_NOMBRE, METODOS, RR_AVISO, armarAnalisis, herramientasDisponibles, notaDeAnalisis } from '../lib/analizador'
 import { leerPerfil } from '../lib/perfilRiesgo'
 import { estadoDelDia } from '../lib/guardianRiesgo'
 import { monedasDe } from '../lib/pairs'
 import { useTasas } from '../lib/useTasas'
+import { useMT5Quotes } from '../lib/useMT5Quotes'
+import { useEstacionalidad } from '../lib/useEstacionalidad'
 import { usePlantillas } from '../lib/usePlantillas'
 import { clave } from '../lib/identidad'
 
@@ -91,9 +93,45 @@ const N = ({ children, color }) => (
   </span>
 )
 
-export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trades = [], cal, onAnotar, onIrAlPerfil }) {
+// ⚠️ El COT, el oro y la correlación llegan por props porque solo los tiene la
+// app de Swing: un archivo GEMELO no puede importar un hook que en la otra app
+// no existe. La de intradía no los pasa, y sus botones no salen.
+const NOTA = { fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.45, margin: 0 }
+
+function Bloque({ titulo, children }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, borderTop: '1px solid var(--border)', paddingTop: 10 }}>
+      <span style={ROTULO}>{titulo}</span>
+      {children}
+    </div>
+  )
+}
+
+function Rejilla({ children }) {
+  return <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '6px 12px', fontSize: 13, alignItems: 'baseline' }}>{children}</div>
+}
+
+// El recorrido típico y cuántas veces la media: «0.79% · ×1.08». El «×» no es
+// idioma, así que vale igual en los 13.
+const recorrido = (c) => (c ? `${c.medio.toFixed(2)}% · ×${c.veces.toFixed(2)}` : '—')
+
+// Los nombres de los días y los meses se los pide al idioma (como la tarjeta
+// de estacionalidad): serían 19 claves × 13 idiomas para algo que el navegador
+// dice mejor. Se usan fechas en UTC para que el día no se corra de huso.
+const nombreDia = (d, locale) => new Date(Date.UTC(2024, 0, 7 + d)).toLocaleDateString(locale, { weekday: 'long', timeZone: 'UTC' })
+const nombreMes = (m, locale) => new Date(Date.UTC(2024, m, 15)).toLocaleDateString(locale, { month: 'long', timeZone: 'UTC' })
+// La hora se agrupa en UTC y se enseña en la del teléfono de quien mira.
+const horaLocal = (hUTC, locale) => {
+  const d = new Date()
+  d.setUTCHours(hUTC, 0, 0, 0)
+  return d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
+}
+
+export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trades = [], cal, cot = null, oro = null, correlaciones, onAnotar, onIrAlPerfil }) {
   const { t, locale } = useIdioma()
   const tasasPub = useTasas()
+  const mt5 = useMT5Quotes()
+  const estacionalidad = useEstacionalidad()
   const { plantillas, guardar, borrar } = usePlantillas(uid, ficha)
   const perfil = useMemo(() => leerPerfil(ficha?.perfilRiesgo), [ficha?.perfilRiesgo])
   const freno = useMemo(() => estadoDelDia(trades, perfil).estado, [trades, perfil])
@@ -113,7 +151,7 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
   // Solo se ofrecen las herramientas que ESTA app calcula para algún par. La
   // app de intradía no tiene Bollinger: ofrecer el botón para que diga siempre
   // «Sin dato» sería prometer algo que no hay.
-  const disponibles = HERRAMIENTAS.filter((x) => x !== 'bollinger' || fichas.some((f) => Number.isFinite(f.bollinger)))
+  const disponibles = useMemo(() => herramientasDisponibles({ fichas, cot, oro, correlaciones, estacionalidad }), [fichas, cot, oro, correlaciones, estacionalidad])
 
   const parActual = par && nombres.includes(par) ? par : nombres[0] ?? null
   const fichaPar = fichas.find((f) => f.name === parActual) ?? null
@@ -145,15 +183,23 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
         ficha: fichaPar,
         lado,
         metodo,
-        herramientas: herr,
+        // Solo las que esta app ofrece ahora: una plantilla guardada con el COT
+        // no debe sacar «Sin dato» en la app que no lo tiene.
+        herramientas: herr.filter((x) => disponibles.includes(x)),
         perfil,
         ratesUSD,
         calendario: cal,
         tasas: tasasPub?.tasas ?? null,
         monedasDe,
         freno,
+        mt5,
+        cot,
+        oro,
+        correlaciones,
+        estacionalidad,
+        trades,
       }),
-    [fichaPar, lado, metodo, herr, perfil, ratesUSD, cal, tasasPub, freno],
+    [fichaPar, lado, metodo, herr, disponibles, perfil, ratesUSD, cal, tasasPub, freno, mt5, cot, oro, correlaciones, estacionalidad, trades],
   )
 
   const guardarPl = async () => {
@@ -406,6 +452,153 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
               <Fila rotulo={t('an.h.swap')}>{h.swap ? t(`an.swap.${h.swap}`) : t(a.lado ? 'an.sinDato' : 'an.swapSinLado')}</Fila>
             )}
           </div>
+        )}
+
+        {/* Las seis del 2026-11-15. Cada una en su bloque, con su nota: aquí
+            la nota no es adorno, es lo que impide leer el número al revés. */}
+        {'spread' in h && (
+          <Bloque titulo={t('an.h.spread')}>
+            {!h.spread ? (
+              <p style={TEXTO}>{t('an.sinPuente')}</p>
+            ) : (
+              <>
+                <Rejilla>
+                  <Fila rotulo="Spread">
+                    <N>{h.spread.spread.toFixed(1)} pips</N>
+                  </Fila>
+                  {h.spread.pctStop !== null && (
+                    <Fila rotulo="Spread / Stop-loss">
+                      <N>{h.spread.pctStop.toFixed(1)}%</N>
+                    </Fila>
+                  )}
+                  {h.spread.actividad !== null && (
+                    <Fila rotulo={t('an.actividad')}>
+                      <N>{(h.spread.actividad * 100).toFixed(0)}%</N>
+                    </Fila>
+                  )}
+                </Rejilla>
+                {h.spread.minutos !== null && h.spread.minutos > 120 && (
+                  <p style={{ ...TEXTO, color: 'var(--amber)' }}>{t('an.puenteViejo', { tiempo: h.spread.minutos < 120 ? `${h.spread.minutos} min` : `${Math.round(h.spread.minutos / 60)} h` })}</p>
+                )}
+                <p style={NOTA}>{t('an.spreadNota')}</p>
+              </>
+            )}
+          </Bloque>
+        )}
+
+        {'cot' in h && (
+          <Bloque titulo={t('an.h.cot')}>
+            {!h.cot ? (
+              <p style={TEXTO}>{t('an.sinDato')}</p>
+            ) : (
+              <>
+                <Rejilla>
+                  {[
+                    [h.cot.b, h.cot.pctB],
+                    [h.cot.q, h.cot.pctQ],
+                  ].map(([c, v]) => (
+                    <Fila key={c} rotulo={<span dir="ltr">{c}</span>}>
+                      <N>{v === null ? '—' : `${v > 0 ? '+' : ''}${v.toFixed(1)}%`}</N>
+                    </Fila>
+                  ))}
+                </Rejilla>
+                <p style={NOTA}>{t('an.cotNota', { fecha: h.cot.fecha ?? '—' })}</p>
+              </>
+            )}
+          </Bloque>
+        )}
+
+        {'oro' in h && (
+          <Bloque titulo={t('an.h.oro')}>
+            {!h.oro ? (
+              <p style={TEXTO}>{t('an.sinDato')}</p>
+            ) : (
+              <>
+                <Rejilla>
+                  <Fila rotulo={t('an.oroR')}>
+                    <N>{h.oro.r === null ? '—' : h.oro.r.toFixed(2)}</N>
+                  </Fila>
+                  <Fila rotulo={t('an.oro20')}>
+                    <N>{h.oro.cambio20 === null ? '—' : `${h.oro.cambio20 > 0 ? '+' : ''}${(h.oro.cambio20 * 100).toFixed(1)}%`}</N>
+                  </Fila>
+                </Rejilla>
+                <p style={NOTA}>{t('an.oroNota')}</p>
+              </>
+            )}
+          </Bloque>
+        )}
+
+        {'correlacion' in h && (
+          <Bloque titulo={t('an.h.correlacion')}>
+            {!h.correlacion ? (
+              <p style={TEXTO}>{t('an.sinDato')}</p>
+            ) : h.correlacion.length === 0 ? (
+              <p style={TEXTO}>{t('an.correlNinguna')}</p>
+            ) : (
+              <>
+                <Rejilla>
+                  {h.correlacion.map((x) => (
+                    <Fila key={x.par} rotulo={<span dir="ltr">{x.par}</span>}>
+                      <N>{`${x.r > 0 ? '+' : ''}${x.r.toFixed(2)}`}</N>
+                    </Fila>
+                  ))}
+                </Rejilla>
+                <p style={NOTA}>{t('an.correlNota')}</p>
+              </>
+            )}
+          </Bloque>
+        )}
+
+        {'estacionalidad' in h && (
+          <Bloque titulo={t('an.h.estacionalidad')}>
+            {!h.estacionalidad ? (
+              <p style={TEXTO}>{t('an.sinDato')}</p>
+            ) : (
+              <>
+                <Rejilla>
+                  {h.estacionalidad.rHora && (
+                    <Fila rotulo={t('an.estHora', { hora: horaLocal(h.estacionalidad.hora, locale) })}>
+                      <N>{recorrido(h.estacionalidad.rHora)}</N>
+                    </Fila>
+                  )}
+                  {/* En fin de semana no hay casilla: no hubo mercado, así que
+                      la fila no sale en vez de enseñar un «—» que parece fallo. */}
+                  {h.estacionalidad.rDia && (
+                    <Fila rotulo={t('an.estDia', { dia: nombreDia(h.estacionalidad.dia, locale) })}>
+                      <N>{recorrido(h.estacionalidad.rDia)}</N>
+                    </Fila>
+                  )}
+                  <Fila rotulo={t('an.estMes', { mes: nombreMes(h.estacionalidad.mes, locale) })}>
+                    <N>{recorrido(h.estacionalidad.rMes)}</N>
+                  </Fila>
+                  <Fila rotulo={t('an.estDir', { mes: nombreMes(h.estacionalidad.mes, locale) })}>
+                    <N>{h.estacionalidad.dir ? `${h.estacionalidad.dir.pct}%${h.estacionalidad.dir.margen !== null ? ` ±${h.estacionalidad.dir.margen}` : ''}` : '—'}</N>
+                  </Fila>
+                </Rejilla>
+                <p style={NOTA}>{t('an.estNota')}</p>
+              </>
+            )}
+          </Bloque>
+        )}
+
+        {'diario' in h && h.diario && (
+          <Bloque titulo={t('an.h.diario')}>
+            <Rejilla>
+              <Fila rotulo={t('an.diarioPar')}>
+                {h.diario.n === 0 ? (
+                  <span style={{ color: 'var(--text-muted)' }}>{t('an.diarioSin')}</span>
+                ) : (
+                  <N color={h.diario.neto > 0 ? 'var(--green)' : h.diario.neto < 0 ? 'var(--red)' : undefined}>
+                    {h.diario.n} · {h.diario.pct.toFixed(0)}% ±{h.diario.margen.toFixed(0)} · {h.diario.neto >= 0 ? '+' : '−'}${Math.abs(h.diario.neto).toFixed(2)}
+                  </N>
+                )}
+              </Fila>
+              <Fila rotulo={t('an.diarioAbiertas')}>
+                <N>{h.diario.abiertas}</N>
+              </Fila>
+            </Rejilla>
+            {h.diario.abiertas > 0 && <p style={{ ...TEXTO, color: 'var(--amber)' }}>{t('an.diarioMismaApuesta')}</p>}
+          </Bloque>
         )}
 
         {'calendario' in h && (

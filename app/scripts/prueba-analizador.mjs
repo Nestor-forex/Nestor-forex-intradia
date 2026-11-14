@@ -16,6 +16,13 @@ import {
   METODOS,
   armarAnalisis,
   conPlantilla,
+  correlacionDe,
+  cotDe,
+  diarioDe,
+  estacionalidadHoy,
+  herramientasDisponibles,
+  oroDe,
+  spreadDe,
   leerPlantillas,
   nivelesDe,
   normalizarPlantilla,
@@ -164,6 +171,89 @@ console.log('\n5. Las herramientas')
   comprobar('sin dirección no hay swap (depende del lado)', armarAnalisis({ ficha, herramientas: ['swap'], tasas, monedasDe }).herramientas.swap === null)
 }
 
+console.log('\n5b. Las seis herramientas del 2026-11-15')
+{
+  // ── el spread y la actividad ──
+  const mt5 = {
+    actualizadoEl: '2026-11-15T12:00:00Z',
+    quotes: { 'EUR/USD': { spread: 1.2, ticks: 500 }, 'USD/JPY': { spread: 1.5, ticks: 1000 } },
+  }
+  const ahora = new Date('2026-11-15T12:30:00Z')
+  const sp = spreadDe(mt5, 'EUR/USD', { pipRiesgo: 60 }, ahora)
+  comprobar('el spread se compara con el Stop-loss de ESTA tarjeta', cerca(sp.pctStop, 2), String(sp.pctStop))
+  comprobar('la actividad va contra el par MÁS ACTIVO de la misma lectura', cerca(sp.actividad, 0.5))
+  comprobar('y dice de hace cuántos minutos es la foto', sp.minutos === 30)
+  comprobar('sin niveles no hay % del stop (null, no 0)', spreadDe(mt5, 'EUR/USD', null, ahora).pctStop === null)
+  comprobar('con el puente apagado es null', spreadDe(null, 'EUR/USD', null) === null && spreadDe({ quotes: {} }, 'EUR/USD', null) === null)
+  comprobar('sin ticks la actividad es null, no 0', spreadDe({ quotes: { 'EUR/USD': { spread: 1 } } }, 'EUR/USD', null).actividad === null)
+
+  // ── el COT ──
+  const cot = { fecha: '2026-11-03', divisas: { EUR: { f: '2026-11-03', fondosPct: -8.97 }, GBP: { f: '2026-10-27', fondosPct: 10.9 } } }
+  const c1 = cotDe(cot, 'EUR', 'GBP')
+  comprobar('el COT trae las dos divisas y la fecha del informe MÁS VIEJO', cerca(c1.pctB, -8.97) && cerca(c1.pctQ, 10.9) && c1.fecha === '2026-10-27')
+  comprobar('una divisa sin dato es null, no 0', cotDe(cot, 'EUR', 'NZD').pctQ === null)
+  comprobar('sin archivo es null', cotDe(null, 'EUR', 'USD') === null)
+  comprobar('el COT no devuelve ningún veredicto', !Object.keys(c1).some((k) => /lado|compra|venta|senal|veredicto/i.test(k)))
+
+  // ── el oro ──
+  const oro = { fecha: '2026-11-13', cambio20: -0.0294, correl: { 'EUR/USD': { r: 0.48, n: 60 } } }
+  const o1 = oroDe(oro, 'EUR/USD')
+  comprobar('el oro trae su correlación con el par y su cambio en 20 sesiones', cerca(o1.r, 0.48) && cerca(o1.cambio20, -0.0294) && o1.n === 60)
+  comprobar('un par sin correlación da r null, no 0', oroDe(oro, 'GBP/CAD').r === null)
+
+  // ── la correlación ──
+  const corr = [
+    { a: 'EUR/USD', b: 'GBP/USD', r: 0.83 },
+    { a: 'EUR/USD', b: 'USD/CHF', r: -0.88 },
+    { a: 'AUD/USD', b: 'NZD/USD', r: 0.9 },
+  ]
+  const k = correlacionDe(corr, 'EUR/USD')
+  comprobar('solo las parejas de ESTE par, ordenadas por tamaño (las negativas cuentan igual)', k.length === 2 && k[0].par === 'USD/CHF' && k[1].par === 'GBP/USD')
+  comprobar('con datos y ninguna pareja es [] — y sin datos es null', correlacionDe(corr, 'EUR/CHF').length === 0 && correlacionDe(undefined, 'EUR/USD') === null)
+
+  // ── la estacionalidad ──
+  const est = {
+    pares: {
+      'EUR/USD': {
+        dia: { 1: { n: 900, medio: 0.6 }, 2: { n: 900, medio: 0.8 }, 3: { n: 900, medio: 0.7 }, 4: { n: 900, medio: 0.7 }, 5: { n: 900, medio: 0.7 } },
+        mes: { 10: { n: 400, medio: 0.77 } },
+        mesDir: { 10: { n: 18, verdes: 9, pct: 50, margen: 23 } },
+      },
+    },
+  }
+  const martes = new Date('2026-11-17T10:00:00Z') // martes, noviembre
+  const e1 = estacionalidadHoy(est, 'EUR/USD', martes)
+  comprobar('el día se agrupa en UTC y se compara con la media de los cinco', e1.dia === 2 && cerca(e1.rDia.veces, 0.8 / 0.7))
+  comprobar('el mes trae su dirección con su ±', e1.mes === 10 && e1.dir.pct === 50 && e1.dir.margen === 23)
+  comprobar('sin la casilla de la hora (Swing) la hora es null', e1.rHora === null)
+  comprobar('un sábado no inventa un día', estacionalidadHoy(est, 'EUR/USD', new Date('2026-11-21T10:00:00Z')).rDia === null)
+  comprobar('sin datos del par es null', estacionalidadHoy(est, 'GBP/CAD', martes) === null)
+
+  // ── el diario ──
+  const trades = [
+    { par: 'EUR/USD', estado: 'cerrada', pl: 10 },
+    { par: 'EUR/USD', estado: 'cerrada', pl: -4 },
+    { par: 'EUR/USD', estado: 'abierta' },
+    { par: 'EUR/GBP', estado: 'abierta' },
+    { par: 'USD/JPY', estado: 'abierta' },
+    { par: 'AUD/NZD', estado: 'abierta' },
+  ]
+  const d1 = diarioDe(trades, 'EUR/USD', monedasDe)
+  comprobar('el diario solo cuenta las CERRADAS de este par', d1.n === 2 && d1.ganadas === 1 && cerca(d1.neto, 6))
+  comprobar('…y las abiertas que comparten divisa (EUR o USD), incluida la del propio par', d1.abiertas === 3, String(d1.abiertas))
+  comprobar('sin operaciones de este par: n 0 y sin porcentaje', diarioDe([], 'EUR/USD', monedasDe).n === 0 && diarioDe([], 'EUR/USD', monedasDe).pct === null)
+
+  // ── todo junto, y lo que la app ofrece ──
+  const a = armarAnalisis({ ficha, lado: 'COMPRA', metodo: 'simetrica', herramientas: HERRAMIENTAS, mt5, cot, oro, correlaciones: corr, estacionalidad: est, trades, monedasDe, ahora: martes })
+  comprobar('las seis salen dentro de la tarjeta', ['spread', 'cot', 'oro', 'correlacion', 'estacionalidad', 'diario'].every((x) => x in a.herramientas))
+  comprobar('la tarjeta con las seis sigue pasando por JSON intacta', JSON.stringify(JSON.parse(JSON.stringify(a))) === JSON.stringify(a))
+  const sinSwing = herramientasDisponibles({ fichas: [ficha] })
+  comprobar('sin COT, oro ni correlación (la app de intradía) esos botones NO se ofrecen', !sinSwing.includes('cot') && !sinSwing.includes('oro') && !sinSwing.includes('correlacion'))
+  comprobar('el spread y el diario se ofrecen siempre', sinSwing.includes('spread') && sinSwing.includes('diario'))
+  const conSwing = herramientasDisponibles({ fichas: [ficha], cot, oro, correlaciones: corr, estacionalidad: est })
+  comprobar('con los datos, se ofrecen las seis', ['spread', 'cot', 'oro', 'correlacion', 'estacionalidad', 'diario'].every((x) => conSwing.includes(x)))
+}
+
 console.log('\n6. Las plantillas')
 {
   comprobar('una plantilla sin nombre o sin herramientas no vale', normalizarPlantilla({ nombre: ' ', herramientas: ['rsi'] }) === null && normalizarPlantilla({ nombre: 'x', herramientas: [] }) === null)
@@ -209,6 +299,13 @@ console.log('\n8. Los textos')
   comprobar('las tres salidas del swap tienen frase', ['aFavor', 'enContra', 'neutro'].every((k) => typeof an?.swap?.[k] === 'string'))
   comprobar('las herramientas iniciales existen todas', HERRAMIENTAS_INICIALES.every((h) => HERRAMIENTAS.includes(h)))
   comprobar('el aviso dice que la app NO elige la dirección', /NO elige la dirección/.test(an?.aviso ?? ''))
+  const nuevas = ['actividad', 'sinPuente', 'spreadNota', 'oroR', 'oro20', 'oroNota', 'correlNinguna', 'correlNota', 'estNota', 'diarioPar', 'diarioSin', 'diarioAbiertas', 'diarioMismaApuesta']
+  comprobar('los textos de las seis nuevas existen', nuevas.every((k) => typeof an?.[k] === 'string'), nuevas.filter((k) => typeof an?.[k] !== 'string').join(', '))
+  const funciones = ['puenteViejo', 'cotNota', 'estHora', 'estDia', 'estMes', 'estDir']
+  comprobar('las que llevan un número o un nombre dentro son funciones', funciones.every((k) => typeof an?.[k] === 'function'), funciones.filter((k) => typeof an?.[k] !== 'function').join(', '))
+  comprobar('la nota del spread dice de QUIÉN es (no es el tuyo)', /no los de tu bróker/.test(an?.spreadNota ?? ''))
+  comprobar('la nota del COT dice que no da dirección', /No dice hacia dónde/.test(an?.cotNota?.({ fecha: 'x' }) ?? ''))
+  comprobar('la nota de la estacionalidad dice que mide cuánto, no hacia dónde', /no hacia dónde/.test(an?.estNota ?? ''))
 }
 
 console.log('\n9. El cableado')
@@ -226,6 +323,11 @@ console.log('\n9. El cableado')
   comprobar('la pantalla arranca SIN dirección elegida', /useState\(null\)\s*\n\s*const \[metodo/.test(tab) || /\[lado, setLado\] = useState\(null\)/.test(tab))
   comprobar('la pantalla usa `armarAnalisis` (no hace sus propias cuentas)', /armarAnalisis\(/.test(tab) && !/atrAbs|lo10|hi10/.test(tab))
   comprobar('la pantalla lee el freno del guardián', /estadoDelDia\(/.test(tab))
+  comprobar('la pantalla decide qué ofrecer con `herramientasDisponibles`', /herramientasDisponibles\(/.test(tab))
+  // GEMELO: no puede importar un hook que en la otra app no existe. El COT y
+  // el oro le llegan por props desde el App.jsx de Swing.
+  comprobar('la pantalla NO importa useCot ni useOro (solo existen en Swing)', !/useCot|useOro/.test(tab))
+  comprobar('la pantalla le pasa a `armarAnalisis` solo las herramientas disponibles', /herramientas:\s*herr\.filter\(\(x\)\s*=>\s*disponibles\.includes\(x\)\)/.test(tab))
   const diario = leer('../src/components/DiarioTab.jsx')
   comprobar('el Diario acepta el lote que llega del Analizador', /prellenar\.lote/.test(diario))
 }

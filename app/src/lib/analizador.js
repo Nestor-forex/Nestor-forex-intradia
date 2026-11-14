@@ -32,6 +32,7 @@
 import { calcularLote } from './calc.js'
 import { proximos } from './calendario.js'
 import { carryDeSenal } from './carrySenal.js'
+import { resumir } from './diagnostico.js'
 
 /**
  * Las herramientas que se pueden encender, en el orden en que se pintan.
@@ -55,7 +56,39 @@ export const HERRAMIENTAS = Object.freeze([
   'bollinger',
   'calendario',
   'swap',
+  // Las seis que se añadieron el 2026-11-15, a petición de Néstor: «que la
+  // tarjeta junte TODAS mis herramientas». Cada una lee un dato que la app YA
+  // publica; ninguna calcula un número nuevo ni elige la dirección.
+  'spread', // lo que cuesta abrir y la actividad (puente de MT5)
+  'cot', // posiciones de los fondos (solo Swing)
+  'oro', // el oro y su correlación con el par (solo Swing)
+  'correlacion', // pares que se mueven casi igual (solo Swing)
+  'estacionalidad', // recorrido típico de hoy y de este mes, y la dirección por mes
+  'diario', // las operaciones de la persona en este par
 ])
+
+/**
+ * Las herramientas que ESTA app puede ofrecer ahora mismo.
+ *
+ * ⚠️ Se decide por el DATO, no por el nombre de la app: así este archivo sigue
+ * siendo GEMELO. La app de intradía no publica COT, oro ni correlación, y por
+ * eso esos botones no le salen — ofrecerlos para que digan siempre «Sin dato»
+ * sería prometer algo que no hay.
+ *
+ * El spread y el diario se ofrecen siempre: si el puente de MT5 está apagado o
+ * la persona no ha operado ese par, la tarjeta lo DICE, que también es
+ * información.
+ */
+export function herramientasDisponibles({ fichas = [], cot = null, oro = null, correlaciones, estacionalidad = null } = {}) {
+  return HERRAMIENTAS.filter((x) => {
+    if (x === 'bollinger') return fichas.some((f) => num(f?.bollinger))
+    if (x === 'cot') return !!cot?.divisas
+    if (x === 'oro') return !!oro?.correl
+    if (x === 'correlacion') return Array.isArray(correlaciones)
+    if (x === 'estacionalidad') return !!estacionalidad?.pares
+    return true
+  })
+}
 
 /**
  * Cómo se colocan el stop y el objetivo.
@@ -133,6 +166,141 @@ export function nivelesDe(ficha, lado, metodo) {
   return ok ? { sl: n.sl, tp: n.tp } : null
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+// LAS SEIS HERRAMIENTAS DEL 2026-11-15
+// ─────────────────────────────────────────────────────────────────────────
+// Cada una devuelve un objeto plano o `null`. `null` quiere decir «no lo sé» y
+// nunca «es cero»: misma asimetría que `pearson`, `difMax` y `edadEnMinutos`.
+
+/**
+ * Lo que cuesta abrir y la actividad, del puente de MT5.
+ *
+ * ⚠️ El spread se compara con el Stop-loss de ESTA tarjeta: 2 pips sobre un
+ * stop de 120 son el 1,7 % del riesgo; sobre uno de 30, el 7 %. Es lo único que
+ * dice si ese coste importa, y sin niveles no se calcula.
+ *
+ * ⚠️ La actividad va como fracción del par MÁS ACTIVO de la misma lectura,
+ * nunca contra días anteriores: el número es de la vela diaria EN CURSO y crece
+ * hasta el cierre. Y no es volumen: es cuántas veces cambió el precio en un
+ * solo bróker (ver `CotizacionesVivo.jsx`).
+ */
+export function spreadDe(mt5, par, niveles, ahora = new Date()) {
+  const q = mt5?.quotes?.[par]
+  if (!q || !num(q.spread)) return null
+  const ticks = Object.values(mt5.quotes)
+    .map((x) => x?.ticks)
+    .filter(num)
+  const max = ticks.length ? Math.max(...ticks) : null
+  const ms = typeof mt5.actualizadoEl === 'string' ? new Date(mt5.actualizadoEl).getTime() : NaN
+  return {
+    spread: q.spread,
+    pctStop: niveles && num(niveles.pipRiesgo) && niveles.pipRiesgo > 0 ? (q.spread / niveles.pipRiesgo) * 100 : null,
+    actividad: num(q.ticks) && num(max) && max > 0 ? q.ticks / max : null,
+    minutos: Number.isFinite(ms) ? Math.max(0, Math.round((ahora.getTime() - ms) / 60000)) : null,
+  }
+}
+
+/**
+ * Cómo están posicionados los fondos especulativos en las dos divisas del par,
+ * en % del interés abierto, con la fecha de SU informe (llega con 3 a 10 días
+ * de retraso y en pantalla tiene que verse).
+ *
+ * ⚠️ NO DEVUELVE UN VEREDICTO. El COT como filtro se midió DOS veces y no pasó.
+ * Aquí es información, igual que en su tarjeta.
+ */
+export function cotDe(cot, b, q) {
+  const d = cot?.divisas
+  if (!d) return null
+  const lado = (c) => (num(d[c]?.fondosPct) ? { pct: d[c].fondosPct, f: typeof d[c].f === 'string' ? d[c].f : null } : null)
+  const vb = lado(b)
+  const vq = lado(q)
+  if (!vb && !vq) return null
+  const fechas = [vb?.f, vq?.f].filter(Boolean).sort()
+  return { b, q, pctB: vb?.pct ?? null, pctQ: vq?.pct ?? null, fecha: fechas[0] ?? cot.fecha ?? null }
+}
+
+/** El oro: su correlación con este par (60 sesiones) y cuánto se movió en 20 días. */
+export function oroDe(oro, par) {
+  if (!oro?.correl) return null
+  const c = oro.correl[par]
+  const r = num(c?.r) ? c.r : null
+  const cambio20 = num(oro.cambio20) ? oro.cambio20 : null
+  if (r === null && cambio20 === null) return null
+  return { r, n: num(c?.n) ? c.n : null, cambio20, fecha: typeof oro.fecha === 'string' ? oro.fecha : null }
+}
+
+/**
+ * Los pares que se mueven casi igual que éste (|r| ≥ 0,7), ordenados por
+ * tamaño. `[]` —y no `null`— cuando hay datos y ninguno pasa: «ninguno va con
+ * éste» es un hecho; «no lo sé» es otro.
+ */
+export function correlacionDe(correlaciones, par) {
+  if (!Array.isArray(correlaciones)) return null
+  return correlaciones
+    .filter((x) => x && (x.a === par || x.b === par) && num(x.r))
+    .map((x) => ({ par: x.a === par ? x.b : x.a, r: x.r }))
+    .sort((x, y) => Math.abs(y.r) - Math.abs(x.r))
+    .slice(0, 5)
+}
+
+// El recorrido de una casilla contra la media de su grupo: 1,08 quiere decir
+// «se mueve un 8 % más que la media». `null` si falta algo.
+function casillaContraMedia(grupo, clave) {
+  if (!grupo || typeof grupo !== 'object') return null
+  const medios = Object.values(grupo)
+    .map((x) => x?.medio)
+    .filter(num)
+  const c = grupo[clave]
+  if (!num(c?.medio) || !medios.length) return null
+  const media = medios.reduce((a, x) => a + x, 0) / medios.length
+  return media > 0 ? { medio: c.medio, veces: c.medio / media, n: num(c.n) ? c.n : null } : null
+}
+
+/**
+ * La estacionalidad de HOY para este par: el recorrido típico de este día de la
+ * semana y de este mes (y de esta hora, en la app de intradía), cada uno contra
+ * la media de los demás, y cuántos meses como éste cerraron en verde.
+ *
+ * ⚠️ Se agrupa en UTC, igual que el publicador: los solapes de sesión son fijos
+ * en UTC. La pantalla traduce al pintar.
+ *
+ * ⚠️ El recorrido mide CUÁNTO se mueve, nunca hacia dónde. La dirección por mes
+ * va con su ±, y con ~18 meses ese ± ronda los 23 puntos: casi no dice nada, y
+ * la tarjeta lo dice.
+ */
+export function estacionalidadHoy(est, par, ahora = new Date()) {
+  const p = est?.pares?.[par]
+  if (!p) return null
+  const dia = ahora.getUTCDay()
+  const mes = ahora.getUTCMonth()
+  const hora = ahora.getUTCHours()
+  const d = p.mesDir?.[mes]
+  return {
+    dia,
+    mes,
+    hora,
+    rDia: casillaContraMedia(p.dia, dia),
+    rMes: casillaContraMedia(p.mes, mes),
+    rHora: casillaContraMedia(p.hora, hora),
+    dir: d && num(d.pct) ? { pct: d.pct, margen: num(d.margen) ? d.margen : null, n: num(d.n) ? d.n : null } : null,
+  }
+}
+
+/**
+ * Lo que la persona ya hizo: sus operaciones CERRADAS en este par (con el ±
+ * pegado, que con pocas es enorme) y cuántas ABIERTAS comparten una divisa con
+ * él — si son varias, es una sola apuesta más grande.
+ */
+export function diarioDe(trades, par, monedasDeFn) {
+  const lista = Array.isArray(trades) ? trades : []
+  const r = resumir(lista.filter((t) => t?.par === par))
+  const mias = monedasDeFn ? monedasDeFn(par) : []
+  const abiertas = lista.filter(
+    (t) => t?.estado === 'abierta' && typeof t.par === 'string' && monedasDeFn && monedasDeFn(t.par).some((c) => mias.includes(c)),
+  ).length
+  return { n: r.n, ganadas: r.ganadas, pct: r.pct, margen: r.margen, neto: r.neto, abiertas }
+}
+
 /**
  * La tarjeta entera, como DATOS.
  *
@@ -146,6 +314,12 @@ export function nivelesDe(ficha, lado, metodo) {
  * @param tasas         el mapa de `estado/tasas.json` (o null)
  * @param monedasDe     `pairs.js`
  * @param freno         el estado del guardián de riesgo ('ok'|'cerca'|'freno'|…)
+ * @param mt5           `{ quotes, actualizadoEl }` del puente de MT5 (o null)
+ * @param cot           `estado/cot.json` (o null; la app de intradía no lo tiene)
+ * @param oro           `estado/oro.json` (o null; ídem)
+ * @param correlaciones la lista de `paresQueVanJuntos` (o undefined; ídem)
+ * @param estacionalidad `estado/estacionalidad.json` (o null)
+ * @param trades        el diario de la persona
  *
  * Devuelve siempre un objeto. Lo que no se puede calcular va como `null` con su
  * motivo en forma de CÓDIGO, nunca de frase: lo traduce quien pinta, y la fase
@@ -162,6 +336,12 @@ export function armarAnalisis({
   tasas,
   monedasDe,
   freno = null,
+  mt5 = null,
+  cot = null,
+  oro = null,
+  correlaciones,
+  estacionalidad = null,
+  trades = [],
   ahora = new Date(),
 } = {}) {
   if (!ficha) return { par: null, motivo: 'sinFicha' }
@@ -214,6 +394,12 @@ export function armarAnalisis({
     h.calendario = Array.isArray(calendario?.eventos) ? proximos(calendario, ahora).filter((ev) => ev.c === ficha.b || ev.c === ficha.q) : null
   }
   if (si('swap')) h.swap = tasas && monedasDe && LADOS.includes(lado) ? carryDeSenal({ par: ficha.name, lado }, tasas, monedasDe) : null
+  if (si('spread')) h.spread = spreadDe(mt5, ficha.name, niveles, ahora)
+  if (si('cot')) h.cot = cotDe(cot, ficha.b, ficha.q)
+  if (si('oro')) h.oro = oroDe(oro, ficha.name)
+  if (si('correlacion')) h.correlacion = correlacionDe(correlaciones, ficha.name)
+  if (si('estacionalidad')) h.estacionalidad = estacionalidadHoy(estacionalidad, ficha.name, ahora)
+  if (si('diario')) h.diario = diarioDe(trades, ficha.name, monedasDe)
 
   return {
     par: ficha.name,
