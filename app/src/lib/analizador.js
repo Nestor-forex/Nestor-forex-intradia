@@ -65,6 +65,10 @@ export const HERRAMIENTAS = Object.freeze([
   'correlacion', // pares que se mueven casi igual (solo Swing)
   'estacionalidad', // recorrido típico de hoy y de este mes, y la dirección por mes
   'diario', // las operaciones de la persona en este par
+  // El FVG (2026-11-15), a petición de Néstor. Enseña DÓNDE están los huecos
+  // que el precio dejó y si siguen vivos; no dice hacia dónde ir. Su medición
+  // está en `scripts/medir-fvg.mjs`, con su listón escrito antes.
+  'fvg',
 ])
 
 /**
@@ -86,6 +90,8 @@ export function herramientasDisponibles({ fichas = [], cot = null, oro = null, c
     if (x === 'oro') return !!oro?.correl
     if (x === 'correlacion') return Array.isArray(correlaciones)
     if (x === 'estacionalidad') return !!estacionalidad?.pares
+    // Hace falta que el barrido publique los extremos de las últimas velas.
+    if (x === 'fvg') return fichas.some((f) => Array.isArray(f?.fvg))
     return true
   })
 }
@@ -167,6 +173,42 @@ export function nivelesDe(ficha, lado, metodo) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
+// EL FVG (brecha de valor justo)
+// ─────────────────────────────────────────────────────────────────────────
+
+/** Cuántos huecos vivos se enseñan como mucho: los más cercanos al precio. */
+export const MAX_FVG = 4
+
+/**
+ * Los huecos vivos del par, con su distancia al precio en pips.
+ *
+ * Cada uno: { tipo, abajo, arriba, estado, velasAtras, dentro, lado, pips }
+ *   · `dentro` el precio está ahora mismo dentro del tramo vacío;
+ *   · `lado`   'arriba' o 'abajo': dónde queda el hueco respecto del precio;
+ *   · `pips`   la distancia al borde más cercano (0 si está dentro).
+ *
+ * ⚠️ `lado` es GEOMETRÍA, no una dirección para operar: «hay un hueco 30 pips
+ * por debajo» no dice «compra» ni «vende».
+ *
+ * @returns `null` si el barrido no trae extremos («no lo sé»); `{ huecos: [] }`
+ *          si los trae y no queda ninguno vivo («miré y no hay»).
+ */
+export function fvgDe(ficha) {
+  if (!ficha || !Array.isArray(ficha.fvg) || !num(ficha.precio)) return null
+  const pip = tamanoPip(ficha.dec)
+  const c = ficha.precio
+  const huecos = ficha.fvg
+    .filter((h) => num(h?.abajo) && num(h?.arriba))
+    .map((h) => {
+      const dentro = c >= h.abajo && c <= h.arriba
+      const lado = dentro ? null : h.abajo > c ? 'arriba' : 'abajo'
+      const dist = dentro ? 0 : lado === 'arriba' ? h.abajo - c : c - h.arriba
+      return { tipo: h.tipo, abajo: h.abajo, arriba: h.arriba, estado: h.estado, velasAtras: h.velasAtras, dentro, lado, pips: dist / pip }
+    })
+    .sort((a, b) => a.pips - b.pips)
+  return { huecos: huecos.slice(0, MAX_FVG), total: huecos.length, cruce: !!ficha.esCruce }
+}
+
 // LAS SEIS HERRAMIENTAS DEL 2026-11-15
 // ─────────────────────────────────────────────────────────────────────────
 // Cada una devuelve un objeto plano o `null`. `null` quiere decir «no lo sé» y
@@ -400,6 +442,7 @@ export function armarAnalisis({
   if (si('correlacion')) h.correlacion = correlacionDe(correlaciones, ficha.name)
   if (si('estacionalidad')) h.estacionalidad = estacionalidadHoy(estacionalidad, ficha.name, ahora)
   if (si('diario')) h.diario = diarioDe(trades, ficha.name, monedasDe)
+  if (si('fvg')) h.fvg = fvgDe(ficha)
 
   return {
     par: ficha.name,

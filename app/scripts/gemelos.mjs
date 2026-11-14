@@ -306,6 +306,11 @@ export const GEMELOS = [
   // sí misma (sus medias, su geometría, su pivote) llega ya resuelto en las
   // fichas que arma su `marketCalc.js`, que sigue siendo PRIMO.
   'src/lib/analizador.js',
+  // El FVG (2026-11-15): la matemática de los huecos que enseña el Analizador.
+  // Es geometría pura sobre máximos y mínimos, la misma con velas diarias que
+  // con velas de una hora; lo que cambia entre apps es de dónde salen los
+  // extremos (en Intradía los cruces son aproximados), y eso lo dice la ficha.
+  'src/lib/fvg.js',
   'src/lib/usePlantillas.js',
   'src/components/AnalizadorTab.jsx',
   'scripts/prueba-analizador.mjs',

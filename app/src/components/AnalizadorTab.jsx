@@ -601,6 +601,32 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
           </Bloque>
         )}
 
+        {/* El FVG. Enseña DÓNDE quedan los huecos, nunca hacia dónde ir: por
+            eso ni el tipo ni la distancia van de verde o de rojo. */}
+        {'fvg' in h && (
+          <Bloque titulo={t('an.h.fvg')}>
+            {!h.fvg ? (
+              <p style={TEXTO}>{t('an.sinDato')}</p>
+            ) : h.fvg.huecos.length === 0 ? (
+              <p style={TEXTO}>{t('an.fvgNinguno')}</p>
+            ) : (
+              h.fvg.huecos.map((x) => (
+                <div key={`${x.tipo}-${x.abajo}-${x.arriba}`} style={{ fontSize: 12.5, lineHeight: 1.5 }}>
+                  <span style={{ fontWeight: 600 }}>{t(x.tipo === 'alcista' ? 'an.fvgAlcista' : 'an.fvgBajista')}</span>{' '}
+                  <N>
+                    {fmt(x.abajo, a.dec)}–{fmt(x.arriba, a.dec)}
+                  </N>
+                  <div style={{ color: 'var(--text-muted)', fontSize: 11.5 }}>
+                    {x.dentro ? t('an.fvgDentro') : t(x.lado === 'arriba' ? 'an.fvgArriba' : 'an.fvgAbajo', { pips: x.pips.toFixed(0) })} ·{' '}
+                    {t(x.estado === 'tocado' ? 'an.fvgTocado' : 'an.fvgAbierto')} · {t('an.fvgVelas')}: <N>{x.velasAtras}</N>
+                  </div>
+                </div>
+              ))
+            )}
+            {h.fvg && <p style={NOTA}>{t('an.fvgNota')}</p>}
+          </Bloque>
+        )}
+
         {'calendario' in h && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, borderTop: '1px solid var(--border)', paddingTop: 10 }}>
             <span style={ROTULO}>{t('an.h.calendario')}</span>
