@@ -206,6 +206,21 @@ if (nuevasVisibles.length) {
   }
 }
 
+// Las señales nuevas de los experimentos que el administrador encendió, SOLO
+// a su celular, para seguirlas en demo. Va DESPUÉS de los avisos de la app y
+// aislado igual que ellos: el historial ya está escrito. Recibe TODAS las
+// nuevas: las de la app (tendencia y rango), con sus avisos en pausa, solo le
+// llegan si él enciende su interruptor. Ver `enviarAvisosExperimento`.
+let avisosExperimento = { estado: 'sin-senales-nuevas' }
+if (nuevas.length) {
+  try {
+    const { enviarAvisosExperimento } = await import('./lib/push-envio.mjs')
+    avisosExperimento = await enviarAvisosExperimento(nuevas)
+  } catch (e) {
+    avisosExperimento = { estado: 'error', detalle: e.message }
+  }
+}
+
 console.log('---VIGIA-INICIO---')
 console.log(`Corrida: ${ahora.toISOString()} (minuto ${ahora.getUTCMinutes()} de la hora)`)
 console.log(`Vela más reciente: ${data.ultima} UTC`)
@@ -244,4 +259,5 @@ if (resumen.sombra.total) {
   )
 }
 console.log(`Avisos al celular: ${JSON.stringify(avisos)}`)
+console.log(`Avisos de experimento (a quien los encienda): ${JSON.stringify(avisosExperimento)}`)
 console.log('---VIGIA-FIN---')

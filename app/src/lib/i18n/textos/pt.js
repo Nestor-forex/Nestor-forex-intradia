@@ -667,6 +667,22 @@ export default {
     fuenteCierre: 'Twelve Data',
   },
 
+  avisosExp: {
+    titulo: "Alertas dos experimentos",
+    noSonSenales: "Isto NÃO são sinais: são experimentos que o app registra para medi-los.",
+    desc: "Ative os que você quiser acompanhar numa conta demo. Quando o app registrar um novo, ele chega ao seu celular marcado como EXPERIMENTO. Só tocam os que você ativar: se não mexer em nada, não recebe nenhum.",
+    nota: "Só tocam se este aparelho tiver os alertas ativados no cartão acima.",
+    encendido: "Ligado",
+    apagado: "Desligado",
+    sinPermiso: "Não há permissão para salvar isto.",
+    noSeGuardo: "Não foi possível salvar. Tente de novo.",
+    push: "Experimento · não é um sinal",
+    op: {
+      tendencia: "Sinais do app — modo tendência",
+      rango: "Sinais do app — modo lateral",
+      retroceso: "Recuo (em teste)",
+    },
+  },
   avisos: {
     pausados: 'Avisos em pausa enquanto revisamos os sinais',
     pausadosPorque:

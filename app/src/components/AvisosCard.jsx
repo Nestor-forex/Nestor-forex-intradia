@@ -12,7 +12,7 @@ import { AVISOS_PAUSADOS } from '../lib/push/pausa'
 // celular o de la app — y en iPhone el caso más común tiene solución, así
 // que hay que decirla en vez de esconderla.
 
-export default function AvisosCard({ uid, notaExtra = null }) {
+export default function AvisosCard({ uid }) {
   // El idioma se guarda junto a la suscripción: el vigía corre en un servidor
   // y no tiene otra forma de saber en qué idioma mandar el aviso.
   const { t, idioma } = useIdioma()
@@ -81,16 +81,14 @@ export default function AvisosCard({ uid, notaExtra = null }) {
   // había ningún sitio donde activar el permiso. Nadie lo notó: no fallaba nada.
   //
   // Ahora la pausa se dice ARRIBA y en ámbar —que las señales de la app no
-  // suenan— y debajo va el interruptor con lo que sí llega. `notaExtra` lo pone
-  // cada app (en Swing, al administrador le llegan además las señales de
-  // «comprar la caída» para probarlas en demo); este archivo es GEMELO y no
-  // puede saber eso por sí mismo.
+  // suenan— y debajo va el interruptor con lo que sí llega. Lo que le llega
+  // además al administrador (los experimentos que él encienda) lo elige en su
+  // propia tarjeta, `AvisosExperimentos.jsx`, justo debajo.
   const cabeceraPausa = AVISOS_PAUSADOS && (
     <>
       <div style={{ ...TEXTO, color: 'var(--amber)', fontWeight: 600 }}>{t('avisos.pausados')}</div>
       <p style={TEXTO}>{t('avisos.pausadosPorque')}</p>
       <p style={TEXTO}>{t('avisos.siSirven')}</p>
-      {notaExtra && <p style={{ ...TEXTO, fontWeight: 600 }}>{notaExtra}</p>}
     </>
   )
 
