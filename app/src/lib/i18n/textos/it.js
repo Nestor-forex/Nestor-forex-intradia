@@ -664,9 +664,9 @@ export default {
   },
 
   avisosExp: {
-    titulo: "Avvisi degli esperimenti (solo amministratore)",
+    titulo: "Avvisi degli esperimenti",
     noSonSenales: "Questi NON sono segnali: sono esperimenti che l'app registra per misurarli.",
-    desc: "Accendi quelli che vuoi seguire in demo. Quando il vigilante ne registra uno nuovo, ti arriva sul telefono segnato come ESPERIMENTO. Agli abbonati non arriva mai.",
+    desc: "Accendi quelli che vuoi seguire su un conto demo. Quando l'app ne registra uno nuovo, ti arriva sul telefono segnato come ESPERIMENTO. Suonano solo quelli che accendi tu: se non tocchi niente, non ne ricevi nessuno.",
     nota: "Suonano solo se questo dispositivo ha gli avvisi attivati nella scheda qui sopra.",
     encendido: "Acceso",
     apagado: "Spento",

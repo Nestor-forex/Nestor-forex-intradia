@@ -235,9 +235,9 @@ export default function App() {
                       aparecen las señales: el aviso es para no tener que
                       volver a esta pantalla a mirar. */}
                   <AvisosCard uid={authUser.uid} />
-                  {/* Solo el administrador elige qué experimentos le suenan
-                      (ver `enviarAvisosExperimento` en push-envio.mjs). */}
-                  {esAdmin && <AvisosExperimentos uid={authUser.uid} ficha={perfil} />}
+                  {/* Cada miembro elige qué experimentos le suenan (2026-11-15). Lo que no
+                      toque, no le suena: el aviso de que NO son señales va antes de todo. */}
+                  <AvisosExperimentos uid={authUser.uid} ficha={perfil} esAdmin={esAdmin} />
                   {/* ⚠️ EL CALENDARIO SE MUDÓ AQUÍ DESDE EL TABLERO COMPLETO
                       (2026-09-15). Néstor, en Swing, preguntó «¿dónde está el
                       calendario?» — estaba detrás de «Ver tablero completo →»

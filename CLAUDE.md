@@ -2985,3 +2985,34 @@ se lo manda **solo al administrador**. Las de tendencia y rango solo van por
 ahí mientras `AVISOS_PAUSADOS` sea `true`.
 
 📌 «Comprar la caída» no está aquí: midió −0,08 plano con velas de una hora.
+
+---
+
+# Los interruptores de experimentos, ABIERTOS A TODOS (2026-11-15, tarde). En las dos apps
+
+Néstor, el mismo día: **«ahora sí quiero que la vean todos, no solo el
+desarrollador»**. Lo de «solo administrador» de la sección anterior ya NO es
+verdad.
+
+- La tarjeta «Avisos de los experimentos» la ve **todo miembro aprobado**
+  (`App.jsx` ya no la esconde tras `esAdmin`; le pasa `esAdmin` como prop).
+- `enviarAvisosExperimento` recorre **todas las fichas aprobadas** (más el
+  administrador por correo) y a cada una le manda **lo que ella encendió**, a
+  sus aparatos de esa app, con el presupuesto `MS_PRESUPUESTO` y contando
+  `sinTiempo`.
+- ⚠️ **Un suscriptor que no toca nada NO recibe ninguno**: `defectoPara(esAdmin)`
+  da la lista vacía a los miembros. Solo el administrador conserva su defecto de
+  antes (Swing: «comprar la caída»; Intradía: nada). Encenderlo tiene que ser
+  una decisión de cada uno, después de leer «Esto NO son señales».
+- ⚠️ Sin encontrar al administrador **ya no se para**: se manda lo que cada uno
+  encendió y nadie recibe el defecto del administrador.
+- ⚠️ Retirados y pendientes no reciben nada aunque tengan todo encendido.
+- **`firestore.rules`** deja a cada miembro escribir `avisosExp_swing` y
+  `avisosExp_intradia` (lista blanca + tope de 10). **Hay que publicar las
+  reglas** (`reglas.yml` con «aplicar») o guardar dice «No hay permiso».
+- Título y descripción en los 13 idiomas: fuera «(solo administrador)» y «a los
+  suscriptores no les llega nunca»; ahora «solo suenan los que tú enciendas».
+
+📌 Sigue en pie lo que no cambia: el aviso dice «Experimento · no es una
+señal», no pasa por `RB_MINIMO`, y las señales de la app solo van por aquí
+mientras sus avisos estén en pausa.

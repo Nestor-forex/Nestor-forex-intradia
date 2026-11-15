@@ -4,14 +4,17 @@ import { db } from '../lib/firebase'
 import { APP } from '../lib/identidad'
 import { useIdioma } from '../lib/i18n'
 import { alternar, campoAvisosExp, clavesElegidas } from '../lib/avisosExperimento'
-import { DEFECTO, OPCIONES } from '../lib/experimentosAviso'
+import { OPCIONES, defectoPara } from '../lib/experimentosAviso'
 
-// QUÉ EXPERIMENTOS LE SUENAN AL ADMINISTRADOR EN EL CELULAR (2026-11-15).
+// QUÉ EXPERIMENTOS LE SUENAN A CADA MIEMBRO EN EL CELULAR (2026-11-15).
 //
-// Néstor lo pidió así: «quiero activarlas o desactivarlas a mi gusto, pero
-// esto es solo para el desarrollador por ahora». Esta tarjeta solo se pinta si
-// `esAdmin` (lo decide cada `App.jsx`), y el programa que manda los avisos
-// tampoco le escribe a nadie más: busca al administrador por su correo.
+// Primero fue solo para el administrador. El mismo día Néstor lo abrió: «ahora
+// sí quiero que la vean todos, no solo el desarrollador». Cada miembro aprobado
+// enciende los suyos; el programa que manda los avisos lee la misma ficha con
+// la misma cuenta (`clavesElegidas` + `defectoPara`).
+//
+// ⚠️ Un suscriptor que no toca nada NO recibe ninguno: su defecto es la lista
+// vacía. Encenderlo tiene que ser una decisión suya, después de leer el aviso.
 //
 // GEMELO. Lo que cambia entre apps —qué experimentos hay— vive en
 // `experimentosAviso.js`, que es PRIMO y exporta lo mismo en las dos.
@@ -24,12 +27,12 @@ import { DEFECTO, OPCIONES } from '../lib/experimentosAviso'
 // los avisos (la tarjeta de arriba). Se dice, porque si no, encender uno y no
 // recibir nada se lee como que la app está rota.
 
-export default function AvisosExperimentos({ uid, ficha }) {
+export default function AvisosExperimentos({ uid, ficha, esAdmin = false }) {
   const { t } = useIdioma()
   const [ocupado, setOcupado] = useState(null)
   const [error, setError] = useState('')
 
-  const elegidas = clavesElegidas(ficha, APP, OPCIONES, DEFECTO)
+  const elegidas = clavesElegidas(ficha, APP, OPCIONES, defectoPara(esAdmin))
 
   const alTocar = async (clave) => {
     if (!db || !uid) return

@@ -259,5 +259,5 @@ if (resumen.sombra.total) {
   )
 }
 console.log(`Avisos al celular: ${JSON.stringify(avisos)}`)
-console.log(`Avisos de experimento (solo administrador): ${JSON.stringify(avisosExperimento)}`)
+console.log(`Avisos de experimento (a quien los encienda): ${JSON.stringify(avisosExperimento)}`)
 console.log('---VIGIA-FIN---')

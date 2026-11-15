@@ -668,9 +668,9 @@ export default {
   },
 
   avisosExp: {
-    titulo: "Alertes des expériences (administrateur seulement)",
+    titulo: "Alertes des expériences",
     noSonSenales: "Ce ne sont PAS des signaux : ce sont des expériences que l'application enregistre pour les mesurer.",
-    desc: "Active celles que tu veux suivre en démo. Quand le veilleur en enregistre une nouvelle, elle arrive sur ton téléphone marquée EXPÉRIENCE. Les abonnés ne la reçoivent jamais.",
+    desc: "Active celles que tu veux suivre sur un compte démo. Quand l'app en enregistre une nouvelle, elle arrive sur ton téléphone marquée EXPÉRIENCE. Seules celles que tu actives sonnent : si tu ne touches à rien, tu n'en reçois aucune.",
     nota: "Elles ne sonnent que si cet appareil a les alertes activées dans la carte du dessus.",
     encendido: "Activé",
     apagado: "Désactivé",

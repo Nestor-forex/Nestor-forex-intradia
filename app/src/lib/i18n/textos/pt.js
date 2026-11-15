@@ -668,9 +668,9 @@ export default {
   },
 
   avisosExp: {
-    titulo: "Alertas dos experimentos (só administrador)",
+    titulo: "Alertas dos experimentos",
     noSonSenales: "Isto NÃO são sinais: são experimentos que o app registra para medi-los.",
-    desc: "Ative os que você quiser acompanhar em demo. Quando o vigia registrar um novo, ele chega ao seu celular marcado como EXPERIMENTO. Os assinantes nunca recebem.",
+    desc: "Ative os que você quiser acompanhar numa conta demo. Quando o app registrar um novo, ele chega ao seu celular marcado como EXPERIMENTO. Só tocam os que você ativar: se não mexer em nada, não recebe nenhum.",
     nota: "Só tocam se este aparelho tiver os alertas ativados no cartão acima.",
     encendido: "Ligado",
     apagado: "Desligado",

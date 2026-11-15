@@ -668,9 +668,9 @@ export default {
   },
 
   avisosExp: {
-    titulo: "Experiment alerts (administrator only)",
+    titulo: "Experiment alerts",
     noSonSenales: "These are NOT signals: they are experiments the app records to measure them.",
-    desc: "Turn on the ones you want to follow on demo. When the watcher records a new one, it reaches your phone marked as EXPERIMENT. Subscribers never get them.",
+    desc: "Turn on the ones you want to follow on a demo account. When the app records a new one, it reaches your phone marked as EXPERIMENT. Only the ones you turn on will sound: if you touch nothing, you get none.",
     nota: "They only sound if this device has alerts turned on in the card above.",
     encendido: "On",
     apagado: "Off",

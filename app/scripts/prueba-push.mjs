@@ -20,7 +20,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { generateKeyPairSync, randomBytes } from 'node:crypto'
 import { APP, armarMensaje, armarMensajeExperimento, enviarAvisos, enviarAvisosExperimento, senalesQueSuenan } from './lib/push-envio.mjs'
-import { DEFECTO, claveDeSenal } from '../src/lib/experimentosAviso.js'
+import { DEFECTO_ADMIN, DEFECTO_MIEMBRO, claveDeSenal } from '../src/lib/experimentosAviso.js'
 import { campoAvisosExp } from '../src/lib/avisosExperimento.js'
 
 let fallos = 0
@@ -223,37 +223,47 @@ console.log('\n8. Los avisos están en pausa y no se escapa ninguno')
 
 // Los interruptores de experimentos (2026-11-15): solo al administrador, solo
 // lo que él encienda, y por defecto NADA (antes esta app no le mandaba ninguno).
-console.log('\n9. Avisos de experimento: solo al administrador y solo lo encendido')
+console.log('\n9. Avisos de experimento: a cada miembro aprobado, lo que él encienda')
 {
   const ADMIN = 'admin@ejemplo.com'
   const campo = campoAvisosExp(APP)
   const exp = (name, lado, tipo) => ({
     s: { name, lado, tipo, crudo: { precio: 1.16024, sl: 1.15909, tp: 1.16139, rr: 1, dec: 5 } },
   })
-  const delAdmin = { ...aparatoFalso(`${base}/exp-admin`), uid: 'u-admin' }
-  const deOtro = { ...aparatoFalso(`${base}/exp-otro`), uid: 'u-otro' }
   const bdDos = (fichas, aparatos) => ({
     listar: async (col) => (col === 'users' ? fichas : aparatos),
     borrar: async () => true,
   })
-  const conElegidas = (lista) => [
-    { id: 'u-admin', email: 'Admin@Ejemplo.com', ...(lista ? { [campo]: lista } : {}) },
-    { id: 'u-otro', email: 'socio@ejemplo.com', [campo]: ['tendencia', 'rango', 'retroceso'] },
-  ]
-  const tres = [exp('EUR/USD', 'COMPRA', 'tendencia'), exp('GBP/USD', 'VENTA', 'rango'), exp('USD/JPY', 'COMPRA', 'retroceso')]
+  const ap = (id) => ({ ...aparatoFalso(`${base}/exp-${id}`), uid: `u-${id}` })
   const env = { VAPID_PRIVATE_KEY: ENTORNO.VAPID_PRIVATE_KEY, ADMIN_EMAIL: ADMIN }
+  const llegadas = (antes) => recibidas.slice(antes).map((n) => n.url.match(/exp-([a-z]+)/)?.[1]).sort().join()
+  const tres = [exp('EUR/USD', 'COMPRA', 'tendencia'), exp('GBP/USD', 'VENTA', 'rango'), exp('USD/JPY', 'COMPRA', 'retroceso')]
+  const todo = ['tendencia', 'rango', 'retroceso']
+  const fichas = (deAdmin) => [
+    { id: 'u-admin', email: 'Admin@Ejemplo.com', ...(deAdmin ? { [campo]: deAdmin } : {}) },
+    { id: 'u-quieto', email: 'quieto@ejemplo.com', estado: 'aprobado' },
+    { id: 'u-socio', email: 'socio@ejemplo.com', estado: 'aprobado', [campo]: ['retroceso'] },
+    { id: 'u-retirado', email: 'ret@ejemplo.com', estado: 'retirado', [campo]: todo },
+  ]
+  const aparatos = ['admin', 'quieto', 'socio', 'retirado'].map(ap)
 
-  const porDefecto = await enviarAvisosExperimento(tres, env, bdDos(conElegidas(null), [delAdmin, deOtro]))
-  comprobar(porDefecto.estado === 'nada-encendido' && JSON.stringify(DEFECTO) === '[]', 'sin haber tocado nada, no suena NADA (como antes)')
+  const antes0 = recibidas.length
+  const porDefecto = await enviarAvisosExperimento(tres, env, bdDos(fichas(null), aparatos))
+  comprobar(porDefecto.estado === 'enviado' && llegadas(antes0) === 'socio', 'sin haber tocado nada no le suena NADA a nadie, salvo a quien encendió algo')
+  comprobar(DEFECTO_ADMIN.length === 0 && DEFECTO_MIEMBRO.length === 0, 'aquí el defecto es nada para todos (como antes)')
 
   const antes = recibidas.length
-  const r = await enviarAvisosExperimento(tres, env, bdDos(conElegidas(['retroceso', 'rango']), [delAdmin, deOtro]))
-  const nuevas = recibidas.slice(antes)
-  comprobar(r.estado === 'enviado' && r.candidatas === 2, 'con retroceso y rango encendidos suenan esas dos y tendencia NO')
-  comprobar(nuevas.length === 2 && nuevas.every((n) => n.url.includes('exp-admin')), 'y van al aparato del administrador, nunca al del socio aunque él tenga su campo')
+  const r = await enviarAvisosExperimento(tres, env, bdDos(fichas(['retroceso', 'rango']), aparatos))
+  comprobar(r.estado === 'enviado' && r.personas === 2 && r.enviados === 3, 'suenan dos personas: el administrador con lo suyo y el socio con lo suyo')
+  comprobar(llegadas(antes) === 'admin,admin,socio', 'al administrador retroceso y rango, al socio solo el retroceso')
+  comprobar(!/quieto|retirado/.test(llegadas(antes)), 'ni a quien no tocó nada ni a un retirado')
 
-  const sinAdmin = await enviarAvisosExperimento(tres, { ...env, ADMIN_EMAIL: 'nadie@ejemplo.com' }, bdDos(conElegidas(['rango']), [delAdmin]))
-  comprobar(sinAdmin.estado === 'sin-admin' && !sinAdmin.enviados, 'si el administrador no está en la lista NO se manda a nadie «por si acaso»')
+  const antes2 = recibidas.length
+  await enviarAvisosExperimento(tres, { ...env, ADMIN_EMAIL: 'nadie@ejemplo.com' }, bdDos(fichas(['rango']), aparatos))
+  comprobar(llegadas(antes2) === 'socio', 'sin encontrar al administrador se sigue mandando lo que cada aprobado encendió')
+
+  const sinTiempo = await enviarAvisosExperimento(tres, { ...env, PUSH_MS_PRESUPUESTO: '-1' }, bdDos(fichas(['rango']), aparatos))
+  comprobar(sinTiempo.sinTiempo === 2 && !sinTiempo.enviados, 'con el presupuesto agotado se corta y se cuenta lo que quedó sin mandar')
 
   comprobar(claveDeSenal({ lado: 'COMPRA' }) === 'tendencia' && claveDeSenal({ tipo: 'rango' }) === 'rango', 'cada señal va a su interruptor')
   comprobar(claveDeSenal({ tipo: 'caida' }) === null && claveDeSenal({ tipo: 'loQueVenga' }) === null, '«comprar la caída» y un tipo nuevo no tienen interruptor aquí')

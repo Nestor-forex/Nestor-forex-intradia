@@ -668,9 +668,9 @@ export default {
   },
 
   avisosExp: {
-    titulo: "Alarme der Experimente (nur Administrator)",
+    titulo: "Alarme der Experimente",
     noSonSenales: "Das sind KEINE Signale: Es sind Experimente, die die App aufzeichnet, um sie zu messen.",
-    desc: "Schalte die ein, die du auf einem Demokonto verfolgen willst. Wenn der Wächter ein neues aufzeichnet, kommt es als EXPERIMENT auf dein Handy. Abonnenten bekommen sie nie.",
+    desc: "Schalte die ein, die du auf einem Demokonto verfolgen willst. Wenn die App ein neues aufzeichnet, kommt es als EXPERIMENT auf dein Handy. Es klingeln nur die, die du einschaltest: Wenn du nichts berührst, bekommst du keines.",
     nota: "Sie klingeln nur, wenn dieses Gerät die Alarme in der Karte darüber eingeschaltet hat.",
     encendido: "An",
     apagado: "Aus",

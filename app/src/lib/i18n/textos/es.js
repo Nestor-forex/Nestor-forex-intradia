@@ -732,9 +732,9 @@ export default {
   },
 
   avisosExp: {
-    titulo: "Avisos de los experimentos (solo administrador)",
+    titulo: "Avisos de los experimentos",
     noSonSenales: "Esto NO son señales: son experimentos que la app anota para medirlos.",
-    desc: "Enciende los que quieras seguir en demo. Cuando el vigía anote uno nuevo, te llega al celular marcado como EXPERIMENTO. A los suscriptores no les llega nunca.",
+    desc: "Enciende los que quieras seguir en una cuenta demo. Cuando la app anote uno nuevo, te llega al celular marcado como EXPERIMENTO. Solo suenan los que tú enciendas: si no tocas nada, no te llega ninguno.",
     nota: "Solo suenan si este aparato tiene los avisos activados en la tarjeta de arriba.",
     encendido: "Encendido",
     apagado: "Apagado",

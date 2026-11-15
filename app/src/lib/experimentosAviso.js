@@ -1,4 +1,4 @@
-// LOS EXPERIMENTOS DE ESTA APP QUE PUEDEN AVISAR AL ADMINISTRADOR (Intradía).
+// LOS EXPERIMENTOS DE ESTA APP QUE PUEDEN AVISAR AL CELULAR (Intradía).
 //
 // PRIMO: la lista es distinta en cada app. Aquí, los dos modos de la app
 // (tendencia y rango) y la regla de la sombra (el retroceso). La cuenta de qué
@@ -17,9 +17,13 @@ export const OPCIONES = [
   { clave: 'retroceso', etiqueta: 'avisosExp.op.retroceso' },
 ]
 
-// Antes de los interruptores no se le mandaba nada al administrador desde esta
-// app: todo en pausa. Se queda así hasta que él encienda algo.
-export const DEFECTO = []
+// Lo que vale mientras alguien no ha tocado ningún interruptor: NADA, para
+// todos. Antes de los interruptores esta app no le mandaba ningún experimento
+// a nadie, y desde el 2026-11-15 los ven todos los miembros: encenderlo tiene
+// que ser una decisión de cada uno, leída la advertencia de que no son señales.
+export const DEFECTO_ADMIN = []
+export const DEFECTO_MIEMBRO = []
+export const defectoPara = (esAdmin) => (esAdmin ? DEFECTO_ADMIN : DEFECTO_MIEMBRO)
 
 // Las que son señales DE LA APP (los dos modos). Por aquí solo suenan mientras
 // los avisos de la app estén en pausa: si se reactivan, ya le llegan por el
