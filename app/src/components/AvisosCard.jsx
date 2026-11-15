@@ -12,7 +12,7 @@ import { AVISOS_PAUSADOS } from '../lib/push/pausa'
 // celular o de la app — y en iPhone el caso más común tiene solución, así
 // que hay que decirla en vez de esconderla.
 
-export default function AvisosCard({ uid }) {
+export default function AvisosCard({ uid, notaExtra = null }) {
   // El idioma se guarda junto a la suscripción: el vigía corre en un servidor
   // y no tiene otra forma de saber en qué idioma mandar el aviso.
   const { t, idioma } = useIdioma()
@@ -70,26 +70,35 @@ export default function AvisosCard({ uid }) {
 
   const conAviso = Boolean(motivo) || permiso === 'denied' || AVISOS_PAUSADOS
 
-  // En pausa se muestra el motivo y NADA más: ni el botón de activar, ni el de
-  // probar. Dejar el interruptor puesto sería prometer algo que no va a pasar,
-  // y quien lo activara se quedaría esperando un aviso que nadie va a mandar.
-  if (AVISOS_PAUSADOS) {
-    return (
-      <div className="card" style={{ borderColor: 'var(--amber)' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ fontSize: 13.5, fontWeight: 600 }}>{t('avisos.titulo')}</div>
-          <div style={{ ...TEXTO, color: 'var(--amber)', fontWeight: 600 }}>{t('avisos.pausados')}</div>
-          <p style={TEXTO}>{t('avisos.pausadosPorque')}</p>
-        </div>
-      </div>
-    )
-  }
+  // ⚠️⚠️ EN PAUSA EL BOTÓN SIGUE AHÍ, y antes NO estaba (2026-11-14).
+  //
+  // Hasta ese día, con los avisos de la app en pausa, esta tarjeta enseñaba el
+  // motivo y NADA más: ni activar ni probar. Tenía sentido mientras lo único
+  // que podía sonar eran las señales de la app. Dejó de tenerlo el 2026-10-31,
+  // cuando llegaron «Mis avisos» —los que programa cada persona—, que viajan
+  // por el MISMO permiso del celular y NO están en pausa. Desde entonces un
+  // miembro nuevo podía programar avisos que nunca le iban a sonar, porque no
+  // había ningún sitio donde activar el permiso. Nadie lo notó: no fallaba nada.
+  //
+  // Ahora la pausa se dice ARRIBA y en ámbar —que las señales de la app no
+  // suenan— y debajo va el interruptor con lo que sí llega. `notaExtra` lo pone
+  // cada app (en Swing, al administrador le llegan además las señales de
+  // «comprar la caída» para probarlas en demo); este archivo es GEMELO y no
+  // puede saber eso por sí mismo.
+  const cabeceraPausa = AVISOS_PAUSADOS && (
+    <>
+      <div style={{ ...TEXTO, color: 'var(--amber)', fontWeight: 600 }}>{t('avisos.pausados')}</div>
+      <p style={TEXTO}>{t('avisos.pausadosPorque')}</p>
+      <p style={TEXTO}>{t('avisos.siSirven')}</p>
+      {notaExtra && <p style={{ ...TEXTO, fontWeight: 600 }}>{notaExtra}</p>}
+    </>
+  )
 
   return (
     <div className="card" style={conAviso ? { borderColor: 'var(--amber)' } : undefined}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ fontSize: 13.5, fontWeight: 600 }}>{t('avisos.titulo')}</div>
-        <p style={TEXTO}>{t('avisos.desc')}</p>
+        {AVISOS_PAUSADOS ? cabeceraPausa : <p style={TEXTO}>{t('avisos.desc')}</p>}
 
         {motivo === 'no-soportado' && <p style={TEXTO}>{t('avisos.noSoportado')}</p>}
         {motivo === 'ios-sin-instalar' && <p style={TEXTO}>{t('avisos.iosSinInstalar')}</p>}

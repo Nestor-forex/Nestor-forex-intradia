@@ -679,6 +679,7 @@ export default {
     denegado: '이 앱의 알림이 차단되어 있습니다. 브라우저나 휴대폰 설정에서 다시 허용해야 합니다.',
     fallo: '알림을 켜지 못했습니다. 다시 시도해 주세요.',
     soloEsteAparato: '알림은 기기별로 설정됩니다. 휴대폰과 컴퓨터에서 모두 사용한다면 각각 켜 주세요.',
+    siSirven: "켜 두면 「내 알림」에는 쓸모가 있습니다. 앱의 신호가 일시 중지돼 있어도 직접 설정한 알림은 도착합니다.",
   },
 
   // «¿Qué significa?» (2026-11-13): la explicación ampliada de cada noticia,

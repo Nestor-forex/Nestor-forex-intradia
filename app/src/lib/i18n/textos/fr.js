@@ -685,6 +685,7 @@ export default {
     denegado: 'Les alertes sont bloquées pour cette app. Il faut les autoriser à nouveau dans les réglages du navigateur ou du téléphone.',
     fallo: 'Impossible d’activer les alertes. Réessaie.',
     soloEsteAparato: 'Les alertes se règlent par appareil : si tu utilises l’app sur le téléphone et l’ordinateur, active-les sur chacun.',
+    siSirven: "Les activer SERT pour « Mes alertes » : les alertes que tu programmes toi-même t'arrivent même quand les signaux de l'application sont en pause.",
   },
 
   // «¿Qué significa?» (2026-11-13): la explicación ampliada de cada noticia,

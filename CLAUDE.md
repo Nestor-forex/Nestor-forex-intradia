@@ -2953,3 +2953,20 @@ mínimo de operaciones tumba 1 · devolver el `?? 0` que inventaba ceros tumba 1
 ## Lo siguiente
 
 **Actions → «¿Conviene apagar el modo tendencia?» → Run workflow.** 7 créditos.
+
+---
+
+# El botón de avisos en pausa, y la EMA 200 con 700 velas (2026-11-14)
+
+Cambio emparejado con Swing (ver su CLAUDE.md, mismo día). Aquí:
+
+- **`AvisosCard.jsx` (GEMELO) ya no esconde el interruptor** cuando los avisos
+  de la app están en pausa: «Mis alertas» usan el mismo permiso y NO están en
+  pausa, y desde el 2026-10-31 un miembro nuevo no tenía dónde activarlo.
+- **Las medias del Analizador piden 700 velas en la MISMA consulta** del vigía y
+  del publicador (cero créditos de más). El barrido, las señales y el historial
+  salen de las 300 de siempre, idénticos (`recortarUltimas`); solo las medias
+  usan la serie larga (`cierresLargos`), y solo si termina en la misma vela.
+  `prueba-medias-largas.mjs` lo exige.
+- **«Comprar la caída» NO existe aquí**: midió −0,08 plano con velas de una
+  hora. La tarjeta destacada y los avisos de experimento son solo de Swing.

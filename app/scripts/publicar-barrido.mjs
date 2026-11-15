@@ -43,7 +43,7 @@
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { computarBarrido } from '../src/lib/marketCalc.js'
-import { leerLlave, obtenerVelas } from './lib/velas.mjs'
+import { VELAS_MEDIAS, leerLlave, obtenerVelas } from './lib/velas.mjs'
 import { escribir, yaCorrioEstaHora } from './lib/vigia-nucleo.mjs'
 import { armarBarrido } from './lib/barrido-publicado.mjs'
 
@@ -79,8 +79,11 @@ if (process.env.SOLO_SI_FALTA_LA_HORA === '1' && yaCorrioEstaHora(ultimoGenerado
   process.exit(0)
 }
 
-const { barras, rates, rangos } = await obtenerVelas(leerLlave())
-const data = computarBarrido(barras, rates, rangos)
+// `velasLargas`: en la MISMA consulta (sin créditos de más) llegan también 700
+// velas, solo para las medias del Analizador. El barrido, las señales y el
+// historial siguen saliendo de las 300 de siempre — ver `recortarUltimas`.
+const { barras, rates, rangos, largo } = await obtenerVelas(leerLlave(), { velasLargas: VELAS_MEDIAS })
+const data = computarBarrido(barras, rates, rangos, { largo })
 const barrido = armarBarrido(data, ahora)
 const texto = JSON.stringify(barrido) + '\n'
 

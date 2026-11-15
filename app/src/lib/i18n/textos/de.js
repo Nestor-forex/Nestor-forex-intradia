@@ -685,6 +685,7 @@ export default {
     denegado: 'Benachrichtigungen sind für diese App blockiert. Du musst sie in den Browser- oder Handy-Einstellungen wieder erlauben.',
     fallo: 'Die Benachrichtigungen konnten nicht aktiviert werden. Bitte versuche es erneut.',
     soloEsteAparato: 'Benachrichtigungen gelten pro Gerät: Wenn du die App auf Handy und Computer nutzt, aktiviere sie auf beiden.',
+    siSirven: "Sie einzuschalten lohnt sich trotzdem für „Meine Alarme\": Die Alarme, die du selbst einrichtest, kommen an, auch wenn die Signale der App pausiert sind.",
   },
 
   // «¿Qué significa?» (2026-11-13): la explicación ampliada de cada noticia,

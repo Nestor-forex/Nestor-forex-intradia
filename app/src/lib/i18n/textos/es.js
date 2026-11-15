@@ -752,6 +752,7 @@ export default {
     denegado: 'Los avisos están bloqueados para esta app. Hay que volver a permitirlos desde los ajustes del navegador o del celular.',
     fallo: 'No se pudieron activar los avisos. Inténtalo de nuevo.',
     soloEsteAparato: 'Los avisos se activan por aparato: si usas la app en el celular y en el computador, actívalos en cada uno.',
+    siSirven: "Activarlos SÍ sirve para «Mis avisos»: los avisos que tú programes te llegan aunque las señales de la app estén en pausa.",
   },
 
   // «¿Qué significa?» (2026-11-13): la explicación ampliada de cada noticia,

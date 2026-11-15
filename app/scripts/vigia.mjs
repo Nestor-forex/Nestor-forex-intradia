@@ -17,7 +17,7 @@
 
 import { fileURLToPath } from 'node:url'
 import { computarBarrido, derivarVista } from '../src/lib/marketCalc.js'
-import { leerLlave, obtenerVelas } from './lib/velas.mjs'
+import { VELAS_MEDIAS, leerLlave, obtenerVelas } from './lib/velas.mjs'
 import {
   compararConAnterior,
   escribir,
@@ -59,8 +59,11 @@ if (process.env.SOLO_SI_FALTA_LA_HORA === '1' && yaCorrioEstaHora(estadoPrevio.a
   process.exit(0)
 }
 
-const { barras, rates, rangos } = await obtenerVelas(leerLlave())
-const data = computarBarrido(barras, rates, rangos)
+// `velasLargas`: en la MISMA consulta (sin créditos de más) llegan también 700
+// velas, solo para las medias del Analizador. El barrido, las señales y el
+// historial siguen saliendo de las 300 de siempre — ver `recortarUltimas`.
+const { barras, rates, rangos, largo } = await obtenerVelas(leerLlave(), { velasLargas: VELAS_MEDIAS })
+const data = computarBarrido(barras, rates, rangos, { largo })
 // ⚠️ `incluirRetrocesos` va encendido AQUÍ y solo aquí.
 //
 // La señal de retroceso midió 54% de acierto y +0,03 por unidad de riesgo

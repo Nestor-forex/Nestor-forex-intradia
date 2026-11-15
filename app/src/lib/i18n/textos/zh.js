@@ -676,6 +676,7 @@ export default {
     denegado: '本应用的提醒已被阻止。需要在浏览器或手机的设置中重新允许。',
     fallo: '无法开启提醒，请重试。',
     soloEsteAparato: '提醒按设备单独设置：如果你在手机和电脑上都使用本应用，请分别开启。',
+    siSirven: "开启后仍然适用于“我的提醒”：即使应用的信号处于暂停状态，你自己设置的提醒依然会送达。",
   },
 
   // «¿Qué significa?» (2026-11-13): la explicación ampliada de cada noticia,
