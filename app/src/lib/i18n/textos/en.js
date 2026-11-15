@@ -685,6 +685,7 @@ export default {
     denegado: 'Alerts are blocked for this app. You need to allow them again in your browser or phone settings.',
     fallo: 'Alerts could not be turned on. Please try again.',
     soloEsteAparato: 'Alerts are set per device: if you use the app on your phone and your computer, turn them on in each one.',
+    siSirven: "Turning them on DOES work for \"My alerts\": the alerts you set up yourself reach you even while the app's signals are paused.",
   },
 
   // «¿Qué significa?» (2026-11-13): la explicación ampliada de cada noticia,

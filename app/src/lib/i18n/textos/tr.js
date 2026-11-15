@@ -680,6 +680,7 @@ export default {
     denegado: 'Bu uygulama için bildirimler engellenmiş. Tarayıcı veya telefon ayarlarından yeniden izin vermen gerekiyor.',
     fallo: 'Bildirimler açılamadı. Lütfen tekrar dene.',
     soloEsteAparato: 'Bildirimler cihaz başına ayarlanır: uygulamayı hem telefonda hem bilgisayarda kullanıyorsan, her birinde aç.',
+    siSirven: "Açmak yine de «Uyarılarım» için işe yarar: kendi kurduğun uyarılar, uygulamanın sinyalleri duraklatılmış olsa bile sana ulaşır.",
   },
 
   // «¿Qué significa?» (2026-11-13): la explicación ampliada de cada noticia,

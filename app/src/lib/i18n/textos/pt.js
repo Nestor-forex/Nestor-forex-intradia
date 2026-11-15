@@ -685,6 +685,7 @@ export default {
     denegado: 'Os avisos estão bloqueados para este app. É preciso permiti-los de novo nos ajustes do navegador ou do celular.',
     fallo: 'Não foi possível ativar os avisos. Tente de novo.',
     soloEsteAparato: 'Os avisos são por aparelho: se você usa o app no celular e no computador, ative em cada um.',
+    siSirven: "Ativá-los SERVE para «Meus alertas»: os alertas que você mesmo programar chegam mesmo com os sinais do app em pausa.",
   },
 
   // «¿Qué significa?» (2026-11-13): la explicación ampliada de cada noticia,

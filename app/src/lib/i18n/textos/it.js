@@ -681,6 +681,7 @@ export default {
     denegado: 'Gli avvisi sono bloccati per questa app. Devi consentirli di nuovo dalle impostazioni del browser o del telefono.',
     fallo: 'Non è stato possibile attivare gli avvisi. Riprova.',
     soloEsteAparato: 'Gli avvisi si impostano per dispositivo: se usi l’app sul telefono e sul computer, attivali su entrambi.',
+    siSirven: "Attivarli SERVE per «I miei avvisi»: gli avvisi che programmi tu ti arrivano anche se i segnali dell'app sono in pausa.",
   },
 
   // «¿Qué significa?» (2026-11-13): la explicación ampliada de cada noticia,

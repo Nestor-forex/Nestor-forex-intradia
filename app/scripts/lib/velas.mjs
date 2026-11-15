@@ -112,7 +112,64 @@ async function pedir(url, reintentos = 2) {
  * el precio de nada. Con `paginas = 1` se comporta EXACTAMENTE como antes,
  * que es lo que usan el vigía y el reporte diario.
  */
-export async function obtenerVelas(apiKey, { minBarras = 60, velas = 300, paginas = 1, intervalo = '1h' } = {}) {
+/**
+ * Cuántas velas se piden cuando hacen falta las MEDIAS LARGAS: la EMA de 200
+ * necesita 3 veces su periodo (`VECES_EMA` en `medias.js`), o sea 600 velas de
+ * una hora. 700 dejan margen.
+ *
+ * ⚠️ NO CUESTA NI UN CRÉDITO MÁS: Twelve Data cobra por consulta, no por vela.
+ */
+export const VELAS_MEDIAS = 700
+
+/**
+ * De cada símbolo, solo las `n` velas MÁS RECIENTES — lo que devuelve la API
+ * cuando se le piden `n`. Por eso, al pedir más para las medias, el barrido de
+ * siempre sale IDÉNTICO al de antes. Hay comprobación.
+ */
+export function recortarUltimas(porSimbolo, n) {
+  const salida = {}
+  for (const [sym, mapa] of Object.entries(porSimbolo)) {
+    const horas = [...mapa.keys()].sort().slice(-n)
+    salida[sym] = new Map(horas.map((t) => [t, mapa.get(t)]))
+  }
+  return salida
+}
+
+// De los mapas por símbolo a lo que lee `computarBarrido`.
+function armar(porSimbolo, minBarras) {
+  const primero = porSimbolo[SYMBOLS[0]]
+  const barras = [...primero.keys()].filter((t) => SYMBOLS.every((sym) => porSimbolo[sym].has(t))).sort()
+  if (barras.length < minBarras) throw new Error('no hay suficientes velas recientes para calcular los indicadores')
+
+  const rates = {}
+  const rangos = {}
+  for (const t of barras) {
+    const fila = {}
+    const filaRangos = {}
+    for (const sym of SYMBOLS) {
+      const v = porSimbolo[sym].get(t)
+      const ccy = SYM_TO_CCY[sym]
+      fila[ccy] = v.c
+      // Si alguna vela llegara sin máximo/mínimo, se usa el cierre para esa
+      // hora en vez de romper todo el barrido.
+      filaRangos[ccy] = { h: Number.isFinite(v.h) ? v.h : v.c, l: Number.isFinite(v.l) ? v.l : v.c }
+    }
+    rates[t] = fila
+    rangos[t] = filaRangos
+  }
+  return { barras, rates, rangos }
+}
+
+/**
+ * @param velasLargas  (opcional, solo con `paginas: 1`) si se da, se piden ESAS
+ *                     velas en la misma consulta y vuelven aparte, en `largo`,
+ *                     solo para las medias. El barrido sigue saliendo de las
+ *                     últimas `velas`, idéntico a antes.
+ */
+export async function obtenerVelas(apiKey, { minBarras = 60, velas = 300, paginas = 1, intervalo = '1h', velasLargas = null } = {}) {
+  // Con varias páginas (el banco de pruebas) la serie ya es larga: no aplica.
+  const conLargas = paginas === 1 && Number.isFinite(velasLargas) && velasLargas > velas
+  const pedirVelas = conLargas ? velasLargas : velas
   const porSimbolo = {}
   for (const sym of SYMBOLS) porSimbolo[sym] = new Map()
 
@@ -125,7 +182,7 @@ export async function obtenerVelas(apiKey, { minBarras = 60, velas = 300, pagina
 
     const r = await pedir(
       `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(SYMBOLS.join(','))}` +
-        `&interval=${encodeURIComponent(intervalo)}&outputsize=${velas}&timezone=UTC` +
+        `&interval=${encodeURIComponent(intervalo)}&outputsize=${pedirVelas}&timezone=UTC` +
         (hasta ? `&end_date=${encodeURIComponent(hasta)}` : '') +
         `&apikey=${apiKey}`
     )
@@ -157,26 +214,10 @@ export async function obtenerVelas(apiKey, { minBarras = 60, velas = 300, pagina
     if (!porSimbolo[sym].size) throw new Error(`sin datos de ${sym}`)
   }
 
-  const primero = porSimbolo[SYMBOLS[0]]
-  const barras = [...primero.keys()].filter((t) => SYMBOLS.every((sym) => porSimbolo[sym].has(t))).sort()
-  if (barras.length < minBarras) throw new Error('no hay suficientes velas recientes para calcular los indicadores')
-
-  const rates = {}
-  const rangos = {}
-  for (const t of barras) {
-    const fila = {}
-    const filaRangos = {}
-    for (const sym of SYMBOLS) {
-      const v = porSimbolo[sym].get(t)
-      const ccy = SYM_TO_CCY[sym]
-      fila[ccy] = v.c
-      // Si alguna vela llegara sin máximo/mínimo, se usa el cierre para esa
-      // hora en vez de romper todo el barrido.
-      filaRangos[ccy] = { h: Number.isFinite(v.h) ? v.h : v.c, l: Number.isFinite(v.l) ? v.l : v.c }
-    }
-    rates[t] = fila
-    rangos[t] = filaRangos
+  const salida = armar(conLargas ? recortarUltimas(porSimbolo, velas) : porSimbolo, minBarras)
+  if (conLargas) {
+    const largo = armar(porSimbolo, minBarras)
+    salida.largo = { barras: largo.barras, rates: largo.rates }
   }
-
-  return { barras, rates, rangos }
+  return salida
 }

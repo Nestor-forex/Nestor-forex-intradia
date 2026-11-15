@@ -364,7 +364,21 @@ export const minDePar = (maxBase, minCotizada) => minCotizada / maxBase
 // mínimo de esa misma vela. Twelve Data ya los mandaba en la misma
 // respuesta y se estaban descartando. Si no llegan, todo cae de vuelta al
 // comportamiento anterior (máximo = mínimo = cierre).
-export function computarBarrido(barras, rates, rangos = null) {
+/**
+ * Los cierres de un par sacados de la serie LARGA (ver `VELAS_MEDIAS` en
+ * `scripts/lib/velas.mjs`), o null si no sirve. Solo si termina en LA MISMA
+ * vela que el barrido: si no, la media sería de otra hora y se leería como de
+ * ésta. Los cierres son exactos también en los cruces (se derivan de cierres).
+ */
+export function cierresLargos(largo, b, q, ultimaBarra) {
+  const f = largo?.barras
+  if (!Array.isArray(f) || !f.length || f.at(-1) !== ultimaBarra || !largo.rates) return null
+  const v = (c, t) => (c === 'USD' ? 1 : largo.rates[t]?.[c])
+  const serie = f.map((t) => precioDePar(v(b, t), v(q, t)))
+  return serie.every((x) => Number.isFinite(x)) ? serie : null
+}
+
+export function computarBarrido(barras, rates, rangos = null, { largo = null } = {}) {
   const serie = {}
   const serieHi = {}
   const serieLo = {}
@@ -461,7 +475,9 @@ export function computarBarrido(barras, rates, rangos = null) {
       bajos20: lows.slice(-20),
       // Las medias del Analizador, ya calculadas: necesitan la serie entera de
       // cierres y el barrido publicado solo lleva los últimos 20.
-      medias: mediasDe(closes, PERIODOS_MEDIAS),
+      // Con la serie LARGA si la hay (sin créditos de más), para que la EMA de
+      // 200 tenga sus 600 velas. Las medias no deciden ninguna señal.
+      medias: mediasDe(cierresLargos(largo, b, q, barras.at(-1)) ?? closes, PERIODOS_MEDIAS),
       // Las series completas de máximos y mínimos, alineadas con `barras`.
       // Las usa `scripts/lib/resolver.mjs` para saber si una señal llegó a su
       // objetivo o a su stop: hace falta el recorrido entero, no solo el
