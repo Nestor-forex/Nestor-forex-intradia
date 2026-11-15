@@ -2970,3 +2970,18 @@ Cambio emparejado con Swing (ver su CLAUDE.md, mismo día). Aquí:
   `prueba-medias-largas.mjs` lo exige.
 - **«Comprar la caída» NO existe aquí**: midió −0,08 plano con velas de una
   hora. La tarjeta destacada y los avisos de experimento son solo de Swing.
+
+---
+
+# Interruptores de avisos por experimento, solo administrador (2026-11-15)
+
+Cambio emparejado con Swing (ver su CLAUDE.md, misma fecha). Aquí la tarjeta
+«Avisos de los experimentos» tiene tres interruptores —modo tendencia, modo
+rango y retroceso— y **por defecto ninguno está encendido**: antes esta app no
+le mandaba ningún experimento al administrador. Se guarda en
+`users/{uid}.avisosExp_intradia` y `enviarAvisosExperimento` (en
+`scripts/lib/push-envio.mjs`, llamado al final del vigía con TODAS las nuevas)
+se lo manda **solo al administrador**. Las de tendencia y rango solo van por
+ahí mientras `AVISOS_PAUSADOS` sea `true`.
+
+📌 «Comprar la caída» no está aquí: midió −0,08 plano con velas de una hora.
