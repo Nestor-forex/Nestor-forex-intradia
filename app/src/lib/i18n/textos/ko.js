@@ -661,6 +661,22 @@ export default {
     fuenteCierre: 'Twelve Data',
   },
 
+  avisosExp: {
+    titulo: "실험 알림 (관리자 전용)",
+    noSonSenales: "이것은 신호가 아닙니다. 앱이 측정하려고 기록하는 실험입니다.",
+    desc: "데모로 따라가고 싶은 것을 켜세요. 감시 프로그램이 새로 기록하면 「실험」 표시와 함께 휴대폰으로 옵니다. 구독자에게는 절대 가지 않습니다.",
+    nota: "이 기기에서 위 카드의 알림이 켜져 있을 때만 울립니다.",
+    encendido: "켜짐",
+    apagado: "꺼짐",
+    sinPermiso: "저장할 권한이 없습니다.",
+    noSeGuardo: "저장하지 못했습니다. 다시 시도하세요.",
+    push: "실험 · 신호가 아닙니다",
+    op: {
+      tendencia: "앱 신호 — 추세 모드",
+      rango: "앱 신호 — 박스권 모드",
+      retroceso: "되돌림 (시험 중)",
+    },
+  },
   avisos: {
     pausados: '신호를 점검하는 동안 알림을 잠시 멈췄습니다',
     pausadosPorque:

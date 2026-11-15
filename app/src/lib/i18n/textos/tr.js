@@ -662,6 +662,22 @@ export default {
     fuenteCierre: 'Twelve Data',
   },
 
+  avisosExp: {
+    titulo: "Deney uyarıları (yalnızca yönetici)",
+    noSonSenales: "Bunlar sinyal DEĞİL: uygulamanın ölçmek için kaydettiği deneylerdir.",
+    desc: "Demoda takip etmek istediklerini aç. Gözcü yeni bir tane kaydettiğinde telefonuna DENEY olarak işaretli gelir. Abonelere asla gelmez.",
+    nota: "Yalnızca bu cihazda yukarıdaki kartta uyarılar açıksa çalar.",
+    encendido: "Açık",
+    apagado: "Kapalı",
+    sinPermiso: "Bunu kaydetme izni yok.",
+    noSeGuardo: "Kaydedilemedi. Tekrar dene.",
+    push: "Deney · sinyal değil",
+    op: {
+      tendencia: "Uygulama sinyalleri — trend modu",
+      rango: "Uygulama sinyalleri — yatay mod",
+      retroceso: "Geri çekilme (testte)",
+    },
+  },
   avisos: {
     pausados: 'Sinyalleri gözden geçirirken bildirimler duraklatıldı',
     pausadosPorque:

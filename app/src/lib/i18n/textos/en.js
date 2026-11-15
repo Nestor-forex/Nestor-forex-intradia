@@ -667,6 +667,22 @@ export default {
     fuenteCierre: 'Twelve Data',
   },
 
+  avisosExp: {
+    titulo: "Experiment alerts (administrator only)",
+    noSonSenales: "These are NOT signals: they are experiments the app records to measure them.",
+    desc: "Turn on the ones you want to follow on demo. When the watcher records a new one, it reaches your phone marked as EXPERIMENT. Subscribers never get them.",
+    nota: "They only sound if this device has alerts turned on in the card above.",
+    encendido: "On",
+    apagado: "Off",
+    sinPermiso: "There is no permission to save this.",
+    noSeGuardo: "Could not save. Try again.",
+    push: "Experiment · not a signal",
+    op: {
+      tendencia: "App signals — trend mode",
+      rango: "App signals — range mode",
+      retroceso: "Pullback (in testing)",
+    },
+  },
   avisos: {
     pausados: 'Alerts paused while we review the signals',
     pausadosPorque:

@@ -667,6 +667,22 @@ export default {
     fuenteCierre: 'Twelve Data',
   },
 
+  avisosExp: {
+    titulo: "Alarme der Experimente (nur Administrator)",
+    noSonSenales: "Das sind KEINE Signale: Es sind Experimente, die die App aufzeichnet, um sie zu messen.",
+    desc: "Schalte die ein, die du auf einem Demokonto verfolgen willst. Wenn der Wächter ein neues aufzeichnet, kommt es als EXPERIMENT auf dein Handy. Abonnenten bekommen sie nie.",
+    nota: "Sie klingeln nur, wenn dieses Gerät die Alarme in der Karte darüber eingeschaltet hat.",
+    encendido: "An",
+    apagado: "Aus",
+    sinPermiso: "Keine Berechtigung, das zu speichern.",
+    noSeGuardo: "Speichern fehlgeschlagen. Versuch es noch einmal.",
+    push: "Experiment · kein Signal",
+    op: {
+      tendencia: "Signale der App — Trendmodus",
+      rango: "Signale der App — Seitwärtsmodus",
+      retroceso: "Rücksetzer (im Test)",
+    },
+  },
   avisos: {
     pausados: 'Hinweise pausiert, während wir die Signale überprüfen',
     pausadosPorque:

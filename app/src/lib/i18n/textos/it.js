@@ -663,6 +663,22 @@ export default {
     fuenteCierre: 'Twelve Data',
   },
 
+  avisosExp: {
+    titulo: "Avvisi degli esperimenti (solo amministratore)",
+    noSonSenales: "Questi NON sono segnali: sono esperimenti che l'app registra per misurarli.",
+    desc: "Accendi quelli che vuoi seguire in demo. Quando il vigilante ne registra uno nuovo, ti arriva sul telefono segnato come ESPERIMENTO. Agli abbonati non arriva mai.",
+    nota: "Suonano solo se questo dispositivo ha gli avvisi attivati nella scheda qui sopra.",
+    encendido: "Acceso",
+    apagado: "Spento",
+    sinPermiso: "Non c'è il permesso di salvare.",
+    noSeGuardo: "Impossibile salvare. Riprova.",
+    push: "Esperimento · non è un segnale",
+    op: {
+      tendencia: "Segnali dell'app — modalità trend",
+      rango: "Segnali dell'app — modalità laterale",
+      retroceso: "Ritracciamento (in prova)",
+    },
+  },
   avisos: {
     pausados: 'Avvisi in pausa mentre controlliamo i segnali',
     pausadosPorque:

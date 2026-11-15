@@ -19,7 +19,9 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { generateKeyPairSync, randomBytes } from 'node:crypto'
-import { armarMensaje, enviarAvisos } from './lib/push-envio.mjs'
+import { APP, armarMensaje, armarMensajeExperimento, enviarAvisos, enviarAvisosExperimento, senalesQueSuenan } from './lib/push-envio.mjs'
+import { DEFECTO, claveDeSenal } from '../src/lib/experimentosAviso.js'
+import { campoAvisosExp } from '../src/lib/avisosExperimento.js'
 
 let fallos = 0
 const comprobar = (bien, que) => {
@@ -217,6 +219,56 @@ console.log('\n8. Los avisos están en pausa y no se escapa ninguno')
 
   const antes = borrados.length
   comprobar(antes === borrados.length, 'en pausa no toca Firestore para nada')
+}
+
+// Los interruptores de experimentos (2026-11-15): solo al administrador, solo
+// lo que él encienda, y por defecto NADA (antes esta app no le mandaba ninguno).
+console.log('\n9. Avisos de experimento: solo al administrador y solo lo encendido')
+{
+  const ADMIN = 'admin@ejemplo.com'
+  const campo = campoAvisosExp(APP)
+  const exp = (name, lado, tipo) => ({
+    s: { name, lado, tipo, crudo: { precio: 1.16024, sl: 1.15909, tp: 1.16139, rr: 1, dec: 5 } },
+  })
+  const delAdmin = { ...aparatoFalso(`${base}/exp-admin`), uid: 'u-admin' }
+  const deOtro = { ...aparatoFalso(`${base}/exp-otro`), uid: 'u-otro' }
+  const bdDos = (fichas, aparatos) => ({
+    listar: async (col) => (col === 'users' ? fichas : aparatos),
+    borrar: async () => true,
+  })
+  const conElegidas = (lista) => [
+    { id: 'u-admin', email: 'Admin@Ejemplo.com', ...(lista ? { [campo]: lista } : {}) },
+    { id: 'u-otro', email: 'socio@ejemplo.com', [campo]: ['tendencia', 'rango', 'retroceso'] },
+  ]
+  const tres = [exp('EUR/USD', 'COMPRA', 'tendencia'), exp('GBP/USD', 'VENTA', 'rango'), exp('USD/JPY', 'COMPRA', 'retroceso')]
+  const env = { VAPID_PRIVATE_KEY: ENTORNO.VAPID_PRIVATE_KEY, ADMIN_EMAIL: ADMIN }
+
+  const porDefecto = await enviarAvisosExperimento(tres, env, bdDos(conElegidas(null), [delAdmin, deOtro]))
+  comprobar(porDefecto.estado === 'nada-encendido' && JSON.stringify(DEFECTO) === '[]', 'sin haber tocado nada, no suena NADA (como antes)')
+
+  const antes = recibidas.length
+  const r = await enviarAvisosExperimento(tres, env, bdDos(conElegidas(['retroceso', 'rango']), [delAdmin, deOtro]))
+  const nuevas = recibidas.slice(antes)
+  comprobar(r.estado === 'enviado' && r.candidatas === 2, 'con retroceso y rango encendidos suenan esas dos y tendencia NO')
+  comprobar(nuevas.length === 2 && nuevas.every((n) => n.url.includes('exp-admin')), 'y van al aparato del administrador, nunca al del socio aunque él tenga su campo')
+
+  const sinAdmin = await enviarAvisosExperimento(tres, { ...env, ADMIN_EMAIL: 'nadie@ejemplo.com' }, bdDos(conElegidas(['rango']), [delAdmin]))
+  comprobar(sinAdmin.estado === 'sin-admin' && !sinAdmin.enviados, 'si el administrador no está en la lista NO se manda a nadie «por si acaso»')
+
+  comprobar(claveDeSenal({ lado: 'COMPRA' }) === 'tendencia' && claveDeSenal({ tipo: 'rango' }) === 'rango', 'cada señal va a su interruptor')
+  comprobar(claveDeSenal({ tipo: 'caida' }) === null && claveDeSenal({ tipo: 'loQueVenga' }) === null, '«comprar la caída» y un tipo nuevo no tienen interruptor aquí')
+  comprobar(senalesQueSuenan(tres, ['tendencia']).length === 1, 'el filtro deja pasar solo lo encendido')
+
+  const m = armarMensajeExperimento(tres[2].s, 'es')
+  console.log(`     es → ${m.titulo} | ${m.cuerpo}`)
+  comprobar(m.titulo.includes('Retroceso') && m.titulo.includes('USD/JPY'), 'el título dice el experimento y el par')
+  comprobar(/no es una señal/.test(m.cuerpo) && m.tag.startsWith('exp|') && m.tag !== armarMensaje(tres[2].s, 'es').tag, 'dice que no es una señal y su etiqueta no reemplaza un aviso de la app')
+
+  const v = readFileSync(new URL('./vigia.mjs', import.meta.url), 'utf8')
+  const iSeparar = v.indexOf('separarSombra(nuevas)')
+  const iBarrido = v.indexOf('escribir(BARRIDO')
+  const iLlamada = v.indexOf('enviarAvisosExperimento(nuevas)')
+  comprobar(iSeparar > 0 && iLlamada > iSeparar && iLlamada > iBarrido, 'el vigía avisa DESPUÉS de escribir todo lo irrecuperable, con TODAS las nuevas')
 }
 
 servidor.close()

@@ -661,6 +661,22 @@ export default {
     fuenteCierre: 'Twelve Data',
   },
 
+  avisosExp: {
+    titulo: "実験のアラート（管理者のみ）",
+    noSonSenales: "これはシグナルではありません。アプリが測定のために記録している実験です。",
+    desc: "デモで追いたいものをオンにしてください。監視プログラムが新しいものを記録すると、「実験」と表示されて携帯に届きます。購読者には決して届きません。",
+    nota: "この端末で上のカードのアラートがオンになっている場合だけ鳴ります。",
+    encendido: "オン",
+    apagado: "オフ",
+    sinPermiso: "保存する権限がありません。",
+    noSeGuardo: "保存できませんでした。もう一度お試しください。",
+    push: "実験 · シグナルではありません",
+    op: {
+      tendencia: "アプリのシグナル — トレンドモード",
+      rango: "アプリのシグナル — レンジモード",
+      retroceso: "押し目（テスト中）",
+    },
+  },
   avisos: {
     pausados: '通知は一時停止中です（シグナルを検証しています）',
     pausadosPorque:

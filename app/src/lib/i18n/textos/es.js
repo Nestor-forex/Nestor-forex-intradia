@@ -731,6 +731,22 @@ export default {
     fuenteCierre: 'Twelve Data',
   },
 
+  avisosExp: {
+    titulo: "Avisos de los experimentos (solo administrador)",
+    noSonSenales: "Esto NO son señales: son experimentos que la app anota para medirlos.",
+    desc: "Enciende los que quieras seguir en demo. Cuando el vigía anote uno nuevo, te llega al celular marcado como EXPERIMENTO. A los suscriptores no les llega nunca.",
+    nota: "Solo suenan si este aparato tiene los avisos activados en la tarjeta de arriba.",
+    encendido: "Encendido",
+    apagado: "Apagado",
+    sinPermiso: "No hay permiso para guardar esto.",
+    noSeGuardo: "No se pudo guardar. Inténtalo otra vez.",
+    push: "Experimento · no es una señal",
+    op: {
+      tendencia: "Señales de la app — modo tendencia",
+      rango: "Señales de la app — modo rango",
+      retroceso: "Retroceso (en pruebas)",
+    },
+  },
   avisos: {
     // Se le dice al miembro por qué están apagados, en vez de dejar el
     // interruptor puesto y que se quede esperando un aviso que no va a llegar.

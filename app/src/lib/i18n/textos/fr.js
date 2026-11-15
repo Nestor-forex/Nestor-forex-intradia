@@ -667,6 +667,22 @@ export default {
     fuenteCierre: 'Twelve Data',
   },
 
+  avisosExp: {
+    titulo: "Alertes des expériences (administrateur seulement)",
+    noSonSenales: "Ce ne sont PAS des signaux : ce sont des expériences que l'application enregistre pour les mesurer.",
+    desc: "Active celles que tu veux suivre en démo. Quand le veilleur en enregistre une nouvelle, elle arrive sur ton téléphone marquée EXPÉRIENCE. Les abonnés ne la reçoivent jamais.",
+    nota: "Elles ne sonnent que si cet appareil a les alertes activées dans la carte du dessus.",
+    encendido: "Activé",
+    apagado: "Désactivé",
+    sinPermiso: "Pas de permission pour enregistrer ceci.",
+    noSeGuardo: "Impossible d'enregistrer. Réessaie.",
+    push: "Expérience · ce n'est pas un signal",
+    op: {
+      tendencia: "Signaux de l'application — mode tendance",
+      rango: "Signaux de l'application — mode range",
+      retroceso: "Repli (en test)",
+    },
+  },
   avisos: {
     pausados: 'Alertes en pause pendant que nous vérifions les signaux',
     pausadosPorque:

@@ -62,6 +62,9 @@ export const GEMELOS = [
   'src/main.jsx',
   'src/components/Auth.jsx',
   'src/components/AvisosCard.jsx',
+  'src/components/AvisosExperimentos.jsx',
+  'src/lib/avisosExperimento.js',
+  'scripts/prueba-avisos-experimento.mjs',
   'src/components/BarraFuerza.jsx',
   'src/components/BottomNav.jsx',
   'src/components/CalculadoraTab.jsx',
@@ -665,4 +668,10 @@ export const PRIMOS = {
     'en Swing es el banco sobre 219 días y en Intradía son las 6 señales ' +
     'reales que dio la app. Igualar el texto sería atribuirle a una app la ' +
     'evidencia de la otra.',
+  'src/lib/experimentosAviso.js':
+    'Qué experimentos pueden avisar al administrador en cada app: en Swing las ' +
+    'señales de la app, las ventas en pausa y las cuatro reglas de la sombra; ' +
+    'en Intradía los dos modos de la app y el retroceso. «Comprar la caída» ' +
+    'no está en Intradía porque allí no se anota (midió −0,08 plano). Exporta ' +
+    'lo mismo en las dos, así la tarjeta (GEMELA) sirve igual.',
 }

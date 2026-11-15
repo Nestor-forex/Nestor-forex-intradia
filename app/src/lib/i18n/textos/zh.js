@@ -658,6 +658,22 @@ export default {
     fuenteCierre: 'Twelve Data',
   },
 
+  avisosExp: {
+    titulo: "实验提醒（仅限管理员）",
+    noSonSenales: "这些不是信号：它们是应用为了衡量而记录的实验。",
+    desc: "打开你想在模拟账户中跟踪的实验。监视程序记录到新的一条时，会以“实验”标记发送到你的手机。订阅者永远不会收到。",
+    nota: "只有当这台设备在上方卡片中开启了提醒时才会响。",
+    encendido: "开",
+    apagado: "关",
+    sinPermiso: "没有保存的权限。",
+    noSeGuardo: "无法保存，请重试。",
+    push: "实验 · 不是信号",
+    op: {
+      tendencia: "应用信号 — 趋势模式",
+      rango: "应用信号 — 区间模式",
+      retroceso: "回撤（测试中）",
+    },
+  },
   avisos: {
     pausados: '提醒已暂停，我们正在复核信号',
     pausadosPorque:
