@@ -313,6 +313,12 @@ export const GEMELOS = [
   'src/lib/insignias.js',
   'src/components/Insignias.jsx',
   'scripts/prueba-insignias.mjs',
+  // El modo práctica (2026-11-16): las cuentas, la colección y la tarjeta son
+  // iguales en las dos apps. El programa que las resuelve vive solo en Swing.
+  'src/lib/practica.js',
+  'src/lib/usePractica.js',
+  'src/components/Practica.jsx',
+  'scripts/prueba-practica.mjs',
   'scripts/prueba-guardian.mjs',
   // El Analizador (fase 3, 2026-11-13). Las cuentas, la pantalla, el guardado
   // de plantillas y su prueba son iguales en las dos: lo que cada app sabe de

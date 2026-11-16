@@ -21,11 +21,12 @@
 //
 // ⚠️ AQUÍ NO HAY FIREBASE NI REACT, a propósito: se comprueba sin red.
 //
-// Las insignias del curso y del modo práctica llegarán con ellos (puntos 5 y 8
-// del plan): no se enseñan antes de que exista lo que premian.
+// La del modo práctica llegó con él (punto 5, 2026-11-16). La del curso llegará
+// con el curso (punto 8): no se enseña antes de que exista lo que premia.
 
 import { diaDeCierre } from './guardianRiesgo.js'
 import { frenoEnDolares, leerPerfil, perfilCompleto } from './perfilRiesgo.js'
+import { resumenPractica } from './practica.js'
 
 // Cuántas veces hace falta para cada una. Están a la vista en la pantalla.
 export const META = Object.freeze({
@@ -36,11 +37,12 @@ export const META = Object.freeze({
   diario: 10,
   porque: 10,
   freno: 5,
+  practica: 5,
 })
 
 // El orden en que se enseñan: primero lo que se hace en un minuto, después lo
 // que pide constancia.
-export const INSIGNIAS = Object.freeze(['perfil', 'lista', 'metodo', 'alerta', 'diario', 'porque', 'freno'])
+export const INSIGNIAS = Object.freeze(['perfil', 'lista', 'metodo', 'alerta', 'diario', 'porque', 'freno', 'practica'])
 
 // Una nota de menos de esto no es un «por qué» (un punto, una letra).
 export const NOTA_MINIMA = 8
@@ -107,12 +109,13 @@ export function diasRespetados(trades, perfil) {
  *
  * @param trades  el Diario, tal como lo trae `useTrades`
  * @param ficha   la ficha de Firestore (`users/{uid}`), o lo que haya
+ * @param practica  las operaciones del modo práctica de esta app
  *
  * Devuelve una lista en el orden de `INSIGNIAS`, cada una con:
  *   id, n (lo que lleva), meta, conseguida, y `necesitaPerfil` en la del freno
  *   cuando todavía no hay perfil de riesgo con el que contarla.
  */
-export function calcularInsignias(trades, ficha) {
+export function calcularInsignias(trades, ficha, practica = []) {
   const lista = Array.isArray(trades) ? trades.filter(Boolean) : []
   const perfil = leerPerfil(ficha?.perfilRiesgo)
   const conPerfil = perfilCompleto(perfil)
@@ -126,6 +129,10 @@ export function calcularInsignias(trades, ficha) {
     diario: lista.length,
     porque: lista.filter((t) => typeof t.nota === 'string' && t.nota.trim().length >= NOTA_MINIMA).length,
     freno: respetados,
+    // ⚠️ Cuentan las TERMINADAS (ganadas o perdidas), y las dos igual: lo que
+    // se premia es llegar al final de la práctica, no ganarla.
+    // La definición de «terminada» vive en `practica.js`, la misma que cuenta la tarjeta.
+    practica: resumenPractica(practica).resueltas,
   }
   return INSIGNIAS.map((id) => {
     const meta = META[id]

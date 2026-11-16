@@ -26,7 +26,8 @@ import { useTasas } from '../lib/useTasas'
 import { useMT5Quotes } from '../lib/useMT5Quotes'
 import { useEstacionalidad } from '../lib/useEstacionalidad'
 import { usePlantillas } from '../lib/usePlantillas'
-import { clave } from '../lib/identidad'
+import { APP, clave } from '../lib/identidad'
+import { MAX_ABIERTAS, fichaPractica } from '../lib/practica'
 
 const TEXTO = { fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }
 const ROTULO = { fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.4 }
@@ -127,7 +128,7 @@ const horaLocal = (hUTC, locale) => {
   return d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
 }
 
-export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trades = [], cal, cot = null, oro = null, correlaciones, onAnotar, onIrAlPerfil }) {
+export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trades = [], cal, cot = null, oro = null, correlaciones, onAnotar, onIrAlPerfil, vela = null, onPracticar, onVerPractica }) {
   const { t, locale } = useIdioma()
   const tasasPub = useTasas()
   const mt5 = useMT5Quotes()
@@ -147,6 +148,12 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
   const [nombrePl, setNombrePl] = useState('')
   const [msgPl, setMsgPl] = useState(null)
   const [porBorrar, setPorBorrar] = useState(null)
+  // Lo que pasó al guardar una operación de práctica, atado a ESTA tarjeta:
+  // si cambias de par, de dirección o de método, el mensaje se va.
+  const firmaPractica = `${par}|${lado}|${metodo}`
+  const [practica, setPractica] = useState({ firma: null, estado: null })
+  const practicaEstado = practica.firma === firmaPractica ? practica.estado : null
+  const setPracticaEstado = (estado) => setPractica({ firma: firmaPractica, estado })
 
   // Solo se ofrecen las herramientas que ESTA app calcula para algún par. La
   // app de intradía no tiene Bollinger: ofrecer el botón para que diga siempre
@@ -774,6 +781,44 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
           >
             {t('an.anotar')}
           </button>
+        )}
+
+        {/* El modo práctica (2026-11-16): la misma operación, sin dinero. La
+            sigue sola la app con precios reales. ⚠️ Sale de ESTA tarjeta y de
+            ninguna otra parte, para que los niveles se calculen en un solo
+            sitio. Sin la fecha de la vela del barrido no se guarda: sin ella no
+            se sabría desde cuándo juzgarla. */}
+        {a.niveles && onPracticar && vela && (
+          <button
+            className="btn"
+            type="button"
+            style={{ minHeight: 44 }}
+            disabled={practicaEstado === 'guardando'}
+            onClick={async () => {
+              const op = fichaPractica({ app: APP, analisis: a, metodo, vela })
+              if (!op) return setPracticaEstado('error')
+              setPracticaEstado('guardando')
+              setPracticaEstado(await onPracticar(op))
+            }}
+          >
+            {t('an.practicar')}
+          </button>
+        )}
+        {practicaEstado && practicaEstado !== 'guardando' && (
+          <p style={{ ...TEXTO, color: practicaEstado === 'ok' ? 'var(--text-secondary)' : 'var(--amber)' }}>
+            {practicaEstado === 'ok' && t('an.practicaOk')}
+            {practicaEstado === 'lleno' && t('an.practicaLleno', { max: MAX_ABIERTAS })}
+            {practicaEstado === 'sinPermiso' && t('an.practicaSinPermiso')}
+            {practicaEstado === 'error' && t('an.practicaError')}
+            {practicaEstado === 'ok' && onVerPractica && (
+              <>
+                {' '}
+                <button type="button" onClick={onVerPractica} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--cta)', cursor: 'pointer', font: 'inherit', textDecoration: 'underline' }}>
+                  {t('an.practicaVer')}
+                </button>
+              </>
+            )}
+          </p>
         )}
       </div>
 

@@ -52,6 +52,11 @@ export function armarBarrido(data, ahora = new Date()) {
   return {
     generadoEl: ahora.toISOString(),
     ultima: data.ultima,
+    // La fecha de cada una de las 20 velas de `altos20`/`bajos20`, en el mismo
+    // orden (2026-11-16). La necesita el programa que resuelve el modo práctica
+    // (`resolver-practica.mjs`): sin saber de cuándo es cada vela no se puede
+    // decir qué pasó DESPUÉS de entrar. Son 20 textos cortos.
+    fechas20: Array.isArray(data.barras) ? data.barras.slice(-20) : undefined,
     raw: data.raw,
     esc: data.esc,
     ratesUSD: data.ratesUSD,

@@ -28,6 +28,7 @@ import { firebaseListo } from './lib/firebase'
 import { useAuthUser } from './lib/useAuthUser'
 import { useMembers } from './lib/useMembers'
 import { useTrades } from './lib/useTrades'
+import { usePractica } from './lib/usePractica'
 import { useMarketData } from './lib/useMarketData'
 import { useCalendario } from './lib/useCalendario'
 import { decidirModo, filtrarMercado, guardarModo, leerModo, resumenVista } from './lib/vistaPares'
@@ -63,6 +64,8 @@ export default function App() {
   const calendario = useCalendario()
   const miembros = useMembers(esAdmin)
   const diario = useTrades(authUser?.uid)
+  // El modo práctica (2026-11-16): operaciones sin dinero que la app sigue sola.
+  const practica = usePractica(authUser?.uid)
 
   const [screen, setScreen] = useState('splash')
   const [tab, setTab] = useState('barrido')
@@ -314,6 +317,9 @@ export default function App() {
                   perfilRiesgo={perfil?.perfilRiesgo}
                   ficha={perfil}
                   onIrAlPerfil={() => setTab('calc')}
+                  practica={practica.ops}
+                  onBorrarPractica={practica.borrar}
+                  onIrAnalizar={() => setTab('analizar')}
                 />
               )}
               {tab === 'analizar' && (
@@ -329,6 +335,9 @@ export default function App() {
                     setTab('diario')
                   }}
                   onIrAlPerfil={() => setTab('calc')}
+                  vela={mercado.ultima}
+                  onPracticar={practica.crear}
+                  onVerPractica={() => setTab('diario')}
                 />
               )}
               {tab === 'historial' && <HistorialTab />}

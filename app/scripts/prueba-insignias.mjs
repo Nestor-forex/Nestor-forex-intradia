@@ -84,7 +84,7 @@ console.log('\n6. La pantalla')
   comprobar('el aviso va antes de la lista', ui.indexOf("tr('insig.aviso')") < ui.indexOf('lista.map'))
   comprobar('ni verde ni rojo: va con el color de la marca', !/--green|--red/.test(ui) && /--cta/.test(ui))
   const diario = readFileSync(new URL('../src/components/DiarioTab.jsx', import.meta.url), 'utf8')
-  comprobar('el Diario la enseña con la ficha', /<Insignias trades=\{trades\} ficha=\{ficha\} \/>/.test(diario))
+  comprobar('el Diario la enseña con la ficha', /<Insignias trades=\{trades\} ficha=\{ficha\} practica=\{practica\} \/>/.test(diario))
   const es = readFileSync(new URL('../src/lib/i18n/textos/es.js', import.meta.url), 'utf8')
   for (const id of INSIGNIAS) comprobar(`la insignia «${id}» tiene sus dos textos`, es.includes(`${id}T:`) && es.includes(`${id}D:`))
 }
