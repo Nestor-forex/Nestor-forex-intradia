@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { useT } from '../lib/i18n'
-import { MODO_MIS, MODO_TODOS } from '../lib/vistaPares'
+import { MODO_MIS, MODO_TODOS, arranqueCerrado, cerrarArranque, divisasDe, paresConDivisas } from '../lib/vistaPares'
 
 // VER TODOS LOS PARES O SOLO LOS MÍOS — el control.
 //
@@ -40,9 +41,91 @@ function Pastilla({ activo, onClick, children }) {
   )
 }
 
-export default function FiltroPares({ resumen, modo, onModo, onIrAvisos }) {
+// EL ARRANQUE GUIADO — la primera vez, en vez de una lista vacía.
+//
+// Pregunta qué DIVISAS sigue la persona y le propone sus pares de un toque.
+// ⚠️ No propone ningún par por su cuenta: agrupar por divisa es un hecho del
+// nombre del par, no una opinión (ver `paresConDivisas` en `vistaPares.js`).
+// ⚠️ Se puede cerrar sin elegir nada, y entonces queda la línea de siempre:
+// ver los catorce o dieciocho pares es una elección tan válida como filtrar.
+function Arranque({ total, pares, onSeguir, onIrAvisos, onCerrar }) {
   const t = useT()
+  const divisas = divisasDe(pares)
+  const [elegidas, setElegidas] = useState([])
+  const [estado, setEstado] = useState(null)
+  const propuestos = paresConDivisas(elegidas, pares)
+
+  const alternar = (d) => setElegidas((xs) => (xs.includes(d) ? xs.filter((x) => x !== d) : [...xs, d]))
+  const seguir = async () => {
+    if (!propuestos.length) return
+    setEstado('guardando')
+    const r = await onSeguir(propuestos)
+    // ⚠️ Solo se cierra si se GUARDÓ. Cerrarlo con un fallo dejaría a la
+    // persona creyendo que eligió, con la app enseñando todos los pares.
+    if (r?.ok) {
+      cerrarArranque()
+      onCerrar()
+    } else setEstado(r?.codigo === 'sinPermiso' ? 'sinPermiso' : 'error')
+  }
+
+  return (
+    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10, border: '1px solid var(--cta)' }}>
+      <div style={{ fontSize: 14, fontWeight: 600 }}>{t('vista.arrTitulo')}</div>
+      <p style={{ margin: 0, fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.55 }}>{t('vista.arrDesc', { total })}</p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {divisas.map((d) => (
+          <Pastilla key={d} activo={elegidas.includes(d)} onClick={() => alternar(d)}>
+            <span dir="ltr">{d}</span>
+          </Pastilla>
+        ))}
+      </div>
+      {propuestos.length > 0 && (
+        <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+          {t('vista.arrQuedan', { n: propuestos.length })}{' '}
+          <span dir="ltr" className="mono">{propuestos.join(' · ')}</span>
+        </p>
+      )}
+      {estado === 'sinPermiso' && <p style={{ margin: 0, fontSize: 12, color: 'var(--amber)' }}>{t('vista.arrSinPermiso')}</p>}
+      {estado === 'error' && <p style={{ margin: 0, fontSize: 12, color: 'var(--amber)' }}>{t('vista.arrError')}</p>}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        <button
+          type="button"
+          className="btn btn-primary"
+          style={{ padding: '0 16px', fontSize: 14, opacity: propuestos.length ? 1 : 0.5 }}
+          disabled={!propuestos.length || estado === 'guardando'}
+          onClick={seguir}
+        >
+          {t('vista.arrSeguir', { n: propuestos.length })}
+        </button>
+        {onIrAvisos && (
+          <button type="button" className="btn-ghost" onClick={onIrAvisos}>
+            {t('vista.arrUnoPorUno')}
+          </button>
+        )}
+        <button
+          type="button"
+          className="btn-ghost"
+          onClick={() => {
+            cerrarArranque()
+            onCerrar()
+          }}
+        >
+          {t('vista.arrTodos')}
+        </button>
+      </div>
+      <p style={{ margin: 0, fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.5 }}>{t('vista.arrNota')}</p>
+    </div>
+  )
+}
+
+export default function FiltroPares({ resumen, modo, onModo, onIrAvisos, pares, onSeguir }) {
+  const t = useT()
+  const [cerrado, setCerrado] = useState(arranqueCerrado)
   if (!resumen || !resumen.total) return null
+
+  if (!resumen.hayLista && !cerrado && onSeguir && Array.isArray(pares) && pares.length) {
+    return <Arranque total={resumen.total} pares={pares} onSeguir={onSeguir} onIrAvisos={onIrAvisos} onCerrar={() => setCerrado(true)} />
+  }
 
   // Sin lista no hay nada que filtrar. Se enseña una sola línea que explica
   // que se puede, porque si no, la pestaña de avisos no se descubre nunca —

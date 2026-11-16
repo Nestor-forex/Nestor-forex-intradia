@@ -72,6 +72,15 @@ export default {
     todos: ({ n }) => `Todos (${n})`,
     nota: 'El ranking de fuerza de las divisas y las tarjetas de información se quedan enteros: comparan unos pares con otros, así que recortarlos cambiaría lo que dicen.',
     vacio: 'Ninguno de tus pares está en el barrido de hoy. Toca «Todos» para verlos.',
+    arrTitulo: "¿Qué divisas sigues?",
+    arrDesc: ({ total }) => `Toca las divisas que operas y el Barrido se queda con sus pares. Hoy ves los ${total}.`,
+    arrQuedan: ({ n }) => `Pares que se quedan: ${n}.`,
+    arrSeguir: ({ n }) => `Seguir estos pares (${n})`,
+    arrUnoPorUno: "Elegir par por par",
+    arrTodos: "Prefiero ver todos",
+    arrSinPermiso: "No hay permiso para guardar tu lista todavía. Avísale al desarrollador.",
+    arrError: "No se pudo guardar. Revisa tu conexión e inténtalo otra vez.",
+    arrNota: "Esto no es una recomendación: solo agrupa los pares por la divisa que llevan. Puedes cambiar tu lista cuando quieras en «Avisos».",
   },
 
   // MIS AVISOS — la pantalla donde cada persona programa lo suyo.

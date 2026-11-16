@@ -31,6 +31,8 @@ import { useTrades } from './lib/useTrades'
 import { useMarketData } from './lib/useMarketData'
 import { useCalendario } from './lib/useCalendario'
 import { decidirModo, filtrarMercado, guardarModo, leerModo, resumenVista } from './lib/vistaPares'
+import { useAvisos } from './lib/useAvisos'
+import { PAIR_NAMES } from './lib/pairs'
 
 const NOMBRE_APP = 'NESTOR FOREX INTRADÍA'
 
@@ -94,8 +96,18 @@ export default function App() {
     guardarModo(m)
     setModoVista({ valor: m, pudoLeer: true })
   }
+  // El arranque guiado guarda la lista con el MISMO `seguir` que la pestaña de
+  // avisos: dos formas de escribir `seguimiento` se separarían sin avisar.
+  const avisosUsuario = useAvisos(authUser?.uid, perfil)
   const filtroPares = (
-    <FiltroPares resumen={resumenPares} modo={modo} onModo={cambiarVista} onIrAvisos={() => setTab('avisos')} />
+    <FiltroPares
+      resumen={resumenPares}
+      modo={modo}
+      onModo={cambiarVista}
+      onIrAvisos={() => setTab('avisos')}
+      pares={PAIR_NAMES}
+      onSeguir={(lista) => avisosUsuario.seguir(lista)}
+    />
   )
 
   useEffect(() => {

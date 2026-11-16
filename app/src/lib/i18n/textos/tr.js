@@ -53,6 +53,15 @@ export default {
     todos: ({ n }) => `Tümü (${n})`,
     nota: 'Para birimi güç sıralaması ve bilgi kartları olduğu gibi kalır: pariteleri birbiriyle karşılaştırırlar, kısaltmak söylediklerini değiştirir.',
     vacio: 'Paritelerinden hiçbiri bugünkü taramada yok. Hepsini görmek için «Tümü»ne dokun.',
+    arrTitulo: "Hangi para birimlerini takip ediyorsun?",
+    arrDesc: ({ total }) => `İşlem yaptığın para birimlerine dokun, Tarama yalnızca onların paritelerini tutsun. Bugün hepsini görüyorsun (${total}).`,
+    arrQuedan: ({ n }) => `Kalan pariteler: ${n}.`,
+    arrSeguir: ({ n }) => `Bu pariteleri takip et (${n})`,
+    arrUnoPorUno: "Tek tek parite seç",
+    arrTodos: "Hepsini görmeyi tercih ederim",
+    arrSinPermiso: "Listeni kaydetme izni henüz yok. Geliştiriciye haber ver.",
+    arrError: "Kaydedilemedi. Bağlantını kontrol edip tekrar dene.",
+    arrNota: "Bu bir öneri değildir: pariteleri yalnızca içerdikleri para birimine göre gruplar. Listeni istediğin zaman «Uyarılar» bölümünden değiştirebilirsin.",
   },
 
   misAvisos: {

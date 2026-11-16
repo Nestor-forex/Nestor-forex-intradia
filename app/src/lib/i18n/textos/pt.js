@@ -57,6 +57,15 @@ export default {
     todos: ({ n }) => `Todos (${n})`,
     nota: 'O ranking de força das moedas e os cartões de informação ficam inteiros: comparam uns pares com outros, então recortá-los mudaria o que dizem.',
     vacio: 'Nenhum dos seus pares está na varredura de hoje. Toque em «Todos» para vê-los.',
+    arrTitulo: "Quais moedas você acompanha?",
+    arrDesc: ({ total }) => `Toque nas moedas que você opera e a Varredura fica só com os pares delas. Hoje você vê todos (${total}).`,
+    arrQuedan: ({ n }) => `Pares mantidos: ${n}.`,
+    arrSeguir: ({ n }) => `Seguir estes pares (${n})`,
+    arrUnoPorUno: "Escolher par a par",
+    arrTodos: "Prefiro ver todos",
+    arrSinPermiso: "Ainda não há permissão para salvar sua lista. Avise o desenvolvedor.",
+    arrError: "Não foi possível salvar. Verifique sua conexão e tente de novo.",
+    arrNota: "Isto não é uma recomendação: apenas agrupa os pares pela moeda que contêm. Você pode mudar sua lista quando quiser em «Alertas».",
   },
 
   misAvisos: {

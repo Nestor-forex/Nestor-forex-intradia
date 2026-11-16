@@ -57,6 +57,15 @@ export default {
     todos: ({ n }) => `All (${n})`,
     nota: 'The currency strength ranking and the information cards stay whole: they compare pairs against each other, so trimming them would change what they say.',
     vacio: 'None of your pairs is in today’s scan. Tap "All" to see them.',
+    arrTitulo: "Which currencies do you follow?",
+    arrDesc: ({ total }) => `Tap the currencies you trade and the Scan keeps only their pairs. Today you see all ${total}.`,
+    arrQuedan: ({ n }) => `Pairs kept: ${n}.`,
+    arrSeguir: ({ n }) => `Follow these pairs (${n})`,
+    arrUnoPorUno: "Choose pair by pair",
+    arrTodos: "I prefer to see all",
+    arrSinPermiso: "There is no permission to save your list yet. Let the developer know.",
+    arrError: "Could not save. Check your connection and try again.",
+    arrNota: "This is not a recommendation: it only groups pairs by the currency they contain. You can change your list anytime in «Alerts».",
   },
 
   misAvisos: {

@@ -57,6 +57,15 @@ export default {
     todos: ({ n }) => `Toutes (${n})`,
     nota: 'Le classement de force des devises et les fiches d’information restent entiers : ils comparent les paires entre elles, les réduire changerait ce qu’ils disent.',
     vacio: 'Aucune de vos paires n’est dans le balayage d’aujourd’hui. Touchez « Toutes » pour les voir.',
+    arrTitulo: "Quelles devises suis-tu ?",
+    arrDesc: ({ total }) => `Touche les devises que tu trades et le Balayage ne garde que leurs paires. Aujourd’hui tu les vois toutes (${total}).`,
+    arrQuedan: ({ n }) => `Paires conservées : ${n}.`,
+    arrSeguir: ({ n }) => `Suivre ces paires (${n})`,
+    arrUnoPorUno: "Choisir paire par paire",
+    arrTodos: "Je préfère tout voir",
+    arrSinPermiso: "Il n’y a pas encore d’autorisation pour enregistrer ta liste. Préviens le développeur.",
+    arrError: "Impossible d’enregistrer. Vérifie ta connexion et réessaie.",
+    arrNota: "Ce n’est pas une recommandation : cela regroupe seulement les paires selon la devise qu’elles contiennent. Tu peux changer ta liste quand tu veux dans « Alertes ».",
   },
 
   misAvisos: {
