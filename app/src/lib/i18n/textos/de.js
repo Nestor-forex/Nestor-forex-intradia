@@ -57,6 +57,15 @@ export default {
     todos: ({ n }) => `Alle (${n})`,
     nota: 'Das Stärke-Ranking der Währungen und die Infokarten bleiben vollständig: Sie vergleichen Paare miteinander, ein Kürzen würde ihre Aussage verändern.',
     vacio: 'Keines deiner Paare ist im heutigen Marktüberblick. Tippe auf „Alle“, um sie zu sehen.',
+    arrTitulo: "Welchen Währungen folgst du?",
+    arrDesc: ({ total }) => `Tippe die Währungen an, die du handelst, und der Scan behält nur ihre Paare. Heute siehst du alle ${total}.`,
+    arrQuedan: ({ n }) => `Verbleibende Paare: ${n}.`,
+    arrSeguir: ({ n }) => `Diesen Paaren folgen (${n})`,
+    arrUnoPorUno: "Paar für Paar wählen",
+    arrTodos: "Lieber alle sehen",
+    arrSinPermiso: "Es gibt noch keine Berechtigung, deine Liste zu speichern. Sag dem Entwickler Bescheid.",
+    arrError: "Speichern fehlgeschlagen. Prüfe deine Verbindung und versuche es erneut.",
+    arrNota: "Das ist keine Empfehlung: Es gruppiert die Paare nur nach der enthaltenen Währung. Du kannst deine Liste jederzeit unter «Alarme» ändern.",
   },
 
   misAvisos: {

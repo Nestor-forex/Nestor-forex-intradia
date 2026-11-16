@@ -30,7 +30,12 @@ import {
   parejasDeMisPares,
   paresDeLaLista,
   resumenVista,
+  arranqueCerrado,
+  divisasDe,
+  paresConDivisas,
 } from '../src/lib/vistaPares.js'
+import { readFileSync } from 'node:fs'
+import { PAIR_NAMES } from '../src/lib/pairs.js'
 
 let mal = 0
 const comprobar = (que, cond) => {
@@ -164,6 +169,31 @@ console.log('\n10. ⚠️ EL MANIFIESTO NO PUEDE TENER UNA CLAVE EN DOS SITIOS')
 }
 
 console.log('')
+console.log('\nArranque guiado: agrupa por DIVISA, no recomienda nada')
+{
+  const P = ['EUR/USD', 'GBP/USD', 'USD/JPY', 'EUR/CHF', 'GBP/JPY']
+  comprobar('divisasDe saca cada divisa una vez, en orden de aparición', JSON.stringify(divisasDe(P)) === JSON.stringify(['EUR', 'USD', 'GBP', 'JPY', 'CHF']))
+  comprobar('divisasDe aguanta basura', JSON.stringify(divisasDe(['EUR/USD', null, 7])) === JSON.stringify(['EUR', 'USD']))
+  comprobar('«sigo el euro» = TODOS los pares con euro', JSON.stringify(paresConDivisas(['EUR'], P)) === JSON.stringify(['EUR/USD', 'EUR/CHF']))
+  comprobar('con dos divisas basta que el par lleve UNA', JSON.stringify(paresConDivisas(['CHF', 'JPY'], P)) === JSON.stringify(['USD/JPY', 'EUR/CHF', 'GBP/JPY']))
+  comprobar('sin divisas elegidas NO son todos los pares, es ninguno', paresConDivisas([], P).length === 0)
+  comprobar('respeta el orden de la app, no el de las divisas elegidas', paresConDivisas(['JPY', 'EUR'], P)[0] === 'EUR/USD')
+  // Cada divisa de la app tiene que proponer al menos un par: si no, sería un botón que no hace nada.
+  const vacias = divisasDe(PAIR_NAMES).filter((d) => paresConDivisas([d], PAIR_NAMES).length === 0)
+  comprobar('cada divisa de ESTA app propone al menos un par', vacias.length === 0)
+  // Sin localStorage (Node) no puede leer: ante la duda se ENSEÑA.
+  comprobar('si no se puede leer el teléfono, el arranque se enseña', arranqueCerrado() === false)
+
+  // Enchufado: la pantalla tiene que pasarle los pares y la forma de guardar.
+  const app = readFileSync(new URL('../src/App.jsx', import.meta.url), 'utf8')
+  comprobar('App.jsx le pasa los pares de la app al filtro', /pares=\{PAIR_NAMES\}/.test(app))
+  comprobar('App.jsx guarda con el MISMO `seguir` de Mis avisos', /onSeguir=\{\(lista\) => avisosUsuario\.seguir\(lista\)\}/.test(app))
+  const filtro = readFileSync(new URL('../src/components/FiltroPares.jsx', import.meta.url), 'utf8')
+  comprobar('solo se cierra si se GUARDÓ (r.ok)', /if \(r\?\.ok\) \{\s*cerrarArranque\(\)/.test(filtro))
+  const es = readFileSync(new URL('../src/lib/i18n/textos/es.js', import.meta.url), 'utf8')
+  comprobar('el texto dice que NO es una recomendación', /arrNota:.*no es una recomendaci/i.test(es))
+}
+
 if (mal) {
   console.log(`✗ ${mal} comprobación(es) MAL.\n`)
   process.exit(1)

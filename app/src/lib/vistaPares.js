@@ -212,3 +212,69 @@ export function resumenVista(mercado, seguimiento, modo) {
   const viendo = filtrando ? filasDeMisPares(filas, lista).length : total
   return { hayLista, filtrando, viendo, total, elegidos: lista.length, vacio: filtrando && viendo === 0 && total > 0 }
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// EL ARRANQUE GUIADO (2026-11-16)
+// ─────────────────────────────────────────────────────────────────────────
+// Néstor aprobó, de un análisis externo, que la primera vez nadie se encuentre
+// una lista vacía: la app pregunta qué divisas sigue y le propone sus pares de
+// un toque. Lo que se pregunta son DIVISAS y no «qué conviene operar»:
+//
+// ⚠️ NO RECOMIENDA NINGÚN PAR. Agrupar por divisa es un hecho del nombre del
+// par («EUR/USD lleva euro»), no una opinión. Si la app propusiera pares «para
+// empezar», esa lista se leería como una recomendación — justo lo que estas
+// apps no hacen. Por eso tampoco hay ningún grupo del tipo «los mejores».
+
+const CLAVE_ARRANQUE = clave('arranque_cerrado')
+
+/** Las divisas que aparecen en los pares de ESTA app, en orden de aparición. */
+export function divisasDe(pares) {
+  const vistas = []
+  for (const p of Array.isArray(pares) ? pares : []) {
+    if (typeof p !== 'string') continue
+    for (const d of p.split('/')) if (d && !vistas.includes(d)) vistas.push(d)
+  }
+  return vistas
+}
+
+/**
+ * Los pares que llevan ALGUNA de las divisas elegidas, en el orden de la app.
+ *
+ * «Alguna» y no «las dos» a propósito: quien dice «sigo el euro» quiere ver
+ * todos los pares con euro, no solo los que cruzan el euro con otra divisa
+ * que también haya marcado. Sin divisas elegidas devuelve lista vacía, nunca
+ * todos: «no elegí nada» no es «quiero todo», y para ver todo está su botón.
+ */
+export function paresConDivisas(divisas, pares) {
+  const elegidas = new Set((Array.isArray(divisas) ? divisas : []).filter((d) => typeof d === 'string'))
+  if (!elegidas.size) return []
+  return (Array.isArray(pares) ? pares : []).filter(
+    (p) => typeof p === 'string' && p.split('/').some((d) => elegidas.has(d))
+  )
+}
+
+/**
+ * ¿Ya cerró esta persona el arranque en este aparato?
+ *
+ * ⚠️ Ante la duda devuelve `false`, o sea SE ENSEÑA. Los dos errores no cuestan
+ * lo mismo: enseñarlo de más es una tarjeta que se cierra de un toque;
+ * esconderlo de más deja a alguien nuevo sin saber que puede elegir sus pares.
+ * Misma forma que `decidirModo` («ante la duda, se enseña todo»).
+ */
+export function arranqueCerrado() {
+  try {
+    return localStorage.getItem(CLAVE_ARRANQUE) === '1'
+  } catch {
+    return false
+  }
+}
+
+/** Lo marca como cerrado. Si el teléfono no deja guardar, no pasa nada: vuelve a salir. */
+export function cerrarArranque() {
+  try {
+    localStorage.setItem(CLAVE_ARRANQUE, '1')
+    return true
+  } catch {
+    return false
+  }
+}

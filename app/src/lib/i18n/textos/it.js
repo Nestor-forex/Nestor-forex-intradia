@@ -53,6 +53,15 @@ export default {
     todos: ({ n }) => `Tutte (${n})`,
     nota: 'La classifica di forza delle valute e le schede informative restano intere: confrontano le coppie tra loro, ridurle cambierebbe quello che dicono.',
     vacio: 'Nessuna delle tue coppie è nella scansione di oggi. Tocca «Tutte» per vederle.',
+    arrTitulo: "Quali valute segui?",
+    arrDesc: ({ total }) => `Tocca le valute che fai trading e la Scansione tiene solo le loro coppie. Oggi le vedi tutte (${total}).`,
+    arrQuedan: ({ n }) => `Coppie mantenute: ${n}.`,
+    arrSeguir: ({ n }) => `Segui queste coppie (${n})`,
+    arrUnoPorUno: "Scegli coppia per coppia",
+    arrTodos: "Preferisco vederle tutte",
+    arrSinPermiso: "Non c’è ancora il permesso per salvare la tua lista. Avvisa lo sviluppatore.",
+    arrError: "Impossibile salvare. Controlla la connessione e riprova.",
+    arrNota: "Non è una raccomandazione: raggruppa solo le coppie per la valuta che contengono. Puoi cambiare la lista quando vuoi in «Avvisi».",
   },
 
   misAvisos: {
