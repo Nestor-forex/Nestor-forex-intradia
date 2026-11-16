@@ -18,6 +18,11 @@ export default defineConfig({
       // Sin esto, en `npm run dev` no hay service worker, y los avisos no se
       // pueden probar sin compilar y publicar cada vez.
       devOptions: { enabled: true, type: 'module' },
+      // ⚠️ El archivo de la app pasó de 2 MiB (el límite por defecto del plugin
+      // para guardarlo en caché) el 2026-11-16, al llegar las insignias. Sin
+      // esto el build FALLA y no se publica nada. Con 4 MiB hay margen; el día
+      // que se acerque, lo que toca es partir el archivo, no subir el número.
+      injectManifest: { maximumFileSizeToCacheInBytes: 4 * 1024 * 1024 },
       manifest: {
         name: 'Nestor Forex Intradía',
         short_name: 'NF Intradía',

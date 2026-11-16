@@ -69,6 +69,31 @@ export default {
     notiPie: "Sinyal değildir.",
   },
 
+  // INSIGNIAS — disciplina y aprendizaje, nunca ganancias (insignias.js).
+  insig: {
+    titulo: "Rozetlerin",
+    desc: "Disiplin alışkanlıkları için madalyalar, asla para kazanmak için değil",
+    paraQue: "Uzun süre ayakta kalan traderlar en çok bilenler değil, iyi alışkanlıkları tekrarlayanlardır: ne kadar risk aldığını bilmek, her işlemi kaydetmek ve kendi kuralı söylediğinde durmak. Bu rozetler, özellikle yeni başlıyorsan, bu alışkanlıklara giden yolu gösterir. Hiçbiri kazandığın ya da daha çok işlem yaptığın için ödül vermez.",
+    llevas: "Kazanılan:",
+    aviso: "Hiçbir rozet para kazanmayı, isabeti ya da daha çok işlem yapmayı ödüllendirmez. Hesabını koruyan alışkanlıkları ödüllendirir. Uygulamayı her açtığında kendi verilerinle hesaplanır.",
+    perfilT: "Ne kadar risk aldığını biliyorsun",
+    perfilD: "Risk hesaplayıcı sekmesinde risk profilini (sermaye, işlem başına risk ve iki frenin) tamamla.",
+    listaT: "Neyle işlem yaptığını biliyorsun",
+    listaD: "Taramada parite listeni seç. Daha az parite, daha az gürültü.",
+    metodoT: "Yöntemin yazılı",
+    metodoD: "Analizcide bir şablon kaydet: araçların ve Stop-loss koyma şeklin hep aynı olsun.",
+    alertaT: "Piyasa seni çağırsın",
+    alertaD: "Kendi uyarını kur: seviyeyi sakin kafayla belirlersin ve ekrana bakmayı bırakırsın.",
+    diarioT: "Düzenli günlük",
+    diarioD: ({ meta }) => `Kazansan da kaybetsen de Günlüğe ${meta} işlem kaydet. Kaydedilmeyen gözden geçirilemez.`,
+    porqueT: "Nedenini yazıyorsun",
+    porqueD: ({ meta }) => `Neden girdiğine dair notla ${meta} işlem kaydet. Onları yeniden okumak hatalarından öğrenmenin en ucuz yoludur.`,
+    frenoT: "Frenine uyuyorsun",
+    frenoD: ({ meta }) => `Günlük frenine ya da art arda kayıp sınırına ulaştıktan sonra yeni işlem açmadan ${meta} işlem gününü tamamla. Ulaşmadığın bir gün de sayılır.`,
+    necesitaPerfil: "Sayılması için risk profilin gerekiyor.",
+    pie: "İşlem silersen sayı düşer: mevcut olanla hesaplanır. Kursun ve pratik modunun rozetleri, onlar hazır olduğunda gelecek.",
+  },
+
   vista: {
     sinLista: ({ total }) => `${total} paritenin tamamını görüyorsun. Yalnızca birkaçında işlem yapıyorsan onları seç, tarama sadece onları gösterir.`,
     elegir: 'Paritelerimi seç',
