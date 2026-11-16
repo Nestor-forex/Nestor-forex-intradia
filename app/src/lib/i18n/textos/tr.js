@@ -45,6 +45,30 @@ export default {
   // Y `nota` no es letra pequena — dice que el ranking de fuerza y las
   // tarjetas de informacion NO se filtran, que es la diferencia entre «esto
   // no filtra» y «esto se nos olvido filtrar».
+  // AVISOS INTELIGENTES — los que la app manda sola (avisosInteligentes.js).
+  intel: {
+    titulo: "Akıllı uyarılar",
+    desc: "Uygulama paritelerinin etrafında olanları kendiliğinden bildirir",
+    paraQue: "Sürekli izlemek zorunda kalmaman için: işlem yaptığın bir para birimi için güçlü bir haber geliyorsa, iki paritenin neredeyse aynı hareket ettiği ya da bir paritenin spread’i fırladığında telefonuna uyarı gelir. Ne yapacağını söylemezler: ne olduğunu söylerler, karar senindir.",
+    encendidos: ({ n }) => `Açık: ${n}`,
+    aviso: "Bunlar sinyal DEĞİLDİR. Hiçbir uyarı al, sat ya da kapat demez: sadece ne olduğunu anlatır.",
+    sinLista: "Önce yukarıdaki «Paritelerim» bölümünden paritelerini seç: bu uyarılar yalnızca takip ettiğin paritelere bakar.",
+    noticiasTitulo: "Para birimlerin için güçlü haber",
+    noticiasDesc: ({ min }) => `Paritelerindeki bir para birimi için yüksek etkili bir takvim olayından yaklaşık ${min} dakika önce seni uyarır. O dakikalarda fiyat genelde çok hareket eder ve spread açılır.`,
+    correlacionTitulo: "İki paritenin hareketi aynı",
+    correlacionDesc: ({ r }) => `Listendeki iki paritenin korelasyonu ${r} veya üzeri (ya da −${r}) olursa seni uyarır. İkisini birden açmak neredeyse aynı bahsi iki kez yapmaktır. Swing uygulaması günlük mumlarla ölçer.`,
+    spreadTitulo: "Paritende spread fırladı",
+    spreadDesc: ({ x }) => `Paritelerinden birinin spread’i son günlerin normalinin ${x} katı veya üzerindeyse seni uyarır. Geliştiricinin gerçek bir hesabının spread’ini kullanır, bu yüzden yalnızca MT5 köprüsü açıkken çalışır.`,
+    pie: "Her uyarı yalnızca bir kez çalar. İstediğin zaman kapatabilirsin.",
+    notiNoticiaTitulo: ({ divisa }) => `Güçlü haber: ${divisa}`,
+    notiNoticia: ({ titulo, min }) => `«${titulo}» yaklaşık ${min} dk sonra.`,
+    notiCorrelTitulo: "İki paritenin hareketi aynı",
+    notiCorrel: ({ a, b, r }) => `${a} ve ${b}: korelasyon ${r}. İkisini açmak neredeyse aynı bahis.`,
+    notiSpreadTitulo: ({ par }) => `Yüksek spread: ${par}`,
+    notiSpread: ({ par, actual, normal }) => `${par} şu an ${actual} pip; bu günlerde normali ${normal}.`,
+    notiPie: "Sinyal değildir.",
+  },
+
   vista: {
     sinLista: ({ total }) => `${total} paritenin tamamını görüyorsun. Yalnızca birkaçında işlem yapıyorsan onları seç, tarama sadece onları gösterir.`,
     elegir: 'Paritelerimi seç',

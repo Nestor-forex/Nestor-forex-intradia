@@ -45,6 +45,30 @@ export default {
   // Y `nota` no es letra pequena — dice que el ranking de fuerza y las
   // tarjetas de informacion NO se filtran, que es la diferencia entre «esto
   // no filtra» y «esto se nos olvido filtrar».
+  // AVISOS INTELIGENTES — los que la app manda sola (avisosInteligentes.js).
+  intel: {
+    titulo: "Avvisi intelligenti",
+    desc: "L’app ti avvisa da sola di ciò che succede intorno alle tue coppie",
+    paraQue: "Per non dover guardare in continuazione: se arriva una notizia forte per una valuta che fai trading, se due delle tue coppie si muovono quasi uguali o se lo spread di una tua coppia schizza, ti arriva un avviso sul telefono. Non ti dicono cosa fare: ti dicono cosa succede, e la decisione è tua.",
+    encendidos: ({ n }) => `Attivi: ${n}`,
+    aviso: "Questi NON sono segnali. Nessuno di questi avvisi dice comprare, vendere o chiudere: raccontano solo ciò che succede.",
+    sinLista: "Prima scegli le tue coppie in «Le mie coppie» (sopra): questi avvisi guardano solo le coppie che segui.",
+    noticiasTitulo: "Notizia forte per le tue valute",
+    noticiasDesc: ({ min }) => `Ti avvisa circa ${min} minuti prima di un evento del calendario ad alto impatto per una valuta delle tue coppie. In quei minuti il prezzo spesso si muove molto e lo spread si allarga.`,
+    correlacionTitulo: "Due delle tue coppie si muovono uguali",
+    correlacionDesc: ({ r }) => `Ti avvisa se due coppie della tua lista hanno una correlazione di ${r} o più (o −${r}). Aprirle entrambe è quasi la stessa scommessa ripetuta. La misura l’app swing con candele giornaliere.`,
+    spreadTitulo: "Spread alle stelle su una tua coppia",
+    spreadDesc: ({ x }) => `Ti avvisa se lo spread di una tua coppia è ${x} volte o più sopra il normale degli ultimi giorni. Usa lo spread reale di un conto dello sviluppatore, quindi funziona solo mentre il ponte MT5 è acceso.`,
+    pie: "Ogni avviso suona una sola volta. Puoi spegnerli quando vuoi.",
+    notiNoticiaTitulo: ({ divisa }) => `Notizia forte: ${divisa}`,
+    notiNoticia: ({ titulo, min }) => `«${titulo}» tra circa ${min} min.`,
+    notiCorrelTitulo: "Due delle tue coppie si muovono uguali",
+    notiCorrel: ({ a, b, r }) => `${a} e ${b}: correlazione ${r}. Aprirle entrambe è quasi la stessa scommessa.`,
+    notiSpreadTitulo: ({ par }) => `Spread alto: ${par}`,
+    notiSpread: ({ par, actual, normal }) => `${par} è a ${actual} pip; il normale in questi giorni è ${normal}.`,
+    notiPie: "Non è un segnale.",
+  },
+
   vista: {
     sinLista: ({ total }) => `Stai vedendo tutte le ${total} coppie. Se ne operi solo alcune, scegliile e la scansione terrà solo quelle.`,
     elegir: 'Scegli le mie coppie',

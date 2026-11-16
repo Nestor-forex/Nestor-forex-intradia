@@ -64,6 +64,30 @@ export default {
   // Y `nota` no es letra pequena — dice que el ranking de fuerza y las
   // tarjetas de informacion NO se filtran, que es la diferencia entre «esto
   // no filtra» y «esto se nos olvido filtrar».
+  // AVISOS INTELIGENTES — los que la app manda sola (avisosInteligentes.js).
+  intel: {
+    titulo: "Avisos inteligentes",
+    desc: "La app te avisa sola de lo que pasa alrededor de tus pares",
+    paraQue: "Para no tener que estar mirando: si viene una noticia fuerte para una divisa que operas, si dos de tus pares se mueven casi igual o si el spread de un par tuyo se dispara, te llega un aviso al celular. No te dicen qué hacer: te dicen qué pasa, y la decisión es tuya.",
+    encendidos: ({ n }) => `Encendidos: ${n}`,
+    aviso: "Esto NO son señales. Ninguno de estos avisos dice comprar, vender ni cerrar: solo cuenta lo que está pasando.",
+    sinLista: "Primero elige tus pares en «Mis pares» (arriba): estos avisos solo miran los pares que sigues.",
+    noticiasTitulo: "Noticia fuerte para tus divisas",
+    noticiasDesc: ({ min }) => `Te avisa unos ${min} minutos antes de una noticia de impacto alto del calendario para una divisa de tus pares. En esos minutos el precio suele moverse mucho y el spread abrirse.`,
+    correlacionTitulo: "Dos de tus pares se mueven igual",
+    correlacionDesc: ({ r }) => `Te avisa si dos pares de tu lista llevan una correlación de ${r} o más (o de −${r}). Abrir los dos es casi la misma apuesta repetida. Lo mide la app de swing con velas diarias.`,
+    spreadTitulo: "Spread disparado en un par tuyo",
+    spreadDesc: ({ x }) => `Te avisa si el spread de un par tuyo está ${x} veces o más por encima de lo normal de los últimos días. Usa el spread real de una cuenta del desarrollador, así que solo funciona mientras el puente de MT5 está encendido.`,
+    pie: "Cada aviso suena una sola vez. Los puedes apagar cuando quieras.",
+    notiNoticiaTitulo: ({ divisa }) => `Noticia fuerte: ${divisa}`,
+    notiNoticia: ({ titulo, min }) => `“${titulo}” en unos ${min} min.`,
+    notiCorrelTitulo: "Dos de tus pares se mueven igual",
+    notiCorrel: ({ a, b, r }) => `${a} y ${b}: correlación ${r}. Abrir los dos es casi la misma apuesta.`,
+    notiSpreadTitulo: ({ par }) => `Spread alto: ${par}`,
+    notiSpread: ({ par, actual, normal }) => `${par} está en ${actual} pips; lo normal estos días es ${normal}.`,
+    notiPie: "No es una señal.",
+  },
+
   vista: {
     sinLista: ({ total }) => `Estás viendo los ${total} pares. Si operas solo unos cuantos, elígelos y el Barrido se queda con ésos.`,
     elegir: 'Elegir mis pares',

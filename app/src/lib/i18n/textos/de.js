@@ -49,6 +49,30 @@ export default {
   // Y `nota` no es letra pequena — dice que el ranking de fuerza y las
   // tarjetas de informacion NO se filtran, que es la diferencia entre «esto
   // no filtra» y «esto se nos olvido filtrar».
+  // AVISOS INTELIGENTES — los que la app manda sola (avisosInteligentes.js).
+  intel: {
+    titulo: "Intelligente Alarme",
+    desc: "Die App warnt dich von selbst, was rund um deine Paare passiert",
+    paraQue: "Damit du nicht ständig schauen musst: Kommt eine starke Nachricht für eine Währung, die du handelst, bewegen sich zwei deiner Paare fast gleich oder schießt der Spread eines Paares hoch, bekommst du einen Alarm aufs Handy. Sie sagen dir nicht, was du tun sollst: Sie sagen dir, was passiert, und die Entscheidung liegt bei dir.",
+    encendidos: ({ n }) => `Aktiv: ${n}`,
+    aviso: "Das sind KEINE Signale. Keiner dieser Alarme sagt kaufen, verkaufen oder schließen: Sie erzählen nur, was passiert.",
+    sinLista: "Wähle zuerst deine Paare unter «Meine Paare» (oben): Diese Alarme schauen nur auf die Paare, denen du folgst.",
+    noticiasTitulo: "Starke Nachricht für deine Währungen",
+    noticiasDesc: ({ min }) => `Warnt dich etwa ${min} Minuten vor einem Kalendertermin mit hoher Wirkung für eine Währung deiner Paare. In diesen Minuten bewegt sich der Kurs oft stark und der Spread wird größer.`,
+    correlacionTitulo: "Zwei deiner Paare bewegen sich gleich",
+    correlacionDesc: ({ r }) => `Warnt dich, wenn zwei Paare deiner Liste eine Korrelation von ${r} oder mehr (oder −${r}) haben. Beide zu eröffnen ist fast dieselbe Wette doppelt. Gemessen von der Swing-App mit Tageskerzen.`,
+    spreadTitulo: "Spread-Sprung bei einem deiner Paare",
+    spreadDesc: ({ x }) => `Warnt dich, wenn der Spread eines deiner Paare ${x}-mal oder mehr über dem Normalwert der letzten Tage liegt. Er nutzt den echten Spread eines Kontos des Entwicklers und funktioniert daher nur, solange die MT5-Brücke läuft.`,
+    pie: "Jeder Alarm ertönt nur einmal. Du kannst sie jederzeit ausschalten.",
+    notiNoticiaTitulo: ({ divisa }) => `Starke Nachricht: ${divisa}`,
+    notiNoticia: ({ titulo, min }) => `«${titulo}» in etwa ${min} Min.`,
+    notiCorrelTitulo: "Zwei deiner Paare bewegen sich gleich",
+    notiCorrel: ({ a, b, r }) => `${a} und ${b}: Korrelation ${r}. Beide zu eröffnen ist fast dieselbe Wette.`,
+    notiSpreadTitulo: ({ par }) => `Hoher Spread: ${par}`,
+    notiSpread: ({ par, actual, normal }) => `${par} steht bei ${actual} Pips; normal sind zurzeit ${normal}.`,
+    notiPie: "Kein Signal.",
+  },
+
   vista: {
     sinLista: ({ total }) => `Du siehst alle ${total} Paare. Wenn du nur wenige handelst, wähle sie aus und der Marktüberblick zeigt nur diese.`,
     elegir: 'Meine Paare wählen',

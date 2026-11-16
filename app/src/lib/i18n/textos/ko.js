@@ -45,6 +45,30 @@ export default {
   // Y `nota` no es letra pequena — dice que el ranking de fuerza y las
   // tarjetas de informacion NO se filtran, que es la diferencia entre «esto
   // no filtra» y «esto se nos olvido filtrar».
+  // AVISOS INTELIGENTES — los que la app manda sola (avisosInteligentes.js).
+  intel: {
+    titulo: "스마트 알림",
+    desc: "앱이 당신의 통화쌍 주변에서 일어나는 일을 스스로 알려 줍니다",
+    paraQue: "계속 지켜보지 않아도 되도록: 거래하는 통화에 강한 뉴스가 다가오거나, 두 통화쌍이 거의 똑같이 움직이거나, 통화쌍의 스프레드가 치솟으면 휴대폰으로 알림이 옵니다. 무엇을 하라고 말하지 않습니다. 무슨 일이 일어나는지 알려 줄 뿐이며 결정은 당신의 몫입니다.",
+    encendidos: ({ n }) => `켜짐: ${n}`,
+    aviso: "이것은 신호가 아닙니다. 어떤 알림도 매수·매도·청산을 말하지 않습니다. 일어나는 일을 알려 줄 뿐입니다.",
+    sinLista: "먼저 위의 「내 통화쌍」에서 통화쌍을 고르세요. 이 알림은 팔로우하는 통화쌍만 봅니다.",
+    noticiasTitulo: "내 통화에 강한 뉴스",
+    noticiasDesc: ({ min }) => `내 통화쌍의 통화에 영향이 큰 경제 일정이 있기 약 ${min}분 전에 알려 줍니다. 그 몇 분 동안 가격이 크게 움직이고 스프레드가 벌어지기 쉽습니다.`,
+    correlacionTitulo: "두 통화쌍이 같이 움직임",
+    correlacionDesc: ({ r }) => `목록의 두 통화쌍 상관계수가 ${r} 이상(또는 −${r})이면 알려 줍니다. 둘 다 여는 것은 거의 같은 베팅을 두 번 하는 것입니다. 스윙 앱이 일봉으로 측정합니다.`,
+    spreadTitulo: "내 통화쌍의 스프레드 급등",
+    spreadDesc: ({ x }) => `통화쌍의 스프레드가 최근 며칠의 평소보다 ${x}배 이상이면 알려 줍니다. 개발자의 실제 계좌 스프레드를 사용하므로 MT5 브리지가 켜져 있을 때만 작동합니다.`,
+    pie: "각 알림은 한 번만 울립니다. 언제든 끌 수 있습니다.",
+    notiNoticiaTitulo: ({ divisa }) => `강한 뉴스: ${divisa}`,
+    notiNoticia: ({ titulo, min }) => `「${titulo}」 약 ${min}분 후.`,
+    notiCorrelTitulo: "두 통화쌍이 같이 움직임",
+    notiCorrel: ({ a, b, r }) => `${a}와 ${b}: 상관계수 ${r}. 둘 다 여는 것은 거의 같은 베팅입니다.`,
+    notiSpreadTitulo: ({ par }) => `높은 스프레드: ${par}`,
+    notiSpread: ({ par, actual, normal }) => `${par}: ${actual} pips, 요즘 평소는 ${normal}.`,
+    notiPie: "신호가 아닙니다.",
+  },
+
   vista: {
     sinLista: ({ total }) => `${total}개 통화쌍을 모두 보고 있습니다. 몇 개만 거래한다면 그것들을 고르세요. 스캔이 그것만 남깁니다.`,
     elegir: '내 통화쌍 고르기',

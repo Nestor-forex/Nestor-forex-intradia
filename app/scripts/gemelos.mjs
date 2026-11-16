@@ -287,6 +287,11 @@ export const GEMELOS = [
   // `pairs.js` (PRIMO) y la pantalla lo pide, nunca lo escribe.
   'src/lib/useAvisos.js',
   'src/components/MisAvisos.jsx',
+  // Los avisos inteligentes (2026-11-16): las mismas reglas en las dos apps,
+  // y la pantalla de sus interruptores. Quien los MANDA vive solo en Swing
+  // (`scripts/lib/avisos-inteligentes.mjs`), como todo `mandar-avisos.mjs`.
+  'src/lib/avisosInteligentes.js',
+  'src/components/AvisosInteligentes.jsx',
   // El perfil de riesgo de cada persona (capital, riesgo por operacion y sus
   // dos frenos) y su tarjeta encima de la calculadora. Identicos porque se
   // guardan en la MISMA ficha de Firestore —el proyecto es uno solo— y el

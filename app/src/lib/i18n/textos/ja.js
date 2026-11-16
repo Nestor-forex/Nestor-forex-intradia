@@ -45,6 +45,30 @@ export default {
   // Y `nota` no es letra pequena — dice que el ranking de fuerza y las
   // tarjetas de informacion NO se filtran, que es la diferencia entre «esto
   // no filtra» y «esto se nos olvido filtrar».
+  // AVISOS INTELIGENTES — los que la app manda sola (avisosInteligentes.js).
+  intel: {
+    titulo: "スマートアラート",
+    desc: "通貨ペアの周りで起きていることをアプリが自動で知らせます",
+    paraQue: "ずっと見張らなくて済むように：取引する通貨に重要なニュースが来る、ペアのうち2つがほぼ同じ動きをする、ペアのスプレッドが急に広がる、といったときにスマホに通知が届きます。何をすべきかは言いません。何が起きているかを伝えるだけで、判断はあなたのものです。",
+    encendidos: ({ n }) => `オン：${n}`,
+    aviso: "これはシグナルではありません。どのアラートも買い・売り・決済を勧めません。起きていることを伝えるだけです。",
+    sinLista: "まず上の「マイ通貨ペア」でペアを選んでください。このアラートはフォロー中のペアだけを見ます。",
+    noticiasTitulo: "あなたの通貨に重要ニュース",
+    noticiasDesc: ({ min }) => `あなたのペアの通貨に影響の大きい経済指標がある約 ${min} 分前に知らせます。その間は価格が大きく動き、スプレッドが広がりやすくなります。`,
+    correlacionTitulo: "2つのペアが同じ動き",
+    correlacionDesc: ({ r }) => `リストの2つのペアの相関が ${r} 以上（または −${r}）になると知らせます。両方を持つのはほぼ同じ賭けを2回するのと同じです。スイングアプリが日足で測ります。`,
+    spreadTitulo: "ペアのスプレッドが急拡大",
+    spreadDesc: ({ x }) => `ペアのスプレッドがここ数日の通常の ${x} 倍以上になると知らせます。開発者の実口座のスプレッドを使うため、MT5ブリッジが動いている間だけ機能します。`,
+    pie: "各アラートは1回だけ鳴ります。いつでもオフにできます。",
+    notiNoticiaTitulo: ({ divisa }) => `重要ニュース：${divisa}`,
+    notiNoticia: ({ titulo, min }) => `「${titulo}」が約 ${min} 分後。`,
+    notiCorrelTitulo: "2つのペアが同じ動き",
+    notiCorrel: ({ a, b, r }) => `${a} と ${b}：相関 ${r}。両方持つのはほぼ同じ賭けです。`,
+    notiSpreadTitulo: ({ par }) => `スプレッド拡大：${par}`,
+    notiSpread: ({ par, actual, normal }) => `${par} は ${actual} pips。ここ数日の通常は ${normal}。`,
+    notiPie: "シグナルではありません。",
+  },
+
   vista: {
     sinLista: ({ total }) => `${total} 通貨ペアをすべて表示しています。数ペアだけ取引するなら選んでください。スキャンはそれだけになります。`,
     elegir: '自分のペアを選ぶ',

@@ -49,6 +49,30 @@ export default {
   // Y `nota` no es letra pequena — dice que el ranking de fuerza y las
   // tarjetas de informacion NO se filtran, que es la diferencia entre «esto
   // no filtra» y «esto se nos olvido filtrar».
+  // AVISOS INTELIGENTES — los que la app manda sola (avisosInteligentes.js).
+  intel: {
+    titulo: "Alertes intelligentes",
+    desc: "L’app t’avertit d’elle-même de ce qui se passe autour de tes paires",
+    paraQue: "Pour ne pas devoir surveiller sans cesse : si une nouvelle forte arrive pour une devise que tu trades, si deux de tes paires bougent presque pareil ou si le spread d’une de tes paires s’envole, tu reçois une alerte sur ton téléphone. Elles ne te disent pas quoi faire : elles te disent ce qui se passe, et la décision t’appartient.",
+    encendidos: ({ n }) => `Activées : ${n}`,
+    aviso: "Ce ne sont PAS des signaux. Aucune de ces alertes ne dit acheter, vendre ou clôturer : elles racontent seulement ce qui se passe.",
+    sinLista: "Choisis d’abord tes paires dans « Mes paires » (plus haut) : ces alertes ne regardent que les paires que tu suis.",
+    noticiasTitulo: "Nouvelle forte pour tes devises",
+    noticiasDesc: ({ min }) => `T’avertit environ ${min} minutes avant un événement du calendrier à fort impact pour une devise de tes paires. Pendant ces minutes, le prix bouge souvent beaucoup et le spread s’élargit.`,
+    correlacionTitulo: "Deux de tes paires bougent pareil",
+    correlacionDesc: ({ r }) => `T’avertit si deux paires de ta liste ont une corrélation de ${r} ou plus (ou −${r}). Ouvrir les deux, c’est presque le même pari deux fois. Mesuré par l’app swing en bougies journalières.`,
+    spreadTitulo: "Spread qui s’envole sur une de tes paires",
+    spreadDesc: ({ x }) => `T’avertit si le spread d’une de tes paires est ${x} fois ou plus au-dessus de son niveau normal des derniers jours. Il utilise le spread réel d’un compte du développeur, donc ne fonctionne que si le pont MT5 est allumé.`,
+    pie: "Chaque alerte ne sonne qu’une fois. Tu peux les désactiver quand tu veux.",
+    notiNoticiaTitulo: ({ divisa }) => `Nouvelle forte : ${divisa}`,
+    notiNoticia: ({ titulo, min }) => `« ${titulo} » dans environ ${min} min.`,
+    notiCorrelTitulo: "Deux de tes paires bougent pareil",
+    notiCorrel: ({ a, b, r }) => `${a} et ${b} : corrélation ${r}. Ouvrir les deux, c’est presque le même pari.`,
+    notiSpreadTitulo: ({ par }) => `Spread élevé : ${par}`,
+    notiSpread: ({ par, actual, normal }) => `${par} est à ${actual} pips ; la normale ces jours-ci est ${normal}.`,
+    notiPie: "Ce n’est pas un signal.",
+  },
+
   vista: {
     sinLista: ({ total }) => `Vous voyez les ${total} paires. Si vous n’en tradez que quelques-unes, choisissez-les et le balayage ne gardera que celles-là.`,
     elegir: 'Choisir mes paires',
