@@ -3,6 +3,7 @@ import { useT } from '../lib/i18n'
 import { PAIR_NAMES } from '../lib/pairs'
 import { LADOS_INDICADOR, LADOS_PRECIO, MAX_REPETICIONES, avisoMudo } from '../lib/alertas'
 import { useAvisos } from '../lib/useAvisos'
+import AvisosInteligentes from './AvisosInteligentes'
 
 // MIS AVISOS — la pantalla donde cada persona programa lo suyo.
 //
@@ -132,6 +133,9 @@ export default function MisAvisos({ uid, perfil }) {
           {a.seguimiento.length === 0 ? t('misAvisos.seguimientoVacio') : t('misAvisos.seguimientoPie')}
         </p>
       </div>
+
+      {/* ───────────────────────── AVISOS INTELIGENTES ─────────────────────── */}
+      <AvisosInteligentes perfil={perfil} seguimiento={a.seguimiento} onElegir={(tipos) => hacer(a.elegirIntel(tipos))} />
 
       {/* ───────────────────────── AÑADIR UN AVISO ───────────────────────── */}
       <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

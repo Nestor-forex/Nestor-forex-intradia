@@ -45,6 +45,30 @@ export default {
   // Y `nota` no es letra pequena — dice que el ranking de fuerza y las
   // tarjetas de informacion NO se filtran, que es la diferencia entre «esto
   // no filtra» y «esto se nos olvido filtrar».
+  // AVISOS INTELIGENTES — los que la app manda sola (avisosInteligentes.js).
+  intel: {
+    titulo: "智能提醒",
+    desc: "应用会主动提醒你货币对周围发生的事情",
+    paraQue: "这样你不用一直盯着：如果你交易的货币即将有重要新闻、你的两个货币对走势几乎一样，或者某个货币对的点差突然飙升，手机就会收到提醒。它们不会告诉你该怎么做，只告诉你发生了什么，决定由你来做。",
+    encendidos: ({ n }) => `已开启：${n}`,
+    aviso: "这些不是信号。任何提醒都不会说买入、卖出或平仓，只说明正在发生的事情。",
+    sinLista: "请先在上方「我的货币对」中选择货币对：这些提醒只关注你关注的货币对。",
+    noticiasTitulo: "你的货币有重要新闻",
+    noticiasDesc: ({ min }) => `在你的货币对所含货币有高影响日历事件前约 ${min} 分钟提醒你。这几分钟内价格常大幅波动，点差会扩大。`,
+    correlacionTitulo: "你的两个货币对走势相同",
+    correlacionDesc: ({ r }) => `如果你列表中的两个货币对相关系数达到 ${r} 或以上（或 −${r}），就会提醒你。同时开这两个几乎是同一笔押注重复两次。由波段应用用日线测量。`,
+    spreadTitulo: "你的货币对点差飙升",
+    spreadDesc: ({ x }) => `如果你的某个货币对点差达到近几天正常水平的 ${x} 倍或以上，就会提醒你。它使用开发者一个真实账户的点差，所以只在 MT5 桥接开启时有效。`,
+    pie: "每个提醒只响一次。你可以随时关闭。",
+    notiNoticiaTitulo: ({ divisa }) => `重要新闻：${divisa}`,
+    notiNoticia: ({ titulo, min }) => `「${titulo}」约 ${min} 分钟后公布。`,
+    notiCorrelTitulo: "你的两个货币对走势相同",
+    notiCorrel: ({ a, b, r }) => `${a} 和 ${b}：相关系数 ${r}。同时开仓几乎是同一笔押注。`,
+    notiSpreadTitulo: ({ par }) => `点差偏高：${par}`,
+    notiSpread: ({ par, actual, normal }) => `${par} 现在 ${actual} 点；这几天正常是 ${normal}。`,
+    notiPie: "这不是信号。",
+  },
+
   vista: {
     sinLista: ({ total }) => `正在显示全部 ${total} 个货币对。如果你只交易其中几个，把它们选出来，扫描就只保留这些。`,
     elegir: '选择我的货币对',

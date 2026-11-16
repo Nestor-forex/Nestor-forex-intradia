@@ -49,6 +49,30 @@ export default {
   // Y `nota` no es letra pequena — dice que el ranking de fuerza y las
   // tarjetas de informacion NO se filtran, que es la diferencia entre «esto
   // no filtra» y «esto se nos olvido filtrar».
+  // AVISOS INTELIGENTES — los que la app manda sola (avisosInteligentes.js).
+  intel: {
+    titulo: "Smart alerts",
+    desc: "The app alerts you on its own about what happens around your pairs",
+    paraQue: "So you don’t have to keep watching: if strong news is coming for a currency you trade, if two of your pairs move almost the same, or if the spread of one of your pairs spikes, you get an alert on your phone. They don’t tell you what to do: they tell you what is happening, and the decision is yours.",
+    encendidos: ({ n }) => `On: ${n}`,
+    aviso: "These are NOT signals. None of these alerts says buy, sell or close: they only tell you what is happening.",
+    sinLista: "First choose your pairs in «My pairs» (above): these alerts only look at the pairs you follow.",
+    noticiasTitulo: "Strong news for your currencies",
+    noticiasDesc: ({ min }) => `Alerts you about ${min} minutes before a high-impact calendar event for a currency in your pairs. In those minutes price often moves a lot and the spread widens.`,
+    correlacionTitulo: "Two of your pairs move the same",
+    correlacionDesc: ({ r }) => `Alerts you if two pairs on your list have a correlation of ${r} or more (or −${r}). Opening both is almost the same bet twice. Measured by the swing app with daily candles.`,
+    spreadTitulo: "Spread spike on one of your pairs",
+    spreadDesc: ({ x }) => `Alerts you if the spread of one of your pairs is ${x} times or more above its normal level of recent days. It uses the real spread of a developer’s account, so it only works while the MT5 bridge is on.`,
+    pie: "Each alert rings only once. You can turn them off anytime.",
+    notiNoticiaTitulo: ({ divisa }) => `Strong news: ${divisa}`,
+    notiNoticia: ({ titulo, min }) => `«${titulo}» in about ${min} min.`,
+    notiCorrelTitulo: "Two of your pairs move the same",
+    notiCorrel: ({ a, b, r }) => `${a} and ${b}: correlation ${r}. Opening both is almost the same bet.`,
+    notiSpreadTitulo: ({ par }) => `High spread: ${par}`,
+    notiSpread: ({ par, actual, normal }) => `${par} is at ${actual} pips; normal these days is ${normal}.`,
+    notiPie: "Not a signal.",
+  },
+
   vista: {
     sinLista: ({ total }) => `You are seeing all ${total} pairs. If you trade only a few, pick them and the scan will keep just those.`,
     elegir: 'Pick my pairs',

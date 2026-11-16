@@ -134,6 +134,15 @@ export function useAvisos(uid, perfil) {
       })
     },
 
+    /**
+     * Enciende o apaga los avisos inteligentes (`avisosInteligentes.js`). Se
+     * guarda la LISTA de los encendidos; lo que no esté, está apagado.
+     */
+    async elegirIntel(tipos) {
+      const lista = [...new Set((Array.isArray(tipos) ? tipos : []).filter((x) => typeof x === 'string'))].slice(0, 3)
+      return guardar({ avisosInt: lista })
+    },
+
     /** Cambia la lista de pares seguidos. Vacía = todos. */
     async seguir(pares) {
       const lista = [...new Set((Array.isArray(pares) ? pares : []).filter((p) => typeof p === 'string'))]
