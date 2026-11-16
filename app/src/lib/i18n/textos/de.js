@@ -73,6 +73,31 @@ export default {
     notiPie: "Kein Signal.",
   },
 
+  // INSIGNIAS — disciplina y aprendizaje, nunca ganancias (insignias.js).
+  insig: {
+    titulo: "Deine Abzeichen",
+    desc: "Medaillen für disziplinierte Gewohnheiten, nie für Gewinne",
+    paraQue: "Trader, die lange durchhalten, sind nicht die, die am häufigsten richtig liegen, sondern die, die gute Gewohnheiten wiederholen: wissen, wie viel sie riskieren, jeden Trade notieren und aufhören, wenn ihre eigene Regel es sagt. Diese Abzeichen zeigen dir den Weg zu diesen Gewohnheiten, besonders am Anfang. Keines belohnt dich fürs Gewinnen oder fürs Mehrhandeln.",
+    llevas: "Erreicht:",
+    aviso: "Kein Abzeichen belohnt Gewinne, Treffer oder mehr Trades. Sie belohnen Gewohnheiten, die dein Konto schützen. Sie werden bei jedem Öffnen der App aus deinen eigenen Daten berechnet.",
+    perfilT: "Du weißt, wie viel du riskierst",
+    perfilD: "Vervollständige dein Risikoprofil (Kapital, Risiko pro Trade und deine zwei Bremsen) im Tab des Risikorechners.",
+    listaT: "Du weißt, was du handelst",
+    listaD: "Wähle deine Paarliste im Scan. Weniger Paare bedeuten weniger Rauschen.",
+    metodoT: "Deine Methode schriftlich",
+    metodoD: "Speichere eine Vorlage im Analysator: deine Werkzeuge und deine Art, den Stop-loss zu setzen, immer gleich.",
+    alertaT: "Lass dich vom Markt rufen",
+    alertaD: "Richte einen eigenen Alarm ein: Du legst das Niveau in Ruhe fest und musst nicht mehr auf den Bildschirm schauen.",
+    diarioT: "Beständiges Journal",
+    diarioD: ({ meta }) => `Notiere ${meta} Trades im Journal, ob Gewinn oder Verlust. Was nicht notiert wird, kann nicht überprüft werden.`,
+    porqueT: "Du schreibst auf, warum",
+    porqueD: ({ meta }) => `Notiere ${meta} Trades mit einer Notiz, warum du eingestiegen bist. Sie wieder zu lesen ist der günstigste Weg, aus Fehlern zu lernen.`,
+    frenoT: "Du respektierst deine Bremse",
+    frenoD: ({ meta }) => `Schließe ${meta} Handelstage ab, ohne nach Erreichen deiner Tagesbremse oder deiner Verlustserie einen weiteren Trade zu eröffnen. Ein Tag, an dem du sie nicht erreichst, zählt auch.`,
+    necesitaPerfil: "Braucht dein Risikoprofil, um gezählt zu werden.",
+    pie: "Wenn du Trades löschst, sinkt die Zählung: Sie wird aus dem berechnet, was da ist. Abzeichen für den Kurs und den Übungsmodus kommen, sobald es sie gibt.",
+  },
+
   vista: {
     sinLista: ({ total }) => `Du siehst alle ${total} Paare. Wenn du nur wenige handelst, wähle sie aus und der Marktüberblick zeigt nur diese.`,
     elegir: 'Meine Paare wählen',

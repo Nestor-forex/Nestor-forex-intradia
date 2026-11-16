@@ -88,6 +88,31 @@ export default {
     notiPie: "No es una señal.",
   },
 
+  // INSIGNIAS — disciplina y aprendizaje, nunca ganancias (insignias.js).
+  insig: {
+    titulo: "Tus insignias",
+    desc: "Medallas por hábitos de disciplina, nunca por ganar dinero",
+    paraQue: "Los traders que duran no son los que más aciertan: son los que repiten buenos hábitos — saber cuánto arriesgan, anotar cada operación y parar cuando su regla lo dice. Estas insignias te marcan el camino de esos hábitos, sobre todo si estás empezando. Ninguna te premia por ganar ni por operar más.",
+    llevas: "Conseguidas:",
+    aviso: "Ninguna insignia premia ganar dinero, acertar ni operar más. Premian hábitos que protegen tu cuenta. Se calculan con tus propios datos cada vez que abres la app.",
+    perfilT: "Sabes cuánto arriesgas",
+    perfilD: "Completa tu perfil de riesgo (capital, riesgo por operación y tus dos frenos) en la pestaña de la calculadora de riesgo.",
+    listaT: "Sabes qué operas",
+    listaD: "Elige tu lista de pares en el Barrido. Menos pares es menos ruido.",
+    metodoT: "Tu método por escrito",
+    metodoD: "Guarda una plantilla en el Analizador: tus herramientas y tu forma de poner el Stop-loss, siempre iguales.",
+    alertaT: "Que el mercado te llame",
+    alertaD: "Programa un aviso propio: decides el nivel en frío y dejas de mirar la pantalla.",
+    diarioT: "Diario constante",
+    diarioD: ({ meta }) => `Anota ${meta} operaciones en el Diario, ganes o pierdas. Lo que no se anota no se puede revisar.`,
+    porqueT: "Escribes por qué",
+    porqueD: ({ meta }) => `Anota ${meta} operaciones con una nota de por qué entraste. Releerlas es la forma más barata de aprender de tus errores.`,
+    frenoT: "Respetas tu freno",
+    frenoD: ({ meta }) => `Cierra ${meta} días de operaciones sin abrir otra después de tocar tu freno del día o tus pérdidas seguidas. Un día en que no lo tocas también cuenta.`,
+    necesitaPerfil: "Necesita tu perfil de riesgo para poder contarse.",
+    pie: "Si borras operaciones, la cuenta baja: se calcula con lo que hay. Las insignias del curso y del modo práctica llegarán cuando existan.",
+  },
+
   vista: {
     sinLista: ({ total }) => `Estás viendo los ${total} pares. Si operas solo unos cuantos, elígelos y el Barrido se queda con ésos.`,
     elegir: 'Elegir mis pares',

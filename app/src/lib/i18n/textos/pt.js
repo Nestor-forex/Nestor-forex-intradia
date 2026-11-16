@@ -73,6 +73,31 @@ export default {
     notiPie: "Não é um sinal.",
   },
 
+  // INSIGNIAS — disciplina y aprendizaje, nunca ganancias (insignias.js).
+  insig: {
+    titulo: "Suas insígnias",
+    desc: "Medalhas por hábitos de disciplina, nunca por ganhar dinheiro",
+    paraQue: "Os traders que duram não são os que mais acertam: são os que repetem bons hábitos — saber quanto arriscam, anotar cada operação e parar quando a própria regra manda. Estas insígnias mostram o caminho para esses hábitos, sobretudo se você está começando. Nenhuma premia ganhar nem operar mais.",
+    llevas: "Conquistadas:",
+    aviso: "Nenhuma insígnia premia ganhar dinheiro, acertar ou operar mais. Elas premiam hábitos que protegem sua conta. São calculadas com os seus próprios dados toda vez que você abre o app.",
+    perfilT: "Você sabe quanto arrisca",
+    perfilD: "Complete seu perfil de risco (capital, risco por operação e seus dois freios) na aba da calculadora de risco.",
+    listaT: "Você sabe o que opera",
+    listaD: "Escolha sua lista de pares na Varredura. Menos pares é menos ruído.",
+    metodoT: "Seu método por escrito",
+    metodoD: "Salve um modelo no Analisador: suas ferramentas e seu jeito de colocar o Stop-loss, sempre iguais.",
+    alertaT: "Que o mercado te chame",
+    alertaD: "Programe um alerta seu: você decide o nível com calma e para de olhar a tela.",
+    diarioT: "Diário constante",
+    diarioD: ({ meta }) => `Anote ${meta} operações no Diário, ganhando ou perdendo. O que não é anotado não pode ser revisado.`,
+    porqueT: "Você escreve o porquê",
+    porqueD: ({ meta }) => `Anote ${meta} operações com uma nota de por que entrou. Relê-las é o jeito mais barato de aprender com seus erros.`,
+    frenoT: "Você respeita seu freio",
+    frenoD: ({ meta }) => `Feche ${meta} dias de operações sem abrir outra depois de atingir seu freio do dia ou suas perdas seguidas. Um dia em que você não o atinge também conta.`,
+    necesitaPerfil: "Precisa do seu perfil de risco para ser contada.",
+    pie: "Se você apagar operações, a contagem cai: ela é calculada com o que existe. As insígnias do curso e do modo prática chegarão quando eles existirem.",
+  },
+
   vista: {
     sinLista: ({ total }) => `Você está vendo os ${total} pares. Se opera só alguns, escolha-os e a varredura fica só com esses.`,
     elegir: 'Escolher meus pares',

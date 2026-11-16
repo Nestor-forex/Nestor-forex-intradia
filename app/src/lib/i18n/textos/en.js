@@ -73,6 +73,31 @@ export default {
     notiPie: "Not a signal.",
   },
 
+  // INSIGNIAS — disciplina y aprendizaje, nunca ganancias (insignias.js).
+  insig: {
+    titulo: "Your badges",
+    desc: "Medals for discipline habits, never for making money",
+    paraQue: "The traders who last are not the ones who are right most often: they are the ones who repeat good habits — knowing how much they risk, logging every trade and stopping when their own rule says so. These badges mark the path to those habits, especially if you are starting out. None rewards you for winning or for trading more.",
+    llevas: "Earned:",
+    aviso: "No badge rewards making money, being right or trading more. They reward habits that protect your account. They are calculated from your own data every time you open the app.",
+    perfilT: "You know how much you risk",
+    perfilD: "Complete your risk profile (capital, risk per trade and your two brakes) in the risk calculator tab.",
+    listaT: "You know what you trade",
+    listaD: "Choose your list of pairs in the Scan. Fewer pairs means less noise.",
+    metodoT: "Your method in writing",
+    metodoD: "Save a template in the Analyzer: your tools and your way of placing the Stop-loss, always the same.",
+    alertaT: "Let the market call you",
+    alertaD: "Set up your own alert: you decide the level calmly and stop watching the screen.",
+    diarioT: "Steady journal",
+    diarioD: ({ meta }) => `Log ${meta} trades in the Journal, win or lose. What is not logged cannot be reviewed.`,
+    porqueT: "You write down why",
+    porqueD: ({ meta }) => `Log ${meta} trades with a note on why you entered. Rereading them is the cheapest way to learn from your mistakes.`,
+    frenoT: "You respect your brake",
+    frenoD: ({ meta }) => `Close ${meta} trading days without opening another trade after hitting your daily brake or your losing streak. A day when you do not hit it also counts.`,
+    necesitaPerfil: "Needs your risk profile to be counted.",
+    pie: "If you delete trades, the count goes down: it is calculated from what is there. Badges for the course and the practice mode will come when those exist.",
+  },
+
   vista: {
     sinLista: ({ total }) => `You are seeing all ${total} pairs. If you trade only a few, pick them and the scan will keep just those.`,
     elegir: 'Pick my pairs',

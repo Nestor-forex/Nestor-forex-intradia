@@ -308,6 +308,11 @@ export const GEMELOS = [
   // coleccion sale el Diario, y eso vive en `useTrades.js` (PRIMO).
   'src/lib/guardianRiesgo.js',
   'src/components/GuardianRiesgo.jsx',
+  // Las insignias (punto 4, 2026-11-16): solo miran el Diario y la ficha,
+  // que son iguales en las dos apps.
+  'src/lib/insignias.js',
+  'src/components/Insignias.jsx',
+  'scripts/prueba-insignias.mjs',
   'scripts/prueba-guardian.mjs',
   // El Analizador (fase 3, 2026-11-13). Las cuentas, la pantalla, el guardado
   // de plantillas y su prueba son iguales en las dos: lo que cada app sabe de

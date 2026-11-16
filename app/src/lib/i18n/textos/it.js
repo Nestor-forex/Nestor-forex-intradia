@@ -69,6 +69,31 @@ export default {
     notiPie: "Non è un segnale.",
   },
 
+  // INSIGNIAS — disciplina y aprendizaje, nunca ganancias (insignias.js).
+  insig: {
+    titulo: "I tuoi badge",
+    desc: "Medaglie per abitudini di disciplina, mai per guadagnare",
+    paraQue: "I trader che durano non sono quelli che indovinano più spesso: sono quelli che ripetono buone abitudini — sapere quanto rischiano, annotare ogni operazione e fermarsi quando la propria regola lo dice. Questi badge ti indicano la strada verso queste abitudini, soprattutto se stai iniziando. Nessuno ti premia per aver guadagnato o per fare più operazioni.",
+    llevas: "Ottenuti:",
+    aviso: "Nessun badge premia il guadagno, l’indovinare o fare più operazioni. Premiano abitudini che proteggono il tuo conto. Si calcolano con i tuoi dati ogni volta che apri l’app.",
+    perfilT: "Sai quanto rischi",
+    perfilD: "Completa il tuo profilo di rischio (capitale, rischio per operazione e i tuoi due freni) nella scheda del calcolatore di rischio.",
+    listaT: "Sai cosa fai trading",
+    listaD: "Scegli la tua lista di coppie nella Scansione. Meno coppie, meno rumore.",
+    metodoT: "Il tuo metodo per iscritto",
+    metodoD: "Salva un modello nell’Analizzatore: i tuoi strumenti e il tuo modo di mettere lo Stop-loss, sempre uguali.",
+    alertaT: "Che sia il mercato a chiamarti",
+    alertaD: "Imposta un tuo avviso: decidi il livello a mente fredda e smetti di guardare lo schermo.",
+    diarioT: "Diario costante",
+    diarioD: ({ meta }) => `Annota ${meta} operazioni nel Diario, in guadagno o in perdita. Ciò che non si annota non si può rivedere.`,
+    porqueT: "Scrivi il perché",
+    porqueD: ({ meta }) => `Annota ${meta} operazioni con una nota sul perché sei entrato. Rileggerle è il modo più economico per imparare dai tuoi errori.`,
+    frenoT: "Rispetti il tuo freno",
+    frenoD: ({ meta }) => `Chiudi ${meta} giornate di trading senza aprire un’altra operazione dopo aver toccato il tuo freno giornaliero o le tue perdite consecutive. Anche un giorno in cui non lo tocchi conta.`,
+    necesitaPerfil: "Serve il tuo profilo di rischio per contarlo.",
+    pie: "Se cancelli operazioni, il conteggio scende: si calcola con ciò che c’è. I badge del corso e della modalità pratica arriveranno quando esisteranno.",
+  },
+
   vista: {
     sinLista: ({ total }) => `Stai vedendo tutte le ${total} coppie. Se ne operi solo alcune, scegliile e la scansione terrà solo quelle.`,
     elegir: 'Scegli le mie coppie',

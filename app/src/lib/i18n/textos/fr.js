@@ -73,6 +73,31 @@ export default {
     notiPie: "Ce n’est pas un signal.",
   },
 
+  // INSIGNIAS — disciplina y aprendizaje, nunca ganancias (insignias.js).
+  insig: {
+    titulo: "Tes badges",
+    desc: "Des médailles pour des habitudes de discipline, jamais pour gagner de l’argent",
+    paraQue: "Les traders qui durent ne sont pas ceux qui ont le plus souvent raison : ce sont ceux qui répètent de bonnes habitudes — savoir combien ils risquent, noter chaque opération et s’arrêter quand leur propre règle le dit. Ces badges te montrent le chemin vers ces habitudes, surtout si tu débutes. Aucun ne te récompense pour avoir gagné ni pour trader plus.",
+    llevas: "Obtenus :",
+    aviso: "Aucun badge ne récompense le gain, la justesse ni le fait de trader plus. Ils récompensent des habitudes qui protègent ton compte. Ils sont calculés avec tes propres données chaque fois que tu ouvres l’app.",
+    perfilT: "Tu sais combien tu risques",
+    perfilD: "Complète ton profil de risque (capital, risque par opération et tes deux freins) dans l’onglet de la calculatrice de risque.",
+    listaT: "Tu sais ce que tu trades",
+    listaD: "Choisis ta liste de paires dans le Balayage. Moins de paires, c’est moins de bruit.",
+    metodoT: "Ta méthode par écrit",
+    metodoD: "Enregistre un modèle dans l’Analyseur : tes outils et ta façon de placer le Stop-loss, toujours les mêmes.",
+    alertaT: "Que le marché t’appelle",
+    alertaD: "Programme ta propre alerte : tu décides du niveau à froid et tu arrêtes de regarder l’écran.",
+    diarioT: "Journal régulier",
+    diarioD: ({ meta }) => `Note ${meta} opérations dans le Journal, gagnantes ou perdantes. Ce qui n’est pas noté ne peut pas être revu.`,
+    porqueT: "Tu écris pourquoi",
+    porqueD: ({ meta }) => `Note ${meta} opérations avec une note expliquant pourquoi tu es entré. Les relire est la façon la moins chère d’apprendre de tes erreurs.`,
+    frenoT: "Tu respectes ton frein",
+    frenoD: ({ meta }) => `Termine ${meta} journées de trading sans ouvrir d’autre opération après avoir touché ton frein du jour ou ta série de pertes. Un jour où tu ne le touches pas compte aussi.`,
+    necesitaPerfil: "Il faut ton profil de risque pour le compter.",
+    pie: "Si tu supprimes des opérations, le compte baisse : il est calculé avec ce qu’il y a. Les badges du cours et du mode entraînement arriveront quand ils existeront.",
+  },
+
   vista: {
     sinLista: ({ total }) => `Vous voyez les ${total} paires. Si vous n’en tradez que quelques-unes, choisissez-les et le balayage ne gardera que celles-là.`,
     elegir: 'Choisir mes paires',

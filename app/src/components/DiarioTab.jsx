@@ -3,13 +3,14 @@ import { PAIR_NAMES, monedasDe } from '../lib/pairs'
 import { useT } from '../lib/i18n'
 import Diagnostico from './Diagnostico'
 import GuardianRiesgo from './GuardianRiesgo'
+import Insignias from './Insignias'
 import ImportarBroker from './ImportarBroker'
 import { diaLocal } from '../lib/guardianRiesgo'
 import { leerPerfil } from '../lib/perfilRiesgo'
 
 const esAbierta = (t) => t.estado === 'abierta'
 
-export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCerrar, prellenar, onPrellenado, onVerSenales, perfilRiesgo, onIrAlPerfil }) {
+export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCerrar, prellenar, onPrellenado, onVerSenales, perfilRiesgo, onIrAlPerfil, ficha }) {
   const tr = useT()
   const [par, setPar] = useState(PAIR_NAMES[0])
   const [dir, setDir] = useState('Compra')
@@ -209,6 +210,8 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
       {/* Debajo del importador y encima de la lista: es el resumen de lo que
           hay en esa lista. No se pinta si no hay operaciones cerradas. */}
       <Diagnostico trades={trades} />
+      {/* Disciplina y aprendizaje, nunca ganancias (`insignias.js`). */}
+      <Insignias trades={trades} ficha={ficha} />
 
       {avisoRiesgo.length > 0 && (
         <div style={{ padding: 12, border: '1px solid oklch(0.4 0.06 85)', borderRadius: 8, background: 'oklch(0.22 0.03 85)' }}>
