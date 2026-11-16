@@ -17,9 +17,9 @@ import TarjetaPlegable from './TarjetaPlegable'
 
 const TEXTO = { fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }
 
-export default function Insignias({ trades, ficha }) {
+export default function Insignias({ trades, ficha, practica }) {
   const tr = useT()
-  const lista = useMemo(() => calcularInsignias(trades, ficha), [trades, ficha])
+  const lista = useMemo(() => calcularInsignias(trades, ficha, practica), [trades, ficha, practica])
   const hechas = conseguidas(lista)
 
   return (

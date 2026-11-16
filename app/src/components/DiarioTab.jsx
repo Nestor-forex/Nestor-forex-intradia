@@ -4,13 +4,14 @@ import { useT } from '../lib/i18n'
 import Diagnostico from './Diagnostico'
 import GuardianRiesgo from './GuardianRiesgo'
 import Insignias from './Insignias'
+import Practica from './Practica'
 import ImportarBroker from './ImportarBroker'
 import { diaLocal } from '../lib/guardianRiesgo'
 import { leerPerfil } from '../lib/perfilRiesgo'
 
 const esAbierta = (t) => t.estado === 'abierta'
 
-export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCerrar, prellenar, onPrellenado, onVerSenales, perfilRiesgo, onIrAlPerfil, ficha }) {
+export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCerrar, prellenar, onPrellenado, onVerSenales, perfilRiesgo, onIrAlPerfil, ficha, practica = [], onBorrarPractica, onIrAnalizar }) {
   const tr = useT()
   const [par, setPar] = useState(PAIR_NAMES[0])
   const [dir, setDir] = useState('Compra')
@@ -211,7 +212,8 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
           hay en esa lista. No se pinta si no hay operaciones cerradas. */}
       <Diagnostico trades={trades} />
       {/* Disciplina y aprendizaje, nunca ganancias (`insignias.js`). */}
-      <Insignias trades={trades} ficha={ficha} />
+      <Insignias trades={trades} ficha={ficha} practica={practica} />
+      <Practica ops={practica} onBorrar={onBorrarPractica} onIrAnalizar={onIrAnalizar} />
 
       {avisoRiesgo.length > 0 && (
         <div style={{ padding: 12, border: '1px solid oklch(0.4 0.06 85)', borderRadius: 8, background: 'oklch(0.22 0.03 85)' }}>
