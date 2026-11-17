@@ -1068,6 +1068,7 @@ export default {
     ayuda: "Muda como o app se organiza. No PC ou notebook a tela não gira: os cartões se distribuem em colunas. No telefone ou tablet, gire o aparelho (se o app estiver instalado no Android, ele tenta girar sozinho).",
   },
   precioF: {
+    conectando: "Conectando ao preço por segundo do MT5…",
     alSegundo: ({ hora }) => `Preço do MT5 ao segundo, de uma conta real do desenvolvedor (último: ${hora}). Se a ponte desligar, o app passa sozinho para o Twelve Data e te avisa.`,
     alSegundoCabecera: "Preço do MT5 ao segundo, de uma conta real do desenvolvedor, enquanto a ponte estiver ligada. Se desligar, o app passa sozinho para o Twelve Data e te avisa.",
     mt5: ({ hora, min }) => `Preço do MT5, de uma conta real do desenvolvedor: foto das ${hora} (há ${min} min). A ponte publica a cada 5 minutos, então pode estar alguns minutos atrás do mercado.`,

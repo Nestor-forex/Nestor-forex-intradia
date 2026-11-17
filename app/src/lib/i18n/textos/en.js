@@ -1068,6 +1068,7 @@ export default {
     ayuda: "Changes how the app is laid out. On a PC or laptop the screen does not rotate: the cards are spread into columns. On a phone or tablet, turn the device (if the app is installed on Android, it tries to rotate by itself).",
   },
   precioF: {
+    conectando: "Connecting to the MT5 per-second price…",
     alSegundo: ({ hora }) => `Second-by-second MT5 price from a real account of the developer (latest: ${hora}). If the bridge goes off, the app switches to Twelve Data on its own and tells you.`,
     alSegundoCabecera: "Second-by-second MT5 price from a real account of the developer, while the bridge is on. If it goes off, the app switches to Twelve Data on its own and tells you.",
     mt5: ({ hora, min }) => `MT5 price, from a real account of the developer: snapshot at ${hora} (${min} min ago). The bridge publishes every 5 minutes, so it can be a few minutes behind the market.`,

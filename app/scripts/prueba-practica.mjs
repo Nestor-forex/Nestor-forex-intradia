@@ -25,6 +25,7 @@ import {
   costesPractica,
   limpiarMarcas,
   marcasDeAnalisis,
+  HERRAMIENTAS_GRAFICA,
   nochesDeSwap,
   msDeVela,
   nivelesCoherentes,
@@ -312,7 +313,17 @@ console.log('\n15 · El precio con su fuente y la vista (2026-11-17)')
   ok(!suyo.test(fuente + es), 'nunca se nombra al bróker')
   const barrido = leer('src/components/BarridoTab.jsx')
   ok(/<FuentePrecio /.test(barrido) && /<FuentePrecio /.test(an), 'el barrido y el Analizador dicen de dónde sale el precio')
-  ok(/fichaConPrecioVivo\(/.test(an) && /cotizacion:/.test(an) && /marcas: marcasDeAnalisis\(a\)/.test(an), 'el Analizador usa el precio de MT5 y guarda costes y marcas en la práctica')
+  ok(/fichaConPrecioVivo\(/.test(an) && /cotizacion:/.test(an) && /marcas: marcasDeAnalisis\(/.test(an), 'el Analizador usa el precio de MT5 y guarda costes y marcas en la práctica')
+  // ⚠️ 2026-11-17: la gráfica salía «muy sencilla» porque solo guardaba lo que
+  // estaba encendido. Ahora se guardan TODAS las que se dibujan.
+  ok(/marcas: marcasDeAnalisis\(analizarCon\(HERRAMIENTAS_GRAFICA/.test(an), 'la práctica guarda TODAS las herramientas que se dibujan, no solo las encendidas')
+  ok(!/marcas: marcasDeAnalisis\(a\)/.test(an), 'y ya no solo las de la tarjeta')
+  const fuenteMarcas = leer('src/lib/practica.js').match(/export function marcasDeAnalisis[\s\S]*?\n}\n/)?.[0] ?? ''
+  const familias = [...fuenteMarcas.matchAll(/h\.(\w+)/g)].map((x) => x[1])
+  const sinLista = [...new Set(familias)].filter((x) => !HERRAMIENTAS_GRAFICA.includes(x))
+  ok(familias.length > 0 && sinLista.length === 0, `toda herramienta que marcasDeAnalisis dibuja está en HERRAMIENTAS_GRAFICA${sinLista.length ? ' (faltan: ' + sinLista.join(', ') + ')' : ''}`)
+  const sumaMax = 2 + 5 + 2 + 7 + 3 + 5 + 4
+  ok(sumaMax <= MARCAS_MAX, `con todas encendidas caben (${sumaMax} de ${MARCAS_MAX})`)
 }
 
 console.log(mal ? `\n✗ ${mal} comprobaciones fallaron\n` : '\n✓ todo bien\n')

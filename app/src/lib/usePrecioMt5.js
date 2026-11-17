@@ -55,7 +55,12 @@ import { crearEscuchaVivo } from './escuchaVivo.js'
 const escucha = crearEscuchaVivo({
   suscribirDoc: (alDato, alError) =>
     db ? onSnapshot(doc(db, 'vivo', 'precios'), (s) => alDato(s.exists() ? s.data() : null), alError) : () => {},
-  suscribirSesion: (alCambiar) => (auth ? onAuthStateChanged(auth, alCambiar) : () => {}),
+  // Sin Firebase configurado no hay sesión que esperar: se resuelve al momento.
+  suscribirSesion: (alCambiar) => {
+    if (auth) return onAuthStateChanged(auth, alCambiar)
+    alCambiar()
+    return () => {}
+  },
   haySesion: () => Boolean(db && auth?.currentUser),
   visible: () => typeof document === 'undefined' || document.visibilityState !== 'hidden',
 })
@@ -68,11 +73,14 @@ function alCambiarVisibilidad() {
 
 /**
  * Devuelve lo mismo que `useMT5Quotes` más `alSegundo` (true si el precio que
- * se ve es el de Firestore, de hace menos de EDAD_MAX_VIVO_S segundos).
+ * se ve es el de Firestore, de hace menos de EDAD_MAX_VIVO_S segundos) y
+ * `esperandoVivo` (true mientras todavía no se sabe si hay precio al segundo:
+ * la pantalla dice «conectando» en vez de enseñar la foto de 5 minutos).
  */
 export function usePrecioMt5({ pares = PAIR_NAMES, cadaMs = 1000 } = {}) {
   const archivo = useMT5Quotes({ pares })
   const [vivo, setVivo] = useState(escucha.ultimo)
+  const [esperandoVivo, setEsperandoVivo] = useState(escucha.esperandoAlAbrir)
   // Un reloj que obliga a recalcular la edad aunque no llegue nada: si el
   // puente se apaga no llegan más fotos, y sin esto la app seguiría diciendo
   // «al segundo» con un precio que ya no se mueve.
@@ -81,7 +89,26 @@ export function usePrecioMt5({ pares = PAIR_NAMES, cadaMs = 1000 } = {}) {
   useEffect(() => {
     let ultimaVez = 0
     let pendiente = null
+    // `null`: la primera llamada (justo después de apuntarse) siempre pinta.
+    let esperabaAntes = null
+    let habiaDato = escucha.ultimo() !== null
     const alLlegar = () => {
+      const espera = escucha.esperando()
+      const hayDato = escucha.ultimo() !== null
+      // ⚠️ Lo que cambia QUÉ se dice (deja de esperar, o llega el primer
+      // precio, o se va) se pinta AL MOMENTO, sin esperar los `cadaMs`. Si no,
+      // la cabecera, que se redibuja cada 15 s, diría «conectando» hasta 15
+      // segundos después de saberlo.
+      if (espera !== esperabaAntes || hayDato !== habiaDato) {
+        esperabaAntes = espera
+        habiaDato = hayDato
+        clearTimeout(pendiente)
+        pendiente = null
+        ultimaVez = Date.now()
+        setEsperandoVivo(espera)
+        setVivo(escucha.ultimo())
+        return
+      }
       const falta = cadaMs - (Date.now() - ultimaVez)
       if (falta <= 0) {
         ultimaVez = Date.now()
@@ -95,6 +122,8 @@ export function usePrecioMt5({ pares = PAIR_NAMES, cadaMs = 1000 } = {}) {
       }
     }
     const desapuntar = escucha.apuntar(alLlegar)
+    // Por si ya se sabía todo antes de apuntarse (otra pantalla abrió la escucha).
+    alLlegar()
     document.addEventListener('visibilitychange', alCambiarVisibilidad)
     const reloj = setInterval(() => setTic((n) => n + 1), 15_000)
 
@@ -115,5 +144,5 @@ export function usePrecioMt5({ pares = PAIR_NAMES, cadaMs = 1000 } = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `pares` es una lista fija
   }, [vivo])
 
-  return combinarConVivo(archivo, vivoNorm)
+  return { ...combinarConVivo(archivo, vivoNorm), esperandoVivo }
 }
