@@ -40,44 +40,28 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { doc, onSnapshot } from 'firebase/firestore'
-import { db } from './firebase'
+import { onAuthStateChanged } from 'firebase/auth'
+import { auth, db } from './firebase'
 import { PAIR_NAMES } from './pairs.js'
 import { normalizarRespuesta, useMT5Quotes } from './useMT5Quotes'
 import { combinarConVivo } from './precioVivo'
+import { crearEscuchaVivo } from './escuchaVivo.js'
 
 // ── La escucha compartida ────────────────────────────────────────────────
-let ultimo = null
-const oyentes = new Set()
-let dejarDeEscuchar = null
-
-function avisarATodos() {
-  for (const f of oyentes) f()
-}
-
-function escuchar() {
-  if (dejarDeEscuchar || !db || !oyentes.size) return
-  if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return
-  dejarDeEscuchar = onSnapshot(
-    doc(db, 'vivo', 'precios'),
-    (s) => {
-      ultimo = s.exists() ? s.data() : null
-      avisarATodos()
-    },
-    () => {
-      // Sin permiso o sin red: se para y se reintenta al volver a la app.
-      dejarDeEscuchar = null
-    },
-  )
-}
-
-function parar() {
-  if (dejarDeEscuchar) dejarDeEscuchar()
-  dejarDeEscuchar = null
-}
+// La lógica vive en `escuchaVivo.js` (probada sin navegador). Aquí solo se le
+// dan las piezas de Firebase. ⚠️ Sin sesión NO se escucha, y al entrar se
+// empieza sola: la primera versión escuchaba desde la pantalla de entrada,
+// Firestore decía «sin permiso» y nunca se volvía a intentar.
+const escucha = crearEscuchaVivo({
+  suscribirDoc: (alDato, alError) =>
+    db ? onSnapshot(doc(db, 'vivo', 'precios'), (s) => alDato(s.exists() ? s.data() : null), alError) : () => {},
+  suscribirSesion: (alCambiar) => (auth ? onAuthStateChanged(auth, alCambiar) : () => {}),
+  haySesion: () => Boolean(db && auth?.currentUser),
+  visible: () => typeof document === 'undefined' || document.visibilityState !== 'hidden',
+})
 
 function alCambiarVisibilidad() {
-  if (document.visibilityState === 'hidden') parar()
-  else escuchar()
+  escucha.alCambiarVisibilidad()
 }
 
 // ── El hook ──────────────────────────────────────────────────────────────
@@ -88,7 +72,7 @@ function alCambiarVisibilidad() {
  */
 export function usePrecioMt5({ pares = PAIR_NAMES, cadaMs = 1000 } = {}) {
   const archivo = useMT5Quotes({ pares })
-  const [vivo, setVivo] = useState(ultimo)
+  const [vivo, setVivo] = useState(escucha.ultimo)
   // Un reloj que obliga a recalcular la edad aunque no llegue nada: si el
   // puente se apaga no llegan más fotos, y sin esto la app seguiría diciendo
   // «al segundo» con un precio que ya no se mueve.
@@ -101,28 +85,24 @@ export function usePrecioMt5({ pares = PAIR_NAMES, cadaMs = 1000 } = {}) {
       const falta = cadaMs - (Date.now() - ultimaVez)
       if (falta <= 0) {
         ultimaVez = Date.now()
-        setVivo(ultimo)
+        setVivo(escucha.ultimo())
       } else if (!pendiente) {
         pendiente = setTimeout(() => {
           pendiente = null
           ultimaVez = Date.now()
-          setVivo(ultimo)
+          setVivo(escucha.ultimo())
         }, falta)
       }
     }
-    oyentes.add(alLlegar)
-    if (oyentes.size === 1) document.addEventListener('visibilitychange', alCambiarVisibilidad)
-    escuchar()
+    const desapuntar = escucha.apuntar(alLlegar)
+    document.addEventListener('visibilitychange', alCambiarVisibilidad)
     const reloj = setInterval(() => setTic((n) => n + 1), 15_000)
 
     return () => {
-      oyentes.delete(alLlegar)
+      desapuntar()
       clearTimeout(pendiente)
       clearInterval(reloj)
-      if (!oyentes.size) {
-        parar()
-        document.removeEventListener('visibilitychange', alCambiarVisibilidad)
-      }
+      document.removeEventListener('visibilitychange', alCambiarVisibilidad)
     }
   }, [cadaMs])
 
