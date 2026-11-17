@@ -325,6 +325,8 @@ export const GEMELOS = [
   'src/lib/precioVivo.js',
   // El precio al segundo (2026-11-17): la misma escucha de `vivo/precios` en las dos.
   'src/lib/usePrecioMt5.js',
+  'src/lib/escuchaVivo.js',
+  'scripts/prueba-escucha-vivo.mjs',
   'src/components/FuentePrecio.jsx',
   // La vista vertical u horizontal (punto 11, 2026-11-17): el acomodo es el
   // mismo en las dos apps.
