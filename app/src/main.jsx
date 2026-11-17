@@ -4,6 +4,11 @@ import './index.css'
 import App from './App.jsx'
 import { IdiomaProvider } from './lib/i18n'
 import RedDeSeguridad from './components/RedDeSeguridad.jsx'
+import { aplicarVista, leerVista } from './lib/vistaPantalla.js'
+
+// La vista (vertical u horizontal) se pone ANTES de dibujar nada: si no, la
+// app arrancaría en una columna y saltaría a varias medio segundo después.
+aplicarVista(leerVista())
 
 // `RedDeSeguridad` va POR FUERA de `IdiomaProvider`, no por dentro.
 //

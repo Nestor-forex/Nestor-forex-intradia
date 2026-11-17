@@ -30,6 +30,8 @@ import { useMembers } from './lib/useMembers'
 import { useTrades } from './lib/useTrades'
 import { usePractica } from './lib/usePractica'
 import { useMarketData } from './lib/useMarketData'
+import { useMT5Quotes } from './lib/useMT5Quotes'
+import { fuenteDePrecios } from './lib/precioVivo'
 import { useCalendario } from './lib/useCalendario'
 import { decidirModo, filtrarMercado, guardarModo, leerModo, resumenVista } from './lib/vistaPares'
 import { useAvisos } from './lib/useAvisos'
@@ -58,6 +60,10 @@ export default function App() {
   const t = useT()
   const { authUser, cargandoAuth, perfil, perfilEstado, esAdmin, registrar, ingresar, salir } = useAuthUser()
   const mercado = useMarketData()
+  // De dónde sale el precio que se ve: MT5 si el puente está encendido y su
+  // foto es reciente, Twelve Data si no. Ver `lib/precioVivo.js`.
+  const mt5 = useMT5Quotes()
+  const fp = fuenteDePrecios(mt5)
   // El calendario va en su propio archivo y con su propio horario: el barrido
   // se publica cada 30 minutos y el calendario cada cuatro horas TODOS los
   // días, porque el feed cubre la semana en curso y cambia de semana el domingo.
@@ -229,7 +235,7 @@ export default function App() {
         {authUser && perfilEstado === 'aprobado' && !detalle && tab !== 'tablero' && (
           <>
             <Header nombreApp={NOMBRE_APP} saludo={esAdmin ? t('comun.administrador') : authUser.email || ''} onSalir={salirYVolver} />
-            <main style={{ flex: 1, padding: '18px 18px 96px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <main className="nf-main" style={{ flex: 1, padding: '18px 18px 96px' }}>
               {tab === 'barrido' && (
                 <>
                   {filtroPares}
@@ -245,6 +251,8 @@ export default function App() {
                     monedas={vista.monedas}
                     pares={vista.pares}
                     corte={vista.corte}
+                    fp={fp}
+                    mt5Hora={mt5.actualizadoEl}
                     onVerTablero={() => setTab('tablero')}
                   />
                   {/* Va aquí y no en una pestaña propia porque es donde
@@ -386,6 +394,8 @@ export default function App() {
             sesion={vista.sesion}
             setups={vista.setups}
             corte={vista.corte}
+                    fp={fp}
+                    mt5Hora={mt5.actualizadoEl}
           />
         )}
       </div>

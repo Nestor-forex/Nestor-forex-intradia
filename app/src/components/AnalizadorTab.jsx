@@ -24,10 +24,12 @@ import { estadoDelDia } from '../lib/guardianRiesgo'
 import { monedasDe } from '../lib/pairs'
 import { useTasas } from '../lib/useTasas'
 import { useMT5Quotes } from '../lib/useMT5Quotes'
+import { fichaConPrecioVivo, fuenteDePrecios, velaDeEntradaMt5 } from '../lib/precioVivo'
+import FuentePrecio from './FuentePrecio'
 import { useEstacionalidad } from '../lib/useEstacionalidad'
 import { usePlantillas } from '../lib/usePlantillas'
 import { APP, clave } from '../lib/identidad'
-import { MAX_ABIERTAS, fichaPractica } from '../lib/practica'
+import { MAX_ABIERTAS, fichaPractica, marcasDeAnalisis } from '../lib/practica'
 
 const TEXTO = { fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }
 const ROTULO = { fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.4 }
@@ -184,10 +186,20 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
     setMsgPl(null)
   }
 
+  // El precio de ahora (2026-11-17): con el puente encendido, la entrada es el
+  // ASK para comprar y el BID para vender, como en el bróker de verdad, y todas
+  // las cuentas de la tarjeta (niveles, distancias, %B…) salen de ahí. Con el
+  // puente apagado, del cierre de Twelve Data, y la tarjeta lo dice.
+  const fp = fuenteDePrecios(mt5)
+  const { ficha: fichaViva, entrada } = useMemo(
+    () => fichaConPrecioVivo(fichaPar, { fuente: fp.fuente, quotes: mt5.quotes, lado }),
+    [fichaPar, fp.fuente, mt5.quotes, lado],
+  )
+
   const a = useMemo(
     () =>
       armarAnalisis({
-        ficha: fichaPar,
+        ficha: fichaViva,
         lado,
         metodo,
         // Solo las que esta app ofrece ahora: una plantilla guardada con el COT
@@ -206,7 +218,7 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
         estacionalidad,
         trades,
       }),
-    [fichaPar, lado, metodo, herr, disponibles, perfil, ratesUSD, cal, tasasPub, freno, mt5, cot, oro, correlaciones, estacionalidad, trades],
+    [fichaViva, lado, metodo, herr, disponibles, perfil, ratesUSD, cal, tasasPub, freno, mt5, cot, oro, correlaciones, estacionalidad, trades],
   )
 
   const guardarPl = async () => {
@@ -336,6 +348,13 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
           </span>
           <N>{fmt(a.precio, d)}</N>
         </div>
+        {/* De dónde sale ese precio y de qué hora es. */}
+        <FuentePrecio fp={fp} actualizadoEl={mt5.actualizadoEl} style={{ marginTop: -6 }} />
+        {a.lado && (
+          <p style={{ ...TEXTO, fontSize: 11.5, color: 'var(--text-muted)', marginTop: -6 }}>
+            {t(entrada ? (entrada.lado === 'ask' ? 'precioF.entradaAsk' : 'precioF.entradaBid') : 'precioF.entradaTwelve')}
+          </p>
+        )}
 
         {(a.freno === 'freno' || a.freno === 'cerca') && (
           <p style={{ ...TEXTO, color: a.freno === 'freno' ? 'var(--red)' : 'var(--amber)', fontWeight: 600 }}>
@@ -795,7 +814,16 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
             style={{ minHeight: 44 }}
             disabled={practicaEstado === 'guardando'}
             onClick={async () => {
-              const op = fichaPractica({ app: APP, analisis: a, metodo, vela })
+              const op = fichaPractica({
+                app: APP,
+                analisis: a,
+                metodo,
+                vela: entrada ? velaDeEntradaMt5(APP, vela) : vela,
+                entrada,
+                cotizacion: mt5.quotes?.[a.par] ?? null,
+                fotoEl: mt5.actualizadoEl,
+                marcas: marcasDeAnalisis(a),
+              })
               if (!op) return setPracticaEstado('error')
               setPracticaEstado('guardando')
               setPracticaEstado(await onPracticar(op))

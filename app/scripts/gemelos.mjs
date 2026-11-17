@@ -319,6 +319,15 @@ export const GEMELOS = [
   'src/lib/usePractica.js',
   'src/components/Practica.jsx',
   'src/components/GraficoPractica.jsx',
+  // El precio con su fuente (2026-11-17): MT5 si el puente está encendido,
+  // Twelve Data si no, y la pantalla dice cuál y de qué hora. El puente es uno
+  // para las dos apps.
+  'src/lib/precioVivo.js',
+  'src/components/FuentePrecio.jsx',
+  // La vista vertical u horizontal (punto 11, 2026-11-17): el acomodo es el
+  // mismo en las dos apps.
+  'src/lib/vistaPantalla.js',
+  'src/components/SelectorVista.jsx',
   'scripts/prueba-practica.mjs',
   'scripts/prueba-guardian.mjs',
   // El Analizador (fase 3, 2026-11-13). Las cuentas, la pantalla, el guardado
