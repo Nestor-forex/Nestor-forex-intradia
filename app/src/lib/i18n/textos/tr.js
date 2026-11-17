@@ -98,6 +98,18 @@ export default {
 
   // MODO PRÁCTICA — operaciones sin dinero que la app sigue sola (practica.js).
   prac: {
+    riesgoL: "Riske ettiğin:",
+    loteL: "lot",
+    grafVer: "Grafiği gör",
+    grafOcultar: "Grafiği gizle",
+    grafEntrada: "GİRİŞ",
+    grafAhora: "ŞİMDİ",
+    grafSinDatos: "Bu işlemi çizecek mum henüz yok. Tarama yeniden yayımlanınca görünür.",
+    grafAria: ({ par, entrada, sl, tp }) => `${par} alıştırma işlemi grafiği: giriş ${entrada}, Stop-loss ${sl}, Take-profit ${tp}`,
+    grafPie: ({ n }) => `Paritenin son ${n} mumu; uygulamanın kazandı mı kaybetti mi diye karar verdiği mumların aynısı. Kesikli dikey çizgi girdiğin mum; renkli daire, işlemin bittiği yer.`,
+    grafAntes: ({ n }) => `Paritenin son ${n} mumu. Girişin görünen ilk mumdan önceydi, bu yüzden işareti çıkmıyor.`,
+    dineroL: "Profilindeki kadar riske etseydin:",
+    dineroNota: ({ n, total }) => `${total} işlemden ${n} tanesini sayar (dolar riskini kaydedenler). Varsayımsaldır: spread ve swap düşülmez.`,
     titulo: "Pratik modu",
     desc: "Parasız işlem: uygulama işlemi gerçek fiyatlarla kendi takip eder",
     paraQue: "Para riske atmadan bir işlem yöntemini denemek için. İşlemi Analizcide kurarsın, uygulama Stop-loss ya da Take-profit seviyesine değene kadar gerçek fiyatlarla takip eder. Zamanla, para koymadan önce bu yöntemin işe yarayıp yaramadığını görürsün; deneyimli trader’lar her yeni fikirde bunu yapar.",
@@ -146,6 +158,15 @@ export default {
     arrSinPermiso: "Listeni kaydetme izni henüz yok. Geliştiriciye haber ver.",
     arrError: "Kaydedilemedi. Bağlantını kontrol edip tekrar dene.",
     arrNota: "Bu bir öneri değildir: pariteleri yalnızca içerdikleri para birimine göre gruplar. Listeni istediğin zaman «Uyarılar» bölümünden değiştirebilirsin.",
+    cambiar: "Paritelerimi değiştir",
+    editTitulo: "Paritelerimi değiştir",
+    editDesc: "Paritelere dokunarak listene ekle ya da çıkar. Bir gün başka para birimlerini denemek istersen burada değiştir: hiçbir şey kaybolmaz ve istediğin zaman eski listeye dönebilirsin.",
+    editElegidos: ({ n }) => `Seçilen: ${n}.`,
+    editNinguno: "Hiçbiri seçilmedi: tüm pariteleri göreceksin.",
+    editGuardar: ({ n }) => `Listemi kaydet (${n})`,
+    editGuardarTodos: "Kaydet: hepsini gör",
+    editCancelar: "İptal",
+    editNota: "«Uyarılar»daki listenin aynısı: burada değiştirirsen orada da değişir.",
   },
 
   misAvisos: {

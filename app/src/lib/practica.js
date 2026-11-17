@@ -41,8 +41,18 @@ export const MAX_ABIERTAS = 20
 // esta lista hay que cambiar también `firestore.rules`, y `prueba-practica.mjs`
 // falla si se separan.
 export const CAMPOS_CREAR = Object.freeze(['app', 'par', 'lado', 'entrada', 'sl', 'tp', 'vela', 'metodo', 'creado'])
-export const CAMPOS_OPCIONALES = Object.freeze(['nota'])
+export const CAMPOS_OPCIONALES = Object.freeze(['nota', 'riesgoUsd', 'lote'])
 export const NOTA_MAX = 300
+
+// El riesgo en dólares y el lote los saca el Analizador del «perfil de riesgo»
+// de la persona (la misma cuenta que la calculadora). Son opcionales: sin
+// perfil no hay lote, y la operación se sigue igual, solo que en «R».
+// Lo pidió la conversación con la otra IA que Néstor aprobó entera (2026-11-16):
+// «la app le muestra el riesgo en dólares (usando su calculadora)».
+// Un tope para que nadie escriba un número absurdo desde el teléfono; las reglas
+// de Firestore exigen el mismo.
+export const RIESGO_USD_MAX = 1_000_000
+export const LOTE_MAX = 1000
 
 // Los estados que escribe el programa. Una operación abierta NO lleva `estado`:
 // así una ficha recién creada no puede traer un resultado escrito a mano.
@@ -80,6 +90,10 @@ export function fichaPractica({ app, analisis, metodo, vela, nota }) {
   if (!nivelesCoherentes(op.lado, op.entrada, op.sl, op.tp)) return null
   const n = typeof nota === 'string' ? nota.trim().slice(0, NOTA_MAX) : ''
   if (n) op.nota = n
+  const riesgoUsd = a.lote?.riesgoUsd
+  const lote = a.lote?.lote
+  if (num(riesgoUsd) && riesgoUsd > 0 && riesgoUsd <= RIESGO_USD_MAX) op.riesgoUsd = Math.round(riesgoUsd * 100) / 100
+  if (num(lote) && lote > 0 && lote <= LOTE_MAX) op.lote = Math.round(lote * 100) / 100
   return op
 }
 
@@ -216,7 +230,13 @@ export function resumenPractica(ops) {
   const resueltas = lista.filter((o) => o?.estado === 'ganada' || o?.estado === 'perdida')
   const ganadas = resueltas.filter((o) => o.estado === 'ganada').length
   const sumaR = resueltas.reduce((s, o) => s + (num(o.r) ? o.r : 0), 0)
+  // ⚠️ Los dólares son HIPOTÉTICOS y solo cuentan las que guardaron su riesgo:
+  // R × lo que se iba a arriesgar. No descuentan spread ni swap.
+  const conDinero = resueltas.filter((o) => num(o.r) && num(o.riesgoUsd) && o.riesgoUsd > 0)
+  const dinero = conDinero.reduce((s, o) => s + o.r * o.riesgoUsd, 0)
   return {
+    conDinero: conDinero.length,
+    dinero: conDinero.length ? dinero : null,
     abiertas: lista.filter((o) => o && !o.estado).length,
     resueltas: resueltas.length,
     ganadas,
@@ -225,5 +245,35 @@ export function resumenPractica(ops) {
     acierto: resueltas.length ? (ganadas / resueltas.length) * 100 : null,
     sumaR: resueltas.length ? sumaR : null,
     porOperacion: resueltas.length ? sumaR / resueltas.length : null,
+  }
+}
+
+/**
+ * Lo que hace falta para dibujar una operación de práctica sobre el gráfico:
+ * las últimas velas del par (máximo, mínimo y cierre) y en qué vela se entró y
+ * se resolvió, si todavía se ven.
+ *
+ * ⚠️ El gráfico usa las MISMAS velas con las que el programa decide (las 20
+ * del barrido publicado). Si dibujara otras, la gráfica podría enseñar el
+ * precio tocando el Stop-loss en una vela que el programa no vio.
+ *
+ * Devuelve `null` si el barrido no trae las velas con fecha o el par no está.
+ * `iEntrada` / `iResuelta` son -1 si esa vela ya salió de las 20 que se ven.
+ */
+export function graficoDePractica(op, barrido) {
+  const p = barrido?.pares?.find((x) => x.name === op?.par)
+  const fechas = barrido?.fechas20
+  if (!p || !Array.isArray(fechas) || !fechas.length) return null
+  const n = fechas.length
+  const { serie20: cierres, altos20: altos, bajos20: bajos } = p
+  const ok = (xs) => Array.isArray(xs) && xs.length === n && xs.every(num)
+  if (!ok(cierres) || !ok(altos) || !ok(bajos)) return null
+  return {
+    fechas,
+    cierres,
+    altos,
+    bajos,
+    iEntrada: fechas.indexOf(op.vela),
+    iResuelta: typeof op.velaResuelta === 'string' ? fechas.indexOf(op.velaResuelta) : -1,
   }
 }

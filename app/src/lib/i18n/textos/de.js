@@ -102,6 +102,18 @@ export default {
 
   // MODO PRÁCTICA — operaciones sin dinero que la app sigue sola (practica.js).
   prac: {
+    riesgoL: "Du hast riskiert:",
+    loteL: "Lot",
+    grafVer: "Chart ansehen",
+    grafOcultar: "Chart ausblenden",
+    grafEntrada: "EINSTIEG",
+    grafAhora: "JETZT",
+    grafSinDatos: "Für diese Operation gibt es noch keine Kerzen zum Zeichnen. Sie erscheinen, sobald der Scan erneut veröffentlicht wird.",
+    grafAria: ({ par, entrada, sl, tp }) => `Chart der Übungsoperation in ${par}: Einstieg ${entrada}, Stop-loss ${sl}, Take-profit ${tp}`,
+    grafPie: ({ n }) => `Die letzten ${n} Kerzen des Paares, dieselben, mit denen die App entscheidet, ob sie gewonnen oder verloren hat. Die gepunktete senkrechte Linie ist die Kerze deines Einstiegs; der farbige Kreis, wo sie endete.`,
+    grafAntes: ({ n }) => `Die letzten ${n} Kerzen des Paares. Dein Einstieg lag vor der ersten sichtbaren, deshalb erscheint seine Markierung nicht.`,
+    dineroL: "Hättest du riskiert, was dein Profil sagt:",
+    dineroNota: ({ n, total }) => `Zählt ${n} von ${total} Operationen (die mit gespeichertem Risiko in Dollar). Es ist hypothetisch: Spread und Swap sind nicht abgezogen.`,
     titulo: "Übungsmodus",
     desc: "Handeln ohne Geld: Die App verfolgt den Trade selbst mit echten Kursen",
     paraQue: "Um eine Handelsweise zu testen, ohne Geld zu riskieren. Du baust den Trade im Analysator und die App verfolgt ihn mit echten Kursen, bis er den Stop-loss oder den Take-profit erreicht. Mit der Zeit siehst du, ob diese Handelsweise funktioniert, bevor du Geld einsetzt – so gehen erfahrene Trader mit jeder neuen Idee um.",
@@ -150,6 +162,15 @@ export default {
     arrSinPermiso: "Es gibt noch keine Berechtigung, deine Liste zu speichern. Sag dem Entwickler Bescheid.",
     arrError: "Speichern fehlgeschlagen. Prüfe deine Verbindung und versuche es erneut.",
     arrNota: "Das ist keine Empfehlung: Es gruppiert die Paare nur nach der enthaltenen Währung. Du kannst deine Liste jederzeit unter «Alarme» ändern.",
+    cambiar: "Meine Paare ändern",
+    editTitulo: "Meine Paare ändern",
+    editDesc: "Tippe auf die Paare, um sie zu deiner Liste hinzuzufügen oder zu entfernen. Wenn du eines Tages andere Währungen ausprobieren willst, ändere sie hier: Es geht nichts verloren und du kannst jederzeit zur alten Liste zurück.",
+    editElegidos: ({ n }) => `Gewählt: ${n}.`,
+    editNinguno: "Keines gewählt: du siehst alle Paare.",
+    editGuardar: ({ n }) => `Meine Liste speichern (${n})`,
+    editGuardarTodos: "Speichern: alle sehen",
+    editCancelar: "Abbrechen",
+    editNota: "Es ist dieselbe Liste wie unter «Hinweise»: Änderst du sie hier, ändert sie sich auch dort.",
   },
 
   misAvisos: {

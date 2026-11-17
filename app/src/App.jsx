@@ -110,6 +110,7 @@ export default function App() {
       onIrAvisos={() => setTab('avisos')}
       pares={PAIR_NAMES}
       onSeguir={(lista) => avisosUsuario.seguir(lista)}
+      seguimiento={seguimiento}
     />
   )
 
@@ -319,7 +320,7 @@ export default function App() {
                   onIrAlPerfil={() => setTab('calc')}
                   practica={practica.ops}
                   onBorrarPractica={practica.borrar}
-                  onIrAnalizar={() => setTab('analizar')}
+                  onIrAnalizar={() => setTab('analizar')} velasPractica={mercado.velasPractica}
                 />
               )}
               {tab === 'analizar' && (

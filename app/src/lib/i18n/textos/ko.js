@@ -98,6 +98,18 @@ export default {
 
   // MODO PRÁCTICA — operaciones sin dinero que la app sigue sola (practica.js).
   prac: {
+    riesgoL: "걸었던 위험:",
+    loteL: "랏",
+    grafVer: "차트 보기",
+    grafOcultar: "차트 숨기기",
+    grafEntrada: "진입",
+    grafAhora: "현재",
+    grafSinDatos: "이 거래를 그릴 캔들이 아직 없습니다. 스캔이 다시 게시되면 나타납니다.",
+    grafAria: ({ par, entrada, sl, tp }) => `${par} 연습 거래 차트: 진입 ${entrada}, Stop-loss ${sl}, Take-profit ${tp}`,
+    grafPie: ({ n }) => `통화쌍의 최근 ${n}개 캔들로, 앱이 이겼는지 졌는지 판단하는 것과 같은 캔들입니다. 세로 점선은 진입한 캔들, 색깔 원은 끝난 위치입니다.`,
+    grafAntes: ({ n }) => `통화쌍의 최근 ${n}개 캔들. 진입이 보이는 첫 캔들보다 앞이라 표시가 나오지 않습니다.`,
+    dineroL: "프로필대로 위험을 걸었다면:",
+    dineroNota: ({ n, total }) => `${total}건 중 ${n}건을 셉니다(달러 위험을 저장한 거래). 가정이며 spread와 swap은 빼지 않았습니다.`,
     titulo: "연습 모드",
     desc: "돈 없이 거래: 앱이 실제 가격으로 거래를 직접 추적합니다",
     paraQue: "돈을 걸지 않고 거래 방식을 시험해 보기 위한 기능입니다. 분석기에서 거래를 만들면 앱이 Stop-loss나 Take-profit에 닿을 때까지 실제 가격으로 추적합니다. 시간이 지나면 돈을 넣기 전에 그 방식이 통하는지 알 수 있습니다. 경험 많은 트레이더는 새 아이디어마다 이렇게 합니다.",
@@ -146,6 +158,15 @@ export default {
     arrSinPermiso: "아직 목록을 저장할 권한이 없습니다. 개발자에게 알려 주세요.",
     arrError: "저장하지 못했습니다. 연결을 확인하고 다시 시도하세요.",
     arrNota: "이것은 추천이 아닙니다. 통화쌍을 포함된 통화별로 묶을 뿐입니다. 목록은 언제든 「알림」에서 바꿀 수 있습니다.",
+    cambiar: "내 통화쌍 바꾸기",
+    editTitulo: "내 통화쌍 바꾸기",
+    editDesc: "통화쌍을 눌러 목록에 넣거나 빼세요. 언젠가 다른 통화를 시험해 보고 싶다면 여기서 바꾸세요. 아무것도 사라지지 않으며 언제든 이전 목록으로 돌아갈 수 있습니다.",
+    editElegidos: ({ n }) => `선택: ${n}개.`,
+    editNinguno: "선택 없음: 모든 통화쌍이 보입니다.",
+    editGuardar: ({ n }) => `내 목록 저장 (${n})`,
+    editGuardarTodos: "저장: 모두 보기",
+    editCancelar: "취소",
+    editNota: "「알림」과 같은 목록입니다. 여기서 바꾸면 그곳도 함께 바뀝니다.",
   },
 
   misAvisos: {

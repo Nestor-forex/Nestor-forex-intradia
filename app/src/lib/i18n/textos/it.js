@@ -98,6 +98,18 @@ export default {
 
   // MODO PRÁCTICA — operaciones sin dinero que la app sigue sola (practica.js).
   prac: {
+    riesgoL: "Rischiavi:",
+    loteL: "lotto",
+    grafVer: "Vedi il grafico",
+    grafOcultar: "Nascondi il grafico",
+    grafEntrada: "ENTRATA",
+    grafAhora: "ORA",
+    grafSinDatos: "Non ci sono ancora candele per disegnare questa operazione. Appaiono appena la scansione viene pubblicata di nuovo.",
+    grafAria: ({ par, entrada, sl, tp }) => `Grafico dell'operazione di pratica su ${par}: entrata ${entrada}, Stop-loss ${sl}, Take-profit ${tp}`,
+    grafPie: ({ n }) => `Le ultime ${n} candele della coppia, le stesse con cui l'app decide se ha vinto o perso. La linea verticale tratteggiata è la candela in cui sei entrato; il cerchio colorato, dove è finita.`,
+    grafAntes: ({ n }) => `Le ultime ${n} candele della coppia. La tua entrata è stata prima della prima visibile, quindi il suo segno non appare.`,
+    dineroL: "Se avessi rischiato quanto dice il tuo profilo:",
+    dineroNota: ({ n, total }) => `Conta ${n} operazioni su ${total} (quelle che hanno salvato il rischio in dollari). È ipotetico: non sottrae spread né swap.`,
     titulo: "Modalità pratica",
     desc: "Opera senza soldi: l’app segue l’operazione da sola con prezzi reali",
     paraQue: "Per provare un modo di operare senza rischiare soldi. Costruisci l’operazione nell’Analizzatore e l’app la segue con i prezzi reali finché tocca lo Stop-loss o il Take-profit. Col tempo vedi se quel modo di operare funziona prima di metterci soldi, che è quello che fanno i trader esperti con ogni idea nuova.",
@@ -146,6 +158,15 @@ export default {
     arrSinPermiso: "Non c’è ancora il permesso per salvare la tua lista. Avvisa lo sviluppatore.",
     arrError: "Impossibile salvare. Controlla la connessione e riprova.",
     arrNota: "Non è una raccomandazione: raggruppa solo le coppie per la valuta che contengono. Puoi cambiare la lista quando vuoi in «Avvisi».",
+    cambiar: "Cambia le mie coppie",
+    editTitulo: "Cambia le mie coppie",
+    editDesc: "Tocca le coppie per aggiungerle alla tua lista o toglierle. Se un giorno vuoi provare altre valute, cambiala qui: non si perde nulla e puoi tornare a quella di prima quando vuoi.",
+    editElegidos: ({ n }) => `Scelte: ${n}.`,
+    editNinguno: "Nessuna scelta: vedrai tutte le coppie.",
+    editGuardar: ({ n }) => `Salva la mia lista (${n})`,
+    editGuardarTodos: "Salva: vedi tutte",
+    editCancelar: "Annulla",
+    editNota: "È la stessa lista di «Avvisi»: cambiarla qui la cambia anche lì.",
   },
 
   misAvisos: {

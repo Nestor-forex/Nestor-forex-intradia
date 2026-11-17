@@ -102,6 +102,18 @@ export default {
 
   // MODO PRÁCTICA — operaciones sin dinero que la app sigue sola (practica.js).
   prac: {
+    riesgoL: "Tu risquais :",
+    loteL: "lot",
+    grafVer: "Voir le graphique",
+    grafOcultar: "Masquer le graphique",
+    grafEntrada: "ENTRÉE",
+    grafAhora: "MAINTENANT",
+    grafSinDatos: "Il n'y a pas encore de bougies pour dessiner cette opération. Elles apparaissent dès que le balayage est publié à nouveau.",
+    grafAria: ({ par, entrada, sl, tp }) => `Graphique de l'opération d'entraînement sur ${par} : entrée ${entrada}, Stop-loss ${sl}, Take-profit ${tp}`,
+    grafPie: ({ n }) => `Les ${n} dernières bougies de la paire, les mêmes que l'app utilise pour décider si elle a gagné ou perdu. La ligne verticale pointillée est la bougie de ton entrée ; le cercle de couleur, là où elle s'est terminée.`,
+    grafAntes: ({ n }) => `Les ${n} dernières bougies de la paire. Ton entrée était avant la première visible, donc sa marque n'apparaît pas.`,
+    dineroL: "Si tu avais risqué ce que dit ton profil :",
+    dineroNota: ({ n, total }) => `Compte ${n} opérations sur ${total} (celles qui ont gardé ton risque en dollars). C'est hypothétique : ni spread ni swap déduits.`,
     titulo: "Mode entraînement",
     desc: "Trader sans argent : l’app suit l’opération seule avec les prix réels",
     paraQue: "Pour tester une façon de trader sans risquer d’argent. Tu construis l’opération dans l’Analyseur et l’app la suit avec les prix réels jusqu’à ce qu’elle touche le Stop-loss ou le Take-profit. Avec le temps, tu vois si cette façon de trader fonctionne avant d’y mettre de l’argent, comme le font les traders expérimentés avec toute nouvelle idée.",
@@ -150,6 +162,15 @@ export default {
     arrSinPermiso: "Il n’y a pas encore d’autorisation pour enregistrer ta liste. Préviens le développeur.",
     arrError: "Impossible d’enregistrer. Vérifie ta connexion et réessaie.",
     arrNota: "Ce n’est pas une recommandation : cela regroupe seulement les paires selon la devise qu’elles contiennent. Tu peux changer ta liste quand tu veux dans « Alertes ».",
+    cambiar: "Changer mes paires",
+    editTitulo: "Changer mes paires",
+    editDesc: "Touche les paires pour les ajouter à ta liste ou les retirer. Si un jour tu veux essayer d'autres devises, change-la ici : rien ne se perd et tu peux revenir à l'ancienne quand tu veux.",
+    editElegidos: ({ n }) => `Choisies : ${n}.`,
+    editNinguno: "Aucune choisie : tu verras toutes les paires.",
+    editGuardar: ({ n }) => `Enregistrer ma liste (${n})`,
+    editGuardarTodos: "Enregistrer : tout voir",
+    editCancelar: "Annuler",
+    editNota: "C'est la même liste que dans «Alertes» : la changer ici la change aussi là-bas.",
   },
 
   misAvisos: {

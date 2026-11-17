@@ -102,6 +102,18 @@ export default {
 
   // MODO PRÁCTICA — operaciones sin dinero que la app sigue sola (practica.js).
   prac: {
+    riesgoL: "You were risking:",
+    loteL: "lot",
+    grafVer: "See the chart",
+    grafOcultar: "Hide the chart",
+    grafEntrada: "ENTRY",
+    grafAhora: "NOW",
+    grafSinDatos: "There are no candles to draw this trade yet. They appear as soon as the scan is published again.",
+    grafAria: ({ par, entrada, sl, tp }) => `Chart of the practice trade on ${par}: entry ${entrada}, Stop-loss ${sl}, Take-profit ${tp}`,
+    grafPie: ({ n }) => `The pair's last ${n} candles, the same ones the app uses to decide whether it won or lost. The dotted vertical line is the candle you entered on; the coloured circle, where it ended.`,
+    grafAntes: ({ n }) => `The pair's last ${n} candles. Your entry was before the first one shown, so its mark does not appear.`,
+    dineroL: "If you had risked what your profile says:",
+    dineroNota: ({ n, total }) => `Counts ${n} of ${total} trades (the ones that saved your risk in dollars). It is hypothetical: no spread or swap is deducted.`,
     titulo: "Practice mode",
     desc: "Trade without money: the app follows the trade on its own with real prices",
     paraQue: "To test a way of trading without risking money. You build the trade in the Analyzer and the app follows it with real prices until it hits the Stop-loss or the Take-profit. Over time you see whether that way of trading works before you put money on it, which is what experienced traders do with any new idea.",
@@ -150,6 +162,15 @@ export default {
     arrSinPermiso: "There is no permission to save your list yet. Let the developer know.",
     arrError: "Could not save. Check your connection and try again.",
     arrNota: "This is not a recommendation: it only groups pairs by the currency they contain. You can change your list anytime in «Alerts».",
+    cambiar: "Change my pairs",
+    editTitulo: "Change my pairs",
+    editDesc: "Tap the pairs to add them to your list or remove them. If one day you want to try other currencies, change it here: nothing is lost and you can go back to the old list whenever you want.",
+    editElegidos: ({ n }) => `Chosen: ${n}.`,
+    editNinguno: "None chosen: you will see all pairs.",
+    editGuardar: ({ n }) => `Save my list (${n})`,
+    editGuardarTodos: "Save: see all",
+    editCancelar: "Cancel",
+    editNota: "It is the same list as in «Alerts»: changing it here changes it there too.",
   },
 
   misAvisos: {

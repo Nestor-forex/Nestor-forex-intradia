@@ -17,19 +17,31 @@ import { useMemo, useState } from 'react'
 import { useT, useIdioma } from '../lib/i18n'
 import { APP } from '../lib/identidad'
 import { margen } from '../lib/diagnostico'
-import { rbDe, resumenPractica } from '../lib/practica'
+import { graficoDePractica, rbDe, resumenPractica } from '../lib/practica'
 import TarjetaPlegable from './TarjetaPlegable'
+import GraficoPractica from './GraficoPractica'
 
 const TEXTO = { fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }
 const decDe = (par) => (String(par).includes('JPY') ? 3 : 5)
 const fmtR = (r) => `${r > 0 ? '+' : r < 0 ? '−' : ''}${Math.abs(r).toFixed(2)} R`
+const fmtUsd = (v) => `${v > 0 ? '+' : v < 0 ? '−' : ''}$${Math.abs(v).toFixed(2)}`
 const colorR = (r) => (r > 0 ? 'var(--green)' : r < 0 ? 'var(--red)' : 'var(--text-secondary)')
 
-export default function Practica({ ops = [], onBorrar, onIrAnalizar }) {
+export default function Practica({ ops = [], onBorrar, onIrAnalizar, velas = null }) {
   const tr = useT()
   const { locale } = useIdioma()
   const res = useMemo(() => resumenPractica(ops), [ops])
   const [porBorrar, setPorBorrar] = useState(null)
+  // Qué gráficas están abiertas. Cerradas por defecto: con 20 operaciones
+  // abiertas, 20 gráficas seguidas serían un muro.
+  const [conGrafica, setConGrafica] = useState(() => new Set())
+  const alternarGrafica = (id) =>
+    setConGrafica((s0) => {
+      const s1 = new Set(s0)
+      if (s1.has(id)) s1.delete(id)
+      else s1.add(id)
+      return s1
+    })
   const abiertas = ops.filter((o) => !o.estado)
   const cerradas = ops.filter((o) => o.estado)
   const m = margen(res.resueltas)
@@ -44,6 +56,23 @@ export default function Practica({ ops = [], onBorrar, onIrAnalizar }) {
       </span>
     )
   }
+  // Lo que se iba a arriesgar en dinero, si el Analizador tenía el perfil.
+  const riesgo = (o) =>
+    typeof o.riesgoUsd === 'number' ? (
+      <div style={{ fontSize: 11.5, color: 'var(--text-secondary)' }}>
+        {tr('prac.riesgoL')}{' '}
+        <span className="mono" dir="ltr">
+          ${o.riesgoUsd.toFixed(2)}
+          {typeof o.lote === 'number' ? ` · ${o.lote.toFixed(2)} ${tr('prac.loteL')}` : ''}
+        </span>
+      </div>
+    ) : null
+  const botonGrafica = (o) => (
+    <button type="button" className="btn-ghost" style={{ minHeight: 32, padding: '0 10px', fontSize: 12, marginTop: 4 }} onClick={() => alternarGrafica(o.id)}>
+      {conGrafica.has(o.id) ? tr('prac.grafOcultar') : tr('prac.grafVer')}
+    </button>
+  )
+  const grafica = (o) => (conGrafica.has(o.id) ? <GraficoPractica op={o} datos={graficoDePractica(o, velas)} dec={decDe(o.par)} /> : null)
   const cuando = (o) => {
     const ms = o.creado?.toMillis ? o.creado.toMillis() : null
     return ms ? new Date(ms).toLocaleString(locale, { dateStyle: 'short', timeStyle: 'short' }) : '…'
@@ -111,13 +140,23 @@ export default function Practica({ ops = [], onBorrar, onIrAnalizar }) {
             </span>
           </div>
         )}
+        {res.dinero !== null && (
+          <div style={{ marginTop: 6, fontSize: 12.5 }}>
+            {tr('prac.dineroL')}{' '}
+            <span className="mono" dir="ltr" style={{ fontWeight: 600, color: colorR(res.dinero) }}>
+              {fmtUsd(res.dinero)}
+            </span>
+            <div style={{ ...TEXTO, fontSize: 11.5, color: 'var(--text-muted)' }}>{tr('prac.dineroNota', { n: res.conDinero, total: res.resueltas })}</div>
+          </div>
+        )}
         {res.resueltas > 0 && <div style={{ ...TEXTO, fontSize: 11.5, color: 'var(--text-muted)', marginTop: 4 }}>{tr('prac.margen')}</div>}
 
         {abiertas.length > 0 && (
           <div style={{ marginTop: 12 }}>
             <div style={{ fontSize: 12.5, fontWeight: 600 }}>{tr('prac.abiertasT')}</div>
             {abiertas.map((o) => (
-              <div key={o.id} style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '8px 0', borderTop: '1px solid var(--border)' }}>
+              <div key={o.id} style={{ padding: '8px 0', borderTop: '1px solid var(--border)' }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13 }}>
                     <span className="mono" dir="ltr" style={{ fontWeight: 600 }}>
@@ -127,6 +166,7 @@ export default function Practica({ ops = [], onBorrar, onIrAnalizar }) {
                     <span style={{ color: 'var(--text-muted)', fontSize: 11.5 }}> · {tr('prac.esperando')}</span>
                   </div>
                   <div>{niveles(o)}</div>
+                  {riesgo(o)}
                   <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{cuando(o)}</div>
                 </div>
                 {porBorrar === o.id ? (
@@ -149,6 +189,9 @@ export default function Practica({ ops = [], onBorrar, onIrAnalizar }) {
                   </button>
                 )}
               </div>
+              {botonGrafica(o)}
+              {grafica(o)}
+              </div>
             ))}
             <div style={{ ...TEXTO, fontSize: 11.5, color: 'var(--text-muted)' }}>{tr('prac.soloAbiertas')}</div>
           </div>
@@ -169,12 +212,16 @@ export default function Practica({ ops = [], onBorrar, onIrAnalizar }) {
                   {typeof o.r === 'number' && (
                     <span className="mono" dir="ltr" style={{ fontSize: 13, fontWeight: 600, color: colorR(o.r) }}>
                       {fmtR(o.r)}
+                      {typeof o.riesgoUsd === 'number' ? ` · ${fmtUsd(o.r * o.riesgoUsd)}` : ''}
                     </span>
                   )}
                 </div>
                 <div>{niveles(o)}</div>
+                {riesgo(o)}
                 {o.estado === 'caducada' && <div style={{ ...TEXTO, fontSize: 11.5 }}>{tr('prac.caducadaD')}</div>}
                 {o.estado === 'invalida' && <div style={{ ...TEXTO, fontSize: 11.5 }}>{tr(`prac.motivo_${o.motivo || 'niveles'}`)}</div>}
+                {(o.estado === 'ganada' || o.estado === 'perdida') && botonGrafica(o)}
+                {grafica(o)}
               </div>
             ))}
           </div>

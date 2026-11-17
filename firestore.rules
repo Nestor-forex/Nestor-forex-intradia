@@ -189,7 +189,7 @@ service cloud.firestore {
         allow create: if esPropio(uid)
           && get(/databases/$(database)/documents/users/$(uid)).data.estado == 'aprobado'
           && request.resource.data.keys().hasAll(['app', 'par', 'lado', 'entrada', 'sl', 'tp', 'vela', 'metodo', 'creado'])
-          && request.resource.data.keys().hasOnly(['app', 'par', 'lado', 'entrada', 'sl', 'tp', 'vela', 'metodo', 'creado', 'nota'])
+          && request.resource.data.keys().hasOnly(['app', 'par', 'lado', 'entrada', 'sl', 'tp', 'vela', 'metodo', 'creado', 'nota', 'riesgoUsd', 'lote'])
           && request.resource.data.app in ['swing', 'intradia']
           && request.resource.data.lado in ['COMPRA', 'VENTA']
           && request.resource.data.par is string && request.resource.data.par.size() <= 10
@@ -200,7 +200,11 @@ service cloud.firestore {
           && request.resource.data.metodo is string && request.resource.data.metodo.size() <= 20
           && request.resource.data.creado == request.time
           && (!('nota' in request.resource.data)
-              || (request.resource.data.nota is string && request.resource.data.nota.size() <= 300));
+              || (request.resource.data.nota is string && request.resource.data.nota.size() <= 300))
+          && (!('riesgoUsd' in request.resource.data)
+              || (request.resource.data.riesgoUsd is number && request.resource.data.riesgoUsd > 0 && request.resource.data.riesgoUsd <= 1000000))
+          && (!('lote' in request.resource.data)
+              || (request.resource.data.lote is number && request.resource.data.lote > 0 && request.resource.data.lote <= 1000));
       }
     }
 

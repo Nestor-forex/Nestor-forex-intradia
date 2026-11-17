@@ -190,6 +190,12 @@ console.log('\nArranque guiado: agrupa por DIVISA, no recomienda nada')
   comprobar('App.jsx guarda con el MISMO `seguir` de Mis avisos', /onSeguir=\{\(lista\) => avisosUsuario\.seguir\(lista\)\}/.test(app))
   const filtro = readFileSync(new URL('../src/components/FiltroPares.jsx', import.meta.url), 'utf8')
   comprobar('solo se cierra si se GUARDÓ (r.ok)', /if \(r\?\.ok\) \{\s*cerrarArranque\(\)/.test(filtro))
+  // Cambiar la lista desde el MISMO Barrido (Néstor, 2026-11-17: «no cambia
+  // nunca… debe tener la opción de cambiar esos pares»).
+  comprobar('App.jsx le pasa la lista actual al filtro', /seguimiento=\{seguimiento\}/.test(app))
+  comprobar('hay un botón «Cambiar mis pares» con la lista ya elegida', /t\('vista\.cambiar'\)/.test(filtro) && /function Editor\(/.test(filtro))
+  comprobar('el editor guarda con el MISMO `onSeguir` y solo se cierra si se guardó', /const r = await onSeguir\(lista\)\s*\n\s*if \(r\?\.ok\)/.test(filtro.slice(filtro.indexOf('function Editor('))))
+  comprobar('el editor parte de la lista que ya tenía la persona', /useState\(\(\) => \(Array\.isArray\(seguimiento\)/.test(filtro))
   const es = readFileSync(new URL('../src/lib/i18n/textos/es.js', import.meta.url), 'utf8')
   comprobar('el texto dice que NO es una recomendación', /arrNota:.*no es una recomendaci/i.test(es))
 }
