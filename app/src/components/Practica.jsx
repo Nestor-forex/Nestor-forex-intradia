@@ -20,6 +20,7 @@ import { margen } from '../lib/diagnostico'
 import { costesPractica, graficoDePractica, rbDe, resumenPractica } from '../lib/practica'
 import TarjetaPlegable from './TarjetaPlegable'
 import GraficoPractica from './GraficoPractica'
+import { csvPractica, descargar } from '../lib/exportar'
 
 const TEXTO = { fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }
 const decDe = (par) => (String(par).includes('JPY') ? 3 : 5)
@@ -285,6 +286,29 @@ export default function Practica({ ops = [], onBorrar, onIrAnalizar, velas = nul
                 {grafica(o)}
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Exportar (2026-11-17): la tabla con TODAS, también las abiertas,
+            caducadas e inválidas. Esconder las que no ganaron sería el mismo
+            espejismo que la tarjeta evita en pantalla. */}
+        {ops.length > 0 && (
+          <div style={{ marginTop: 12 }}>
+            <button
+              type="button"
+              className="btn-ghost"
+              style={{ minHeight: 44, padding: '0 12px', fontSize: 13 }}
+              onClick={() =>
+                descargar(
+                  csvPractica(ops, { locale, titulo: (k) => tr(`exp.${k}`), etiqueta: (k) => tr(`prac.${k}`) }),
+                  `practica-${APP}-${new Date().toISOString().slice(0, 10)}.csv`,
+                  'text/csv;charset=utf-8',
+                )
+              }
+            >
+              {tr('exp.descargarPractica')}
+            </button>
+            <div style={{ ...TEXTO, fontSize: 11.5, color: 'var(--text-muted)', marginTop: 4 }}>{tr('exp.notaPractica')}</div>
           </div>
         )}
 
