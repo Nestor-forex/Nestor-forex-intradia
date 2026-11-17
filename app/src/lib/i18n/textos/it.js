@@ -1064,6 +1064,8 @@ export default {
     ayuda: "Cambia come si dispone l'app. Su PC o portatile lo schermo non ruota: le schede si distribuiscono in colonne. Su telefono o tablet ruota il dispositivo (se l'app è installata su Android, prova a ruotare da sola).",
   },
   precioF: {
+    alSegundo: ({ hora }) => `Prezzo MT5 al secondo, da un conto reale dello sviluppatore (ultimo: ${hora}). Se il ponte si spegne, l'app passa da sola a Twelve Data e te lo dice.`,
+    alSegundoCabecera: "Prezzo MT5 al secondo, da un conto reale dello sviluppatore, finché il ponte è acceso. Se si spegne, l'app passa da sola a Twelve Data e te lo dice.",
     mt5: ({ hora, min }) => `Prezzo di MT5, da un conto reale dello sviluppatore: rilevato alle ${hora} (${min} min fa). Il ponte pubblica ogni 5 minuti, quindi può essere qualche minuto indietro rispetto al mercato.`,
     twelve_swing: "Prezzo di Twelve Data: la chiusura dell'ultima candela giornaliera della scansione, calcolata due volte al giorno.",
     twelve_intradia: "Prezzo di Twelve Data: la chiusura dell'ultima candela di un'ora della scansione, calcolata una volta all'ora.",

@@ -109,7 +109,7 @@ reemplaza**. Se evaluaron y descartaron antes de llegar aquí: subir de
 plan en Twelve Data ($99/mes Pro para WebSocket real), OANDA (la cuenta
 que abrió el usuario quedó en la división "OANDA Global Markets", que su
 propia documentación excluye de la API v20 — además esa cuenta resultó
-ser MT5, ni siquiera v20), AvaTrade (sin API pública para developers),
+ser MT5, ni siquiera v20), su bróker (sin API pública para developers),
 MetaApi.cloud (no es gratis, $30/mes mínimo), Interactive Brokers (las
 cuentas demo no pueden recibir datos por API).
 
@@ -1461,7 +1461,7 @@ lo usa se actualiza solo; el texto que lo describe, no.
 
 # El ensayo con los spreads reales de Néstor (2026-09-05)
 
-Leyó los 18 spreads de su cuenta de AvaTrade **con el mercado cerrado**, así que
+Leyó los 18 spreads de su cuenta real **con el mercado cerrado**, así que
 están inflados: media 4,36 pips contra los 2,17 de la tabla. Guardados como
 `SPREAD_NESTOR_FINDE`, marcados, y **no se usan por defecto**.
 

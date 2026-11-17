@@ -23,7 +23,7 @@ import { leerPerfil } from '../lib/perfilRiesgo'
 import { estadoDelDia } from '../lib/guardianRiesgo'
 import { monedasDe } from '../lib/pairs'
 import { useTasas } from '../lib/useTasas'
-import { useMT5Quotes } from '../lib/useMT5Quotes'
+import { usePrecioMt5 } from '../lib/usePrecioMt5'
 import { fichaConPrecioVivo, fuenteDePrecios, velaDeEntradaMt5 } from '../lib/precioVivo'
 import FuentePrecio from './FuentePrecio'
 import { useEstacionalidad } from '../lib/useEstacionalidad'
@@ -133,7 +133,7 @@ const horaLocal = (hUTC, locale) => {
 export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trades = [], cal, cot = null, oro = null, correlaciones, onAnotar, onIrAlPerfil, vela = null, onPracticar, onVerPractica }) {
   const { t, locale } = useIdioma()
   const tasasPub = useTasas()
-  const mt5 = useMT5Quotes()
+  const mt5 = usePrecioMt5()
   const estacionalidad = useEstacionalidad()
   const { plantillas, guardar, borrar } = usePlantillas(uid, ficha)
   const perfil = useMemo(() => leerPerfil(ficha?.perfilRiesgo), [ficha?.perfilRiesgo])
@@ -349,7 +349,7 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
           <N>{fmt(a.precio, d)}</N>
         </div>
         {/* De dónde sale ese precio y de qué hora es. */}
-        <FuentePrecio fp={fp} actualizadoEl={mt5.actualizadoEl} style={{ marginTop: -6 }} />
+        <FuentePrecio fp={fp} actualizadoEl={mt5.actualizadoEl} conSegundos style={{ marginTop: -6 }} />
         {a.lado && (
           <p style={{ ...TEXTO, fontSize: 11.5, color: 'var(--text-muted)', marginTop: -6 }}>
             {t(entrada ? (entrada.lado === 'ask' ? 'precioF.entradaAsk' : 'precioF.entradaBid') : 'precioF.entradaTwelve')}

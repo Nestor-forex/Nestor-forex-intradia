@@ -15,11 +15,13 @@
 //     apagado» o «la última foto de MT5 es de hace X», y cada cuánto se
 //     actualiza Twelve Data en esta app.
 //
-// ⚠️⚠️ LO QUE ESTO NO ES, Y LA PANTALLA LO DICE: tiempo real al segundo. El
-// puente publica cada pocos minutos en un archivo, y el archivo tarda unos
-// minutos más en llegar a los teléfonos. Por eso va siempre la hora de la foto
-// y nunca la palabra «ahora» a secas: un precio sin su hora se lee como de
-// este instante.
+// ⚠️⚠️ AL SEGUNDO SOLO CON EL PUENTE NUEVO Y ENCENDIDO (2026-11-17). Néstor
+// eligió el precio al segundo con el plan de pago de Firebase: el puente
+// escribe `vivo/precios` en Firestore cada segundo y la app lo escucha
+// (`usePrecioMt5.js`). Si esa foto no llega o tiene más de EDAD_MAX_VIVO_S
+// segundos, se vuelve a la foto del archivo (cada 5 minutos, y GitHub tarda
+// hasta 5 más en servirla), y si también es vieja, a Twelve Data. La pantalla
+// dice siempre cuál es: un precio sin su origen se lee como de este instante.
 //
 // ⚠️ NUNCA SE NOMBRA AL BRÓKER (Néstor, 2026-11-15). Se dice «una cuenta real
 // del desarrollador de la app».
@@ -37,6 +39,57 @@ import { minutosDesde } from './useMT5Quotes.js'
 export const EDAD_MAX_MT5_MIN = 20
 
 /**
+ * Hasta cuántos SEGUNDOS se da por buena una foto del precio al segundo
+ * (`vivo/precios` en Firestore, que el puente escribe cada segundo mientras
+ * el precio cambia). Pasado eso se vuelve a la foto del archivo, y si también
+ * es vieja, a Twelve Data.
+ *
+ * ⚠️ 60 y no 2, a propósito: el reloj del teléfono y el del computador del
+ * puente no coinciden al segundo, y en un minuto tranquilo el precio puede no
+ * moverse y el puente no escribe (solo escribe si algo cambió). Con 2 la app
+ * saltaría a Twelve Data cada vez que el mercado se queda quieto un momento.
+ */
+export const EDAD_MAX_VIVO_S = 60
+
+/** ¿Hace cuántos segundos? `null` si no se sabe. Una hora «del futuro» cuenta como 0. */
+export function segundosDesde(iso, ahora = new Date()) {
+  if (typeof iso !== 'string') return null
+  const ms = new Date(iso).getTime()
+  if (!Number.isFinite(ms)) return null
+  return Math.max(0, Math.round((ahora.getTime() - ms) / 1000))
+}
+
+/**
+ * Junta la foto del ARCHIVO (cada 5 minutos, trae el swap y la actividad) con
+ * la del PRECIO AL SEGUNDO (solo BID y ASK). Si la del segundo es reciente,
+ * manda ella en el BID, el ASK y el spread, y del archivo se queda lo que ella
+ * no trae. Si no, se devuelve el archivo tal cual.
+ *
+ * @param archivo lo que devuelve `useMT5Quotes`: { quotes, estado, actualizadoEl, cuenta }
+ * @param vivo    { quotes, actualizadoEl } ya normalizado y filtrado, o null
+ */
+export function combinarConVivo(archivo, vivo, ahora = new Date()) {
+  const base = { ...archivo, alSegundo: false }
+  if (!vivo || !vivo.quotes || !Object.keys(vivo.quotes).length) return base
+  const edadS = segundosDesde(vivo.actualizadoEl, ahora)
+  if (edadS === null || edadS > EDAD_MAX_VIVO_S) return base
+
+  const quotes = {}
+  for (const [par, q] of Object.entries(vivo.quotes)) {
+    const f = archivo?.quotes?.[par] ?? null
+    quotes[par] = {
+      ...q,
+      // Lo que solo trae el archivo. `null` si tampoco lo trae: «no lo sé».
+      ticks: f?.ticks ?? null,
+      swapLargo: f?.swapLargo ?? null,
+      swapCorto: f?.swapCorto ?? null,
+      swap3: f?.swap3 ?? null,
+    }
+  }
+  return { ...archivo, quotes, estado: 'ok', actualizadoEl: vivo.actualizadoEl, alSegundo: true }
+}
+
+/**
  * Qué fuente manda ahora.
  *
  * @returns {{ fuente: 'mt5'|'twelve'|'cargando', edadMin: number|null,
@@ -44,9 +97,12 @@ export const EDAD_MAX_MT5_MIN = 20
  *   · `motivo` solo con `twelve`: 'apagado' (no hay foto de MT5 que leer) o
  *     'viejo' (la hay, pero de hace más de EDAD_MAX_MT5_MIN).
  */
-export function fuenteDePrecios({ estado, actualizadoEl, ahora = new Date() } = {}) {
+export function fuenteDePrecios({ estado, actualizadoEl, alSegundo = false, ahora = new Date() } = {}) {
   if (estado === 'cargando') return { fuente: 'cargando', edadMin: null, motivo: null }
   const edadMin = minutosDesde(actualizadoEl, ahora)
+  // `alSegundo` solo lo pone `combinarConVivo`, y solo con una foto de menos
+  // de EDAD_MAX_VIVO_S segundos.
+  if (estado === 'ok' && alSegundo === true && edadMin !== null) return { fuente: 'mt5', edadMin, motivo: null, alSegundo: true }
   if (estado === 'ok' && edadMin !== null && edadMin <= EDAD_MAX_MT5_MIN) return { fuente: 'mt5', edadMin, motivo: null }
   // ⚠️ Una foto «del futuro» (reloj del teléfono atrasado) se acepta como
   // reciente: `minutosDesde` ya la deja en 0.

@@ -13,18 +13,34 @@
 import { useT, useIdioma } from '../lib/i18n'
 import { APP } from '../lib/identidad'
 
-const horaDe = (iso, locale) => {
+const horaDe = (iso, locale, conSegundos = false) => {
   const ms = typeof iso === 'string' ? Date.parse(iso) : NaN
-  return Number.isFinite(ms) ? new Date(ms).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }) : null
+  const opciones = conSegundos ? { hour: '2-digit', minute: '2-digit', second: '2-digit' } : { hour: '2-digit', minute: '2-digit' }
+  return Number.isFinite(ms) ? new Date(ms).toLocaleTimeString(locale, opciones) : null
 }
 
-/** `fp` es lo que devuelve `fuenteDePrecios`; `actualizadoEl`, la hora de la foto de MT5. */
-export default function FuentePrecio({ fp, actualizadoEl, style }) {
+/**
+ * `fp` es lo que devuelve `fuenteDePrecios`; `actualizadoEl`, la hora de la foto de MT5.
+ * `conSegundos`: solo donde la pantalla se redibuja cada segundo (la tabla de
+ * precios, el Analizador). En la cabecera se redibuja cada 15 y unos segundos
+ * que se quedan quietos dirían algo falso.
+ */
+export default function FuentePrecio({ fp, actualizadoEl, style, conSegundos = false }) {
   const t = useT()
   const { locale } = useIdioma()
   if (!fp || fp.fuente === 'cargando') return null
 
   const base = { margin: 0, fontSize: 11.5, lineHeight: 1.5, ...style }
+  if (fp.fuente === 'mt5' && fp.alSegundo) {
+    return (
+      <p style={{ ...base, color: 'var(--text-secondary)' }}>
+        <span style={{ color: 'var(--cta)', fontWeight: 600 }}>● </span>
+        {conSegundos
+          ? t('precioF.alSegundo', { hora: horaDe(actualizadoEl, locale, true) ?? '—' })
+          : t('precioF.alSegundoCabecera')}
+      </p>
+    )
+  }
   if (fp.fuente === 'mt5') {
     return (
       <p style={{ ...base, color: 'var(--text-secondary)' }}>

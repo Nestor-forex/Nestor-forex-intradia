@@ -1068,6 +1068,8 @@ export default {
     ayuda: "Change la disposition de l'app. Sur PC ou portable l'écran ne pivote pas : les cartes se répartissent en colonnes. Sur téléphone ou tablette, tourne l'appareil (si l'app est installée sur Android, elle essaie de pivoter seule).",
   },
   precioF: {
+    alSegundo: ({ hora }) => `Prix MT5 à la seconde, d'un compte réel du développeur (dernier : ${hora}). Si le pont s'arrête, l'app passe seule à Twelve Data et te le dit.`,
+    alSegundoCabecera: "Prix MT5 à la seconde, d'un compte réel du développeur, tant que le pont est allumé. S'il s'arrête, l'app passe seule à Twelve Data et te le dit.",
     mt5: ({ hora, min }) => `Prix MT5, d'un compte réel du développeur : relevé de ${hora} (il y a ${min} min). Le pont publie toutes les 5 minutes, donc il peut avoir quelques minutes de retard sur le marché.`,
     twelve_swing: "Prix Twelve Data : la clôture de la dernière bougie journalière du balayage, calculé deux fois par jour.",
     twelve_intradia: "Prix Twelve Data : la clôture de la dernière bougie d'une heure du balayage, calculé une fois par heure.",

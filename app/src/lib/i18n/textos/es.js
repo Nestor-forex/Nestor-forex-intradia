@@ -1144,6 +1144,8 @@ export default {
     ayuda: "Cambia cómo se acomoda la app. En PC y laptop la pantalla no gira: las tarjetas se reparten en columnas. En teléfono o tableta, gira el aparato (si la app está instalada en Android, intenta girarla sola).",
   },
   precioF: {
+    alSegundo: ({ hora }) => `Precio al segundo de MT5, de una cuenta real del desarrollador (último: ${hora}). Si su puente se apaga, la app pasa sola al de Twelve Data y te lo dice.`,
+    alSegundoCabecera: "Precio al segundo de MT5, de una cuenta real del desarrollador, mientras su puente esté encendido. Si se apaga, la app pasa sola al de Twelve Data y te lo dice.",
     mt5: ({ hora, min }) => `Precio de MT5, de una cuenta real del desarrollador: foto de las ${hora} (hace ${min} min). El puente publica cada 5 minutos, así que puede ir unos minutos por detrás del mercado.`,
     twelve_swing: "Precio de Twelve Data: el cierre de la última vela diaria del barrido, que se calcula dos veces al día.",
     twelve_intradia: "Precio de Twelve Data: el cierre de la última vela de una hora del barrido, que se calcula una vez por hora.",

@@ -238,6 +238,30 @@ service cloud.firestore {
     // Desde la app nadie las lista: quien las lee todas es el vigía, con
     // una cuenta de servicio que no pasa por estas reglas. Por eso no hay
     // `list`.
+    // EL PRECIO AL SEGUNDO (2026-11-17). Lo escribe el puente de MT5 del
+    // computador de Néstor cada segundo, y lo leen las apps.
+    //
+    // · ESCRIBE SOLO LA CUENTA DEL PUENTE, una cuenta de usuario propia que no
+    //   es la de Néstor ni la cuenta de servicio (esa es la llave maestra de
+    //   Firebase y no puede vivir en un PC de casa). Su contraseña está solo
+    //   en ese computador, en `puente-mt5/firebase_puente.txt`, que no se sube.
+    //   El correo puede estar aquí a la vista: sin la contraseña no sirve.
+    // · LA FORMA SE COMPRUEBA: los dos campos y nada más, y como mucho 30
+    //   pares. Así nadie puede usar este documento para guardar otra cosa.
+    // · LEE CUALQUIERA CON SESIÓN, sin mirar si está aprobado. Mirarlo pediría
+    //   un `get()` de su ficha en cada lectura, y cada cambio del precio es una
+    //   lectura: se pagaría dos veces cada segundo. Es un precio de mercado,
+    //   no un dato de nadie, y la app solo escucha con la cuenta aprobada.
+    match /vivo/precios {
+      allow get: if request.auth != null;
+      allow write: if request.auth != null
+        && request.auth.token.email == 'puente-mt5@nestor-forex.firebaseapp.com'
+        && request.resource.data.keys().hasOnly(['actualizadoEl', 'pares'])
+        && request.resource.data.actualizadoEl is string
+        && request.resource.data.pares is map
+        && request.resource.data.pares.size() <= 30;
+    }
+
     match /pushSubs/{subId} {
       allow get: if esPropio(resource.data.uid);
 

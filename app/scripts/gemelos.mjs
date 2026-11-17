@@ -323,6 +323,8 @@ export const GEMELOS = [
   // Twelve Data si no, y la pantalla dice cuál y de qué hora. El puente es uno
   // para las dos apps.
   'src/lib/precioVivo.js',
+  // El precio al segundo (2026-11-17): la misma escucha de `vivo/precios` en las dos.
+  'src/lib/usePrecioMt5.js',
   'src/components/FuentePrecio.jsx',
   // La vista vertical u horizontal (punto 11, 2026-11-17): el acomodo es el
   // mismo en las dos apps.
