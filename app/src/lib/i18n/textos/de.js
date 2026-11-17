@@ -102,6 +102,18 @@ export default {
 
   // MODO PRÁCTICA — operaciones sin dinero que la app sigue sola (practica.js).
   prac: {
+    riesgoL: "Du hast riskiert:",
+    loteL: "Lot",
+    grafVer: "Chart ansehen",
+    grafOcultar: "Chart ausblenden",
+    grafEntrada: "EINSTIEG",
+    grafAhora: "JETZT",
+    grafSinDatos: "Für diese Operation gibt es noch keine Kerzen zum Zeichnen. Sie erscheinen, sobald der Scan erneut veröffentlicht wird.",
+    grafAria: ({ par, entrada, sl, tp }) => `Chart der Übungsoperation in ${par}: Einstieg ${entrada}, Stop-loss ${sl}, Take-profit ${tp}`,
+    grafPie: ({ n }) => `Die letzten ${n} Kerzen des Paares, dieselben, mit denen die App entscheidet, ob sie gewonnen oder verloren hat. Die gepunktete senkrechte Linie ist die Kerze deines Einstiegs; der farbige Kreis, wo sie endete.`,
+    grafAntes: ({ n }) => `Die letzten ${n} Kerzen des Paares. Dein Einstieg lag vor der ersten sichtbaren, deshalb erscheint seine Markierung nicht.`,
+    dineroL: "Hättest du riskiert, was dein Profil sagt:",
+    dineroNota: ({ n, total }) => `Zählt ${n} von ${total} Operationen (die mit gespeichertem Risiko in Dollar). Es ist hypothetisch: Spread und Swap sind nicht abgezogen.`,
     titulo: "Übungsmodus",
     desc: "Handeln ohne Geld: Die App verfolgt den Trade selbst mit echten Kursen",
     paraQue: "Um eine Handelsweise zu testen, ohne Geld zu riskieren. Du baust den Trade im Analysator und die App verfolgt ihn mit echten Kursen, bis er den Stop-loss oder den Take-profit erreicht. Mit der Zeit siehst du, ob diese Handelsweise funktioniert, bevor du Geld einsetzt – so gehen erfahrene Trader mit jeder neuen Idee um.",

@@ -318,6 +318,7 @@ export const GEMELOS = [
   'src/lib/practica.js',
   'src/lib/usePractica.js',
   'src/components/Practica.jsx',
+  'src/components/GraficoPractica.jsx',
   'scripts/prueba-practica.mjs',
   'scripts/prueba-guardian.mjs',
   // El Analizador (fase 3, 2026-11-13). Las cuentas, la pantalla, el guardado

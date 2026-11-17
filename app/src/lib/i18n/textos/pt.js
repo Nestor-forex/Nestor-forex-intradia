@@ -102,6 +102,18 @@ export default {
 
   // MODO PRÁCTICA — operaciones sin dinero que la app sigue sola (practica.js).
   prac: {
+    riesgoL: "Você arriscava:",
+    loteL: "lote",
+    grafVer: "Ver o gráfico",
+    grafOcultar: "Ocultar o gráfico",
+    grafEntrada: "ENTRADA",
+    grafAhora: "AGORA",
+    grafSinDatos: "Ainda não há velas para desenhar esta operação. Elas aparecem assim que a varredura for publicada de novo.",
+    grafAria: ({ par, entrada, sl, tp }) => `Gráfico da operação de prática em ${par}: entrada ${entrada}, Stop-loss ${sl}, Take-profit ${tp}`,
+    grafPie: ({ n }) => `As últimas ${n} velas do par, as mesmas com que o app decide se ganhou ou perdeu. A linha vertical pontilhada é a vela em que você entrou; o círculo colorido, onde terminou.`,
+    grafAntes: ({ n }) => `As últimas ${n} velas do par. Sua entrada foi antes da primeira que aparece, então a marca dela não sai.`,
+    dineroL: "Se você tivesse arriscado o do seu perfil:",
+    dineroNota: ({ n, total }) => `Conta ${n} de ${total} operações (as que guardaram seu risco em dólares). É hipotético: não desconta spread nem swap.`,
     titulo: "Modo prática",
     desc: "Opere sem dinheiro: o app acompanha a operação sozinho com preços reais",
     paraQue: "Para testar uma forma de operar sem arriscar dinheiro. Você monta a operação no Analisador e o app a acompanha com os preços reais até tocar o Stop-loss ou o Take-profit. Com o tempo você vê se essa forma de operar funciona antes de colocar dinheiro, que é o que traders experientes fazem com qualquer ideia nova.",

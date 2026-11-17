@@ -98,6 +98,18 @@ export default {
 
   // MODO PRÁCTICA — operaciones sin dinero que la app sigue sola (practica.js).
   prac: {
+    riesgoL: "リスク額：",
+    loteL: "ロット",
+    grafVer: "チャートを見る",
+    grafOcultar: "チャートを隠す",
+    grafEntrada: "エントリー",
+    grafAhora: "現在",
+    grafSinDatos: "この取引を描くローソク足はまだありません。スキャンが再度公開されると表示されます。",
+    grafAria: ({ par, entrada, sl, tp }) => `${par} の練習取引のチャート：エントリー ${entrada}、Stop-loss ${sl}、Take-profit ${tp}`,
+    grafPie: ({ n }) => `このペアの直近 ${n} 本のローソク足で、アプリが勝ち負けを判断するのと同じものです。縦の点線がエントリーした足、色付きの円が終わった位置です。`,
+    grafAntes: ({ n }) => `このペアの直近 ${n} 本のローソク足。エントリーは表示されている最初の足より前なので、その印は出ません。`,
+    dineroL: "プロフィールどおりのリスクを取っていたら：",
+    dineroNota: ({ n, total }) => `${total} 件中 ${n} 件を集計（ドルでのリスクを保存した取引）。仮定の数字で、spread と swap は差し引いていません。`,
     titulo: "練習モード",
     desc: "お金を使わずに取引：アプリが実際の価格で自動的に追跡します",
     paraQue: "お金をリスクにさらさずに取引方法を試すためのものです。アナライザーで取引を組み立てると、アプリが Stop-loss か Take-profit に届くまで実際の価格で追跡します。時間がたてば、お金を入れる前にその方法が機能するかが分かります。経験のあるトレーダーは新しいアイデアにいつもそうしています。",

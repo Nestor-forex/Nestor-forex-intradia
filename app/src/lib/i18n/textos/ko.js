@@ -98,6 +98,18 @@ export default {
 
   // MODO PRÁCTICA — operaciones sin dinero que la app sigue sola (practica.js).
   prac: {
+    riesgoL: "걸었던 위험:",
+    loteL: "랏",
+    grafVer: "차트 보기",
+    grafOcultar: "차트 숨기기",
+    grafEntrada: "진입",
+    grafAhora: "현재",
+    grafSinDatos: "이 거래를 그릴 캔들이 아직 없습니다. 스캔이 다시 게시되면 나타납니다.",
+    grafAria: ({ par, entrada, sl, tp }) => `${par} 연습 거래 차트: 진입 ${entrada}, Stop-loss ${sl}, Take-profit ${tp}`,
+    grafPie: ({ n }) => `통화쌍의 최근 ${n}개 캔들로, 앱이 이겼는지 졌는지 판단하는 것과 같은 캔들입니다. 세로 점선은 진입한 캔들, 색깔 원은 끝난 위치입니다.`,
+    grafAntes: ({ n }) => `통화쌍의 최근 ${n}개 캔들. 진입이 보이는 첫 캔들보다 앞이라 표시가 나오지 않습니다.`,
+    dineroL: "프로필대로 위험을 걸었다면:",
+    dineroNota: ({ n, total }) => `${total}건 중 ${n}건을 셉니다(달러 위험을 저장한 거래). 가정이며 spread와 swap은 빼지 않았습니다.`,
     titulo: "연습 모드",
     desc: "돈 없이 거래: 앱이 실제 가격으로 거래를 직접 추적합니다",
     paraQue: "돈을 걸지 않고 거래 방식을 시험해 보기 위한 기능입니다. 분석기에서 거래를 만들면 앱이 Stop-loss나 Take-profit에 닿을 때까지 실제 가격으로 추적합니다. 시간이 지나면 돈을 넣기 전에 그 방식이 통하는지 알 수 있습니다. 경험 많은 트레이더는 새 아이디어마다 이렇게 합니다.",

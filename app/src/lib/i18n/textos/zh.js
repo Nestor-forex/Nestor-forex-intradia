@@ -98,6 +98,18 @@ export default {
 
   // MODO PRÁCTICA — operaciones sin dinero que la app sigue sola (practica.js).
   prac: {
+    riesgoL: "你承担的风险：",
+    loteL: "手",
+    grafVer: "查看图表",
+    grafOcultar: "隐藏图表",
+    grafEntrada: "入场",
+    grafAhora: "现在",
+    grafSinDatos: "这笔操作还没有可绘制的K线。扫描再次发布后就会出现。",
+    grafAria: ({ par, entrada, sl, tp }) => `${par} 练习操作图表：入场 ${entrada}，Stop-loss ${sl}，Take-profit ${tp}`,
+    grafPie: ({ n }) => `该货币对最近 ${n} 根K线，与应用判断盈亏所用的完全相同。竖直虚线是你入场的那根K线；彩色圆圈是结束的位置。`,
+    grafAntes: ({ n }) => `该货币对最近 ${n} 根K线。你的入场早于显示的第一根，所以看不到它的标记。`,
+    dineroL: "如果你按个人资料承担风险：",
+    dineroNota: ({ n, total }) => `统计了 ${total} 笔中的 ${n} 笔（保存了美元风险的那些）。这是假设的：未扣除 spread 和 swap。`,
     titulo: "练习模式",
     desc: "不用真钱交易：应用用真实价格自动跟踪这笔交易",
     paraQue: "用来在不冒资金风险的情况下测试一种交易方式。你在分析器里设置好交易，应用会用真实价格一直跟踪，直到触及 Stop-loss 或 Take-profit。时间一长，你就能在投入真钱之前看出这种方式是否有效——有经验的交易者对任何新想法都会这样做。",

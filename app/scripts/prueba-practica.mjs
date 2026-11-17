@@ -16,6 +16,9 @@ import {
   MAX_ABIERTAS,
   NOTA_MAX,
   fichaPractica,
+  graficoDePractica,
+  LOTE_MAX,
+  RIESGO_USD_MAX,
   msDeVela,
   nivelesCoherentes,
   rbDe,
@@ -163,6 +166,40 @@ for (const k of ['titulo', 'desc', 'paraQue', 'aviso', 'comoSeDecide', 'caducada
 }
 ok(/\n    practicar:/.test(es) && /\n    practicaT:/.test(es), 'existen el botón y la insignia')
 ok(!/compra|vende|comprar|vender/i.test(es.slice(es.indexOf('\n  prac: {'), es.indexOf('\n  },', es.indexOf('\n  prac: {'))).replace(/compra: "COMPRA"/, '').replace(/venta: "VENTA"/, '')), 'ningún texto dice compra o vende')
+
+console.log('\n12 · El riesgo en dólares (del perfil) y la gráfica')
+{
+  const an = { par: 'EUR/USD', lado: 'COMPRA', precio: 1.1, niveles: { sl: 1.095, tp: 1.11 } }
+  const con = fichaPractica({ app: 'swing', analisis: { ...an, lote: { lote: 0.234, riesgoUsd: 25.004 } }, metodo: 'app', vela: '2026-11-10' })
+  ok(con.riesgoUsd === 25 && con.lote === 0.23, 'guarda el riesgo en dólares y el lote del Analizador, redondeados')
+  const sin = fichaPractica({ app: 'swing', analisis: an, metodo: 'app', vela: '2026-11-10' })
+  ok(!('riesgoUsd' in sin) && !('lote' in sin), 'sin perfil no inventa dinero: la operación se sigue igual, en R')
+  const raro = fichaPractica({ app: 'swing', analisis: { ...an, lote: { lote: LOTE_MAX * 2, riesgoUsd: -5 } }, metodo: 'app', vela: '2026-11-10' })
+  ok(!('riesgoUsd' in raro) && !('lote' in raro), 'un número raro no se guarda')
+  const r = resumenPractica([
+    { estado: 'ganada', r: 2, riesgoUsd: 10 },
+    { estado: 'perdida', r: -1, riesgoUsd: 20 },
+    { estado: 'perdida', r: -1 },
+  ])
+  ok(r.dinero === 0 && r.conDinero === 2 && r.resueltas === 3, 'el dinero es R × lo arriesgado, y solo de las que lo guardaron')
+  ok(resumenPractica([{ estado: 'ganada', r: 1 }]).dinero === null, 'sin ninguna con dinero dice «no lo sé» (null), no 0')
+  ok(new RegExp(`riesgoUsd <= ${RIESGO_USD_MAX}`).test(bloque) && new RegExp(`lote <= ${LOTE_MAX}`).test(bloque), 'las reglas ponen los mismos topes que el código')
+
+  const F = ['a', 'b', 'c', 'd']
+  const barrido = { fechas20: F, pares: [{ name: 'EUR/USD', serie20: [1, 2, 3, 4], altos20: [2, 3, 4, 5], bajos20: [0, 1, 2, 3] }] }
+  const g = graficoDePractica({ par: 'EUR/USD', vela: 'b', velaResuelta: 'd' }, barrido)
+  ok(g && g.iEntrada === 1 && g.iResuelta === 3 && g.cierres.length === 4, 'la gráfica usa las MISMAS velas del barrido con que se decide')
+  ok(graficoDePractica({ par: 'EUR/USD', vela: 'zz' }, barrido).iEntrada === -1, 'una entrada que ya salió de las velas no se dibuja en otro sitio')
+  ok(graficoDePractica({ par: 'EUR/USD', vela: 'b' }, { pares: barrido.pares }) === null, 'sin fechas no hay gráfica (no se inventan)')
+  ok(graficoDePractica({ par: 'EUR/USD', vela: 'b' }, { fechas20: F, pares: [{ name: 'EUR/USD', serie20: [1, 2, 3, NaN], altos20: [2, 3, 4, 5], bajos20: [0, 1, 2, 3] }] }) === null, 'con un dato roto no dibuja nada (una mecha de altura cero sería falsa)')
+  const graf = leer('src/components/GraficoPractica.jsx')
+  ok(/<GraficoPractica /.test(tarjeta) && /graficoDePractica\(/.test(tarjeta), 'la tarjeta dibuja la gráfica con `graficoDePractica`')
+  ok(/velas=\{velasPractica\}/.test(diario), 'el Diario le pasa las velas a la tarjeta')
+  ok(/dir="ltr"/.test(graf), 'la gráfica no se voltea en árabe')
+  for (const k of ['grafVer', 'grafOcultar', 'grafPie', 'grafAntes', 'grafSinDatos', 'dineroL', 'dineroNota', 'riesgoL']) {
+    ok(new RegExp(`\\n  prac: \\{[\\s\\S]*?\\n    ${k}:`).test(es), `existe prac.${k}`)
+  }
+}
 
 console.log(mal ? `\n✗ ${mal} comprobaciones fallaron\n` : '\n✓ todo bien\n')
 process.exit(mal ? 1 : 0)
