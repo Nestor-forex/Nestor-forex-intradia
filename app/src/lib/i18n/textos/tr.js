@@ -88,6 +88,8 @@ export default {
     diarioD: ({ meta }) => `Kazansan da kaybetsen de Günlüğe ${meta} işlem kaydet. Kaydedilmeyen gözden geçirilemez.`,
     porqueT: "Nedenini yazıyorsun",
     porqueD: ({ meta }) => `Neden girdiğine dair notla ${meta} işlem kaydet. Onları yeniden okumak hatalarından öğrenmenin en ucuz yoludur.`,
+    constanteT: "İstikrarlı analist",
+    constanteD: ({ meta }) => `Tam panoyu art arda ${meta} işlem günü aç. Hafta sonları sayılmaz ve seriyi bozmaz: piyasa kapalıdır.`,
     frenoT: "Frenine uyuyorsun",
     frenoD: ({ meta }) => `Günlük frenine ya da art arda kayıp sınırına ulaştıktan sonra yeni işlem açmadan ${meta} işlem gününü tamamla. Ulaşmadığın bir gün de sayılır.`,
     necesitaPerfil: "Sayılması için risk profilin gerekiyor.",

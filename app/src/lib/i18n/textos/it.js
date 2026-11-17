@@ -88,6 +88,8 @@ export default {
     diarioD: ({ meta }) => `Annota ${meta} operazioni nel Diario, in guadagno o in perdita. Ciò che non si annota non si può rivedere.`,
     porqueT: "Scrivi il perché",
     porqueD: ({ meta }) => `Annota ${meta} operazioni con una nota sul perché sei entrato. Rileggerle è il modo più economico per imparare dai tuoi errori.`,
+    constanteT: "Analista costante",
+    constanteD: ({ meta }) => `Apri il tabellone completo ${meta} giorni lavorativi di fila. I fine settimana non contano e non interrompono la serie: il mercato è chiuso.`,
     frenoT: "Rispetti il tuo freno",
     frenoD: ({ meta }) => `Chiudi ${meta} giornate di trading senza aprire un’altra operazione dopo aver toccato il tuo freno giornaliero o le tue perdite consecutive. Anche un giorno in cui non lo tocchi conta.`,
     necesitaPerfil: "Serve il tuo profilo di rischio per contarlo.",

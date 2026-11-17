@@ -88,6 +88,8 @@ export default {
     diarioD: ({ meta }) => `在日志中记录 ${meta} 笔交易，无论盈亏。不记录的东西就无法复盘。`,
     porqueT: "写下理由",
     porqueD: ({ meta }) => `记录 ${meta} 笔附有入场理由备注的交易。重读它们是从错误中学习最便宜的方法。`,
+    constanteT: "持续分析者",
+    constanteD: ({ meta }) => `连续 ${meta} 个交易日打开完整看板。周末既不计数也不会中断连续记录：那时市场休市。`,
     frenoT: "遵守你的止损闸",
     frenoD: ({ meta }) => `完成 ${meta} 个交易日：触及当日止损闸或连续亏损上限后不再开新单。没有触及的日子也算。`,
     necesitaPerfil: "需要你的风险档案才能计算。",

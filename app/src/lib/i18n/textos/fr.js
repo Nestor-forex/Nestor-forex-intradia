@@ -92,6 +92,8 @@ export default {
     diarioD: ({ meta }) => `Note ${meta} opérations dans le Journal, gagnantes ou perdantes. Ce qui n’est pas noté ne peut pas être revu.`,
     porqueT: "Tu écris pourquoi",
     porqueD: ({ meta }) => `Note ${meta} opérations avec une note expliquant pourquoi tu es entré. Les relire est la façon la moins chère d’apprendre de tes erreurs.`,
+    constanteT: "Analyste régulier",
+    constanteD: ({ meta }) => `Ouvre le tableau complet ${meta} jours ouvrés d'affilée. Les week-ends ne comptent pas et ne cassent pas la série : le marché est fermé.`,
     frenoT: "Tu respectes ton frein",
     frenoD: ({ meta }) => `Termine ${meta} journées de trading sans ouvrir d’autre opération après avoir touché ton frein du jour ou ta série de pertes. Un jour où tu ne le touches pas compte aussi.`,
     necesitaPerfil: "Il faut ton profil de risque pour le compter.",

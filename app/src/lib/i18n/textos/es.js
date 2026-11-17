@@ -107,6 +107,8 @@ export default {
     diarioD: ({ meta }) => `Anota ${meta} operaciones en el Diario, ganes o pierdas. Lo que no se anota no se puede revisar.`,
     porqueT: "Escribes por qué",
     porqueD: ({ meta }) => `Anota ${meta} operaciones con una nota de por qué entraste. Releerlas es la forma más barata de aprender de tus errores.`,
+    constanteT: "Analista constante",
+    constanteD: ({ meta }) => `Abre el tablero completo ${meta} días hábiles seguidos. Los fines de semana no cuentan ni cortan la racha: el mercado está cerrado.`,
     frenoT: "Respetas tu freno",
     frenoD: ({ meta }) => `Cierra ${meta} días de operaciones sin abrir otra después de tocar tu freno del día o tus pérdidas seguidas. Un día en que no lo tocas también cuenta.`,
     necesitaPerfil: "Necesita tu perfil de riesgo para poder contarse.",

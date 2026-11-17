@@ -92,6 +92,8 @@ export default {
     diarioD: ({ meta }) => `Log ${meta} trades in the Journal, win or lose. What is not logged cannot be reviewed.`,
     porqueT: "You write down why",
     porqueD: ({ meta }) => `Log ${meta} trades with a note on why you entered. Rereading them is the cheapest way to learn from your mistakes.`,
+    constanteT: "Steady analyst",
+    constanteD: ({ meta }) => `Open the full board ${meta} trading days in a row. Weekends neither count nor break the streak: the market is closed.`,
     frenoT: "You respect your brake",
     frenoD: ({ meta }) => `Close ${meta} trading days without opening another trade after hitting your daily brake or your losing streak. A day when you do not hit it also counts.`,
     necesitaPerfil: "Needs your risk profile to be counted.",

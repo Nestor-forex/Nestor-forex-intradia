@@ -92,6 +92,8 @@ export default {
     diarioD: ({ meta }) => `Notiere ${meta} Trades im Journal, ob Gewinn oder Verlust. Was nicht notiert wird, kann nicht überprüft werden.`,
     porqueT: "Du schreibst auf, warum",
     porqueD: ({ meta }) => `Notiere ${meta} Trades mit einer Notiz, warum du eingestiegen bist. Sie wieder zu lesen ist der günstigste Weg, aus Fehlern zu lernen.`,
+    constanteT: "Beständiger Analyst",
+    constanteD: ({ meta }) => `Öffne das vollständige Board an ${meta} Handelstagen hintereinander. Wochenenden zählen nicht und unterbrechen die Serie nicht: Der Markt ist geschlossen.`,
     frenoT: "Du respektierst deine Bremse",
     frenoD: ({ meta }) => `Schließe ${meta} Handelstage ab, ohne nach Erreichen deiner Tagesbremse oder deiner Verlustserie einen weiteren Trade zu eröffnen. Ein Tag, an dem du sie nicht erreichst, zählt auch.`,
     necesitaPerfil: "Braucht dein Risikoprofil, um gezählt zu werden.",

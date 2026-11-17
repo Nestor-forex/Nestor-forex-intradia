@@ -15,9 +15,11 @@
 // dinero: premia parar cuando tu propio freno lo dice. Un día de solo ganadas
 // también la respeta.
 //
-// ⚠️ NO SE GUARDA NADA. Se calculan cada vez con los datos de la persona, así
-// que no hay nada que se pueda inflar a mano ni que cambiar en las reglas de
-// Firestore. Si borras operaciones, la cuenta baja: es lo honesto.
+// ⚠️ NO SE GUARDA NINGUNA INSIGNIA. Se calculan cada vez con los datos de la
+// persona. Si borras operaciones, la cuenta baja: es lo honesto. La única que
+// necesita un dato guardado aparte es «Analista constante» (los días en que se
+// abrió el tablero, `constancia.js`), y lo que se guarda es el día, no la
+// medalla.
 //
 // ⚠️ AQUÍ NO HAY FIREBASE NI REACT, a propósito: se comprueba sin red.
 //
@@ -27,6 +29,7 @@
 import { diaDeCierre } from './guardianRiesgo.js'
 import { frenoEnDolares, leerPerfil, perfilCompleto } from './perfilRiesgo.js'
 import { resumenPractica } from './practica.js'
+import { mejorRacha } from './constancia.js'
 
 // Cuántas veces hace falta para cada una. Están a la vista en la pantalla.
 export const META = Object.freeze({
@@ -36,13 +39,14 @@ export const META = Object.freeze({
   alerta: 1,
   diario: 10,
   porque: 10,
+  constante: 5,
   freno: 5,
   practica: 5,
 })
 
 // El orden en que se enseñan: primero lo que se hace en un minuto, después lo
 // que pide constancia.
-export const INSIGNIAS = Object.freeze(['perfil', 'lista', 'metodo', 'alerta', 'diario', 'porque', 'freno', 'practica'])
+export const INSIGNIAS = Object.freeze(['perfil', 'lista', 'metodo', 'alerta', 'diario', 'porque', 'constante', 'freno', 'practica'])
 
 // Una nota de menos de esto no es un «por qué» (un punto, una letra).
 export const NOTA_MINIMA = 8
@@ -128,6 +132,10 @@ export function calcularInsignias(trades, ficha, practica = []) {
     alerta: largo(ficha?.avisos) > 0 ? 1 : 0,
     diario: lista.length,
     porque: lista.filter((t) => typeof t.nota === 'string' && t.nota.trim().length >= NOTA_MINIMA).length,
+    // ⚠️ La racha más larga de días HÁBILES seguidos abriendo el tablero
+    // completo (`constancia.js`). Es la única que necesita un dato guardado
+    // aparte (`diasTablero`), porque ningún otro dice qué días se miró.
+    constante: mejorRacha(ficha?.diasTablero),
     freno: respetados,
     // ⚠️ Cuentan las TERMINADAS (ganadas o perdidas), y las dos igual: lo que
     // se premia es llegar al final de la práctica, no ganarla.
