@@ -17,7 +17,7 @@ import { useMemo, useState } from 'react'
 import { useT, useIdioma } from '../lib/i18n'
 import { APP } from '../lib/identidad'
 import { margen } from '../lib/diagnostico'
-import { graficoDePractica, rbDe, resumenPractica } from '../lib/practica'
+import { costesPractica, graficoDePractica, rbDe, resumenPractica } from '../lib/practica'
 import TarjetaPlegable from './TarjetaPlegable'
 import GraficoPractica from './GraficoPractica'
 
@@ -67,6 +67,40 @@ export default function Practica({ ops = [], onBorrar, onIrAnalizar, velas = nul
         </span>
       </div>
     ) : null
+  // Lo bruto, lo que se llevan el spread y el swap, y lo que queda. Lo que no
+  // se sabe dice «sin dato», nunca un número inventado.
+  const desglose = (o) => {
+    const c = costesPractica(o)
+    if (!c) return null
+    const horaFoto = typeof o.spreadEl === 'string' && Number.isFinite(Date.parse(o.spreadEl))
+      ? new Date(Date.parse(o.spreadEl)).toLocaleString(locale, { dateStyle: 'short', timeStyle: 'short' })
+      : null
+    const R = (v) => <span className="mono" dir="ltr">{fmtR(v)}</span>
+    return (
+      <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+        {tr('prac.cBruto')} {R(c.rBruto)}
+        {' · '}
+        {tr('prac.cSpread')}{' '}
+        {c.spreadIncluido ? tr('prac.cIncluido') : c.sinSpread ? <span style={{ color: 'var(--amber)' }}>{tr('prac.cSinDato')}</span> : (
+          <>
+            {R(-c.spreadR)}
+            {horaFoto ? <> ({tr('prac.cFoto', { hora: horaFoto })})</> : null}
+          </>
+        )}
+        {' · '}
+        {tr('prac.cSwap')}{' '}
+        {c.sinSwap ? <span style={{ color: 'var(--amber)' }}>{tr('prac.cSinDato')}</span> : (
+          <>
+            {R(c.swapR)} ({tr('prac.cNoches', { n: c.noches })})
+          </>
+        )}
+        {' · '}
+        <span style={{ fontWeight: 600 }}>
+          {tr('prac.cNeto')} {R(c.rNeto)}
+        </span>
+      </div>
+    )
+  }
   const botonGrafica = (o) => (
     <button type="button" className="btn-ghost" style={{ minHeight: 32, padding: '0 10px', fontSize: 12, marginTop: 4 }} onClick={() => alternarGrafica(o.id)}>
       {conGrafica.has(o.id) ? tr('prac.grafOcultar') : tr('prac.grafVer')}
@@ -140,6 +174,25 @@ export default function Practica({ ops = [], onBorrar, onIrAnalizar, velas = nul
             </span>
           </div>
         )}
+        {/* LO NETO (2026-11-17): con el spread y el swap de la cuenta real del
+            desarrollador descontados. Néstor: «no quiero cuentas hipotéticas…
+            debe mostrar su cuenta con cálculos reales con su descuento». */}
+        {res.resueltas > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 16px', marginTop: 6, fontSize: 12.5 }}>
+            <span>
+              {tr('prac.netoL')}{' '}
+              <span className="mono" dir="ltr" style={{ fontWeight: 600, color: colorR(res.sumaNeta) }}>
+                {fmtR(res.sumaNeta)}
+              </span>
+            </span>
+            <span>
+              {tr('prac.netoPorOpL')}{' '}
+              <span className="mono" dir="ltr" style={{ fontWeight: 600, color: colorR(res.porOperacionNeta) }}>
+                {fmtR(res.porOperacionNeta)}
+              </span>
+            </span>
+          </div>
+        )}
         {res.dinero !== null && (
           <div style={{ marginTop: 6, fontSize: 12.5 }}>
             {tr('prac.dineroL')}{' '}
@@ -148,6 +201,9 @@ export default function Practica({ ops = [], onBorrar, onIrAnalizar, velas = nul
             </span>
             <div style={{ ...TEXTO, fontSize: 11.5, color: 'var(--text-muted)' }}>{tr('prac.dineroNota', { n: res.conDinero, total: res.resueltas })}</div>
           </div>
+        )}
+        {res.resueltas > 0 && (res.sinSpread > 0 || res.sinSwap > 0) && (
+          <div style={{ ...TEXTO, fontSize: 11.5, color: 'var(--amber)', marginTop: 4 }}>{tr('prac.faltanNota', { sp: res.sinSpread, sw: res.sinSwap })}</div>
         )}
         {res.resueltas > 0 && <div style={{ ...TEXTO, fontSize: 11.5, color: 'var(--text-muted)', marginTop: 4 }}>{tr('prac.margen')}</div>}
 
@@ -209,15 +265,20 @@ export default function Practica({ ops = [], onBorrar, onIrAnalizar, velas = nul
                     </span>{' '}
                     {tr(o.lado === 'COMPRA' ? 'prac.compra' : 'prac.venta')} · {tr(`prac.est_${o.estado}`)}
                   </span>
-                  {typeof o.r === 'number' && (
-                    <span className="mono" dir="ltr" style={{ fontSize: 13, fontWeight: 600, color: colorR(o.r) }}>
-                      {fmtR(o.r)}
-                      {typeof o.riesgoUsd === 'number' ? ` · ${fmtUsd(o.r * o.riesgoUsd)}` : ''}
-                    </span>
-                  )}
+                  {typeof o.r === 'number' && (() => {
+                    const c = costesPractica(o)
+                    const r = c ? c.rNeto : o.r
+                    return (
+                      <span className="mono" dir="ltr" style={{ fontSize: 13, fontWeight: 600, color: colorR(r) }}>
+                        {fmtR(r)}
+                        {c && typeof c.usdNeto === 'number' ? ` · ${fmtUsd(c.usdNeto)}` : ''}
+                      </span>
+                    )
+                  })()}
                 </div>
                 <div>{niveles(o)}</div>
                 {riesgo(o)}
+                {desglose(o)}
                 {o.estado === 'caducada' && <div style={{ ...TEXTO, fontSize: 11.5 }}>{tr('prac.caducadaD')}</div>}
                 {o.estado === 'invalida' && <div style={{ ...TEXTO, fontSize: 11.5 }}>{tr(`prac.motivo_${o.motivo || 'niveles'}`)}</div>}
                 {(o.estado === 'ganada' || o.estado === 'perdida') && botonGrafica(o)}
@@ -228,6 +289,7 @@ export default function Practica({ ops = [], onBorrar, onIrAnalizar, velas = nul
         )}
 
         <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 10, lineHeight: 1.5, borderTop: '1px solid var(--border)', paddingTop: 8 }}>
+          {tr('prac.cAviso')}{' '}
           {tr('prac.comoSeDecide')}
           {APP === 'intradia' && <> {tr('prac.cruces')}</>}
         </div>

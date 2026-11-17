@@ -41,7 +41,7 @@ export const MAX_ABIERTAS = 20
 // esta lista hay que cambiar también `firestore.rules`, y `prueba-practica.mjs`
 // falla si se separan.
 export const CAMPOS_CREAR = Object.freeze(['app', 'par', 'lado', 'entrada', 'sl', 'tp', 'vela', 'metodo', 'creado'])
-export const CAMPOS_OPCIONALES = Object.freeze(['nota', 'riesgoUsd', 'lote'])
+export const CAMPOS_OPCIONALES = Object.freeze(['nota', 'riesgoUsd', 'lote', 'fuente', 'spread', 'spreadEl', 'swap', 'swap3', 'marcas'])
 export const NOTA_MAX = 300
 
 // El riesgo en dólares y el lote los saca el Analizador del «perfil de riesgo»
@@ -53,6 +53,35 @@ export const NOTA_MAX = 300
 // de Firestore exigen el mismo.
 export const RIESGO_USD_MAX = 1_000_000
 export const LOTE_MAX = 1000
+
+// ── Lo que cuesta operar de verdad (2026-11-17) ───────────────────────────
+// Néstor: «lo del riesgo en dólares en la práctica no quiero que dé cuentas
+// hipotéticas… eso contradice nuestra esencia de honestidad. Debe mostrar su
+// cuenta con cálculos reales con su descuento».
+//
+// Así que cada operación guarda, al crearse, el SPREAD y el SWAP de la cuenta
+// real del desarrollador (los manda el puente de MT5), y el resultado se
+// descuenta con ellos:
+//
+//   · Si la entrada fue al precio de MT5 (`fuente: 'mt5'`), el spread YA va
+//     dentro: se compra al ASK y se vende al BID, y no se resta otra vez.
+//   · Si la entrada fue al cierre de Twelve Data, se resta el spread de la
+//     última foto de MT5 de ese par, y se dice de qué hora es (`spreadEl`).
+//   · El swap se cobra (o se paga) por cada noche que la operación siguió
+//     abierta, con el triple el día que dice el bróker (`swap3`).
+//
+// ⚠️ LO QUE NO SE SABE SE DICE, NO SE INVENTA. Si no hubo foto de MT5 con
+// spread, o el puente todavía no manda el swap, la tarjeta dice «sin dato» en
+// esa línea y no pone un número de mentira.
+//
+// Topes para que nadie escriba un número absurdo desde el teléfono; las reglas
+// de Firestore exigen los mismos.
+export const SPREAD_MAX = 50
+export const SWAP_MAX = 50
+export const MARCAS_MAX = 40
+export const FUENTES = Object.freeze(['mt5', 'twelve'])
+// Lo que dura una vela en cada app. Sirve para el reloj de las noches.
+export const PERIODO_MS = Object.freeze({ swing: 86_400_000, intradia: 3_600_000 })
 
 // Los estados que escribe el programa. Una operación abierta NO lleva `estado`:
 // así una ficha recién creada no puede traer un resultado escrito a mano.
@@ -74,7 +103,7 @@ export function nivelesCoherentes(lado, entrada, sl, tp) {
  * `creado` NO va aquí: lo pone quien guarda, con la hora del servidor (las
  * reglas exigen que sea esa y no la del teléfono, para que nadie la adelante).
  */
-export function fichaPractica({ app, analisis, metodo, vela, nota }) {
+export function fichaPractica({ app, analisis, metodo, vela, nota, entrada = null, cotizacion = null, fotoEl = null, marcas = null }) {
   const a = analisis
   if (!a?.par || !a?.niveles || !vela) return null
   const op = {
@@ -94,7 +123,182 @@ export function fichaPractica({ app, analisis, metodo, vela, nota }) {
   const lote = a.lote?.lote
   if (num(riesgoUsd) && riesgoUsd > 0 && riesgoUsd <= RIESGO_USD_MAX) op.riesgoUsd = Math.round(riesgoUsd * 100) / 100
   if (num(lote) && lote > 0 && lote <= LOTE_MAX) op.lote = Math.round(lote * 100) / 100
+
+  // De dónde salió el precio de entrada, y lo que cuesta operar.
+  op.fuente = entrada && num(entrada.precio) ? 'mt5' : 'twelve'
+  const sp = entrada && num(entrada.spread) ? entrada.spread : num(cotizacion?.spread) ? cotizacion.spread : null
+  if (num(sp) && sp >= 0 && sp <= SPREAD_MAX) {
+    op.spread = Math.round(sp * 100) / 100
+    // Con la entrada de Twelve el spread sale de una foto que puede ser vieja:
+    // se guarda de cuándo es para decirlo.
+    if (op.fuente === 'twelve' && typeof fotoEl === 'string' && fotoEl.length <= 40) op.spreadEl = fotoEl
+  }
+  const sw = op.lado === 'COMPRA' ? cotizacion?.swapLargo : cotizacion?.swapCorto
+  if (num(sw) && Math.abs(sw) <= SWAP_MAX) {
+    op.swap = Math.round(sw * 1000) / 1000
+    if (Number.isInteger(cotizacion?.swap3) && cotizacion.swap3 >= 0 && cotizacion.swap3 <= 6) op.swap3 = cotizacion.swap3
+  }
+  const mk = limpiarMarcas(marcas)
+  if (mk.length) op.marcas = mk
   return op
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// LO QUE LA PERSONA PROGRAMÓ, PARA DIBUJARLO (2026-11-17)
+// ─────────────────────────────────────────────────────────────────────────
+// Néstor: «si el usuario quiere ver dónde están ubicados su soporte y
+// resistencia porque lo programó, que lo pueda ver en esa gráfica, y así con
+// todo lo que él programe».
+//
+// Se guarda una FOTO de las herramientas encendidas en el Analizador en el
+// momento de crear la operación: los niveles tal como estaban al entrar. Así la
+// gráfica enseña lo que la persona vio para decidir, no lo que dirían hoy.
+//
+// Cada marca: { k, v, v2?, e? }
+//   · k   qué es (ver MARCAS_TIPOS)
+//   · v   el precio (en una zona, el borde de arriba)
+//   · v2  el borde de abajo, solo en las zonas (FVG)
+//   · e   la etiqueta corta que va al lado («EMA 20», «61.8 %», «R1»)
+
+export const MARCAS_TIPOS = Object.freeze(['sop', 'res', 'piv', 'ema', 'sma', 'bb', 'fib', 'fvg'])
+
+/** Las marcas válidas de una lista cualquiera (lo guardado se limpia al leer). */
+export function limpiarMarcas(lista) {
+  if (!Array.isArray(lista)) return []
+  const out = []
+  for (const m of lista) {
+    if (!m || !MARCAS_TIPOS.includes(m.k) || !num(m.v)) continue
+    const x = { k: m.k, v: m.v }
+    if (num(m.v2)) x.v2 = m.v2
+    if (typeof m.e === 'string' && m.e) x.e = m.e.slice(0, 12)
+    out.push(x)
+    if (out.length >= MARCAS_MAX) break
+  }
+  return out
+}
+
+/** Las marcas de un análisis del Analizador: solo lo que estaba encendido. */
+export function marcasDeAnalisis(a) {
+  const h = a?.herramientas
+  if (!h) return []
+  const m = []
+  if (h.niveles) {
+    m.push({ k: 'sop', v: h.niveles.sop })
+    m.push({ k: 'res', v: h.niveles.res })
+  }
+  if (h.pivote) {
+    for (const [e, v] of [['P', h.pivote.p], ['R1', h.pivote.r1], ['S1', h.pivote.s1], ['R2', h.pivote.r2], ['S2', h.pivote.s2]]) m.push({ k: 'piv', v, e })
+  }
+  if (h.tendencia?.nombres) {
+    m.push({ k: 'ema', v: h.tendencia.corta, e: h.tendencia.nombres.corta })
+    m.push({ k: 'ema', v: h.tendencia.larga, e: h.tendencia.nombres.larga })
+  }
+  if (h.medias) {
+    for (const x of h.medias.sma ?? []) m.push({ k: 'sma', v: x.v, e: `SMA ${x.p}` })
+    for (const x of h.medias.ema ?? []) m.push({ k: 'ema', v: x.v, e: `EMA ${x.p}` })
+  }
+  if (h.bollinger) {
+    m.push({ k: 'bb', v: h.bollinger.arriba, e: 'BB +2σ' })
+    m.push({ k: 'bb', v: h.bollinger.media, e: 'BB 20' })
+    m.push({ k: 'bb', v: h.bollinger.abajo, e: 'BB −2σ' })
+  }
+  if (Array.isArray(h.fibonacci?.niveles)) {
+    for (const n of h.fibonacci.niveles) m.push({ k: 'fib', v: n.precio, e: `${(n.ratio * 100).toFixed(1)}%` })
+  }
+  if (Array.isArray(h.fvg?.huecos)) {
+    for (const x of h.fvg.huecos) m.push({ k: 'fvg', v: x.arriba, v2: x.abajo, e: 'FVG' })
+  }
+  // Las EMA de la tendencia y las de «Medias móviles» pueden repetirse: una vez basta.
+  const vistas = new Set()
+  return limpiarMarcas(m.filter((x) => {
+    const clave = `${x.k}|${x.e ?? ''}|${x.v}`
+    if (vistas.has(clave)) return false
+    vistas.add(clave)
+    return true
+  }))
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// EL RESULTADO CON SUS DESCUENTOS
+// ─────────────────────────────────────────────────────────────────────────
+
+/** El tamaño de un pip del par. */
+export const pipDePar = (par) => (String(par).includes('JPY') ? 0.01 : 0.0001)
+
+/**
+ * Cuántas noches de swap cuenta una operación entre `desdeMs` y `hastaMs`, con
+ * el corte del bróker a las 22:00 UTC, de lunes a viernes, y el TRIPLE el día
+ * `swap3` (0 = domingo … 6 = sábado, como lo da MT5).
+ *
+ * ⚠️ Es una aproximación y se dice: cada bróker corta a su hora (21:00 o 22:00
+ * UTC según el horario de verano) y el sábado y el domingo no cobra porque ya
+ * cobró el triple entre semana.
+ */
+export function nochesDeSwap(desdeMs, hastaMs, swap3 = 3) {
+  if (!num(desdeMs) || !num(hastaMs) || hastaMs <= desdeMs) return 0
+  let n = 0
+  const d = new Date(desdeMs)
+  d.setUTCHours(22, 0, 0, 0)
+  if (d.getTime() <= desdeMs) d.setUTCDate(d.getUTCDate() + 1)
+  // Tope de un año para no dar vueltas sin fin con datos raros.
+  for (let i = 0; i < 400 && d.getTime() <= hastaMs; i++) {
+    const dia = d.getUTCDay()
+    if (dia >= 1 && dia <= 5) n += dia === swap3 ? 3 : 1
+    d.setUTCDate(d.getUTCDate() + 1)
+  }
+  return n
+}
+
+/**
+ * El resultado de una operación resuelta con lo que de verdad cuesta operar.
+ *
+ * Devuelve `null` si no está ganada ni perdida. Si no:
+ *   { rBruto, spreadR, spreadIncluido, sinSpread, swapR, sinSwap, noches,
+ *     rNeto, usdNeto }
+ *
+ *   · `spreadR` lo que se lleva el spread, en unidades de riesgo (0 si ya iba
+ *     dentro de la entrada de MT5; `null` si no se sabe).
+ *   · `swapR`   lo que se cobra (−) o se gana (+) por las noches; `null` si no
+ *     se sabe.
+ *   · `rNeto`   el resultado menos lo que SÍ se sabe. Si falta un dato, la
+ *     tarjeta lo dice al lado (`sinSpread` / `sinSwap`).
+ *   · `usdNeto` `rNeto` × lo que se iba a arriesgar; `null` sin riesgo guardado.
+ */
+export function costesPractica(op) {
+  if (!op || (op.estado !== 'ganada' && op.estado !== 'perdida') || !num(op.r)) return null
+  const pip = pipDePar(op.par)
+  const riesgoPips = num(op.entrada) && num(op.sl) ? Math.abs(op.entrada - op.sl) / pip : null
+  if (!num(riesgoPips) || riesgoPips <= 0) return null
+
+  const spreadIncluido = op.fuente === 'mt5'
+  let spreadR = null
+  if (spreadIncluido) spreadR = 0
+  else if (num(op.spread)) spreadR = op.spread / riesgoPips
+
+  let swapR = null
+  let noches = null
+  const periodo = PERIODO_MS[op.app]
+  const desde = msDe(op.creado)
+  const velaFin = msDeVela(op.velaResuelta)
+  if (num(op.swap) && num(desde) && num(velaFin) && num(periodo)) {
+    // Hasta el FINAL de la vela en que se tocó el nivel: no se sabe en qué
+    // momento de ella pasó, y se cuenta la noche si la vela la cruzaba.
+    noches = nochesDeSwap(desde, velaFin + periodo, Number.isInteger(op.swap3) ? op.swap3 : 3)
+    swapR = (op.swap * noches) / riesgoPips
+  }
+
+  const rNeto = op.r - (spreadR ?? 0) + (swapR ?? 0)
+  return {
+    rBruto: op.r,
+    spreadR,
+    spreadIncluido,
+    sinSpread: spreadR === null,
+    swapR,
+    sinSwap: swapR === null,
+    noches,
+    rNeto,
+    usdNeto: num(op.riesgoUsd) && op.riesgoUsd > 0 ? rNeto * op.riesgoUsd : null,
+  }
 }
 
 /** Cuántas unidades de riesgo vale ganar: la distancia al TP sobre la del SL. */
@@ -173,7 +377,12 @@ export function resolverPractica(op, velas, { periodoMs } = {}) {
   // dentro de ella (con un pelo de tolerancia por el redondeo de pantalla).
   const iEntrada = fechas.indexOf(op.vela)
   if (iEntrada >= 0) {
-    const tol = Math.abs(op.entrada) * 1e-6
+    // ⚠️ Con la entrada de MT5 el precio es el del BRÓKER (el ASK o el BID) y las
+    // velas son de Twelve Data: dos fuentes no dan el mismo número al pip. Se
+    // deja de margen el spread y 3 pips; con eso un precio de otra hora sigue
+    // sin pasar, que es para lo que existe esta comprobación.
+    const tol =
+      op.fuente === 'mt5' ? ((num(op.spread) ? op.spread : 0) + 3) * pipDePar(op.par) : Math.abs(op.entrada) * 1e-6
     if (op.entrada > altos[iEntrada] + tol || op.entrada < bajos[iEntrada] - tol) {
       return { cambio: true, estado: 'invalida', motivo: 'fueraDeVela' }
     }
@@ -222,21 +431,29 @@ export function velasDelPar(barrido, par) {
  * Los números de las resueltas, para la tarjeta. Solo cuentan ganadas y
  * perdidas: una caducada o una inválida no dice nada de cómo se opera.
  *
- * ⚠️ El resultado va en UNIDADES DE RIESGO («R»), no en dinero: la práctica no
- * tiene lote. Ganar 2 R es ganar el doble de lo que se arriesgaba.
+ * ⚠️ El resultado va en UNIDADES DE RIESGO («R»): ganar 2 R es ganar el doble
+ * de lo que se arriesgaba. `sumaR` es el bruto (lo que dicen los niveles) y
+ * `sumaNeta` el que descuenta el spread y el swap; los dólares salen del neto.
  */
 export function resumenPractica(ops) {
   const lista = Array.isArray(ops) ? ops : []
   const resueltas = lista.filter((o) => o?.estado === 'ganada' || o?.estado === 'perdida')
   const ganadas = resueltas.filter((o) => o.estado === 'ganada').length
   const sumaR = resueltas.reduce((s, o) => s + (num(o.r) ? o.r : 0), 0)
-  // ⚠️ Los dólares son HIPOTÉTICOS y solo cuentan las que guardaron su riesgo:
-  // R × lo que se iba a arriesgar. No descuentan spread ni swap.
-  const conDinero = resueltas.filter((o) => num(o.r) && num(o.riesgoUsd) && o.riesgoUsd > 0)
-  const dinero = conDinero.reduce((s, o) => s + o.r * o.riesgoUsd, 0)
+  // ⚠️ El resultado NETO: con el spread y el swap de la cuenta real del
+  // desarrollador descontados (ver `costesPractica`). Lo que no se sabe no se
+  // inventa: se cuenta cuántas quedaron sin ese dato para decirlo en pantalla.
+  const costes = resueltas.map(costesPractica)
+  const sumaNeta = costes.reduce((s, c) => s + (c ? c.rNeto : 0), 0)
+  const conDinero = costes.filter((c) => c && num(c.usdNeto))
+  const dinero = conDinero.reduce((s, c) => s + c.usdNeto, 0)
   return {
     conDinero: conDinero.length,
     dinero: conDinero.length ? dinero : null,
+    sumaNeta: resueltas.length ? sumaNeta : null,
+    porOperacionNeta: resueltas.length ? sumaNeta / resueltas.length : null,
+    sinSpread: costes.filter((c) => c?.sinSpread).length,
+    sinSwap: costes.filter((c) => c?.sinSwap).length,
     abiertas: lista.filter((o) => o && !o.estado).length,
     resueltas: resueltas.length,
     ganadas,
@@ -265,7 +482,7 @@ export function graficoDePractica(op, barrido) {
   const fechas = barrido?.fechas20
   if (!p || !Array.isArray(fechas) || !fechas.length) return null
   const n = fechas.length
-  const { serie20: cierres, altos20: altos, bajos20: bajos } = p
+  const { serie20: cierres, altos20: altos, bajos20: bajos, abiertos20 } = p
   const ok = (xs) => Array.isArray(xs) && xs.length === n && xs.every(num)
   if (!ok(cierres) || !ok(altos) || !ok(bajos)) return null
   return {
@@ -273,6 +490,11 @@ export function graficoDePractica(op, barrido) {
     cierres,
     altos,
     bajos,
+    // Las aperturas, para dibujar velas de verdad. ⚠️ Solo si el barrido las
+    // publica: sin ellas se dibujan barras de máximo-mínimo y NO se inventa la
+    // apertura (ver la cabecera de `SetupDetalle.jsx`).
+    abiertos: ok(abiertos20) ? abiertos20 : null,
+    marcas: limpiarMarcas(op?.marcas),
     iEntrada: fechas.indexOf(op.vela),
     iResuelta: typeof op.velaResuelta === 'string' ? fechas.indexOf(op.velaResuelta) : -1,
   }

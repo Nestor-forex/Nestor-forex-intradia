@@ -2,10 +2,11 @@ import { sesgoColor, tendColor } from '../lib/display'
 import { fmtFechaHora } from '../lib/format'
 import BarraFuerza from './BarraFuerza'
 import Frescura from './Frescura'
+import FuentePrecio from './FuentePrecio'
 import QueEsEstaApp from './QueEsEstaApp'
 import { useIdioma } from '../lib/i18n'
 
-export default function BarridoTab({ loading, error, sinConfigurar, stale, guardadoEl, generadoEl, horasViejo, costePorAntiguedad, monedas, pares, corte, onVerTablero }) {
+export default function BarridoTab({ loading, error, sinConfigurar, stale, guardadoEl, generadoEl, horasViejo, costePorAntiguedad, monedas, pares, corte, fp = null, mt5Hora = null, onVerTablero }) {
   const { t, locale } = useIdioma()
   const paresOrdenados = [...pares].sort((a, b) => Math.abs(b.dif) - Math.abs(a.dif))
 
@@ -16,6 +17,10 @@ export default function BarridoTab({ loading, error, sinConfigurar, stale, guard
         <span className="mono" style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>
           {corte}
         </span>
+        {/* De dónde sale el precio y de qué hora es (2026-11-17). La línea de
+            arriba dice hasta qué vela llega el barrido; ésta, si el precio de
+            ahora es el de MT5 o el de Twelve Data, y por qué. */}
+        <FuentePrecio fp={fp} actualizadoEl={mt5Hora} />
         {/* Debajo de la hora de la VELA y no en su lugar: son dos cosas
             distintas y las dos hacen falta. Aquella dice de qué hora son los
             precios; esta, cuándo se hizo la cuenta. */}

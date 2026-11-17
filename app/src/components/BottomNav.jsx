@@ -33,7 +33,9 @@ export default function BottomNav({ tab, onTab, esAdmin }) {
         left: '50%',
         transform: 'translateX(-50%)',
         width: '100%',
-        maxWidth: 430,
+        // El mismo ancho que la pantalla: 430 px en vertical y más en
+        // horizontal (ver `vistaPantalla.js` e `index.css`).
+        maxWidth: 'var(--ancho-app, 430px)',
         display: 'flex',
         background: 'oklch(0.14 0.015 255)',
         borderTop: '1px solid var(--border)',

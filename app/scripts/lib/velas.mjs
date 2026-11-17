@@ -152,7 +152,14 @@ function armar(porSimbolo, minBarras) {
       fila[ccy] = v.c
       // Si alguna vela llegara sin máximo/mínimo, se usa el cierre para esa
       // hora en vez de romper todo el barrido.
-      filaRangos[ccy] = { h: Number.isFinite(v.h) ? v.h : v.c, l: Number.isFinite(v.l) ? v.l : v.c }
+      filaRangos[ccy] = {
+        h: Number.isFinite(v.h) ? v.h : v.c,
+        l: Number.isFinite(v.l) ? v.l : v.c,
+        // La apertura (2026-11-17), para las velas de la gráfica de la
+        // práctica. ⚠️ Sin ella NO se pone el cierre en su lugar: una apertura
+        // inventada se dibujaría como real.
+        ...(Number.isFinite(v.o) ? { o: v.o } : {}),
+      }
     }
     rates[t] = fila
     rangos[t] = filaRangos
@@ -199,7 +206,7 @@ export async function obtenerVelas(apiKey, { minBarras = 60, velas = 300, pagina
         continue
       }
       for (const v of bloque.values) {
-        porSimbolo[sym].set(v.datetime, { c: parseFloat(v.close), h: parseFloat(v.high), l: parseFloat(v.low) })
+        porSimbolo[sym].set(v.datetime, { c: parseFloat(v.close), h: parseFloat(v.high), l: parseFloat(v.low), o: parseFloat(v.open) })
         if (!masVieja || v.datetime < masVieja) masVieja = v.datetime
       }
     }

@@ -85,9 +85,19 @@ button {
   background: var(--bg-page);
 }
 
+/* El ancho de la app: 430 px en vista vertical (como un teléfono) y hasta
+   1280 en horizontal (ver `src/lib/vistaPantalla.js`). La barra de abajo usa
+   la misma variable para no quedarse estrecha debajo de una pantalla ancha. */
+:root {
+  --ancho-app: 430px;
+}
+html[data-vista='horizontal'] {
+  --ancho-app: 1280px;
+}
+
 .app-screen {
   width: 100%;
-  max-width: 430px;
+  max-width: var(--ancho-app);
   min-height: 100vh;
   position: relative;
   background: var(--bg-surface);
@@ -194,4 +204,30 @@ button {
 
 ::selection {
   background: oklch(0.72 0.13 155 / 0.35);
+}
+
+/* La zona de contenido de cada pestaña. En vertical, una tarjeta debajo de
+   otra. En horizontal, las tarjetas se reparten en columnas de unos 400 px,
+   de arriba abajo, como un periódico; ninguna se parte entre dos columnas.
+   ⚠️ Si la pestaña tiene UNA sola pieza (el Analizador, por ejemplo), no se
+   reparte: una sola columna estrecha dejaría la pantalla vacía. */
+.nf-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nf-gap, 16px);
+}
+html[data-vista='horizontal'] .nf-main:not(:has(> :only-child)) {
+  display: block;
+  column-width: 400px;
+  column-gap: 18px;
+}
+html[data-vista='horizontal'] .nf-main:not(:has(> :only-child)) > * {
+  break-inside: avoid;
+  margin-bottom: var(--nf-gap, 16px);
+}
+/* En un teléfono no hay sitio para la palabra: queda el dibujo del aparato. */
+@media (max-width: 520px) {
+  .nf-vista-txt {
+    display: none;
+  }
 }

@@ -19,6 +19,13 @@ import {
   graficoDePractica,
   LOTE_MAX,
   RIESGO_USD_MAX,
+  SPREAD_MAX,
+  SWAP_MAX,
+  MARCAS_MAX,
+  costesPractica,
+  limpiarMarcas,
+  marcasDeAnalisis,
+  nochesDeSwap,
   msDeVela,
   nivelesCoherentes,
   rbDe,
@@ -27,6 +34,8 @@ import {
   velasDelPar,
 } from '../src/lib/practica.js'
 import { calcularInsignias } from '../src/lib/insignias.js'
+import { EDAD_MAX_MT5_MIN, fichaConPrecioVivo, fuenteDePrecios, precioDeEntrada, velaDeEntradaMt5 } from '../src/lib/precioVivo.js'
+import { HORIZONTAL, VERTICAL, leerVista, normalizarVista } from '../src/lib/vistaPantalla.js'
 
 const AQUI = dirname(fileURLToPath(import.meta.url))
 const leer = (r) => readFileSync(join(AQUI, '..', r), 'utf8')
@@ -176,13 +185,16 @@ console.log('\n12 · El riesgo en dólares (del perfil) y la gráfica')
   ok(!('riesgoUsd' in sin) && !('lote' in sin), 'sin perfil no inventa dinero: la operación se sigue igual, en R')
   const raro = fichaPractica({ app: 'swing', analisis: { ...an, lote: { lote: LOTE_MAX * 2, riesgoUsd: -5 } }, metodo: 'app', vela: '2026-11-10' })
   ok(!('riesgoUsd' in raro) && !('lote' in raro), 'un número raro no se guarda')
+  // Con la entrada de MT5 el spread ya va dentro y no hay swap guardado: el
+  // neto es el bruto, y el dinero R × lo arriesgado.
+  const base = { par: 'EUR/USD', app: 'swing', fuente: 'mt5', entrada: 1.1, sl: 1.099, tp: 1.102 }
   const r = resumenPractica([
-    { estado: 'ganada', r: 2, riesgoUsd: 10 },
-    { estado: 'perdida', r: -1, riesgoUsd: 20 },
-    { estado: 'perdida', r: -1 },
+    { ...base, estado: 'ganada', r: 2, riesgoUsd: 10 },
+    { ...base, estado: 'perdida', r: -1, riesgoUsd: 20 },
+    { ...base, estado: 'perdida', r: -1 },
   ])
-  ok(r.dinero === 0 && r.conDinero === 2 && r.resueltas === 3, 'el dinero es R × lo arriesgado, y solo de las que lo guardaron')
-  ok(resumenPractica([{ estado: 'ganada', r: 1 }]).dinero === null, 'sin ninguna con dinero dice «no lo sé» (null), no 0')
+  ok(r.dinero === 0 && r.conDinero === 2 && r.resueltas === 3, 'el dinero sale del neto × lo arriesgado, y solo de las que lo guardaron')
+  ok(resumenPractica([{ ...base, estado: 'ganada', r: 1 }]).dinero === null, 'sin ninguna con dinero dice «no lo sé» (null), no 0')
   ok(new RegExp(`riesgoUsd <= ${RIESGO_USD_MAX}`).test(bloque) && new RegExp(`lote <= ${LOTE_MAX}`).test(bloque), 'las reglas ponen los mismos topes que el código')
 
   const F = ['a', 'b', 'c', 'd']
@@ -199,6 +211,106 @@ console.log('\n12 · El riesgo en dólares (del perfil) y la gráfica')
   for (const k of ['grafVer', 'grafOcultar', 'grafPie', 'grafAntes', 'grafSinDatos', 'dineroL', 'dineroNota', 'riesgoL']) {
     ok(new RegExp(`\\n  prac: \\{[\\s\\S]*?\\n    ${k}:`).test(es), `existe prac.${k}`)
   }
+}
+
+console.log('\n13 · Lo que cuesta operar de verdad: spread y swap (2026-11-17)')
+{
+  const op = { par: 'EUR/USD', app: 'intradia', lado: 'COMPRA', entrada: 1.1, sl: 1.099, tp: 1.102, estado: 'ganada', r: 2, riesgoUsd: 50 }
+  // 10 pips de riesgo. Twelve: se resta el spread (1 pip = 0,1 R).
+  const c1 = costesPractica({ ...op, fuente: 'twelve', spread: 1 })
+  ok(Math.abs(c1.spreadR - 0.1) < 1e-9 && Math.abs(c1.rNeto - 1.9) < 1e-9, 'con la entrada de Twelve se resta el spread (1 pip de 10 = 0,1 R)')
+  ok(Math.abs(c1.usdNeto - 95) < 1e-9, 'y el dinero es el neto × lo arriesgado (1,9 × 50 = 95)')
+  ok(c1.sinSwap === true && c1.swapR === null, 'sin swap guardado lo dice («sin dato») y no inventa un número')
+  const c2 = costesPractica({ ...op, fuente: 'mt5', spread: 1 })
+  ok(c2.spreadR === 0 && c2.spreadIncluido && c2.rNeto === 2, 'con la entrada de MT5 el spread YA va dentro (ASK/BID): no se resta dos veces')
+  ok(costesPractica({ ...op, fuente: 'twelve' }).sinSpread === true, 'sin spread guardado lo dice, no pone 0')
+  // Swap: −0,5 pips por noche; creada un lunes 10:00 UTC, resuelta en la vela del martes 09:00.
+  const creado = Date.parse('2026-11-16T10:00:00Z')
+  const c3 = costesPractica({ ...op, fuente: 'mt5', swap: -0.5, swap3: 3, creado, velaResuelta: '2026-11-17 09:00:00' })
+  ok(c3.noches === 1 && Math.abs(c3.swapR - -0.05) < 1e-9 && Math.abs(c3.rNeto - 1.95) < 1e-9, 'una noche de swap (−0,5 pips de 10 = −0,05 R)')
+  ok(nochesDeSwap(Date.parse('2026-11-18T10:00:00Z'), Date.parse('2026-11-19T10:00:00Z'), 3) === 3, 'el miércoles cobra el TRIPLE (swap3 = 3)')
+  ok(nochesDeSwap(Date.parse('2026-11-20T23:00:00Z'), Date.parse('2026-11-22T23:00:00Z'), 3) === 0, 'sábado y domingo no cobran')
+  ok(nochesDeSwap(Date.parse('2026-11-16T23:00:00Z'), Date.parse('2026-11-16T23:30:00Z'), 3) === 0, 'sin cruzar las 22:00 UTC no hay noche')
+  ok(costesPractica({ ...op, estado: 'caducada' }) === null, 'una caducada no tiene resultado que descontar')
+
+  // La ficha guarda la fuente, el spread y el swap del lado que toca.
+  const an = { par: 'EUR/USD', lado: 'VENTA', precio: 1.1, niveles: { sl: 1.101, tp: 1.098 }, herramientas: {} }
+  const cot = { bid: 1.1, ask: 1.1001, spread: 1, swapLargo: -0.6, swapCorto: 0.2, swap3: 3 }
+  const fm = fichaPractica({ app: 'intradia', analisis: an, metodo: 'app', vela: '2026-11-17 02:00:00', entrada: precioDeEntrada(cot, 'VENTA'), cotizacion: cot })
+  ok(fm.fuente === 'mt5' && fm.spread === 1 && fm.swap === 0.2 && fm.swap3 === 3 && !('spreadEl' in fm), 'con MT5 guarda fuente, spread y el swap CORTO para una venta')
+  const ft = fichaPractica({ app: 'intradia', analisis: an, metodo: 'app', vela: '2026-11-17 02:00:00', cotizacion: cot, fotoEl: '2026-11-16T23:49:28Z' })
+  ok(ft.fuente === 'twelve' && ft.spread === 1 && ft.spreadEl === '2026-11-16T23:49:28Z', 'con Twelve guarda el spread de la foto y DE CUÁNDO es')
+  const fr = fichaPractica({ app: 'intradia', analisis: an, metodo: 'app', vela: 'x', cotizacion: { spread: SPREAD_MAX * 2, swapCorto: SWAP_MAX * 3 } })
+  ok(!('spread' in fr) && !('swap' in fr), 'un spread o un swap absurdo no se guardan')
+
+  // Las reglas ponen los mismos topes y dejan los campos nuevos.
+  const reglas = leer('../firestore.rules')
+  ok(new RegExp(`spread <= ${SPREAD_MAX}`).test(reglas) && new RegExp(`swap <= ${SWAP_MAX}`).test(reglas) && new RegExp(`marcas.size\\(\\) <= ${MARCAS_MAX}`).test(reglas), 'las reglas ponen los mismos topes de spread, swap y marcas')
+
+  // La tolerancia de la entrada de MT5 contra las velas de Twelve.
+  const velas = { fechas: ['2026-11-17 02:00:00', '2026-11-17 03:00:00'], altos: [1.1003, 1.1005], bajos: [1.0995, 1.0990] }
+  const creadoM = Date.parse('2026-11-17T02:30:00Z')
+  const mt5op = { app: 'intradia', par: 'EUR/USD', lado: 'COMPRA', entrada: 1.10045, sl: 1.099, tp: 1.103, vela: '2026-11-17 02:00:00', creado: creadoM, fuente: 'mt5', spread: 1 }
+  ok(resolverPractica(mt5op, velas, { periodoMs: 3_600_000 }).estado !== 'invalida', 'una entrada de MT5 1,5 pips por fuera de la vela de Twelve se acepta (fuentes distintas)')
+  ok(resolverPractica({ ...mt5op, entrada: 1.102 }, velas, { periodoMs: 3_600_000 }).motivo === 'fueraDeVela', 'pero 17 pips por fuera no: eso es un precio de otra hora')
+  ok(resolverPractica({ ...mt5op, fuente: 'twelve' }, velas, { periodoMs: 3_600_000 }).motivo === 'fueraDeVela', 'con Twelve la tolerancia sigue siendo la de siempre')
+}
+
+console.log('\n14 · Lo que la persona programó, en la gráfica')
+{
+  const a = {
+    herramientas: {
+      niveles: { sop: 1.09, res: 1.11 },
+      pivote: { p: 1.1, r1: 1.105, s1: 1.095, r2: 1.11, s2: 1.09 },
+      tendencia: { corta: 1.101, larga: 1.099, nombres: { corta: 'EMA 20', larga: 'EMA 50' } },
+      medias: { sma: [{ p: 20, v: 1.1 }], ema: [{ p: 20, v: 1.101 }, { p: 200, v: null }] },
+      bollinger: { arriba: 1.12, media: 1.1, abajo: 1.08 },
+      fibonacci: { niveles: [{ ratio: 0.618, precio: 1.097 }] },
+      fvg: { huecos: [{ arriba: 1.104, abajo: 1.103 }] },
+    },
+  }
+  const m = marcasDeAnalisis(a)
+  ok(m.some((x) => x.k === 'sop' && x.v === 1.09) && m.some((x) => x.k === 'res' && x.v === 1.11), 'guarda el soporte y la resistencia')
+  ok(m.filter((x) => x.k === 'piv').length === 5, 'guarda el pivote y sus cuatro niveles')
+  ok(m.filter((x) => x.k === 'ema' && x.e === 'EMA 20').length === 1, 'la EMA 20 de la tendencia y la de «Medias» no se repiten')
+  ok(!m.some((x) => x.v === null), 'una media sin valor (faltan velas) no se guarda como 0')
+  ok(m.some((x) => x.k === 'fvg' && x.v === 1.104 && x.v2 === 1.103), 'un FVG se guarda como zona, con sus dos bordes')
+  ok(m.some((x) => x.k === 'fib' && x.e === '61.8%'), 'Fibonacci con su porcentaje')
+  ok(marcasDeAnalisis({ herramientas: {} }).length === 0, 'sin herramientas encendidas no se guarda nada')
+  ok(limpiarMarcas([{ k: 'raro', v: 1 }, { k: 'sop', v: 'x' }, { k: 'sop', v: 1 }]).length === 1, 'lo guardado se limpia al leer: un tipo desconocido o un precio roto no se dibujan')
+  ok(limpiarMarcas(Array.from({ length: 99 }, () => ({ k: 'sop', v: 1 }))).length === MARCAS_MAX, `como mucho ${MARCAS_MAX} marcas`)
+  const F = ['a', 'b']
+  const g = graficoDePractica({ par: 'X', vela: 'a', marcas: m }, { fechas20: F, pares: [{ name: 'X', serie20: [1, 2], altos20: [2, 3], bajos20: [0, 1], abiertos20: [0.5, 1.5] }] })
+  ok(g.abiertos && g.abiertos.length === 2 && g.marcas.length === m.length, 'con aperturas la gráfica tiene velas completas y las marcas')
+  const g2 = graficoDePractica({ par: 'X', vela: 'a' }, { fechas20: F, pares: [{ name: 'X', serie20: [1, 2], altos20: [2, 3], bajos20: [0, 1], abiertos20: [0.5, NaN] }] })
+  ok(g2.abiertos === null, 'con una apertura rota NO se inventa: se dibujan barras de máximo-mínimo')
+  const graf = leer('src/components/GraficoPractica.jsx')
+  ok(!/var\(--green\)|var\(--red\)/.test(graf), 'las velas no van en verde y rojo (esos colores son el Take-profit y el Stop-loss)')
+}
+
+console.log('\n15 · El precio con su fuente y la vista (2026-11-17)')
+{
+  const ahora = new Date('2026-11-17T03:00:00Z')
+  ok(fuenteDePrecios({ estado: 'ok', actualizadoEl: '2026-11-17T02:55:00Z', ahora }).fuente === 'mt5', 'con una foto de MT5 de hace 5 min manda MT5')
+  const viejo = fuenteDePrecios({ estado: 'ok', actualizadoEl: '2026-11-16T23:49:00Z', ahora })
+  ok(viejo.fuente === 'twelve' && viejo.motivo === 'viejo', `con una foto de hace horas manda Twelve y dice por qué («viejo»; más de ${EDAD_MAX_MT5_MIN} min)`)
+  ok(fuenteDePrecios({ estado: 'sin-datos', ahora }).motivo === 'apagado', 'sin foto: Twelve, «el puente está apagado»')
+  ok(fuenteDePrecios({ estado: 'ok', actualizadoEl: null, ahora }).fuente === 'twelve', 'una foto sin hora NO se da por reciente')
+  const q = { bid: 1.1, ask: 1.1002, spread: 2 }
+  ok(precioDeEntrada(q, 'COMPRA').precio === 1.1002 && precioDeEntrada(q, 'VENTA').precio === 1.1, 'comprar al ASK y vender al BID')
+  ok(precioDeEntrada({ bid: 1.2, ask: 1.1 }, 'COMPRA') === null, 'un ASK por debajo del BID es un dato roto: no se usa')
+  const ficha = { name: 'EUR/USD', precio: 1.09 }
+  ok(fichaConPrecioVivo(ficha, { fuente: 'mt5', quotes: { 'EUR/USD': q }, lado: 'COMPRA' }).ficha.precio === 1.1002, 'el Analizador calcula desde el precio de MT5')
+  ok(fichaConPrecioVivo(ficha, { fuente: 'twelve', quotes: { 'EUR/USD': q }, lado: 'COMPRA' }).ficha === ficha, 'con el puente apagado, desde el cierre de Twelve, tal cual')
+  ok(velaDeEntradaMt5('intradia', 'x', new Date('2026-11-17T02:37:12Z')) === '2026-11-17 02:00:00', 'Intradía: la vela de la hora en curso, con el formato del barrido')
+  ok(velaDeEntradaMt5('swing', '2026-11-18', ahora) === '2026-11-18', 'Swing: la última vela del barrido (la fecha de la vela diaria no cambia a medianoche)')
+  ok(normalizarVista('raro') === VERTICAL && normalizarVista(HORIZONTAL) === HORIZONTAL, 'la vista: ante la duda, vertical')
+  ok(leerVista({ getItem: () => { throw new Error('bloqueado') } }) === VERTICAL, 'si el teléfono no deja leer, vertical')
+  const fuente = leer('src/components/FuentePrecio.jsx')
+  ok(!/AvaTrade/i.test(fuente + es), 'nunca se nombra al bróker')
+  const barrido = leer('src/components/BarridoTab.jsx')
+  ok(/<FuentePrecio /.test(barrido) && /<FuentePrecio /.test(an), 'el barrido y el Analizador dicen de dónde sale el precio')
+  ok(/fichaConPrecioVivo\(/.test(an) && /cotizacion:/.test(an) && /marcas: marcasDeAnalisis\(a\)/.test(an), 'el Analizador usa el precio de MT5 y guarda costes y marcas en la práctica')
 }
 
 console.log(mal ? `\n✗ ${mal} comprobaciones fallaron\n` : '\n✓ todo bien\n')

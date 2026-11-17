@@ -8,6 +8,7 @@ import BarraFuerza from './BarraFuerza'
 import Sparkline from './Sparkline'
 import Glosario from './Glosario'
 import Frescura from './Frescura'
+import FuentePrecio from './FuentePrecio'
 
 function Chip({ children, color }) {
   return (
@@ -45,7 +46,7 @@ function RazonList({ items, emptyText }) {
   )
 }
 
-export default function TableroCompleto({ onVolver, onVerSetup, filtro = null, loading, error, sinConfigurar, stale, guardadoEl, monedas, pares, compras, ventas, vigilancia, rangos = [], setups, corte, generadoEl, horasViejo, costePorAntiguedad, sesion: sesionDatos }) {
+export default function TableroCompleto({ onVolver, onVerSetup, filtro = null, loading, error, sinConfigurar, stale, guardadoEl, monedas, pares, compras, ventas, vigilancia, rangos = [], setups, corte, fp = null, mt5Hora = null, generadoEl, horasViejo, costePorAntiguedad, sesion: sesionDatos }) {
   const { t, locale } = useIdioma()
   const fecha = useMemo(() => fmtFechaHoy(locale), [locale])
   // La sesión sale de la hora de la última vela (la calcula el barrido); si
@@ -82,7 +83,7 @@ export default function TableroCompleto({ onVolver, onVerSetup, filtro = null, l
         </div>
       </header>
 
-      <main style={{ flex: 1, padding: '20px 18px 48px', display: 'flex', flexDirection: 'column', gap: 32 }}>
+      <main className="nf-main" style={{ flex: 1, padding: '20px 18px 48px', '--nf-gap': '32px' }}>
         {/* El mismo control que en la pestaña Barrido, y con el mismo estado:
             quien filtra allí llega aquí filtrado, y lo ve dicho. Si el
             contador solo saliera en una de las dos pantallas, la otra
@@ -99,6 +100,7 @@ export default function TableroCompleto({ onVolver, onVerSetup, filtro = null, l
               <div style={{ color: 'var(--text-muted)' }}>{t('tablero.factorHora', { factor: sesionDatos.factor.toFixed(2) })}</div>
             )}
             <div>{loading ? '…' : corte}</div>
+            <FuentePrecio fp={fp} actualizadoEl={mt5Hora} style={{ fontSize: 12.5 }} />
             {/* Cuándo se CALCULÓ, que no es la hora de la vela. Ver `Frescura`. */}
             <Frescura generadoEl={generadoEl} horasViejo={horasViejo} costePorAntiguedad={costePorAntiguedad} style={{ fontSize: 12.5 }} />
           </div>

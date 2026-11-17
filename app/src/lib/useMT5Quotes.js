@@ -36,12 +36,14 @@ import { PAIR_NAMES } from './pairs.js'
 const URL_MT5 =
   'https://raw.githubusercontent.com/Nestor-forex/Nestor-forex/datos/estado/mt5.json'
 
-// Cada dos minutos. El puente publica cada quince, así que pedirlo más a
-// menudo sería gastar batería para releer lo mismo.
+// Cada dos minutos. El puente publica cada cinco (desde el 2026-11-17), y
+// GitHub tarda hasta cinco más en servir el archivo nuevo.
 const CADA_MS = 120_000
 const LIMITE_MS = 12_000
 
 const pipDe = (par) => (par.includes('JPY') ? 0.01 : 0.0001)
+// ⚠️ `Number(null)` es 0 y `Number('')` también: por eso el `typeof`.
+const numONull = (x) => (typeof x === 'number' && Number.isFinite(x) ? x : null)
 
 // El puente ya manda el spread calculado, pero se vuelve a sacar del bid y el
 // ask cuando se puede.
@@ -74,6 +76,13 @@ export function normalizarRespuesta(json) {
       // como «volumen». Quien lo pinte tiene que rotularlo por lo que es.
       ticks: Number.isFinite(Number(v.ticks)) ? Number(v.ticks) : null,
       dec: par.includes('JPY') ? 3 : 5,
+      // El swap de la cuenta real del desarrollador, en PIPS POR NOCHE y por
+      // lado (negativo = se paga). Lo manda el puente desde el 2026-11-17; con
+      // un puente viejo no viene y queda en `null` — «no lo sé», nunca 0.
+      swapLargo: numONull(v.swapLargo),
+      swapCorto: numONull(v.swapCorto),
+      // Qué día cobra el triple (0 = domingo … 6 = sábado, como lo da MT5).
+      swap3: Number.isInteger(v.swap3) && v.swap3 >= 0 && v.swap3 <= 6 ? v.swap3 : null,
     }
   }
   return salida
