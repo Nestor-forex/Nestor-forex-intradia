@@ -146,6 +146,15 @@ export default {
     arrSinPermiso: "Listeni kaydetme izni henüz yok. Geliştiriciye haber ver.",
     arrError: "Kaydedilemedi. Bağlantını kontrol edip tekrar dene.",
     arrNota: "Bu bir öneri değildir: pariteleri yalnızca içerdikleri para birimine göre gruplar. Listeni istediğin zaman «Uyarılar» bölümünden değiştirebilirsin.",
+    cambiar: "Paritelerimi değiştir",
+    editTitulo: "Paritelerimi değiştir",
+    editDesc: "Paritelere dokunarak listene ekle ya da çıkar. Bir gün başka para birimlerini denemek istersen burada değiştir: hiçbir şey kaybolmaz ve istediğin zaman eski listeye dönebilirsin.",
+    editElegidos: ({ n }) => `Seçilen: ${n}.`,
+    editNinguno: "Hiçbiri seçilmedi: tüm pariteleri göreceksin.",
+    editGuardar: ({ n }) => `Listemi kaydet (${n})`,
+    editGuardarTodos: "Kaydet: hepsini gör",
+    editCancelar: "İptal",
+    editNota: "«Uyarılar»daki listenin aynısı: burada değiştirirsen orada da değişir.",
   },
 
   misAvisos: {

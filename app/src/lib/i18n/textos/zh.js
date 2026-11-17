@@ -146,6 +146,15 @@ export default {
     arrSinPermiso: "暂时还没有保存列表的权限。请告诉开发者。",
     arrError: "无法保存。请检查网络后重试。",
     arrNota: "这不是推荐：只是按货币对所含的货币分组。你可以随时在「提醒」中修改列表。",
+    cambiar: "更改我的货币对",
+    editTitulo: "更改我的货币对",
+    editDesc: "点击货币对即可加入或移出你的列表。如果哪天想试试其他货币，就在这里更改：什么都不会丢失，随时可以改回原来的列表。",
+    editElegidos: ({ n }) => `已选：${n} 个。`,
+    editNinguno: "未选任何：将显示全部货币对。",
+    editGuardar: ({ n }) => `保存我的列表（${n}）`,
+    editGuardarTodos: "保存：显示全部",
+    editCancelar: "取消",
+    editNota: "这与「提醒」里的是同一个列表：在这里更改，那里也会一起改变。",
   },
 
   misAvisos: {

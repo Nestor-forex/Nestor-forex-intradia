@@ -146,6 +146,15 @@ export default {
     arrSinPermiso: "Non c’è ancora il permesso per salvare la tua lista. Avvisa lo sviluppatore.",
     arrError: "Impossibile salvare. Controlla la connessione e riprova.",
     arrNota: "Non è una raccomandazione: raggruppa solo le coppie per la valuta che contengono. Puoi cambiare la lista quando vuoi in «Avvisi».",
+    cambiar: "Cambia le mie coppie",
+    editTitulo: "Cambia le mie coppie",
+    editDesc: "Tocca le coppie per aggiungerle alla tua lista o toglierle. Se un giorno vuoi provare altre valute, cambiala qui: non si perde nulla e puoi tornare a quella di prima quando vuoi.",
+    editElegidos: ({ n }) => `Scelte: ${n}.`,
+    editNinguno: "Nessuna scelta: vedrai tutte le coppie.",
+    editGuardar: ({ n }) => `Salva la mia lista (${n})`,
+    editGuardarTodos: "Salva: vedi tutte",
+    editCancelar: "Annulla",
+    editNota: "È la stessa lista di «Avvisi»: cambiarla qui la cambia anche lì.",
   },
 
   misAvisos: {

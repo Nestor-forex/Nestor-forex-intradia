@@ -150,6 +150,15 @@ export default {
     arrSinPermiso: "Es gibt noch keine Berechtigung, deine Liste zu speichern. Sag dem Entwickler Bescheid.",
     arrError: "Speichern fehlgeschlagen. Prüfe deine Verbindung und versuche es erneut.",
     arrNota: "Das ist keine Empfehlung: Es gruppiert die Paare nur nach der enthaltenen Währung. Du kannst deine Liste jederzeit unter «Alarme» ändern.",
+    cambiar: "Meine Paare ändern",
+    editTitulo: "Meine Paare ändern",
+    editDesc: "Tippe auf die Paare, um sie zu deiner Liste hinzuzufügen oder zu entfernen. Wenn du eines Tages andere Währungen ausprobieren willst, ändere sie hier: Es geht nichts verloren und du kannst jederzeit zur alten Liste zurück.",
+    editElegidos: ({ n }) => `Gewählt: ${n}.`,
+    editNinguno: "Keines gewählt: du siehst alle Paare.",
+    editGuardar: ({ n }) => `Meine Liste speichern (${n})`,
+    editGuardarTodos: "Speichern: alle sehen",
+    editCancelar: "Abbrechen",
+    editNota: "Es ist dieselbe Liste wie unter «Hinweise»: Änderst du sie hier, ändert sie sich auch dort.",
   },
 
   misAvisos: {

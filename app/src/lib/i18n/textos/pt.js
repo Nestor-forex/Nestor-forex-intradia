@@ -150,6 +150,15 @@ export default {
     arrSinPermiso: "Ainda não há permissão para salvar sua lista. Avise o desenvolvedor.",
     arrError: "Não foi possível salvar. Verifique sua conexão e tente de novo.",
     arrNota: "Isto não é uma recomendação: apenas agrupa os pares pela moeda que contêm. Você pode mudar sua lista quando quiser em «Alertas».",
+    cambiar: "Mudar meus pares",
+    editTitulo: "Mudar meus pares",
+    editDesc: "Toque nos pares para colocá-los ou tirá-los da sua lista. Se um dia quiser testar outras moedas, mude-a aqui: nada se perde e você pode voltar à anterior quando quiser.",
+    editElegidos: ({ n }) => `Escolhidos: ${n}.`,
+    editNinguno: "Nenhum escolhido: você verá todos os pares.",
+    editGuardar: ({ n }) => `Salvar minha lista (${n})`,
+    editGuardarTodos: "Salvar: ver todos",
+    editCancelar: "Cancelar",
+    editNota: "É a mesma lista de «Alertas»: mudá-la aqui muda lá também.",
   },
 
   misAvisos: {

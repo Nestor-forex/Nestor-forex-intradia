@@ -118,10 +118,86 @@ function Arranque({ total, pares, onSeguir, onIrAvisos, onCerrar }) {
   )
 }
 
-export default function FiltroPares({ resumen, modo, onModo, onIrAvisos, pares, onSeguir }) {
+
+// CAMBIAR MIS PARES — desde el mismo Barrido, sin ir a otra pestaña.
+//
+// Néstor lo pidió el 2026-11-17: «hay trader que siempre operan con el mismo
+// activo… pero hay otros que sí les gusta operar y analizar diferentes divisas
+// y pares al día, y mis apps deben proporcionar ese derecho y facilidad».
+// Hasta hoy el Barrido solo dejaba pasar de «Mis pares» a «Todos»; para cambiar
+// la lista había que ir a «Avisos», y eso se leía como «no cambia nunca».
+//
+// ⚠️ Guarda en la MISMA lista que «Mis avisos» (`seguir`): dos listas de
+// «mis pares» se separarían sin que nada fallara.
+// ⚠️ Solo se cierra si se GUARDÓ, igual que el arranque.
+function Editor({ pares, seguimiento, onSeguir, onCerrar, onModo }) {
+  const t = useT()
+  const [elegidos, setElegidos] = useState(() => (Array.isArray(seguimiento) ? seguimiento.filter((p) => pares.includes(p)) : []))
+  const [estado, setEstado] = useState(null)
+  const alternar = (p) => setElegidos((xs) => (xs.includes(p) ? xs.filter((x) => x !== p) : [...xs, p]))
+  const guardar = async (lista) => {
+    setEstado('guardando')
+    const r = await onSeguir(lista)
+    if (r?.ok) {
+      // Con lista se ven los suyos; sin lista no hay nada que filtrar.
+      onModo?.(lista.length ? MODO_MIS : MODO_TODOS)
+      onCerrar()
+    } else setEstado(r?.codigo === 'sinPermiso' ? 'sinPermiso' : 'error')
+  }
+  const ordenados = [...elegidos].sort((a, b) => pares.indexOf(a) - pares.indexOf(b))
+
+  return (
+    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10, border: '1px solid var(--cta)' }}>
+      <div style={{ fontSize: 14, fontWeight: 600 }}>{t('vista.editTitulo')}</div>
+      <p style={{ margin: 0, fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.55 }}>{t('vista.editDesc')}</p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {pares.map((p) => (
+          <Pastilla key={p} activo={elegidos.includes(p)} onClick={() => alternar(p)}>
+            <span dir="ltr">{p}</span>
+          </Pastilla>
+        ))}
+      </div>
+      <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+        {elegidos.length ? (
+          <>
+            {t('vista.editElegidos', { n: elegidos.length })}{' '}
+            <span dir="ltr" className="mono">{ordenados.join(' · ')}</span>
+          </>
+        ) : (
+          t('vista.editNinguno')
+        )}
+      </p>
+      {estado === 'sinPermiso' && <p style={{ margin: 0, fontSize: 12, color: 'var(--amber)' }}>{t('vista.arrSinPermiso')}</p>}
+      {estado === 'error' && <p style={{ margin: 0, fontSize: 12, color: 'var(--amber)' }}>{t('vista.arrError')}</p>}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        <button
+          type="button"
+          className="btn btn-primary"
+          style={{ padding: '0 16px', fontSize: 14 }}
+          disabled={estado === 'guardando'}
+          onClick={() => guardar(ordenados)}
+        >
+          {elegidos.length ? t('vista.editGuardar', { n: elegidos.length }) : t('vista.editGuardarTodos')}
+        </button>
+        <button type="button" className="btn-ghost" disabled={estado === 'guardando'} onClick={onCerrar}>
+          {t('vista.editCancelar')}
+        </button>
+      </div>
+      <p style={{ margin: 0, fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.5 }}>{t('vista.editNota')}</p>
+    </div>
+  )
+}
+
+export default function FiltroPares({ resumen, modo, onModo, onIrAvisos, pares, onSeguir, seguimiento }) {
   const t = useT()
   const [cerrado, setCerrado] = useState(arranqueCerrado)
+  const [editando, setEditando] = useState(false)
   if (!resumen || !resumen.total) return null
+  const puedeEditar = onSeguir && Array.isArray(pares) && pares.length > 0
+
+  if (editando && puedeEditar) {
+    return <Editor pares={pares} seguimiento={seguimiento} onSeguir={onSeguir} onModo={onModo} onCerrar={() => setEditando(false)} />
+  }
 
   if (!resumen.hayLista && !cerrado && onSeguir && Array.isArray(pares) && pares.length) {
     return <Arranque total={resumen.total} pares={pares} onSeguir={onSeguir} onIrAvisos={onIrAvisos} onCerrar={() => setCerrado(true)} />
@@ -146,8 +222,13 @@ export default function FiltroPares({ resumen, modo, onModo, onIrAvisos, pares, 
         }}
       >
         <span>{t('vista.sinLista', { total: resumen.total })}</span>
-        {onIrAvisos && (
-          <button type="button" className="btn-ghost" style={{ minHeight: 30, padding: '0 12px', fontSize: 12 }} onClick={onIrAvisos}>
+        {(puedeEditar || onIrAvisos) && (
+          <button
+            type="button"
+            className="btn-ghost"
+            style={{ minHeight: 30, padding: '0 12px', fontSize: 12 }}
+            onClick={puedeEditar ? () => setEditando(true) : onIrAvisos}
+          >
             {t('vista.elegir')}
           </button>
         )}
@@ -174,6 +255,17 @@ export default function FiltroPares({ resumen, modo, onModo, onIrAvisos, pares, 
       {/* Una lista que no coincide con ningún par del barrido de hoy dejaría
           la pantalla en blanco sin explicación. Pasa con un par que se quitó
           de la app, o con un barrido viejo guardado sin conexión. */}
+      {puedeEditar && (
+        <button
+          type="button"
+          className="btn-ghost"
+          style={{ alignSelf: 'flex-start', minHeight: 30, padding: '0 12px', fontSize: 12 }}
+          onClick={() => setEditando(true)}
+        >
+          {t('vista.cambiar')}
+        </button>
+      )}
+
       {resumen.vacio && <p style={{ margin: 0, fontSize: 12, color: 'var(--amber)', lineHeight: 1.5 }}>{t('vista.vacio')}</p>}
 
       <p style={{ margin: 0, fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.5 }}>{t('vista.nota')}</p>

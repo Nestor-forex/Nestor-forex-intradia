@@ -190,6 +190,9 @@ export function useMarketData({ thr = 0.5, topN = 3 } = {}) {
     horasViejo: HORAS_VIEJO,
     costePorAntiguedad: COSTE_POR_ANTIGUEDAD,
     ultima: data?.ultima ?? null,
+    // Las velas tal como se publicaron, para la gráfica del modo práctica: las
+    // MISMAS 20 con las que el programa decide si ganó o perdió.
+    velasPractica: data ? { fechas20: data.fechas20, pares: data.pares } : null,
     ratesUSD: data?.ratesUSD ?? null,
     monedas: vista?.monedas ?? [],
     pares: vista?.pares ?? [],

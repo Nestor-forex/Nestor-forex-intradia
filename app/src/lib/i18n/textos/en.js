@@ -150,6 +150,15 @@ export default {
     arrSinPermiso: "There is no permission to save your list yet. Let the developer know.",
     arrError: "Could not save. Check your connection and try again.",
     arrNota: "This is not a recommendation: it only groups pairs by the currency they contain. You can change your list anytime in «Alerts».",
+    cambiar: "Change my pairs",
+    editTitulo: "Change my pairs",
+    editDesc: "Tap the pairs to add them to your list or remove them. If one day you want to try other currencies, change it here: nothing is lost and you can go back to the old list whenever you want.",
+    editElegidos: ({ n }) => `Chosen: ${n}.`,
+    editNinguno: "None chosen: you will see all pairs.",
+    editGuardar: ({ n }) => `Save my list (${n})`,
+    editGuardarTodos: "Save: see all",
+    editCancelar: "Cancel",
+    editNota: "It is the same list as in «Alerts»: changing it here changes it there too.",
   },
 
   misAvisos: {

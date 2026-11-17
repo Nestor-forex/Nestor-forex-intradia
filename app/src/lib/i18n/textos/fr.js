@@ -150,6 +150,15 @@ export default {
     arrSinPermiso: "Il n’y a pas encore d’autorisation pour enregistrer ta liste. Préviens le développeur.",
     arrError: "Impossible d’enregistrer. Vérifie ta connexion et réessaie.",
     arrNota: "Ce n’est pas une recommandation : cela regroupe seulement les paires selon la devise qu’elles contiennent. Tu peux changer ta liste quand tu veux dans « Alertes ».",
+    cambiar: "Changer mes paires",
+    editTitulo: "Changer mes paires",
+    editDesc: "Touche les paires pour les ajouter à ta liste ou les retirer. Si un jour tu veux essayer d'autres devises, change-la ici : rien ne se perd et tu peux revenir à l'ancienne quand tu veux.",
+    editElegidos: ({ n }) => `Choisies : ${n}.`,
+    editNinguno: "Aucune choisie : tu verras toutes les paires.",
+    editGuardar: ({ n }) => `Enregistrer ma liste (${n})`,
+    editGuardarTodos: "Enregistrer : tout voir",
+    editCancelar: "Annuler",
+    editNota: "C'est la même liste que dans «Alertes» : la changer ici la change aussi là-bas.",
   },
 
   misAvisos: {

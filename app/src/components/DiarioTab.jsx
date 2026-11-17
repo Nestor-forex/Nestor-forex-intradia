@@ -11,7 +11,7 @@ import { leerPerfil } from '../lib/perfilRiesgo'
 
 const esAbierta = (t) => t.estado === 'abierta'
 
-export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCerrar, prellenar, onPrellenado, onVerSenales, perfilRiesgo, onIrAlPerfil, ficha, practica = [], onBorrarPractica, onIrAnalizar }) {
+export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCerrar, prellenar, onPrellenado, onVerSenales, perfilRiesgo, onIrAlPerfil, ficha, practica = [], onBorrarPractica, onIrAnalizar, velasPractica = null }) {
   const tr = useT()
   const [par, setPar] = useState(PAIR_NAMES[0])
   const [dir, setDir] = useState('Compra')
@@ -213,7 +213,7 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
       <Diagnostico trades={trades} />
       {/* Disciplina y aprendizaje, nunca ganancias (`insignias.js`). */}
       <Insignias trades={trades} ficha={ficha} practica={practica} />
-      <Practica ops={practica} onBorrar={onBorrarPractica} onIrAnalizar={onIrAnalizar} />
+      <Practica ops={practica} onBorrar={onBorrarPractica} onIrAnalizar={onIrAnalizar} velas={velasPractica} />
 
       {avisoRiesgo.length > 0 && (
         <div style={{ padding: 12, border: '1px solid oklch(0.4 0.06 85)', borderRadius: 8, background: 'oklch(0.22 0.03 85)' }}>

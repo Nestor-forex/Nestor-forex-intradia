@@ -165,6 +165,15 @@ export default {
     arrSinPermiso: "No hay permiso para guardar tu lista todavía. Avísale al desarrollador.",
     arrError: "No se pudo guardar. Revisa tu conexión e inténtalo otra vez.",
     arrNota: "Esto no es una recomendación: solo agrupa los pares por la divisa que llevan. Puedes cambiar tu lista cuando quieras en «Avisos».",
+    cambiar: "Cambiar mis pares",
+    editTitulo: "Cambiar mis pares",
+    editDesc: "Toca los pares para ponerlos o quitarlos de tu lista. Si un día quieres probar con otras divisas, cámbiala aquí: no se pierde nada y puedes volver a la de antes cuando quieras.",
+    editElegidos: ({ n }) => `Elegidos: ${n}.`,
+    editNinguno: "Ninguno elegido: verás todos los pares.",
+    editGuardar: ({ n }) => `Guardar mi lista (${n})`,
+    editGuardarTodos: "Guardar: ver todos",
+    editCancelar: "Cancelar",
+    editNota: "Es la misma lista de «Avisos»: cambiarla aquí la cambia allí también.",
   },
 
   // MIS AVISOS — la pantalla donde cada persona programa lo suyo.
