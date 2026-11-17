@@ -31,6 +31,9 @@ import { usePlantillas } from '../lib/usePlantillas'
 import { APP, clave } from '../lib/identidad'
 import { HERRAMIENTAS_GRAFICA, MAX_ABIERTAS, fichaPractica, marcasDeAnalisis } from '../lib/practica'
 import { compartirODescargar, textoAnalisis } from '../lib/exportar'
+import { herramientasDeEstilo } from '../lib/estilo'
+import { useEstilo } from '../lib/useEstilo'
+import MiEstilo from './MiEstilo'
 
 const TEXTO = { fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }
 const ROTULO = { fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.4 }
@@ -137,6 +140,8 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
   const mt5 = usePrecioMt5()
   const estacionalidad = useEstacionalidad()
   const { plantillas, guardar, borrar } = usePlantillas(uid, ficha)
+  // «¿Cómo operas?» (2026-11-17): solo decide con qué herramientas arranca.
+  const miEstilo = useEstilo(uid, ficha)
   const perfil = useMemo(() => leerPerfil(ficha?.perfilRiesgo), [ficha?.perfilRiesgo])
   const freno = useMemo(() => estadoDelDia(trades, perfil).estado, [trades, perfil])
 
@@ -146,7 +151,12 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
   const [lado, setLado] = useState(null)
   const [metodo, setMetodo] = useState(METODOS.includes(ultimo?.metodo) ? ultimo.metodo : 'app')
   const [herr, setHerr] = useState(
-    Array.isArray(ultimo?.herramientas) ? ultimo.herramientas.filter((h) => HERRAMIENTAS.includes(h)) : [...HERRAMIENTAS_INICIALES],
+    // Lo último que usó manda; si nunca usó el Analizador, las de su estilo.
+    Array.isArray(ultimo?.herramientas)
+      ? ultimo.herramientas.filter((h) => HERRAMIENTAS.includes(h))
+      : miEstilo.estilo
+        ? herramientasDeEstilo(miEstilo.estilo)
+        : [...HERRAMIENTAS_INICIALES],
   )
   const [nombrePl, setNombrePl] = useState('')
   const [msgPl, setMsgPl] = useState(null)
@@ -287,6 +297,16 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
       {/* 3 · herramientas y plantillas */}
       <div className="card" style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
         <span style={ROTULO}>{t('an.paso4')}</span>
+        <MiEstilo
+          modo="linea"
+          estilo={miEstilo.estilo}
+          guardar={miEstilo.guardar}
+          onElegido={(e) => {
+            const nueva = herramientasDeEstilo(e, disponibles)
+            setHerr(nueva)
+            recordar({ herramientas: nueva })
+          }}
+        />
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {disponibles.map((x) => (
             <Chip key={x} activo={herr.includes(x)} onClick={() => alternar(x)}>

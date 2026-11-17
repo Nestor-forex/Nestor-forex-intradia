@@ -57,7 +57,7 @@ ok(/useConstancia\(authUser\?\.uid, perfil, perfilEstado === 'aprobado' && tab =
 const hook = leer('src/lib/useConstancia.js')
 ok(/conHoy\(/.test(hook) && /diasTablero: nueva/.test(hook), 'el hook escribe la lista que da conHoy, nunca otra cosa')
 const reglas = leer('../firestore.rules')
-ok(/'avisosInt', 'diasTablero'\]/.test(reglas), 'la regla deja escribir diasTablero en la propia ficha')
+ok(/hasOnly\(\[[^\]]*'diasTablero'/.test(reglas), 'la regla deja escribir diasTablero en la propia ficha')
 ok(new RegExp(`diasTablero\\.size\\(\\) <= ${DIAS_GUARDADOS}`).test(reglas), `y como mucho ${DIAS_GUARDADOS} días, el mismo número que la app`)
 const es = leer('src/lib/i18n/textos/es.js')
 ok(es.includes('constanteT:') && es.includes('constanteD:'), 'la insignia tiene sus dos textos')
