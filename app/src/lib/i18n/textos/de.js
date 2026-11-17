@@ -1068,6 +1068,8 @@ export default {
     ayuda: "Ändert, wie die App angeordnet ist. Am PC oder Laptop dreht sich der Bildschirm nicht: Die Karten werden auf Spalten verteilt. Am Telefon oder Tablet das Gerät drehen (ist die App unter Android installiert, versucht sie es selbst).",
   },
   precioF: {
+    alSegundo: ({ hora }) => `Sekundengenauer MT5-Preis von einem echten Konto des Entwicklers (zuletzt: ${hora}). Fällt die Brücke aus, wechselt die App selbst zu Twelve Data und sagt es dir.`,
+    alSegundoCabecera: "Sekundengenauer MT5-Preis von einem echten Konto des Entwicklers, solange die Brücke läuft. Fällt sie aus, wechselt die App selbst zu Twelve Data und sagt es dir.",
     mt5: ({ hora, min }) => `MT5-Preis von einem echten Konto des Entwicklers: Stand ${hora} (vor ${min} Min.). Die Brücke veröffentlicht alle 5 Minuten, daher kann er ein paar Minuten hinter dem Markt liegen.`,
     twelve_swing: "Twelve-Data-Preis: der Schluss der letzten Tageskerze des Scans, der zweimal täglich berechnet wird.",
     twelve_intradia: "Twelve-Data-Preis: der Schluss der letzten Stundenkerze des Scans, der einmal pro Stunde berechnet wird.",

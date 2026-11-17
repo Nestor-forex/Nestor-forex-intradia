@@ -80,7 +80,7 @@ export const SPREAD_PIPS = {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// LOS SPREADS QUE NÉSTOR LEYÓ EN SU CUENTA DE AVATRADE (2026-09-05)
+// LOS SPREADS QUE NÉSTOR LEYÓ EN SU CUENTA REAL (2026-09-05)
 // ─────────────────────────────────────────────────────────────────────────
 //
 // ⚠️ NO SE USAN POR DEFECTO, Y NO DEBEN USARSE PARA DECIDIR NADA.
@@ -124,7 +124,7 @@ export const SPREAD_NESTOR_FINDE = {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// LOS SPREADS REALES DE LA CUENTA DE NÉSTOR (AvaTrade)
+// LOS SPREADS REALES DE LA CUENTA DE NÉSTOR
 // ─────────────────────────────────────────────────────────────────────────
 // Leídos el 2026-09-07 a las 20:20 hora de Colombia: sesión de Asia, mercado
 // ABIERTO y operando. Son los primeros números reales de un bróker de verdad

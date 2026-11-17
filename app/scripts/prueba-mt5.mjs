@@ -55,7 +55,7 @@ const casi = (a, b, tol = 1e-6) => Math.abs(a - b) < tol
 
 const archivo = (pares, extra = {}) => ({
   actualizadoEl: '2026-09-08T20:00:00.000Z',
-  cuenta: 'AvaTrade (cuenta de Néstor)',
+  cuenta: 'cuenta real del desarrollador de las apps',
   pares,
   ...extra,
 })
@@ -145,7 +145,7 @@ console.log('\n5. Cuándo se tomó la foto')
 
 console.log('\n6. De quién es la cuenta: el archivo lo dice, la app no lo supone')
 {
-  // ⚠️ Es el spread de la cuenta de Néstor en AvaTrade, NO el del suscriptor.
+  // ⚠️ Es el spread de la cuenta real del desarrollador, NO el del suscriptor.
   // El dato viaja DENTRO del archivo para que la pantalla no tenga que
   // acordarse, y para que el día que el puente lo publique otra persona el
   // rótulo cambie solo.

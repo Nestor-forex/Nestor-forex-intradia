@@ -1059,6 +1059,8 @@ export default {
     ayuda: "改变应用的排列方式。电脑和笔记本的屏幕不会旋转：卡片会分成几列。手机或平板请旋转设备（如果应用已安装在安卓上，它会尝试自动旋转）。",
   },
   precioF: {
+    alSegundo: ({ hora }) => `MT5 逐秒价格，来自开发者的一个真实账户（最新：${hora}）。如果桥接关闭，应用会自动切换到 Twelve Data 并告诉你。`,
+    alSegundoCabecera: "MT5 逐秒价格，来自开发者的一个真实账户，仅在桥接开启时。如果关闭，应用会自动切换到 Twelve Data 并告诉你。",
     mt5: ({ hora, min }) => `MT5 价格，来自开发者的一个真实账户：${hora} 的快照（${min} 分钟前）。桥接每 5 分钟发布一次，所以可能比市场慢几分钟。`,
     twelve_swing: "Twelve Data 价格：扫描中最后一根日线的收盘价，每天计算两次。",
     twelve_intradia: "Twelve Data 价格：扫描中最后一根一小时 K 线的收盘价，每小时计算一次。",

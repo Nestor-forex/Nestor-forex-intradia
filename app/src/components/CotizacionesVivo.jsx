@@ -1,17 +1,20 @@
 import { useIdioma } from '../lib/i18n'
-import { minutosDesde, useMT5Quotes } from '../lib/useMT5Quotes'
+import { minutosDesde } from '../lib/useMT5Quotes'
+import { usePrecioMt5 } from '../lib/usePrecioMt5'
+import { fuenteDePrecios } from '../lib/precioVivo'
+import FuentePrecio from './FuentePrecio'
 
 // EL SPREAD REAL DEL BRÓKER.
 //
-// Lo que de verdad cuesta abrir una operación, medido en la cuenta de Néstor
-// en AvaTrade. Hasta hoy la app solo tenía una tabla ESTIMADA escrita a mano.
+// Lo que de verdad cuesta abrir una operación, medido en una cuenta real
+// del desarrollador. Hasta hoy la app solo tenía una tabla ESTIMADA escrita a mano.
 //
 // ─────────────────────────────────────────────────────────────────────────
 // ⚠️ TRES DECISIONES QUE NO SON ADORNO
 // ─────────────────────────────────────────────────────────────────────────
 //
-// 1. SE DICE DE QUIÉN ES LA CUENTA, SIEMPRE. Es el spread de AvaTrade de
-//    Néstor, no el del suscriptor. Alguien con otro bróker verá números que no
+// 1. SE DICE DE QUIÉN ES LA CUENTA, SIEMPRE. Es el spread de la cuenta real
+//    del desarrollador, no el del suscriptor. Alguien con otro bróker verá números que no
 //    son los suyos, y tiene derecho a saberlo antes de fiarse. Por eso el
 //    rótulo va arriba y no en la letra pequeña, y por eso el propio archivo
 //    publicado trae el campo `cuenta` en vez de escribirlo aquí a mano.
@@ -59,7 +62,8 @@ const CABECERA = { fontSize: 11, color: 'var(--text-muted)', textTransform: 'upp
 
 export default function CotizacionesVivo() {
   const { t, locale } = useIdioma()
-  const { quotes, estado, actualizadoEl } = useMT5Quotes()
+  const mt5 = usePrecioMt5()
+  const { quotes, estado, actualizadoEl } = mt5
 
   const filas = Object.values(quotes)
   const minutos = actualizadoEl ? minutosDesde(actualizadoEl) : null
@@ -91,6 +95,9 @@ export default function CotizacionesVivo() {
             público. El campo `cuenta` se sigue publicando porque documenta el
             origen DENTRO del archivo, para quien lo lea fuera de la app. */}
         <p style={TEXTO}>{t('vivo.desc', { cuenta: t('vivo.cuentaGenerica') })}</p>
+
+        {/* Al segundo o foto de cada 5 minutos, y de qué hora (2026-11-17). */}
+        {estado === 'ok' && <FuentePrecio fp={fuenteDePrecios(mt5)} actualizadoEl={actualizadoEl} conSegundos />}
 
         {estado === 'cargando' && <p style={TEXTO}>{t('vivo.cargando')}</p>}
 

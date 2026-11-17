@@ -409,7 +409,8 @@ console.log('\n8. Los textos')
   // ⚠️ Néstor, 2026-11-15: «jamás debe decir cuál es el nombre de mi bróker,
   // no le voy a hacer publicidad». Ningún texto que ve el suscriptor, en
   // ningún idioma, nombra a la empresa. Se mira el diccionario ENTERO.
-  const nombres = /avatrade|ava\s*trade/i
+  // El nombre va CODIFICADO: este archivo también es público (2026-11-17).
+  const nombres = new RegExp(Buffer.from('YXZhXHMqdHJhZGV8YXZhLXJlYWw=', 'base64').toString('utf8'), 'i')
   const conNombre = ['es', 'en', 'de', 'fr', 'pt', 'it', 'zh', 'ja', 'ru', 'ar', 'tr', 'hi', 'ko'].filter((l) => nombres.test(leer(`../src/lib/i18n/textos/${l}.js`)))
   comprobar('ningún texto de la app nombra al bróker, en ningún idioma', conNombre.length === 0, conNombre.join(', '))
   comprobar('la nota del COT dice que no da dirección', /No dice hacia dónde/.test(an?.cotNota?.({ fecha: 'x' }) ?? ''))
