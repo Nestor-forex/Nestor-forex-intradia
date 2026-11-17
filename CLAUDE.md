@@ -3016,3 +3016,19 @@ verdad.
 📌 Sigue en pie lo que no cambia: el aviso dice «Experimento · no es una
 señal», no pasa por `RB_MINIMO`, y las señales de la app solo van por aquí
 mientras sus avisos estén en pausa.
+
+---
+
+# El precio con su fuente, la vista horizontal y la práctica de verdad (2026-11-17)
+
+Cambio emparejado con Swing (misma rama). El detalle completo está en el
+`CLAUDE.md` de Swing; aquí lo propio de Intradía:
+
+- El rótulo «Vela H1 más reciente: 8:00 p. m.» se leía como una hora de atraso:
+  era la hora en que EMPEZÓ la vela en curso. Ahora dice «la que empezó a las…»,
+  y debajo `FuentePrecio` dice si el precio es el de MT5 (con la hora de la
+  foto) o el de Twelve Data (una vez por hora) y por qué.
+- `abiertos20` nuevo en el barrido: la apertura de los cruces se deriva EXACTA
+  (las dos aperturas son del mismo instante), al revés que el máximo y el mínimo.
+- Una entrada de práctica con el precio de MT5 cae en la vela de la HORA EN
+  CURSO (`velaDeEntradaMt5`), con el formato del barrido.
