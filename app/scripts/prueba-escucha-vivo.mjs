@@ -8,7 +8,8 @@
 //
 // GEMELO.
 
-import { crearEscuchaVivo } from '../src/lib/escuchaVivo.js'
+import { crearEscuchaVivo, ESPERA_MAX_MS } from '../src/lib/escuchaVivo.js'
+import { fuenteDePrecios } from '../src/lib/precioVivo.js'
 
 let fallos = 0
 const ok = (cond, msg) => {
@@ -187,6 +188,107 @@ for (const sincrono of [false, true]) {
   ok(/onAuthStateChanged/.test(hook), 'y le pasa los cambios de sesión de Firebase')
   ok(/currentUser/.test(hook), 'y sabe si hay sesión antes de escuchar')
   ok(!/let dejarDeEscuchar/.test(hook), 'la escucha vieja (sin sesión) ya no existe')
+}
+
+// 9 ── «Esperando»: la pantalla no afirma nada hasta saberlo (2026-11-17) ──
+// Néstor: «al principio dice foto de hace x min pero a los pocos segundos
+// cambia y dice precio al segundo… debe aparecer lo que es al instante».
+function montajeConReloj() {
+  const relojes = []
+  const m = { sesion: false, alSesion: null, escuchas: [], relojes }
+  m.e = crearEscuchaVivo({
+    suscribirDoc: (alDato, alError) => {
+      const esc = { alDato, alError, viva: true }
+      m.escuchas.push(esc)
+      return () => {
+        esc.viva = false
+      }
+    },
+    suscribirSesion: (f) => {
+      m.alSesion = f
+      return () => {
+        m.alSesion = null
+      }
+    },
+    haySesion: () => m.sesion,
+    visible: () => true,
+    programar: (f, ms) => {
+      relojes.push({ f, ms, vivo: true })
+      return relojes.length - 1
+    },
+    cancelar: (id) => {
+      if (relojes[id]) relojes[id].vivo = false
+    },
+  })
+  m.vence = () => {
+    for (const r of relojes) if (r.vivo) { r.vivo = false; r.f() }
+  }
+  m.llega = (dato) => {
+    for (const s of m.escuchas) if (s.viva) s.alDato(dato)
+  }
+  return m
+}
+{
+  const m = montajeConReloj()
+  ok(m.e.esperandoAlAbrir() === true, 'una pantalla que se abre sin nadie escuchando supone que se espera')
+  let avisos = 0
+  m.e.apuntar(() => avisos++)
+  ok(m.e.esperando(), 'mientras no se sabe si hay sesión, se espera (no se enseña la foto de 5 min)')
+  m.sesion = true
+  m.alSesion()
+  ok(m.e.esperando() && avisos === 0, 'con sesión y escuchando, se sigue esperando la primera foto')
+  m.llega({ actualizadoEl: 'vieja' })
+  ok(!m.e.esperando() && avisos === 1, 'con la PRIMERA respuesta (aunque sea vieja) se deja de esperar, y se avisa una vez')
+  ok(m.e.esperandoAlAbrir() === false, 'y una pantalla que se abre después ya lo sabe')
+  ok(m.relojes.some((r) => r.ms === ESPERA_MAX_MS), `el tope de la espera es ESPERA_MAX_MS (${ESPERA_MAX_MS} ms)`)
+}
+{
+  const m = montajeConReloj()
+  let avisos = 0
+  m.e.apuntar(() => avisos++)
+  m.alSesion() // sin sesión
+  ok(!m.e.esperando() && avisos === 1, 'sin sesión no se espera nada (y se avisa del cambio)')
+}
+{
+  const m = montajeConReloj()
+  let avisos = 0
+  m.e.apuntar(() => avisos++)
+  m.sesion = true
+  m.alSesion()
+  m.vence()
+  ok(!m.e.esperando() && avisos === 1, 'sin red Firestore no contesta: pasado el tope se deja de esperar (no «conectando» para siempre)')
+}
+{
+  const m = montajeConReloj()
+  let avisos = 0
+  m.e.apuntar(() => avisos++)
+  m.sesion = true
+  m.alSesion()
+  m.escuchas.at(-1).alError({ code: 'permission-denied' })
+  ok(!m.e.esperando() && avisos === 1, 'un «sin permiso» también termina la espera, y avisa')
+}
+
+// 10 ── `fuenteDePrecios` dice «conectando» mientras se espera ────────────
+{
+  const archivoFresco = { estado: 'ok', actualizadoEl: new Date(Date.now() - 3 * 60_000).toISOString() }
+  ok(fuenteDePrecios({ ...archivoFresco, esperandoVivo: true }).fuente === 'conectando',
+    'esperando: NO se enseña la foto de 5 minutos aunque sea reciente')
+  ok(fuenteDePrecios({ estado: 'cargando', esperandoVivo: true }).fuente === 'conectando', 'esperando y el archivo cargando: conectando')
+  ok(fuenteDePrecios({ ...archivoFresco, esperandoVivo: false }).fuente === 'mt5', 'sin esperar, la foto del archivo manda como antes')
+  ok(fuenteDePrecios({ estado: 'ok', actualizadoEl: new Date().toISOString(), alSegundo: true, esperandoVivo: true }).alSegundo === true,
+    'si ya hay precio al segundo, se enseña aunque la escucha se esté reconectando')
+}
+
+// 11 ── El hook devuelve la espera y las pantallas la respetan ───────────
+{
+  const fs = await import('node:fs')
+  const leer = (r) => fs.readFileSync(new URL(r, import.meta.url), 'utf8')
+  const hook = leer('../src/lib/usePrecioMt5.js')
+  ok(/esperandoVivo/.test(hook) && /escucha\.esperando\(\)/.test(hook), 'usePrecioMt5 devuelve `esperandoVivo` leído de la escucha')
+  const fuente = leer('../src/components/FuentePrecio.jsx')
+  ok(/fuente === 'conectando'/.test(fuente) && /precioF\.conectando/.test(fuente), 'FuentePrecio dice «conectando» y no otra cosa')
+  const an = leer('../src/components/AnalizadorTab.jsx')
+  ok(/disabled=\{[^}]*conectando/.test(an), 'el Analizador no deja guardar una práctica mientras se conecta')
 }
 
 console.log(fallos ? `\n${fallos} comprobación(es) MAL` : '\nTodo bien.')

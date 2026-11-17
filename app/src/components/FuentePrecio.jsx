@@ -31,6 +31,11 @@ export default function FuentePrecio({ fp, actualizadoEl, style, conSegundos = f
   if (!fp || fp.fuente === 'cargando') return null
 
   const base = { margin: 0, fontSize: 11.5, lineHeight: 1.5, ...style }
+  // Todavía no se sabe si hay precio al segundo: se dice eso y nada más. Ver
+  // `fuenteDePrecios`.
+  if (fp.fuente === 'conectando') {
+    return <p style={{ ...base, color: 'var(--text-muted)' }}>{t('precioF.conectando')}</p>
+  }
   if (fp.fuente === 'mt5' && fp.alSegundo) {
     return (
       <p style={{ ...base, color: 'var(--text-secondary)' }}>

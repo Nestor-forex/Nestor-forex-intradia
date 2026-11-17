@@ -92,12 +92,18 @@ export function combinarConVivo(archivo, vivo, ahora = new Date()) {
 /**
  * Qué fuente manda ahora.
  *
- * @returns {{ fuente: 'mt5'|'twelve'|'cargando', edadMin: number|null,
+ * @returns {{ fuente: 'mt5'|'twelve'|'cargando'|'conectando', edadMin: number|null,
  *             motivo: 'apagado'|'viejo'|null }}
  *   · `motivo` solo con `twelve`: 'apagado' (no hay foto de MT5 que leer) o
  *     'viejo' (la hay, pero de hace más de EDAD_MAX_MT5_MIN).
+ *   · `conectando`: todavía no se sabe si hay precio al segundo (la sesión o la
+ *     primera foto de Firestore no han llegado). ⚠️ No se enseña la foto de 5
+ *     minutos mientras tanto: diría «esto es lo que hay» y a los dos segundos
+ *     cambiaría a «al segundo». Néstor, 2026-11-17: «debe aparecer lo que es
+ *     al instante».
  */
-export function fuenteDePrecios({ estado, actualizadoEl, alSegundo = false, ahora = new Date() } = {}) {
+export function fuenteDePrecios({ estado, actualizadoEl, alSegundo = false, esperandoVivo = false, ahora = new Date() } = {}) {
+  if (esperandoVivo === true && alSegundo !== true) return { fuente: 'conectando', edadMin: null, motivo: null }
   if (estado === 'cargando') return { fuente: 'cargando', edadMin: null, motivo: null }
   const edadMin = minutosDesde(actualizadoEl, ahora)
   // `alSegundo` solo lo pone `combinarConVivo`, y solo con una foto de menos

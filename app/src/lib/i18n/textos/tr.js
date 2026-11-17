@@ -1063,6 +1063,7 @@ export default {
     ayuda: "Uygulamanın düzenini değiştirir. Bilgisayar ve dizüstünde ekran dönmez: kartlar sütunlara dağılır. Telefon veya tablette cihazı çevir (uygulama Android'de yüklüyse kendisi döndürmeyi dener).",
   },
   precioF: {
+    conectando: "MT5 saniyelik fiyatına bağlanılıyor…",
     alSegundo: ({ hora }) => `Geliştiricinin gerçek bir hesabından saniye saniye MT5 fiyatı (son: ${hora}). Köprü kapanırsa uygulama kendiliğinden Twelve Data'ya geçer ve bunu söyler.`,
     alSegundoCabecera: "Geliştiricinin gerçek bir hesabından saniye saniye MT5 fiyatı, köprü açık olduğu sürece. Kapanırsa uygulama kendiliğinden Twelve Data'ya geçer ve bunu söyler.",
     mt5: ({ hora, min }) => `MT5 fiyatı, geliştiricinin gerçek bir hesabından: ${hora} anlık görüntüsü (${min} dk önce). Köprü her 5 dakikada bir yayınlar, bu yüzden piyasanın birkaç dakika gerisinde olabilir.`,

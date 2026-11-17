@@ -177,7 +177,15 @@ export function limpiarMarcas(lista) {
   return out
 }
 
-/** Las marcas de un análisis del Analizador: solo lo que estaba encendido. */
+/**
+ * Las herramientas del Analizador que se DIBUJAN en la gráfica de la práctica.
+ * Al guardar una práctica se calculan todas (las que la app tenga), estén o no
+ * encendidas en la tarjeta: la gráfica trae un botón por familia para apagar
+ * lo que sobre, y una marca que no se guardó no se puede dibujar después.
+ */
+export const HERRAMIENTAS_GRAFICA = Object.freeze(['niveles', 'pivote', 'tendencia', 'medias', 'bollinger', 'fibonacci', 'fvg'])
+
+/** Las marcas de un análisis del Analizador (las herramientas que traiga calculadas). */
 export function marcasDeAnalisis(a) {
   const h = a?.herramientas
   if (!h) return []

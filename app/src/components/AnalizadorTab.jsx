@@ -29,7 +29,7 @@ import FuentePrecio from './FuentePrecio'
 import { useEstacionalidad } from '../lib/useEstacionalidad'
 import { usePlantillas } from '../lib/usePlantillas'
 import { APP, clave } from '../lib/identidad'
-import { MAX_ABIERTAS, fichaPractica, marcasDeAnalisis } from '../lib/practica'
+import { HERRAMIENTAS_GRAFICA, MAX_ABIERTAS, fichaPractica, marcasDeAnalisis } from '../lib/practica'
 
 const TEXTO = { fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }
 const ROTULO = { fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.4 }
@@ -196,15 +196,13 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
     [fichaPar, fp.fuente, mt5.quotes, lado],
   )
 
-  const a = useMemo(
-    () =>
+  // Lo mismo que la tarjeta, con las herramientas que se pidan.
+  const analizarCon = (herramientas) =>
       armarAnalisis({
         ficha: fichaViva,
         lado,
         metodo,
-        // Solo las que esta app ofrece ahora: una plantilla guardada con el COT
-        // no debe sacar «Sin dato» en la app que no lo tiene.
-        herramientas: herr.filter((x) => disponibles.includes(x)),
+        herramientas,
         perfil,
         ratesUSD,
         calendario: cal,
@@ -217,7 +215,13 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
         correlaciones,
         estacionalidad,
         trades,
-      }),
+      })
+
+  const a = useMemo(
+    // Solo las que esta app ofrece ahora: una plantilla guardada con el COT no
+    // debe sacar «Sin dato» en la app que no lo tiene.
+    () => analizarCon(herr.filter((x) => disponibles.includes(x))),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `analizarCon` lee exactamente esto
     [fichaViva, lado, metodo, herr, disponibles, perfil, ratesUSD, cal, tasasPub, freno, mt5, cot, oro, correlaciones, estacionalidad, trades],
   )
 
@@ -350,7 +354,8 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
         </div>
         {/* De dónde sale ese precio y de qué hora es. */}
         <FuentePrecio fp={fp} actualizadoEl={mt5.actualizadoEl} conSegundos style={{ marginTop: -6 }} />
-        {a.lado && (
+        {/* Mientras se conecta no se dice de dónde sale la entrada: todavía no se sabe. */}
+        {a.lado && fp.fuente !== 'conectando' && (
           <p style={{ ...TEXTO, fontSize: 11.5, color: 'var(--text-muted)', marginTop: -6 }}>
             {t(entrada ? (entrada.lado === 'ask' ? 'precioF.entradaAsk' : 'precioF.entradaBid') : 'precioF.entradaTwelve')}
           </p>
@@ -812,8 +817,11 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
             className="btn"
             type="button"
             style={{ minHeight: 44 }}
-            disabled={practicaEstado === 'guardando'}
+            // ⚠️ Mientras se conecta no se guarda: la operación quedaría con el
+            // precio de Twelve Data y diez segundos después la app tendría el de MT5.
+            disabled={practicaEstado === 'guardando' || fp.fuente === 'conectando'}
             onClick={async () => {
+              if (fp.fuente === 'conectando') return
               const op = fichaPractica({
                 app: APP,
                 analisis: a,
@@ -822,7 +830,12 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
                 entrada,
                 cotizacion: mt5.quotes?.[a.par] ?? null,
                 fotoEl: mt5.actualizadoEl,
-                marcas: marcasDeAnalisis(a),
+                // ⚠️ TODAS las herramientas que se dibujan, no solo las
+                // encendidas (2026-11-17): Néstor vio la gráfica de la
+                // práctica «muy sencilla» porque solo guardaba lo que tenía
+                // encendido al crearla. La gráfica tiene un botón por familia
+                // para apagar lo que sobre.
+                marcas: marcasDeAnalisis(analizarCon(HERRAMIENTAS_GRAFICA.filter((x) => disponibles.includes(x)))),
               })
               if (!op) return setPracticaEstado('error')
               setPracticaEstado('guardando')

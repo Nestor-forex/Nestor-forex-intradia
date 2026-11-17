@@ -436,7 +436,9 @@ console.log('\n9. El cableado')
   // GEMELO: no puede importar un hook que en la otra app no existe. El COT y
   // el oro le llegan por props desde el App.jsx de Swing.
   comprobar('la pantalla NO importa useCot ni useOro (solo existen en Swing)', !/useCot|useOro/.test(tab))
-  comprobar('la pantalla le pasa a `armarAnalisis` solo las herramientas disponibles', /herramientas:\s*herr\.filter\(\(x\)\s*=>\s*disponibles\.includes\(x\)\)/.test(tab))
+  comprobar('la pantalla le pasa a `armarAnalisis` solo las herramientas disponibles', /analizarCon\(herr\.filter\(\(x\)\s*=>\s*disponibles\.includes\(x\)\)\)/.test(tab))
+  // Y la práctica, que calcula con más herramientas, también filtra por las disponibles.
+  comprobar('la práctica también usa solo herramientas disponibles', /HERRAMIENTAS_GRAFICA\.filter\(\(x\)\s*=>\s*disponibles\.includes\(x\)\)/.test(tab))
   const diario = leer('../src/components/DiarioTab.jsx')
   comprobar('el Diario acepta el lote que llega del Analizador', /prellenar\.lote/.test(diario))
 }
