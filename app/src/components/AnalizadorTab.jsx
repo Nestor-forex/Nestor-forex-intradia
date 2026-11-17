@@ -30,6 +30,7 @@ import { useEstacionalidad } from '../lib/useEstacionalidad'
 import { usePlantillas } from '../lib/usePlantillas'
 import { APP, clave } from '../lib/identidad'
 import { HERRAMIENTAS_GRAFICA, MAX_ABIERTAS, fichaPractica, marcasDeAnalisis } from '../lib/practica'
+import { compartirODescargar, textoAnalisis } from '../lib/exportar'
 
 const TEXTO = { fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }
 const ROTULO = { fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.4 }
@@ -154,8 +155,13 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
   // si cambias de par, de dirección o de método, el mensaje se va.
   const firmaPractica = `${par}|${lado}|${metodo}`
   const [practica, setPractica] = useState({ firma: null, estado: null })
+  // 'compartido' | 'descargado' | null — lo que pasó al exportar este análisis.
+  const [exportadoDe, setExportadoDe] = useState({ firma: null, estado: null })
   const practicaEstado = practica.firma === firmaPractica ? practica.estado : null
   const setPracticaEstado = (estado) => setPractica({ firma: firmaPractica, estado })
+  // El aviso de «Listo» se va solo al cambiar de par, dirección o método.
+  const exportado = exportadoDe.firma === firmaPractica ? exportadoDe.estado : null
+  const setExportado = (estado) => setExportadoDe({ firma: firmaPractica, estado })
 
   // Solo se ofrecen las herramientas que ESTA app calcula para algún par. La
   // app de intradía no tiene Bollinger: ofrecer el botón para que diga siempre
@@ -862,6 +868,28 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
           </p>
         )}
       </div>
+
+      {/* Exportar el análisis (2026-11-17): en el teléfono abre el menú de
+          compartir; donde no lo hay, descarga un .txt. ⚠️ El texto termina con
+          el aviso de que no es una señal: es lo que viaja si alguien lo
+          reenvía. */}
+      {a.niveles && (
+        <div>
+          <button
+            type="button"
+            className="btn-ghost"
+            style={{ minHeight: 44, padding: '0 12px', fontSize: 13 }}
+            onClick={async () => {
+              const fecha = new Date().toLocaleString(locale, { dateStyle: 'short', timeStyle: 'short' })
+              const r = await compartirODescargar(textoAnalisis(a, { t, fecha }), `analisis-${a.par.replace('/', '')}-${new Date().toISOString().slice(0, 10)}.txt`)
+              setExportado(r === 'cancelado' ? null : r)
+            }}
+          >
+            {t('exp.compartirAnalisis')}
+          </button>
+          {exportado && <p style={{ ...TEXTO, fontSize: 11.5, color: 'var(--text-muted)' }}>{t(`exp.${exportado}`)}</p>}
+        </div>
+      )}
 
       <p style={{ ...TEXTO, fontSize: 11.5, color: 'var(--text-muted)' }}>{t('an.pie')}</p>
     </div>
