@@ -577,6 +577,8 @@ export default {
   },
   curso: {
     aprender: "Course",
+    video: "Watch it",
+    empezar: "Start",
     titulo: "Forex course",
     desc: "Short lessons to understand each tool in the app: what it is, what it's for and what it doesn't tell you. Each ends with something to do in the app and three questions with no grade.",
     aviso: "This is education, not financial advice. Forex trading carries high risk and you can lose your money.",

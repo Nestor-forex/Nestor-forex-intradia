@@ -577,6 +577,8 @@ export default {
   },
   curso: {
     aprender: "Kurs",
+    video: "Sieh es dir an",
+    empezar: "Starten",
     titulo: "Forex-Kurs",
     desc: "Kurze Lektionen, um jedes Werkzeug der App zu verstehen: was es ist, wofür es dient und was es dir nicht sagt. Jede endet mit einer Übung in der App und drei Fragen ohne Note.",
     aviso: "Das ist Bildung, keine Finanzberatung. Forex-Handel ist sehr riskant und du kannst dein Geld verlieren.",

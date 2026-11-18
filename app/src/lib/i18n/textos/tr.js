@@ -572,6 +572,8 @@ export default {
   },
   curso: {
     aprender: "Kurs",
+    video: "İzle",
+    empezar: "Başla",
     titulo: "Forex kursu",
     desc: "Uygulamadaki her aracı anlamak için kısa dersler: ne olduğu, ne işe yaradığı ve sana neyi söylemediği. Her ders uygulamada yapılacak bir alıştırma ve notsuz üç soruyla biter.",
     aviso: "Bu bir eğitimdir, yatırım tavsiyesi değildir. Forex işlemleri yüksek risk taşır ve paranı kaybedebilirsin.",

@@ -4,7 +4,7 @@
 //
 // GEMELO: el curso, sus lecciones y su pantalla son iguales en las dos apps.
 
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { LECCIONES, MAX_HECHAS, MODULOS, PROXIMOS, TODAS, conHecha, leerHechas, modulosTerminados, progresoModulo, siguiente } from '../src/lib/curso.js'
@@ -12,6 +12,8 @@ import { OPS_PARA_CREER } from '../src/lib/sombra.js'
 import { margen } from '../src/lib/diagnostico.js'
 import { calcularLote } from '../src/lib/calc.js'
 import { calcularInsignias } from '../src/lib/insignias.js'
+import { SUGERIDO, frenoEnDolares, operacionesHastaElFreno } from '../src/lib/perfilRiesgo.js'
+import { pipUSD } from '../src/lib/calc.js'
 import { crearT } from '../src/lib/i18n/crearT.js'
 import { IDIOMAS } from '../src/lib/i18n/idiomas.js'
 
@@ -62,6 +64,31 @@ const c = calcularLote({ capital: 2000, riesgoPct: 1, pips: 20, par: 'EUR/USD', 
 ok(Math.abs(a.lote - 0.04) < 1e-9 && Math.abs(b.lote - 0.02) < 1e-9, 'el ejemplo del lote (0,04 y 0,02) es lo que da la calculadora')
 ok(Math.abs(c.lote - 0.1) < 1e-9 && LECCIONES['m2-3'].preguntas[1].opciones[LECCIONES['m2-3'].preguntas[1].correcta] === '0,1', 'la pregunta del lote (0,1) también')
 
+// El módulo 3 lee los frenos que propone la app y los calcula con las MISMAS
+// funciones que «Tu freno de hoy».
+const pe = { capital: 1000, riesgoPct: 1, ...SUGERIDO }
+const m32 = LECCIONES['m3-2'].ejemplo.join(' ')
+ok(m32.includes(`${frenoEnDolares(pe)} USD`) && m32.includes(`número ${operacionesHastaElFreno(pe)}`), 'el freno del ejemplo sale de `perfilRiesgo.js`')
+ok(/import \{ SUGERIDO, frenoEnDolares, operacionesHastaElFreno \} from '\.\.\/perfilRiesgo\.js'/.test(es), 'el módulo 3 importa los frenos, no los escribe')
+// El valor del pip del módulo 1 es el de la calculadora.
+ok(pipUSD('EUR/USD', {}) === 10 && LECCIONES['m1-2'].ejemplo.some((p) => p.includes('10 USD con un lote entero')), 'el pip de EUR/USD (10 USD por lote) es el de la calculadora')
+
+// Los videos: cada uno tiene su descripción, y si este repositorio guarda los
+// videos (el de swing), el archivo tiene que existir y pesar poco.
+const DIR_VIDEOS = join(RAIZ, 'public/curso/videos')
+for (const id of TODAS) {
+  const v = LECCIONES[id].video
+  if (!v) continue
+  ok(typeof v.archivo === 'string' && !/\./.test(v.archivo) && v.desc, `${id}: el video tiene nombre (sin extensión) y descripción`)
+  if (existsSync(DIR_VIDEOS)) {
+    for (const ext of ['webm', 'mp4']) {
+      const ruta = join(DIR_VIDEOS, `${v.archivo}.${ext}`)
+      ok(existsSync(ruta) && statSync(ruta).size < 3 * 1024 * 1024, `${id}: ${v.archivo}.${ext} existe y pesa menos de 3 MB`)
+    }
+  }
+}
+ok(/URL_VIDEOS = 'https:\/\/nestor-forex\.github\.io\/Nestor-forex\/curso\/videos\/'/.test(leer('src/lib/curso.js')), 'los videos se piden a la página de swing (las dos apps los comparten)')
+
 console.log('\n4. El progreso')
 ok(leerHechas(null).length === 0 && leerHechas('x').length === 0, 'un valor raro no inventa lecciones terminadas')
 ok(leerHechas(['m0-1', 'm0-1', 'inventada', 3]).join() === 'm0-1', 'sin repetidas ni lecciones que no existen')
@@ -94,7 +121,7 @@ ok(/onAprender=/.test(leer('src/App.jsx')) && /onAprender/.test(leer('src/compon
 ok(/tab === 'curso' && <Curso/.test(leer('src/App.jsx')), 'y abre la pantalla del curso')
 
 console.log('\n8. Los textos en los 13 idiomas')
-const claves = ['aprender', 'titulo', 'desc', 'aviso', 'soloEspanol', 'llevas', 'proximamente', 'volver', 'objetivo', 'explicacion', 'ejemplo', 'formula', 'noDice', 'hazlo', 'preguntas', 'correcto', 'incorrecto', 'marcar', 'terminada', 'guardando', 'siguiente', 'sinPermiso', 'error']
+const claves = ['video', 'empezar', 'aprender', 'titulo', 'desc', 'aviso', 'soloEspanol', 'llevas', 'proximamente', 'volver', 'objetivo', 'explicacion', 'ejemplo', 'formula', 'noDice', 'hazlo', 'preguntas', 'correcto', 'incorrecto', 'marcar', 'terminada', 'guardando', 'siguiente', 'sinPermiso', 'error']
 for (const { codigo } of IDIOMAS) {
   const t = crearT(codigo)
   const faltan = claves.filter((k) => !t(`curso.${k}`))

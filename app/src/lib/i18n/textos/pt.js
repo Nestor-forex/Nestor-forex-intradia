@@ -577,6 +577,8 @@ export default {
   },
   curso: {
     aprender: "Curso",
+    video: "Assista",
+    empezar: "Começar",
     titulo: "Curso de Forex",
     desc: "Lições curtas para entender cada ferramenta do app: o que é, para que serve e o que não te diz. Cada uma termina com algo para fazer no app e três perguntas sem nota.",
     aviso: "Isto é formação, não assessoria financeira. Operar Forex tem risco alto e você pode perder seu dinheiro.",

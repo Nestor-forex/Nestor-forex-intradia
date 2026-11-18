@@ -577,6 +577,8 @@ export default {
   },
   curso: {
     aprender: "Cours",
+    video: "Regarde",
+    empezar: "Commencer",
     titulo: "Cours de Forex",
     desc: "Des leçons courtes pour comprendre chaque outil de l'app : ce que c'est, à quoi il sert et ce qu'il ne te dit pas. Chacune se termine par un exercice dans l'app et trois questions sans note.",
     aviso: "C'est de la formation, pas du conseil financier. Le trading Forex comporte un risque élevé et tu peux perdre ton argent.",
