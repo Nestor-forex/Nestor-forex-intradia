@@ -34,6 +34,7 @@ import { compartirODescargar, textoAnalisis } from '../lib/exportar'
 import { herramientasDeEstilo } from '../lib/estilo'
 import { useEstilo } from '../lib/useEstilo'
 import MiEstilo from './MiEstilo'
+import Laboratorio from './Laboratorio'
 
 const TEXTO = { fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }
 const ROTULO = { fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.4 }
@@ -913,6 +914,11 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
           {exportado && <p style={{ ...TEXTO, fontSize: 11.5, color: 'var(--text-muted)' }}>{t(`exp.${exportado}`)}</p>}
         </div>
       )}
+
+      {/* El laboratorio (2026-11-18): probar una regla propia sobre las velas
+          guardadas. Plegado, al final: es otra herramienta, no parte del
+          análisis de arriba. */}
+      <Laboratorio uid={uid} ficha={ficha} />
 
       <p style={{ ...TEXTO, fontSize: 11.5, color: 'var(--text-muted)' }}>{t('an.pie')}</p>
     </div>

@@ -329,6 +329,14 @@ export const GEMELOS = [
   'src/lib/useCurso.js',
   'src/components/Curso.jsx',
   'scripts/prueba-curso.mjs',
+  // El laboratorio «prueba tu propia regla» (2026-11-18): el motor, la
+  // pantalla, cómo se guardan las reglas y de dónde baja las velas (cada app
+  // la suya, por `APP`). Lo que PUBLICA la historia es de cada app (PRIMO).
+  'src/lib/laboratorio.js',
+  'src/lib/useHistoria.js',
+  'src/lib/useReglas.js',
+  'src/components/Laboratorio.jsx',
+  'scripts/prueba-laboratorio.mjs',
   'src/lib/usePractica.js',
   'src/components/Practica.jsx',
   'src/components/GraficoPractica.jsx',
@@ -425,6 +433,14 @@ export const GEMELOS = [
 // empeora en Swing; está medido. Unificar umbrales sería el peor error posible
 // aquí.
 export const PRIMOS = {
+  'scripts/lib/historia-publicada.mjs':
+    'Las dos apps publican la historia del laboratorio con el MISMO formato, ' +
+    'pero la arman distinto: Swing pide los 14 pares directos y tiene máximos ' +
+    'y mínimos reales de cada uno; Intradía pide 7 símbolos y deriva los ' +
+    'cruces (sus máximos y mínimos son aproximados). Y Swing la escribe el ' +
+    'vigía una vez al día, Intradía el publicador solo cuando cambia el día.',
+  'scripts/prueba-historia-publicada.mjs':
+    'Comprueba la historia de su propia app (ver historia-publicada.mjs).',
   'scripts/medir-compresion.mjs':
     'Las dos apps miden la compresion y NO miden lo mismo, porque la ' +
     'compresion no juega el mismo papel. En Swing es INFORMACION pura: no ' +

@@ -240,6 +240,44 @@ service cloud.firestore {
           && (!('marcas' in request.resource.data)
               || (request.resource.data.marcas is list && request.resource.data.marcas.size() <= 40));
       }
+
+      // EL LABORATORIO (2026-11-18): las reglas que la persona arma y guarda
+      // en «Prueba tu propia regla». Las crea y las borra su dueño; NO se
+      // pueden editar (una regla cambiada es otra regla: se guarda aparte).
+      //
+      // ⚠️ EL ADMINISTRADOR LAS LEE TODAS (ver el `match` de colección suelto,
+      // más abajo). La pantalla se lo dice a la persona ANTES de guardar.
+      //
+      // Los campos salen de `fichaParaGuardar` en `src/lib/laboratorio.js`, y
+      // `prueba-laboratorio.mjs` falla si esta lista y aquélla se separan.
+      match /reglas/{reglaId} {
+        allow read, delete: if esPropio(uid)
+          && get(/databases/$(database)/documents/users/$(uid)).data.estado == 'aprobado';
+
+        allow create: if esPropio(uid)
+          && get(/databases/$(database)/documents/users/$(uid)).data.estado == 'aprobado'
+          && request.resource.data.keys().hasAll(['nombre', 'app', 'lado', 'condiciones', 'riesgoATR', 'objetivoRB', 'probadas', 'creado'])
+          && request.resource.data.keys().hasOnly(['nombre', 'app', 'lado', 'condiciones', 'riesgoATR', 'objetivoRB', 'probadas', 'resultado', 'creado', 'copiaDe'])
+          && request.resource.data.nombre is string && request.resource.data.nombre.size() > 0 && request.resource.data.nombre.size() <= 60
+          && request.resource.data.app in ['swing', 'intradia']
+          && request.resource.data.lado in ['COMPRA', 'VENTA']
+          && request.resource.data.condiciones is list
+          && request.resource.data.condiciones.size() > 0 && request.resource.data.condiciones.size() <= 4
+          && request.resource.data.riesgoATR in [1, 1.5, 2]
+          && request.resource.data.objetivoRB in [1, 1.5, 2]
+          && request.resource.data.probadas is int && request.resource.data.probadas >= 1 && request.resource.data.probadas <= 100000
+          && request.resource.data.creado == request.time
+          && (!('resultado' in request.resource.data)
+              || request.resource.data.resultado == null || request.resource.data.resultado is map)
+          && (!('copiaDe' in request.resource.data)
+              || (request.resource.data.copiaDe is string && request.resource.data.copiaDe.size() <= 128));
+      }
+    }
+
+    // Todas las reglas guardadas de todos los miembros, para el
+    // administrador (consulta de grupo de colección). Solo leer.
+    match /{ruta=**}/reglas/{reglaId} {
+      allow read: if esAdmin();
     }
 
     // Suscripciones a los avisos push del celular. Hoy las usa solo la app

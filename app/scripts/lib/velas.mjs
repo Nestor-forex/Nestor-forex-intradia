@@ -224,7 +224,9 @@ export async function obtenerVelas(apiKey, { minBarras = 60, velas = 300, pagina
   const salida = armar(conLargas ? recortarUltimas(porSimbolo, velas) : porSimbolo, minBarras)
   if (conLargas) {
     const largo = armar(porSimbolo, minBarras)
-    salida.largo = { barras: largo.barras, rates: largo.rates }
+    // `rangos` va también para el laboratorio (`historia.json`): las medias
+    // solo leen `barras` y `rates`, así que el barrido no cambia.
+    salida.largo = { barras: largo.barras, rates: largo.rates, rangos: largo.rangos }
   }
   return salida
 }
