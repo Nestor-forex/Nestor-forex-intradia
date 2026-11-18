@@ -322,6 +322,13 @@ export const GEMELOS = [
   'src/lib/estilo.js',
   'src/lib/useEstilo.js',
   'src/components/MiEstilo.jsx',
+  // El curso (punto 8, 2026-11-18): las lecciones se escriben una vez y se
+  // pintan igual en las dos apps.
+  'src/lib/curso.js',
+  'src/lib/curso/es.js',
+  'src/lib/useCurso.js',
+  'src/components/Curso.jsx',
+  'scripts/prueba-curso.mjs',
   'src/lib/usePractica.js',
   'src/components/Practica.jsx',
   'src/components/GraficoPractica.jsx',

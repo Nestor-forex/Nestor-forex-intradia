@@ -60,7 +60,7 @@ ok(/Array\.isArray\(ultimo\?\.herramientas\) && !\(miEstilo\.estilo && ultimo &&
 ok(/herramientas: herr, estilo: miEstilo\.estilo/.test(an) && /recordar\(\{ herramientas: nueva, estilo: e \}\)/.test(an), 'lo último que usó se guarda con el estilo de ese momento')
 ok(/onElegido=\{\(e\) => \{\s*const nueva = herramientasDeEstilo\(e, disponibles\)/.test(an), 'al cambiar el estilo en el Analizador se encienden sus herramientas disponibles')
 const reglas = leer('../firestore.rules')
-ok(/'diasTablero', 'estilo'\]/.test(reglas), 'la regla deja escribir el estilo en la propia ficha')
+ok(/'diasTablero', 'estilo'[,\]]/.test(reglas), 'la regla deja escribir el estilo en la propia ficha')
 const enRegla = reglas.match(/estilo in \[([^\]]*)\]/)?.[1]?.match(/'[^']+'/g)?.map((x) => x.slice(1, -1)).join()
 ok(enRegla === ESTILOS.join(), `y solo las mismas cuatro palabras que la app${enRegla ? '' : ' (no se encontró la lista)'}`)
 
