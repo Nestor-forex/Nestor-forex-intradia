@@ -124,7 +124,8 @@ service cloud.firestore {
         || (esPropio(uid)
             && request.resource.data.diff(resource.data).affectedKeys()
                  .hasOnly(['nombre', 'seguimiento', 'avisos', 'perfilRiesgo', 'plantillas',
-                          'avisosExp_swing', 'avisosExp_intradia', 'avisosInt', 'diasTablero', 'estilo'])
+                          'avisosExp_swing', 'avisosExp_intradia', 'avisosInt', 'diasTablero', 'estilo',
+                          'curso'])
             && (!('perfilRiesgo' in request.resource.data)
                 || perfilRiesgoValido(request.resource.data.perfilRiesgo))
             && (!('avisos' in request.resource.data)
@@ -143,6 +144,12 @@ service cloud.firestore {
             // (`src/lib/estilo.js`). Solo una de las cuatro palabras.
             && (!('estilo' in request.resource.data)
                 || request.resource.data.estilo in ['tendencias', 'rangos', 'noticias', 'nose'])
+            // ⚠️ AMPLIADA EL 2026-11-18 con `curso`: las lecciones del curso
+            // terminadas (`src/lib/curso.js`, `MAX_HECHAS`). Una lista de 100
+            // como mucho; lo de dentro lo limpia `leerHechas` al leer.
+            && (!('curso' in request.resource.data)
+                || (request.resource.data.curso is list
+                    && request.resource.data.curso.size() <= 100))
             && (!('diasTablero' in request.resource.data)
                 || (request.resource.data.diasTablero is list
                     && request.resource.data.diasTablero.size() <= 14))

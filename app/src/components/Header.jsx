@@ -2,7 +2,7 @@ import { useT } from '../lib/i18n'
 import SelectorIdioma from './SelectorIdioma'
 import SelectorVista from './SelectorVista'
 
-export default function Header({ nombreApp, saludo, onSalir }) {
+export default function Header({ nombreApp, saludo, onSalir, onAprender }) {
   const t = useT()
 
   return (
@@ -27,6 +27,19 @@ export default function Header({ nombreApp, saludo, onSalir }) {
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+        {/* El curso (2026-11-18): un botón siempre a mano, en todas las pestañas. */}
+        {onAprender && (
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={onAprender}
+            aria-label={t('curso.aprender')}
+            title={t('curso.aprender')}
+            style={{ padding: '0 10px', color: 'var(--cta)', borderColor: 'var(--cta)' }}
+          >
+            {t('curso.aprender')}
+          </button>
+        )}
         <SelectorVista />
         <SelectorIdioma compacto />
         <button className="btn-ghost" onClick={onSalir}>

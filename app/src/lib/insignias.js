@@ -23,13 +23,14 @@
 //
 // ⚠️ AQUÍ NO HAY FIREBASE NI REACT, a propósito: se comprueba sin red.
 //
-// La del modo práctica llegó con él (punto 5, 2026-11-16). La del curso llegará
-// con el curso (punto 8): no se enseña antes de que exista lo que premia.
+// La del modo práctica llegó con él (punto 5, 2026-11-16). La del curso llegó
+// con su primer módulo (punto 8, 2026-11-18): premia terminar un módulo.
 
 import { diaDeCierre } from './guardianRiesgo.js'
 import { frenoEnDolares, leerPerfil, perfilCompleto } from './perfilRiesgo.js'
 import { resumenPractica } from './practica.js'
 import { mejorRacha } from './constancia.js'
+import { modulosTerminados } from './curso.js'
 
 // Cuántas veces hace falta para cada una. Están a la vista en la pantalla.
 export const META = Object.freeze({
@@ -42,11 +43,12 @@ export const META = Object.freeze({
   constante: 5,
   freno: 5,
   practica: 5,
+  curso: 1,
 })
 
 // El orden en que se enseñan: primero lo que se hace en un minuto, después lo
 // que pide constancia.
-export const INSIGNIAS = Object.freeze(['perfil', 'lista', 'metodo', 'alerta', 'diario', 'porque', 'constante', 'freno', 'practica'])
+export const INSIGNIAS = Object.freeze(['perfil', 'lista', 'metodo', 'alerta', 'diario', 'porque', 'constante', 'freno', 'practica', 'curso'])
 
 // Una nota de menos de esto no es un «por qué» (un punto, una letra).
 export const NOTA_MINIMA = 8
@@ -141,6 +143,9 @@ export function calcularInsignias(trades, ficha, practica = []) {
     // se premia es llegar al final de la práctica, no ganarla.
     // La definición de «terminada» vive en `practica.js`, la misma que cuenta la tarjeta.
     practica: resumenPractica(practica).resueltas,
+    // ⚠️ Módulos del curso TERMINADOS (todas sus lecciones marcadas). Premia
+    // aprender, nunca ganar: el curso no tiene nota (`curso.js`).
+    curso: modulosTerminados(ficha?.curso),
   }
   return INSIGNIAS.map((id) => {
     const meta = META[id]
