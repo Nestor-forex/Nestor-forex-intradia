@@ -45,10 +45,12 @@ import { fileURLToPath } from 'node:url'
 import { computarBarrido } from '../src/lib/marketCalc.js'
 import { VELAS_MEDIAS, leerLlave, obtenerVelas } from './lib/velas.mjs'
 import { escribir, yaCorrioEstaHora } from './lib/vigia-nucleo.mjs'
+import { armarHistoria, tocaEscribir } from './lib/historia-publicada.mjs'
 import { armarBarrido } from './lib/barrido-publicado.mjs'
 
 const DATOS = process.env.VIGIA_DATOS || fileURLToPath(new URL('../../datos-local', import.meta.url))
 const BARRIDO = `${DATOS}/estado/barrido.json`
+const HISTORIA = `${DATOS}/estado/historia.json`
 
 const ahora = new Date()
 
@@ -88,6 +90,28 @@ const barrido = armarBarrido(data, ahora)
 const texto = JSON.stringify(barrido) + '\n'
 
 escribir(BARRIDO, texto)
+
+// La historia para el laboratorio «prueba tu propia regla» (2026-11-18): una
+// vez al día y sin créditos de más (sale de la serie larga de las medias).
+// ⚠️ Aislada en un `try`: un fallo aquí no puede dejar sin barrido a la app.
+try {
+  const anterior = (() => {
+    try {
+      return JSON.parse(readFileSync(HISTORIA, 'utf8')).generadoEl
+    } catch {
+      return null
+    }
+  })()
+  if (tocaEscribir(anterior, ahora)) {
+    const historia = armarHistoria(largo, ahora)
+    if (historia) {
+      escribir(HISTORIA, JSON.stringify(historia) + '\n')
+      console.log(`Historia del laboratorio: ${historia.fechas.length} velas · ${Object.keys(historia.pares).length} pares`)
+    } else console.log('Historia del laboratorio: no se pudo armar (sin serie larga). Se deja la de antes.')
+  } else console.log('Historia del laboratorio: ya se escribió hoy.')
+} catch (e) {
+  console.log(`Historia del laboratorio: falló (${e.message}). Se deja la de antes.`)
+}
 
 console.log(`Barrido publicado: ${ahora.toISOString()}`)
 console.log(`Vela más reciente: ${data.ultima} UTC`)

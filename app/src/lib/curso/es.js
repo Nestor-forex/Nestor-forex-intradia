@@ -11,15 +11,27 @@
 //
 // Forma de una lección:
 //   titulo, objetivo, explicacion[], ejemplo[], formula?{texto, conNumeros},
-//   noDice[], hazlo{tab, boton, texto}, preguntas[{p, opciones[], correcta, porque}]
+//   noDice[], video?{archivo, desc}, hazlo{tab, boton, texto}, preguntas[{p, opciones[], correcta, porque}]
+//
+// `video.archivo` es el nombre SIN extensión: hay un .webm y un .mp4. Viven en `public/curso/videos/` de la app de swing y las dos
+// apps lo usan desde ahí (`URL_VIDEOS` en `curso.js`). Sin voz por ahora.
 //
 // `tab` es una pestaña que existe en las DOS apps: barrido, analizar, diario,
 // historial, avisos, calc.
 
 import { OPS_PARA_CREER } from '../sombra.js'
 import { margen } from '../diagnostico.js'
+import { SUGERIDO, frenoEnDolares, operacionesHastaElFreno } from '../perfilRiesgo.js'
 
 const L = OPS_PARA_CREER
+
+// El ejemplo del módulo 3 se calcula con las MISMAS funciones que usa «Tu freno
+// de hoy», con los frenos que la app propone. Si alguien cambia lo sugerido, la
+// lección cambia sola.
+const PERFIL_EJEMPLO = Object.freeze({ capital: 1000, riesgoPct: 1, ...SUGERIDO })
+const FRENO_USD = frenoEnDolares(PERFIL_EJEMPLO)
+const OPS_FRENO = operacionesHastaElFreno(PERFIL_EJEMPLO)
+const fmt = (n) => String(n).replace('.', ',')
 
 export const MODULOS = Object.freeze([
   Object.freeze({
@@ -30,19 +42,31 @@ export const MODULOS = Object.freeze([
     lecciones: Object.freeze(['m0-1', 'm0-2']),
   }),
   Object.freeze({
+    id: 'm1',
+    n: 1,
+    titulo: 'El lenguaje del Forex',
+    desc: 'Par, pip, lote, spread y apalancamiento: las cinco palabras que salen en todas las pantallas.',
+    lecciones: Object.freeze(['m1-1', 'm1-2', 'm1-3']),
+  }),
+  Object.freeze({
     id: 'm2',
     n: 2,
     titulo: 'El riesgo primero',
     desc: 'Cuánto arriesgar, dónde va el Stop-loss y cómo sale el lote. Lo que más protege a quien empieza.',
     lecciones: Object.freeze(['m2-1', 'm2-2', 'm2-3']),
   }),
+  Object.freeze({
+    id: 'm3',
+    n: 3,
+    titulo: 'Tu freno del día',
+    desc: 'Por qué los días malos se vuelven peores, y cómo una regla escrita antes te protege de ti mismo.',
+    lecciones: Object.freeze(['m3-1', 'm3-2']),
+  }),
 ])
 
 // Los que todavía no están escritos. Se enseñan para que se vea el camino,
 // marcados «próximamente», y no se pueden abrir.
 export const PROXIMOS = Object.freeze([
-  { n: 1, titulo: 'El lenguaje del Forex' },
-  { n: 3, titulo: 'Tu freno del día' },
   { n: 4, titulo: 'Quién manda hoy' },
   { n: 5, titulo: 'Tendencia y rango' },
   { n: 6, titulo: 'Lo que cuesta operar' },
@@ -55,6 +79,241 @@ export const PROXIMOS = Object.freeze([
 ])
 
 export const LECCIONES = Object.freeze({
+  'm1-1': {
+    titulo: 'Qué es un par de divisas',
+    objetivo: 'Leer un par como EUR/USD y saber qué significa que suba o baje.',
+    explicacion: [
+      'En Forex siempre se cambia una moneda por otra, por eso los precios van de dos en dos. En EUR/USD, el euro va primero (la base) y el dólar segundo (la cotizada).',
+      'El precio dice cuántas unidades de la segunda hacen falta para una de la primera. EUR/USD a 1,1600 quiere decir que un euro cuesta 1,16 dólares.',
+      'Si EUR/USD sube, el euro se está volviendo más caro frente al dólar. Si baja, más barato. El par no dice cuál de las dos se movió: puede que el euro se haya fortalecido o que el dólar se haya debilitado.',
+      'Para saber cuál de las dos se movió, la app compara cada divisa contra todas las demás: es la fuerza relativa del Barrido.',
+    ],
+    ejemplo: [
+      'Las apps siguen pares con las 8 divisas más negociadas: USD, EUR, JPY, GBP, CHF, CAD, AUD y NZD.',
+      'Los pares que llevan dólar (EUR/USD, USD/JPY…) se llaman pares mayores. Los que no lo llevan (EUR/CHF, GBP/JPY…) se llaman cruces.',
+    ],
+    noDice: [
+      'Saber leer un par no te dice hacia dónde se va a mover.',
+      'Un par que sube no es «bueno» ni uno que baja «malo»: depende de qué lado estés.',
+    ],
+    hazlo: {
+      tab: 'barrido',
+      boton: 'Ir al Barrido',
+      texto: 'Mira la fuerza de las 8 divisas. Elige un par de la lista y comprueba qué divisa va primero y cuál segundo.',
+    },
+    preguntas: [
+      {
+        p: 'En GBP/JPY, ¿cuál es la base?',
+        opciones: ['GBP', 'JPY', 'Ninguna'],
+        correcta: 0,
+        porque: 'La base es la que va primero: la libra.',
+      },
+      {
+        p: 'Si EUR/USD pasa de 1,1600 a 1,1700, el euro…',
+        opciones: ['Se abarató frente al dólar', 'Se encareció frente al dólar', 'No cambió'],
+        correcta: 1,
+        porque: 'Ahora hace falta más dólares para un euro.',
+      },
+      {
+        p: '¿El par te dice cuál de las dos divisas se movió?',
+        opciones: ['Sí, siempre', 'No: para eso sirve comparar cada divisa contra las demás', 'Solo en los cruces'],
+        correcta: 1,
+        porque: 'El par solo compara dos. La fuerza relativa las compara todas.',
+      },
+    ],
+  },
+
+  'm1-2': {
+    titulo: 'El pip y el lote',
+    objetivo: 'Saber qué es un pip, qué es un lote y cuánto dinero es un pip según el tamaño.',
+    explicacion: [
+      'El pip es la unidad en la que se mide cuánto se mueve el precio. En casi todos los pares es la cuarta cifra decimal (0,0001). En los pares con yen japonés es la segunda (0,01).',
+      'El lote es el tamaño de la operación. Un lote entero son 100.000 unidades de la moneda base. También existen el minilote (0,1) y el microlote (0,01).',
+      'Lo que de verdad importa es cuánto dinero vale un pip con tu lote, porque eso es lo que ganas o pierdes por cada pip que se mueve el precio.',
+    ],
+    ejemplo: [
+      'EUR/USD de 1,1600 a 1,1630 son 30 pips.',
+      'USD/JPY de 155,00 a 155,30 también son 30 pips (aquí el pip es 0,01).',
+      'En EUR/USD, un pip vale 10 USD con un lote entero, 1 USD con un minilote y 0,10 USD con un microlote.',
+      'Así que 30 pips con un microlote son 3 USD; con un lote entero, 300 USD. El mismo movimiento, cien veces más dinero.',
+    ],
+    formula: {
+      texto: 'dinero = pips × valor del pip por lote × lote',
+      conNumeros: '30 × 10 × 0,01 = 3 USD',
+    },
+    noDice: [
+      'No te dice qué lote usar: eso sale de tu riesgo y de tu Stop-loss (módulo 2).',
+      'En los pares que no terminan en USD, el valor del pip cambia con el precio. La calculadora lo hace sola.',
+    ],
+    hazlo: {
+      tab: 'calc',
+      boton: 'Ir a Riesgo',
+      texto: 'En la calculadora, elige EUR/USD y mira el valor del pip. Cambia a USD/JPY y mira cómo cambia.',
+    },
+    preguntas: [
+      {
+        p: 'En EUR/USD, ¿cuántos pips hay de 1,0850 a 1,0870?',
+        opciones: ['2', '20', '200'],
+        correcta: 1,
+        porque: 'Cada 0,0001 es un pip: 0,0020 son 20 pips.',
+      },
+      {
+        p: '¿Cuántas unidades tiene un microlote?',
+        opciones: ['100.000', '10.000', '1.000'],
+        correcta: 2,
+        porque: 'Un microlote es 0,01 lotes: 1.000 unidades.',
+      },
+      {
+        p: 'En EUR/USD, 20 pips con un minilote (0,1) son…',
+        opciones: ['2 USD', '20 USD', '200 USD'],
+        correcta: 1,
+        porque: '20 × 10 × 0,1 = 20 USD.',
+      },
+    ],
+  },
+
+  'm1-3': {
+    titulo: 'El spread y el apalancamiento',
+    objetivo: 'Entender lo que cuesta entrar y por qué el apalancamiento no cambia tu riesgo, pero sí lo esconde.',
+    explicacion: [
+      'Cada precio tiene dos caras: el precio al que te venden (ask) y el precio al que te compran (bid). La diferencia es el spread, y lo pagas al abrir cada operación.',
+      'Por eso toda operación empieza perdiendo un poco. Cuanto más ancho el spread y más corto el Stop-loss, más pesa ese coste.',
+      'El apalancamiento es dinero que el bróker te deja mover sin ponerlo tú. Con 1:100, 1.000 USD te permiten abrir una operación de 100.000.',
+      'El apalancamiento no decide cuánto pierdes por pip: eso lo decide el lote. Lo que hace es dejarte abrir lotes mucho más grandes de lo que tu capital aguanta. Ahí está el peligro.',
+    ],
+    ejemplo: [
+      'Un spread de 1,2 pips en EUR/USD con un Stop-loss de 30 pips es el 4 % del riesgo.',
+      'El mismo spread con un Stop-loss de 10 pips es el 12 %.',
+      'En la app de intradía, con Stop-loss más cortos, el spread pesa unas cuatro veces más que en la de swing. Está medido.',
+    ],
+    formula: {
+      texto: 'peso del spread = spread ÷ pips del Stop-loss',
+      conNumeros: '1,2 ÷ 30 = 0,04 → 4 %',
+    },
+    noDice: [
+      'El spread que ves en la app es el de una cuenta real del desarrollador, no el de tu bróker. El tuyo puede ser distinto.',
+      'Tener apalancamiento alto no te obliga a usarlo. El riesgo lo controlas con el lote.',
+    ],
+    hazlo: {
+      tab: 'barrido',
+      boton: 'Ir al Barrido',
+      texto: 'Busca la tarjeta «Lo que cuesta abrir la operación» y compara el spread de EUR/USD con el de un cruce como EUR/NZD.',
+    },
+    preguntas: [
+      {
+        p: '¿Qué es el spread?',
+        opciones: ['La comisión mensual del bróker', 'La diferencia entre el precio de venta y el de compra', 'Lo que ganas en una operación'],
+        correcta: 1,
+        porque: 'Es la diferencia entre ask y bid, y se paga al abrir.',
+      },
+      {
+        p: 'Con el mismo spread, ¿cuándo pesa más?',
+        opciones: ['Con el Stop-loss lejos', 'Con el Stop-loss cerca', 'Pesa igual siempre'],
+        correcta: 1,
+        porque: 'Con el Stop-loss cerca, el spread es una parte más grande del riesgo.',
+      },
+      {
+        p: '¿Qué decide cuánto pierdes por cada pip?',
+        opciones: ['El apalancamiento', 'El lote', 'El spread'],
+        correcta: 1,
+        porque: 'El lote. El apalancamiento solo te deja abrir lotes más grandes.',
+      },
+    ],
+  },
+
+  'm3-1': {
+    titulo: 'Por qué los días malos se vuelven peores',
+    objetivo: 'Reconocer el momento en que una pérdida empuja a la siguiente.',
+    explicacion: [
+      'Casi nadie pierde la cuenta en una sola operación. Se pierde en un mal día: una pérdida, después otra abierta para recuperar la primera, más grande y con menos análisis.',
+      'Cuando ya vas perdiendo, la cabeza busca recuperar, no analizar. Las decisiones salen peores justo cuando más falta hacen buenas.',
+      'Por eso la regla de cuándo parar se escribe ANTES, con la cabeza fría, y no en mitad del día.',
+    ],
+    ejemplo: [
+      'Dos formas de cerrar el mismo mal día, con 1.000 USD de capital:',
+      'A: pierdes 10, paras. Al día siguiente sigues con 990.',
+      'B: pierdes 10, abres otra con el doble para recuperar y pierdes 20, abres otra más con 40 y pierdes. Al día siguiente tienes 930.',
+      'B no tuvo peor suerte: tomó más decisiones con la cabeza caliente.',
+    ],
+    noDice: [
+      'Parar no asegura que el día siguiente salga mejor. Lo que sí hace es que un mal día no se coma la cuenta.',
+      'No te dice cuál es tu límite: lo decides tú.',
+    ],
+    hazlo: {
+      tab: 'calc',
+      boton: 'Ir a Riesgo',
+      texto: 'En «Mi perfil de riesgo», pon tu pérdida máxima del día y cuántas pérdidas seguidas aguantas. Si no sabes qué poner, la app te propone unos valores.',
+    },
+    preguntas: [
+      {
+        p: '¿Cuándo es mejor decidir cuándo parar?',
+        opciones: ['Cuando vas perdiendo', 'Antes de empezar el día', 'Al final de la semana'],
+        correcta: 1,
+        porque: 'Con la cabeza fría, antes de que las pérdidas empujen a decidir mal.',
+      },
+      {
+        p: '¿Qué suele pasar después de una pérdida grande?',
+        opciones: ['Se opera con más cuidado', 'Se intenta recuperar rápido, con más riesgo', 'No pasa nada'],
+        correcta: 1,
+        porque: 'Las ganas de recuperar empujan a operaciones más grandes y peor pensadas.',
+      },
+      {
+        p: 'Parar a tiempo…',
+        opciones: ['Hace que mañana ganes', 'Evita que un mal día se coma la cuenta', 'Hace que aciertes más'],
+        correcta: 1,
+        porque: 'No cambia el acierto: limita el daño de los días malos.',
+      },
+    ],
+  },
+
+  'm3-2': {
+    titulo: 'El freno: pérdida del día y pérdidas seguidas',
+    objetivo: 'Entender los dos frenos de «Mi perfil de riesgo» y cómo los vigila la app.',
+    explicacion: [
+      'La app te deja poner dos frenos. Uno es la pérdida máxima del día: un porcentaje de tu capital que, si lo pierdes en un día, paras. El otro son las pérdidas seguidas: cuántas operaciones perdidas una detrás de otra aguantas antes de parar.',
+      '«Tu freno de hoy», arriba del Diario, va sumando lo que llevas perdido hoy y las pérdidas seguidas. Se pone ámbar cuando te acercas y rojo cuando tocas tu propia regla.',
+      'La app no cierra nada ni te bloquea: no está conectada a tu bróker. Solo te lo pone delante, con tus propios números.',
+    ],
+    ejemplo: [
+      `Con 1.000 USD, un riesgo del 1 % por operación y una pérdida máxima del día del ${fmt(SUGERIDO.limiteDiarioPct)} %, tu freno del día son ${fmt(FRENO_USD)} USD.`,
+      `Como cada operación arriesga 10 USD, el día se acaba a la operación perdida número ${OPS_FRENO}.`,
+      `Y el freno de pérdidas seguidas que la app propone es ${SUGERIDO.maxPerdidasSeguidas}: lo que llegue antes.`,
+    ],
+    formula: {
+      texto: 'operaciones hasta el freno = pérdida máxima del día ÷ riesgo por operación',
+      conNumeros: `${fmt(SUGERIDO.limiteDiarioPct)} % ÷ 1 % = ${OPS_FRENO}`,
+    },
+    noDice: [
+      'La app no te impide seguir operando: solo te avisa. La decisión de parar es tuya.',
+      'Cuenta solo las operaciones de este Diario. Si operas en las dos apps, cada una lleva su propio freno.',
+    ],
+    hazlo: {
+      tab: 'diario',
+      boton: 'Ir al Diario',
+      texto: 'Arriba del Diario está «Tu freno de hoy». Si todavía no tienes perfil de riesgo, la tarjeta te lo pide.',
+    },
+    preguntas: [
+      {
+        p: 'Con 2.000 USD y una pérdida máxima del día del 3 %, ¿cuál es tu freno?',
+        opciones: ['30 USD', '60 USD', '600 USD'],
+        correcta: 1,
+        porque: '2.000 × 3 % = 60 USD.',
+      },
+      {
+        p: '¿Qué hace la app cuando tocas el freno?',
+        opciones: ['Cierra tus operaciones', 'Te avisa en rojo con tu propia regla', 'Bloquea tu cuenta del bróker'],
+        correcta: 1,
+        porque: 'Solo avisa: no está conectada a ningún bróker.',
+      },
+      {
+        p: 'Con un riesgo del 1 % y un freno del día del 3 %, el día se acaba…',
+        opciones: ['A la primera pérdida', 'A la tercera pérdida', 'Nunca'],
+        correcta: 1,
+        porque: '3 % ÷ 1 % = 3 operaciones perdidas.',
+      },
+    ],
+  },
+
   'm0-1': {
     titulo: 'Información, no señales',
     objetivo: 'Saber qué te da esta app y qué no, antes de usarla con dinero.',
@@ -276,6 +535,10 @@ export const LECCIONES = Object.freeze({
       'El valor del pip cambia según el par. En los pares con dólar al final (EUR/USD, GBP/USD…) es 10 USD por lote; en los demás depende del precio, y la calculadora lo hace sola.',
       'No incluye el spread ni el swap.',
     ],
+    video: {
+      archivo: 'm2-3-lote',
+      desc: 'Video sin voz, de 20 segundos: la calculadora con un perfil de 1.000 USD y un 1 % por operación. El Stop-loss pasa de 25 a 50 pips, el lote baja de 0,04 a 0,02 y lo que se arriesga se queda en 10 USD.',
+    },
     hazlo: {
       tab: 'calc',
       boton: 'Ir a Riesgo',

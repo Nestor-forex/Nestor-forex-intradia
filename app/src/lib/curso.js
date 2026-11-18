@@ -17,6 +17,11 @@ import { MODULOS, LECCIONES, PROXIMOS } from './curso/es.js'
 
 export { MODULOS, LECCIONES, PROXIMOS }
 
+// Dónde viven los videos del curso. Dirección COMPLETA a propósito: los
+// archivos están en la página de la app de swing y las dos apps los usan desde
+// ahí (este archivo es gemelo). Un video se sube una vez, no dos.
+export const URL_VIDEOS = 'https://nestor-forex.github.io/Nestor-forex/curso/videos/'
+
 // Tope de la lista guardada. Lo mismo dice `firestore.rules`.
 export const MAX_HECHAS = 100
 

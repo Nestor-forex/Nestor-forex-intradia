@@ -12,7 +12,7 @@
 
 import { useState } from 'react'
 import { useIdioma } from '../lib/i18n'
-import { LECCIONES, MODULOS, PROXIMOS, moduloDe, progresoModulo, siguiente, texto, TODAS } from '../lib/curso'
+import { LECCIONES, MODULOS, PROXIMOS, URL_VIDEOS, moduloDe, progresoModulo, siguiente, texto, TODAS } from '../lib/curso'
 import { useCurso } from '../lib/useCurso'
 
 // ⚠️ El contenido está en español aunque la app esté en árabe: va siempre de
@@ -116,6 +116,23 @@ function Leccion({ id, hecha, onTerminar, onSiguiente, onIr, t }) {
       <Parte titulo={t('curso.noDice')} borde="var(--amber)">
         <Parrafos lista={l.noDice} />
       </Parte>
+      {l.video && (
+        <Parte titulo={t('curso.video')}>
+          {/* ⚠️ Sin voz, a propósito por ahora: se mira con el texto que va escrito encima. */}
+          {/* Dos formatos del mismo video: WebM (Chrome, Android) y MP4 (iPhone, Safari). */}
+          <video
+            controls
+            muted
+            playsInline
+            preload="metadata"
+            style={{ width: '100%', maxWidth: 420, borderRadius: 12, border: '1px solid var(--border)', background: '#000' }}
+          >
+            <source src={`${URL_VIDEOS}${l.video.archivo}.webm`} type="video/webm" />
+            <source src={`${URL_VIDEOS}${l.video.archivo}.mp4`} type="video/mp4" />
+          </video>
+          <p style={{ ...TEXTO, fontSize: 12.5, color: 'var(--text-muted)' }}>{l.video.desc}</p>
+        </Parte>
+      )}
       <Parte titulo={t('curso.hazlo')}>
         <p style={TEXTO}>{l.hazlo.texto}</p>
         <div>
@@ -155,7 +172,10 @@ function Leccion({ id, hecha, onTerminar, onSiguiente, onIr, t }) {
   )
 }
 
-export default function Curso({ uid, ficha, onIr }) {
+// `web`: la página del curso para computador y tableta (curso.html). La lista de
+// módulos va a la izquierda y la lección a la derecha, con el ancho de lectura
+// acotado. En el teléfono no se pasa y todo va en una columna, como siempre.
+export default function Curso({ uid, ficha, onIr, web = false }) {
   const { t, idioma } = useIdioma()
   const curso = useCurso(uid, ficha)
   const [moduloId, setModuloId] = useState(null)
@@ -175,19 +195,71 @@ export default function Curso({ uid, ficha, onIr }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        {(modulo || leccionId) && (
+        {!web && (modulo || leccionId) && (
           <button type="button" className="btn-ghost" onClick={volver}>
             ← {t('curso.volver')}
           </button>
         )}
-        <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>{t('curso.titulo')}</h1>
+        {/* En la web el título ya va en la cabecera de la página. */}
+        {!web && <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>{t('curso.titulo')}</h1>}
       </div>
 
       {/* ⚠️ PRIMERO el aviso, antes de cualquier lección. */}
       <p style={{ ...TEXTO, fontSize: 12.5, color: 'var(--text-muted)' }}>{t('curso.aviso')}</p>
       {idioma !== 'es' && <p style={{ ...TEXTO, fontSize: 12.5, color: 'var(--amber)' }}>{t('curso.soloEspanol')}</p>}
 
-      {leccionId ? (
+      {web ? (
+        <div className="curso-web">
+          <nav className="curso-web-indice" aria-label={t('curso.titulo')}>
+            {MODULOS.map((m) => (
+              <div key={m.id} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>
+                  {t('curso.modulo', { n: m.n })} · <span className="mono" dir="ltr">{progresoModulo(curso.hechas, m).n} / {m.lecciones.length}</span>
+                </div>
+                <div {...ES} style={{ fontSize: 14, fontWeight: 700 }}>{m.titulo}</div>
+                {m.lecciones.map((id) => {
+                  const hecha = curso.hechas.includes(id)
+                  const activa = id === leccionId
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => abrirLeccion(id)}
+                      aria-current={activa ? 'page' : undefined}
+                      style={{ textAlign: 'start', border: 'none', background: activa ? 'var(--bg-input)' : 'none', borderRadius: 8, padding: '6px 8px', color: 'var(--text)', font: 'inherit', fontSize: 13.5, cursor: 'pointer', display: 'flex', gap: 8 }}
+                    >
+                      <span className="mono" style={{ color: hecha ? 'var(--cta)' : 'var(--text-muted)', minWidth: 14 }}>{hecha ? '✓' : '·'}</span>
+                      <span {...ES}>{LECCIONES[id].titulo}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            ))}
+            {PROXIMOS.map((p) => (
+              <div key={`p${p.n}`} style={{ fontSize: 13, color: 'var(--text-muted)', opacity: 0.7 }}>
+                {t('curso.modulo', { n: p.n })} · <span {...ES}>{p.titulo}</span> · {t('curso.proximamente')}
+              </div>
+            ))}
+          </nav>
+          <div className="curso-web-leccion">
+            {leccionId ? (
+              <Leccion key={leccionId} id={leccionId} hecha={curso.hechas.includes(leccionId)} onTerminar={curso.terminar} onSiguiente={abrirLeccion} onIr={onIr} t={t} />
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <p style={TEXTO}>{t('curso.desc')}</p>
+                <div style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>
+                  {t('curso.llevas')} <strong className="mono" dir="ltr" style={{ color: 'var(--text)' }}>{curso.hechas.length} / {TODAS.length}</strong>
+                </div>
+                <div>
+                  <button type="button" className="btn-ghost" onClick={() => abrirLeccion(TODAS.find((id) => !curso.hechas.includes(id)) || TODAS[0])} style={{ color: 'var(--cta)', borderColor: 'var(--cta)' }}>
+                    {t('curso.empezar')} →
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : leccionId ? (
         <Leccion
           key={leccionId}
           id={leccionId}
