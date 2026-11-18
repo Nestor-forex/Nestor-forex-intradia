@@ -34,7 +34,7 @@ ok(!herramientasDeEstilo('rangos', ['niveles', 'rsi']).includes('bollinger'), 's
 ok(herramientasDeEstilo('rangos', ['niveles', 'rsi']).join() === 'niveles,rsi', 'y en su orden')
 
 console.log('\n2. Los textos en los 13 idiomas')
-const claves = ['titulo', 'aviso', 'nota', 'tuEstilo', 'sinElegir', 'cambiar', 'cerrar', 'sinPermiso', 'error', ...ESTILOS.flatMap((e) => [`${e}T`, `${e}D`])]
+const claves = ['titulo', 'aviso', 'nota', 'alCambiar', 'tuEstilo', 'sinElegir', 'cambiar', 'cerrar', 'sinPermiso', 'error', ...ESTILOS.flatMap((e) => [`${e}T`, `${e}D`])]
 for (const { codigo } of IDIOMAS) {
   const t = crearT(codigo)
   const faltan = claves.filter((k) => !t(`estilo.${k}`))
@@ -50,10 +50,14 @@ const iAviso = tarjeta.lastIndexOf("t('estilo.aviso')")
 const iBotones = tarjeta.lastIndexOf('ESTILOS.map(')
 ok(iAviso > 0 && iBotones > iAviso, 'en la tarjeta, el aviso va ANTES de los botones')
 const app = leer('src/App.jsx')
-ok(/miEstilo\.sabido && !miEstilo\.estilo && <MiEstilo/.test(app), 'la tarjeta sale en el Barrido solo mientras no haya respondido')
+ok(/miEstilo\.sabido && <MiEstilo estilo=\{miEstilo\.estilo\}/.test(app), 'la tarjeta se queda SIEMPRE en el Barrido, con el estilo elegido (2026-11-18)')
+ok(!/!miEstilo\.estilo && <MiEstilo/.test(app), 'y ya no desaparece al contestar')
+ok(/estilo && linea/.test(tarjeta) && /t\('estilo\.cambiar'\)/.test(tarjeta), 'con estilo elegido, la tarjeta enseña el estilo y el botón «Cambiar»')
+ok(!/textDecoration: 'underline'/.test(tarjeta), '«Cambiar» es un botón de verdad, no un enlace subrayado')
 const an = leer('src/components/AnalizadorTab.jsx')
 ok(/miEstilo\.estilo\s*\?\s*herramientasDeEstilo\(miEstilo\.estilo\)/.test(an), 'el Analizador arranca con las herramientas del estilo si nunca se usó')
-ok(/Array\.isArray\(ultimo\?\.herramientas\)\s*\?/.test(an), 'y lo último que usó la persona manda sobre el estilo')
+ok(/Array\.isArray\(ultimo\?\.herramientas\) && !\(miEstilo\.estilo && ultimo && 'estilo' in ultimo && ultimo\.estilo !== miEstilo\.estilo\)/.test(an), 'lo último que usó manda, salvo que haya cambiado de estilo después')
+ok(/herramientas: herr, estilo: miEstilo\.estilo/.test(an) && /recordar\(\{ herramientas: nueva, estilo: e \}\)/.test(an), 'lo último que usó se guarda con el estilo de ese momento')
 ok(/onElegido=\{\(e\) => \{\s*const nueva = herramientasDeEstilo\(e, disponibles\)/.test(an), 'al cambiar el estilo en el Analizador se encienden sus herramientas disponibles')
 const reglas = leer('../firestore.rules')
 ok(/'diasTablero', 'estilo'\]/.test(reglas), 'la regla deja escribir el estilo en la propia ficha')

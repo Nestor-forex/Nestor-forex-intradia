@@ -151,8 +151,11 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
   const [lado, setLado] = useState(null)
   const [metodo, setMetodo] = useState(METODOS.includes(ultimo?.metodo) ? ultimo.metodo : 'app')
   const [herr, setHerr] = useState(
-    // Lo último que usó manda; si nunca usó el Analizador, las de su estilo.
-    Array.isArray(ultimo?.herramientas)
+    // Lo último que usó manda; si nunca usó el Analizador, o si cambió de
+    // estilo después (en el Barrido, por ejemplo), las de su estilo.
+    // ⚠️ Un registro viejo sin `estilo` se respeta: no se sabe con qué estilo
+    // se guardó, y pisarle sus herramientas sería decidir por la persona.
+    Array.isArray(ultimo?.herramientas) && !(miEstilo.estilo && ultimo && 'estilo' in ultimo && ultimo.estilo !== miEstilo.estilo)
       ? ultimo.herramientas.filter((h) => HERRAMIENTAS.includes(h))
       : miEstilo.estilo
         ? herramientasDeEstilo(miEstilo.estilo)
@@ -181,7 +184,7 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
   const parActual = par && nombres.includes(par) ? par : nombres[0] ?? null
   const fichaPar = fichas.find((f) => f.name === parActual) ?? null
 
-  const recordar = (cambios) => guardarUltimo({ par: parActual, metodo, herramientas: herr, ...cambios })
+  const recordar = (cambios) => guardarUltimo({ par: parActual, metodo, herramientas: herr, estilo: miEstilo.estilo, ...cambios })
   const elegirPar = (p) => {
     setPar(p)
     recordar({ par: p })
@@ -304,7 +307,7 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
           onElegido={(e) => {
             const nueva = herramientasDeEstilo(e, disponibles)
             setHerr(nueva)
-            recordar({ herramientas: nueva })
+            recordar({ herramientas: nueva, estilo: e })
           }}
         />
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

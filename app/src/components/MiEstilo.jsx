@@ -1,8 +1,10 @@
 // «¿Cómo operas?» — el arranque por tipo de trading (2026-11-17).
 //
 // Dos formas:
-//  - `tarjeta`: en el Barrido, la primera vez (mientras no haya respondido).
-//  - `linea`: en el Analizador, para ver y cambiar el estilo cuando quiera.
+//  - `tarjeta`: en el Barrido, SIEMPRE a la vista (2026-11-18, pedido de
+//    Néstor). Sin estilo elegido sale entera; con estilo, en una línea con el
+//    botón «Cambiar», que la abre otra vez con las cuatro opciones.
+//  - `linea`: en el Analizador, la misma línea sin marco de tarjeta.
 //
 // ⚠️ EL AVISO VA ANTES DE LOS BOTONES: esto no cambia ninguna señal, solo con
 // qué herramientas arranca el Analizador. Y no dice qué estilo es mejor.
@@ -12,6 +14,33 @@ import { useT } from '../lib/i18n'
 import { ESTILOS } from '../lib/estilo'
 
 const TEXTO = { margin: 0, fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.55 }
+
+// Un botón que se vea botón: relleno del color de la marca, como la pastilla
+// «Ver» de las tarjetas plegables. Un enlace subrayado de letra pequeña no
+// dice «tócame».
+function Pastilla({ onClick, children, hueca }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        minHeight: 32,
+        padding: '4px 12px',
+        borderRadius: 999,
+        border: '1px solid var(--cta)',
+        background: hueca ? 'none' : 'var(--cta)',
+        color: hueca ? 'var(--cta)' : 'var(--cta-tinta)',
+        cursor: 'pointer',
+        font: 'inherit',
+        fontSize: 12.5,
+        fontWeight: 600,
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {children}
+    </button>
+  )
+}
 
 function Opcion({ id, activo, onClick, t, conDesc }) {
   return (
@@ -53,42 +82,52 @@ export default function MiEstilo({ estilo, guardar, modo = 'tarjeta', onElegido 
   }
   const fallo = estado === 'sinPermiso' || estado === 'error' ? <p style={{ ...TEXTO, fontSize: 12, color: 'var(--amber)' }}>{t(estado === 'sinPermiso' ? 'estilo.sinPermiso' : 'estilo.error')}</p> : null
 
-  if (modo === 'linea') {
+  // Sin estilo elegido, en el Barrido las opciones se ven sin tener que abrir.
+  const verOpciones = abierto || (modo === 'tarjeta' && !estilo)
+  const enTarjeta = modo === 'tarjeta'
+
+  const linea = (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+      <p style={{ ...TEXTO, flex: '1 1 auto' }}>
+        {t('estilo.tuEstilo')} <strong style={{ color: 'var(--text)' }}>{estilo ? t(`estilo.${estilo}T`) : t('estilo.sinElegir')}</strong>
+      </p>
+      {(estilo || !enTarjeta) && (
+        <Pastilla hueca={abierto} onClick={() => setAbierto((x) => !x)}>
+          {abierto ? t('estilo.cerrar') : t('estilo.cambiar')}
+        </Pastilla>
+      )}
+    </div>
+  )
+
+  const opciones = verOpciones && (
+    <>
+      {/* ⚠️ PRIMERO el aviso, antes de cualquier botón. */}
+      <p style={{ ...TEXTO, fontSize: 12, color: 'var(--text-muted)' }}>{t('estilo.aviso')}</p>
+      <div style={{ display: 'flex', flexDirection: enTarjeta ? 'column' : 'row', flexWrap: 'wrap', gap: enTarjeta ? 8 : 6 }}>
+        {ESTILOS.map((id) => (
+          <Opcion key={id} id={id} activo={estilo === id} onClick={() => elegir(id)} t={t} conDesc={enTarjeta} />
+        ))}
+      </div>
+      {fallo}
+      <p style={{ ...TEXTO, fontSize: 11.5, color: 'var(--text-muted)' }}>{t('estilo.alCambiar')}</p>
+    </>
+  )
+
+  if (!enTarjeta) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <p style={TEXTO}>
-          {t('estilo.tuEstilo')} <strong>{estilo ? t(`estilo.${estilo}T`) : t('estilo.sinElegir')}</strong>{' '}
-          <button type="button" onClick={() => setAbierto((x) => !x)} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--cta)', cursor: 'pointer', font: 'inherit', textDecoration: 'underline' }}>
-            {abierto ? t('estilo.cerrar') : t('estilo.cambiar')}
-          </button>
-        </p>
-        {abierto && (
-          <>
-            <p style={{ ...TEXTO, fontSize: 12, color: 'var(--text-muted)' }}>{t('estilo.aviso')}</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {ESTILOS.map((id) => (
-                <Opcion key={id} id={id} activo={estilo === id} onClick={() => elegir(id)} t={t} conDesc={false} />
-              ))}
-            </div>
-            {fallo}
-          </>
-        )}
+        {linea}
+        {opciones}
       </div>
     )
   }
 
   return (
-    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10, border: '1px solid var(--cta)' }}>
+    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10, border: `1px solid ${estilo ? 'var(--border-strong)' : 'var(--cta)'}` }}>
       <div style={{ fontSize: 14, fontWeight: 600 }}>{t('estilo.titulo')}</div>
-      {/* ⚠️ PRIMERO el aviso, antes de cualquier botón. */}
-      <p style={TEXTO}>{t('estilo.aviso')}</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {ESTILOS.map((id) => (
-          <Opcion key={id} id={id} activo={estilo === id} onClick={() => elegir(id)} t={t} conDesc />
-        ))}
-      </div>
-      {fallo}
-      <p style={{ ...TEXTO, fontSize: 11.5, color: 'var(--text-muted)' }}>{t('estilo.nota')}</p>
+      {estilo && linea}
+      {opciones}
+      {(!estilo || abierto) && <p style={{ ...TEXTO, fontSize: 11.5, color: 'var(--text-muted)' }}>{t('estilo.nota')}</p>}
     </div>
   )
 }
