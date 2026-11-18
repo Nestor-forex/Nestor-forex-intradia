@@ -248,7 +248,7 @@ export default function App() {
               {tab === 'barrido' && (
                 <>
                   {filtroPares}
-                  {miEstilo.sabido && !miEstilo.estilo && <MiEstilo estilo={null} guardar={miEstilo.guardar} />}
+                  {miEstilo.sabido && <MiEstilo estilo={miEstilo.estilo} guardar={miEstilo.guardar} />}
                   <BarridoTab
                     loading={vista.loading}
                     error={vista.error}
