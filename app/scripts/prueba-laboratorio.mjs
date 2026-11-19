@@ -13,13 +13,18 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
   MAX_CONDICIONES,
+  MAX_SEGUIDAS,
+  PRECIO_SEGUIMIENTO_USD,
   aciertoDeEquilibrio,
+  avanzarAdelante,
+  claveVela,
   condicionValida,
   contarPrueba,
   fichaParaGuardar,
   probarEnPar,
   probarRegla,
   reglaValida,
+  resumenAdelante,
   serieAtr,
   serieEma,
   seriePercentB,
@@ -153,7 +158,21 @@ console.log('\n7 · Lo que se guarda cuadra con las reglas de Firestore')
   ok(f.nombre === 'Mi regla' && f.resultado.porR === 0.123, 'el nombre se limpia y el resultado se redondea')
   ok(fichaParaGuardar({ lado: 'VENTA', condiciones: [{ tipo: 'rsi', op: '>=', valor: 70 }], riesgoATR: 1, objetivoRB: 2 }, '  ', null, 1, 'swing').error === 'sinNombre', 'sin nombre no se guarda')
   ok(/match \/\{ruta=\*\*\}\/reglas\/\{reglaId\}\s*\{\s*allow read: if esAdmin\(\);/.test(reglas), 'el administrador lee todas (grupo de colección), y solo lee')
-  ok(!/match \/reglas\/\{reglaId\}[\s\S]*?allow update/.test(bloque.slice(0, bloque.indexOf('\n    }\n'))), 'una regla guardada no se puede editar')
+  ok(f.permiteCopia === false, 'sin marcar la casilla NO hay permiso de copia (nunca se supone que sí)')
+  ok(permitidas.includes('permiteCopia'), 'el permiso de copia está permitido al guardar')
+  const conPermiso = fichaParaGuardar({ lado: 'VENTA', condiciones: [{ tipo: 'rsi', op: '>=', valor: 70 }], riesgoATR: 1, objetivoRB: 2 }, 'x', null, 1, 'swing', true)
+  ok(conPermiso.permiteCopia === true, 'marcando la casilla queda el permiso')
+  ok(fichaParaGuardar({ lado: 'VENTA', condiciones: [{ tipo: 'rsi', op: '>=', valor: 70 }], riesgoATR: 1, objetivoRB: 2 }, 'x', null, 1, 'swing', 'sí').permiteCopia === false, 'un valor raro no cuenta como permiso')
+  // La regla en sí no se edita: el dueño solo enciende/apaga el seguimiento,
+  // y el administrador solo escribe el informe.
+  const updates = [...bloque.slice(0, bloque.indexOf('\n    }\n')).matchAll(/allow update:[\s\S]*?;/g)].map((m) => m[0])
+  ok(updates.length === 2, `hay dos permisos de cambio, y solo dos (${updates.length})`)
+  ok(updates.some((u) => /esPropio\(uid\)/.test(u) && /hasOnly\(\['seguir', 'seguirDesde'\]\)/.test(u) && /seguimientoActivo/.test(u)), 'el dueño solo cambia el seguimiento, y solo con el servicio activo')
+  ok(updates.some((u) => /esAdmin\(\)/.test(u) && /hasOnly\(\['informe'\]\)/.test(u)), 'el administrador solo escribe el informe')
+  ok(updates.every((u) => /request\.time/.test(u)), 'las fechas las pone el servidor')
+  const ficha = reglas.slice(reglas.indexOf('match /users/{uid}'), reglas.indexOf('match /trades/'))
+  ok(/'seguimientoSolicitado'/.test(ficha) && /seguimientoSolicitado == request\.time/.test(ficha), 'la persona puede pedir el servicio (con la hora del servidor)')
+  ok(!/hasOnly\(\[[^\]]*'seguimientoActivo'/.test(ficha), 'activar el servicio NO lo puede hacer la persona: solo el administrador')
 }
 
 console.log('\n8 · La pantalla')
@@ -167,9 +186,47 @@ console.log('\n8 · La pantalla')
   ok(/useReglasTodas\(esAdmin/.test(lab), 'las reglas de los miembros se piden solo si es el administrador')
   ok(/import \{ spreadDe \} from '\.\.\/\.\.\/scripts\/lib\/costes\.mjs'/.test(lab), 'el spread sale de la MISMA tabla del banco de pruebas (no una copia)')
   ok(/<Laboratorio\b/.test(leer('src/components/AnalizadorTab.jsx')), 'está enchufado en el Analizador')
+  ok(i("t('lab.beneficioTitulo')") > 0 && i("t('lab.beneficioTitulo')") < i("t('lab.paso1')"), 'el beneficio de compartir la idea va destacado arriba')
+  ok(i("t('lab.permiso')") > 0 && i("t('lab.permiso')") < i("t('lab.guardar')}"), 'la casilla de permiso va ANTES del botón de guardar')
+  ok(/useState\(false\)/.test(lab.slice(lab.indexOf('[permiteCopia'), lab.indexOf('[permiteCopia') + 80)), 'la casilla de permiso arranca SIN marcar')
+  ok(/fichaParaGuardar\([^)]*permiteCopia\)/.test(lab), 'el permiso viaja con la regla')
+  for (const k of ['adelanteQue', 'adelantePara', 'adelantePros', 'adelanteNo']) {
+    ok(i(`t('lab.${k}')`) > 0 && i(`t('lab.${k}')`) < i("t('lab.adelanteSolicitar')"), `«${k}» se explica ANTES del botón de pedir la activación`)
+  }
+  ok(/PRECIO_SEGUIMIENTO_USD/.test(lab) && !/\b3 USD\b/.test(lab), 'el precio se LEE de una constante, no va escrito a mano')
+  ok(/r\.permiteCopia === true && \(/.test(lab), 'el administrador solo puede copiar si el autor dio permiso')
+  ok(/servicioActivo && \(r\.seguir \|\| seguidas < MAX_SEGUIDAS\)/.test(lab), 'el botón de seguir solo sale con el servicio activo y sin pasar el límite')
   const hook = leer('src/lib/useHistoria.js')
   ok(/swing:\s*'https:\/\/raw\.githubusercontent\.com\/Nestor-forex\/Nestor-forex\/datos\/estado\/historia\.json'/.test(hook), 'Swing lee su historia')
   ok(/intradia:\s*'https:\/\/raw\.githubusercontent\.com\/Nestor-forex\/Nestor-forex-intradia\/datos\/estado\/historia\.json'/.test(hook), 'Intradía lee la suya')
+}
+
+console.log('\n10 · El seguimiento hacia adelante')
+{
+  ok(MAX_SEGUIDAS === 5 && PRECIO_SEGUIMIENTO_USD === 3, 'hasta 5 reglas seguidas por app, 3 USD al mes')
+  ok(claveVela('2026-11-19T15:20:37.105Z', ['2026-11-18']) === '2026-11-19', 'con velas diarias, el día')
+  ok(claveVela('2026-11-19T15:20:37.105Z', ['2026-11-18 21:00:00']) === '2026-11-19 15:00:00', 'con velas de una hora, la hora')
+  ok(claveVela(null, ['2026-11-18']) === null && claveVela('basura', ['2026-11-18']) === null, 'una fecha que no se entiende es null')
+  // La señal está en la vela 40. Si el seguimiento empezó DESPUÉS, no cuenta.
+  const h = { fechas, pares: { 'EUR/USD': serie({ salto: 'tp' }) } }
+  const antes = avanzarAdelante(REGLA, h, () => 0, null, fechas[39])
+  ok(antes.ops.length === 1 && antes.ops[0].e === fechas[40] && antes.ops[0].r === 1, 'una operación que empieza después de activar sí cuenta')
+  const despues = avanzarAdelante(REGLA, h, () => 0, null, fechas[40])
+  ok(despues.ops.length === 0, 'una operación que empezó ANTES (o en la vela de activar) no cuenta')
+  const otraVez = avanzarAdelante(REGLA, h, () => 0, antes, fechas[39])
+  ok(otraVez.ops.length === 1, 'pasar dos veces no duplica la operación')
+  const reinicio = avanzarAdelante(REGLA, h, () => 0, { desde: 'otro', ops: [{ p: 'EUR/USD', e: 'x', s: 'y', r: -1 }] }, fechas[39])
+  ok(reinicio.ops.length === 1 && reinicio.ops[0].r === 1, 'si se volvió a encender (otro inicio), empieza de cero')
+  // Lo guardado no se pierde aunque la historia de hoy ya no lo traiga.
+  const viejo = { desde: fechas[39], ops: [{ p: 'GBP/USD', e: 'a', s: 'b', r: -1 }] }
+  const sigue = avanzarAdelante(REGLA, h, () => 0, viejo, fechas[39])
+  ok(sigue.ops.some((o) => o.p === 'GBP/USD'), 'una operación guardada se queda aunque ya no esté en las velas de hoy')
+  const abierta = avanzarAdelante(REGLA, { fechas, pares: { 'EUR/USD': serie({ salto: 'nada' }) } }, () => 0, null, fechas[39])
+  ok(abierta.ops.length === 0 && abierta.abiertas === 1, 'una abierta no se guarda como cerrada: se cuenta aparte')
+  ok(avanzarAdelante(REGLA, null, () => 0, null, 'x').error === 'sinHistoria', 'sin historia no inventa nada')
+  const r = resumenAdelante([{ r: 1 }, { r: -1 }, { r: 1 }])
+  ok(r.ops === 3 && r.acierto === 67 && r.margen > 0, 'el resumen trae el acierto con su margen')
+  ok(resumenAdelante([]).acierto === null && resumenAdelante(undefined).ops === 0, 'sin operaciones: null, nunca 0 %')
 }
 
 console.log('\n9 · Los textos existen en los 13 idiomas')

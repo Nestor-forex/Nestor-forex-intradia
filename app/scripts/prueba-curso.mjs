@@ -110,7 +110,7 @@ console.log('\n6. El tope de la lista es el mismo en la app y en las reglas')
 const reglas = leer('../firestore.rules')
 const m = reglas.match(/request\.resource\.data\.curso\.size\(\) <= (\d+)/)
 ok(m && Number(m[1]) === MAX_HECHAS, `firestore.rules deja ${m?.[1]} y la app guarda hasta ${MAX_HECHAS}`)
-ok(/'curso'\]\)/.test(reglas), '`curso` está en la lista blanca de la ficha')
+ok(/hasOnly\(\[[^\]]*'curso'[^\]]*\]\)/.test(reglas), '`curso` está en la lista blanca de la ficha')
 
 console.log('\n7. La pantalla y el botón')
 const pantalla = leer('src/components/Curso.jsx')

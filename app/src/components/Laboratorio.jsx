@@ -12,7 +12,11 @@
 // ⚠️ LA APP NO ELIGE EL LADO: sin COMPRA o VENTA no se prueba nada.
 // ⚠️ CADA PRUEBA SE CUENTA y el número se enseña al lado del resultado.
 // ⚠️ ANTES DE GUARDAR SE DICE que el desarrollador de la app puede ver las
-// reglas guardadas.
+// reglas guardadas, y la persona decide con una casilla (sin marcar por
+// defecto) si le da permiso para copiarlas y probarlas con otras medidas.
+// ⚠️ EL SEGUIMIENTO HACIA ADELANTE ES UN SERVICIO APARTE: primero se explica
+// qué es, para qué sirve y cómo lo usan los profesionales, y solo después va
+// el botón de pedir la activación. Lo activa el administrador.
 // ⚠️ EL ACIERTO NO SE PINTA DE COLOR; el resultado en R sí (es dinero).
 
 import { useMemo, useState } from 'react'
@@ -20,7 +24,9 @@ import { useIdioma } from '../lib/i18n'
 import TarjetaPlegable from './TarjetaPlegable'
 import {
   MAX_CONDICIONES,
+  MAX_SEGUIDAS,
   OBJETIVOS_RB,
+  PRECIO_SEGUIMIENTO_USD,
   REGLA_INICIAL,
   RIESGOS_ATR,
   TIPOS_CONDICION,
@@ -28,9 +34,10 @@ import {
   contarPrueba,
   fichaParaGuardar,
   probarRegla,
+  resumenAdelante,
 } from '../lib/laboratorio'
 import { useHistoria } from '../lib/useHistoria'
-import { copiarRegla, useReglas, useReglasTodas } from '../lib/useReglas'
+import { activarSeguimiento, copiarRegla, informarAutor, solicitarSeguimiento, useReglas, useReglasTodas } from '../lib/useReglas'
 import { useMembers } from '../lib/useMembers'
 import { ADMIN_EMAIL } from '../lib/firebase'
 import { APP, clave } from '../lib/identidad'
@@ -84,6 +91,85 @@ const leerProbadas = () => {
 
 const fmtR = (v) => (v === null || v === undefined ? '—' : `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(2)} R`)
 const colorR = (v) => (v === null || v === undefined ? 'var(--text-secondary)' : v >= 0 ? 'var(--green)' : 'var(--red)')
+
+/** Fecha corta de un Timestamp de Firestore (o null si no hay). */
+function fechaCorta(ts, locale) {
+  const d = ts?.toDate ? ts.toDate() : null
+  return d ? d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' }) : null
+}
+
+/** Lo que dio la regla con velas nuevas (lo escribe el programa del servidor). */
+function Adelante({ r, t, locale }) {
+  const desde = fechaCorta(r.seguirDesde, locale)
+  const res = resumenAdelante(r.adelante?.ops)
+  return (
+    <div style={{ ...CAJA, borderColor: 'var(--cta)', gap: 4 }}>
+      <span style={ROTULO}>{t('lab.adelanteRes')}</span>
+      {desde && <span style={{ ...TEXTO, fontSize: 11.5 }}>{t('lab.seguidaDesde', { fecha: desde })}</span>}
+      {res.ops === 0 ? (
+        <span style={TEXTO}>{t('lab.adelanteSinOps')}</span>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '2px 12px', fontSize: 12.5 }}>
+          <span style={{ color: 'var(--text-muted)' }}>{t('lab.ops')}</span>
+          <span className="mono" dir="ltr">{res.ops}</span>
+          <span style={{ color: 'var(--text-muted)' }}>{t('lab.acierto')}</span>
+          <span className="mono" dir="ltr">{res.acierto}% ±{res.margen}</span>
+          <span style={{ color: 'var(--text-muted)' }}>{t('lab.porR')}</span>
+          <span className="mono" dir="ltr" style={{ color: colorR(res.porR) }}>{fmtR(res.porR)}</span>
+        </div>
+      )}
+      {r.adelante?.abiertas > 0 && (
+        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+          {t('lab.abiertas')}: <bdi className="mono">{r.adelante.abiertas}</bdi>
+        </span>
+      )}
+      {res.ops > 0 && res.ops < 150 && <span style={{ ...TEXTO, fontSize: 11.5, color: 'var(--amber)' }}>{t('lab.pocas', { n: res.ops, margen: res.margen })}</span>}
+    </div>
+  )
+}
+
+/** El informe que el desarrollador le manda al autor. */
+function Informe({ informe, t }) {
+  return (
+    <div style={{ ...CAJA, borderColor: 'var(--cta)', borderWidth: 2, gap: 4 }}>
+      <strong style={{ fontSize: 13 }}>📩 {t('lab.informeTitulo')}</strong>
+      <p style={{ ...TEXTO, whiteSpace: 'pre-wrap' }}>{informe.texto}</p>
+      {informe.metricas && (
+        <>
+          <span style={ROTULO}>{t('lab.informeMetricas')}</span>
+          <p style={{ ...TEXTO, whiteSpace: 'pre-wrap' }}>{informe.metricas}</p>
+        </>
+      )}
+      <p style={{ ...TEXTO, fontSize: 11.5, color: 'var(--amber)' }}>{t('lab.informeAviso')}</p>
+    </div>
+  )
+}
+
+/** Administrador: escribirle el resultado al autor de una regla. */
+function FormInforme({ r, t }) {
+  const [texto, setTexto] = useState('')
+  const [metricas, setMetricas] = useState('')
+  const [estado, setEstado] = useState(null)
+  const enviar = async () => {
+    if (!texto.trim()) return
+    setEstado('guardando')
+    setEstado(await informarAutor(r.uid, r.id, texto.trim(), metricas.trim()))
+  }
+  return (
+    <details>
+      <summary style={{ ...TEXTO, cursor: 'pointer', fontWeight: 600 }}>{t('lab.informar')}</summary>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
+        <textarea className="field" rows={3} maxLength={2000} placeholder={t('lab.informeTexto')} value={texto} onChange={(e) => setTexto(e.target.value)} />
+        <textarea className="field" rows={3} maxLength={2000} placeholder={t('lab.informeMedidas')} value={metricas} onChange={(e) => setMetricas(e.target.value)} />
+        <button type="button" className="btn-ghost" style={{ minHeight: 40 }} disabled={!texto.trim() || estado === 'guardando'} onClick={enviar}>
+          {t('lab.enviar')}
+        </button>
+        {estado === 'ok' && <span style={TEXTO}>{t('lab.informeEnviado')}</span>}
+        {(estado === 'sinPermiso' || estado === 'error') && <span style={{ ...TEXTO, color: 'var(--amber)' }}>{t(`lab.estado.${estado}`)}</span>}
+      </div>
+    </details>
+  )
+}
 
 /** La condición en una frase corta, en el idioma de quien mira. */
 function textoCondicion(c, t) {
@@ -212,7 +298,9 @@ export default function Laboratorio({ uid, ficha }) {
   const [tocado, setTocado] = useState(false)
   const abierto = tocado
   const { historia, cargando, fallo } = useHistoria(abierto)
-  const { reglas, guardar, borrar } = useReglas(uid)
+  const { reglas, guardar, borrar, seguir } = useReglas(uid)
+  const servicioActivo = ficha?.seguimientoActivo === true
+  const solicitadoEl = fechaCorta(ficha?.seguimientoSolicitado, locale)
   const esAdmin = !!ADMIN_EMAIL && String(ficha?.email ?? '').toLowerCase() === ADMIN_EMAIL
   const todas = useReglasTodas(esAdmin && abierto)
   const { usuarios } = useMembers(esAdmin && abierto)
@@ -223,6 +311,8 @@ export default function Laboratorio({ uid, ficha }) {
   const [nombre, setNombre] = useState('')
   const [estadoGuardar, setEstadoGuardar] = useState(null)
   const [aBorrar, setABorrar] = useState(null)
+  const [permiteCopia, setPermiteCopia] = useState(false)
+  const [estadoServicio, setEstadoServicio] = useState(null)
 
   // Cambiar la regla deja el resultado viejo sin sentido: se quita.
   const setRegla = (siguiente) => {
@@ -259,19 +349,32 @@ export default function Laboratorio({ uid, ficha }) {
   }
 
   const alGuardar = async () => {
-    const f = fichaParaGuardar(regla, nombre, resultado, probadas, APP)
+    const f = fichaParaGuardar(regla, nombre, resultado, probadas, APP, permiteCopia)
     if (f.error) return setEstadoGuardar(f.error)
     setEstadoGuardar('guardando')
     setEstadoGuardar(await guardar(f))
   }
 
   const deEstaApp = (todas.reglas ?? []).filter((r) => r.app === APP && r.uid !== uid)
+  const seguidas = reglas.filter((r) => r.seguir === true).length
+  const pedidos = esAdmin ? (usuarios ?? []).filter((u) => u.seguimientoSolicitado || u.seguimientoActivo === true) : []
+
+  const pedir = async () => {
+    setEstadoServicio('guardando')
+    setEstadoServicio(await solicitarSeguimiento(uid))
+  }
 
   return (
     <div onClickCapture={() => !tocado && setTocado(true)}>
       <TarjetaPlegable sigla="LAB" titulo={t('lab.titulo')} desc={t('lab.desc')} paraQue={t('lab.paraQue')}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <p style={{ ...TEXTO, color: 'var(--amber)' }}>{t('lab.aviso')}</p>
+
+          {/* El beneficio, destacado: la persona tiene que enterarse de que existe. */}
+          <div style={{ ...CAJA, borderColor: 'var(--cta)', borderWidth: 2 }}>
+            <strong style={{ fontSize: 14 }}>💡 {t('lab.beneficioTitulo')}</strong>
+            <p style={TEXTO}>{t('lab.beneficio')}</p>
+          </div>
 
           {cargando && <p style={TEXTO}>{t('lab.cargando')}</p>}
           {fallo && <p style={{ ...TEXTO, color: 'var(--amber)' }}>{t('lab.fallo', { motivo: fallo })}</p>}
@@ -348,6 +451,10 @@ export default function Laboratorio({ uid, ficha }) {
             <span style={ROTULO}>{t('lab.guardarTitulo')}</span>
             <p style={{ ...TEXTO, color: 'var(--amber)' }}>{t('lab.quienVe')}</p>
             <input className="field" maxLength={60} placeholder={t('lab.nombre')} value={nombre} onChange={(e) => setNombre(e.target.value)} />
+            <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', cursor: 'pointer' }}>
+              <input type="checkbox" checked={permiteCopia} onChange={(e) => setPermiteCopia(e.target.checked)} style={{ marginTop: 3, width: 18, height: 18 }} />
+              <span style={TEXTO}>{t('lab.permiso')}</span>
+            </label>
             <button type="button" className="btn-ghost" style={{ minHeight: 44 }} onClick={alGuardar}>
               {t('lab.guardar')}
             </button>
@@ -370,10 +477,18 @@ export default function Laboratorio({ uid, ficha }) {
                       {r.resultado.ops} · {r.resultado.acierto ?? '—'}% · {fmtR(r.resultado.porR)}
                     </span>
                   )}
-                  <div style={{ display: 'flex', gap: 6 }}>
+                  {!r.copiaDe && <span style={{ ...TEXTO, fontSize: 11.5 }}>{t(r.permiteCopia ? 'lab.conPermiso' : 'lab.sinPermisoCopia')}</span>}
+                  {r.informe?.texto && <Informe informe={r.informe} t={t} />}
+                  {(r.seguir || r.adelante) && <Adelante r={r} t={t} locale={locale} />}
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     <button type="button" className="btn-ghost" style={{ minHeight: 36, padding: '0 10px' }} onClick={() => cargar(r)}>
                       {t('lab.cargar')}
                     </button>
+                    {servicioActivo && (r.seguir || seguidas < MAX_SEGUIDAS) && (
+                      <button type="button" className="btn-ghost" style={{ minHeight: 36, padding: '0 10px', borderColor: 'var(--cta)' }} onClick={() => seguir(r.id, !r.seguir)}>
+                        {r.seguir ? t('lab.dejarBtn') : t('lab.seguirBtn')}
+                      </button>
+                    )}
                     <button
                       type="button"
                       className="btn-ghost"
@@ -383,6 +498,46 @@ export default function Laboratorio({ uid, ficha }) {
                       {aBorrar === r.id ? t('lab.confirmarBorrar') : t('lab.borrar')}
                     </button>
                   </div>
+                </div>
+              ))}
+              {servicioActivo && seguidas >= MAX_SEGUIDAS && <p style={{ ...TEXTO, fontSize: 11.5 }}>{t('lab.maxSeguidas', { max: MAX_SEGUIDAS })}</p>}
+            </div>
+          )}
+
+          {/* Seguimiento hacia adelante: primero qué es, después el botón. */}
+          <div style={{ ...CAJA, borderColor: 'var(--cta)', borderWidth: 2 }}>
+            <strong style={{ fontSize: 14 }}>📈 {t('lab.adelanteTitulo')}</strong>
+            <span style={{ ...ROTULO, color: 'var(--cta)' }}>{t('lab.adelanteServicio', { precio: PRECIO_SEGUIMIENTO_USD })}</span>
+            <p style={TEXTO}>{t('lab.adelanteQue')}</p>
+            <p style={TEXTO}>{t('lab.adelantePara')}</p>
+            <p style={TEXTO}>{t('lab.adelantePros')}</p>
+            <p style={{ ...TEXTO, color: 'var(--amber)' }}>{t('lab.adelanteNo')}</p>
+            {servicioActivo ? (
+              <p style={{ ...TEXTO, fontWeight: 600 }}>{t('lab.adelanteActivo', { max: MAX_SEGUIDAS })}</p>
+            ) : solicitadoEl ? (
+              <p style={{ ...TEXTO, fontWeight: 600 }}>{t('lab.adelanteSolicitado', { fecha: solicitadoEl })}</p>
+            ) : (
+              <button type="button" className="btn btn-primary" disabled={estadoServicio === 'guardando'} onClick={pedir}>
+                {t('lab.adelanteSolicitar')}
+              </button>
+            )}
+            {(estadoServicio === 'sinPermiso' || estadoServicio === 'error') && <p style={{ ...TEXTO, color: 'var(--amber)' }}>{t(`lab.estado.${estadoServicio}`)}</p>}
+          </div>
+
+          {esAdmin && (
+            <div style={CAJA}>
+              <span style={ROTULO}>{t('lab.adminSeg')}</span>
+              {!pedidos.length && <p style={TEXTO}>{t('lab.adminSegNadie')}</p>}
+              {pedidos.map((u) => (
+                <div key={u.uid} style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+                  <span style={TEXTO}>
+                    {u.seguimientoActivo === true
+                      ? t('lab.adminSegActivo', { quien: nombreDe(u.uid) })
+                      : t('lab.adminSegPedido', { quien: nombreDe(u.uid), fecha: fechaCorta(u.seguimientoSolicitado, locale) ?? '—' })}
+                  </span>
+                  <button type="button" className="btn-ghost" style={{ minHeight: 36, padding: '0 10px' }} onClick={() => activarSeguimiento(u.uid, u.seguimientoActivo !== true)}>
+                    {u.seguimientoActivo === true ? t('lab.desactivar') : t('lab.activar')}
+                  </button>
                 </div>
               ))}
             </div>
@@ -406,14 +561,19 @@ export default function Laboratorio({ uid, ficha }) {
                       {r.resultado.ops} · {r.resultado.acierto ?? '—'}% · {fmtR(r.resultado.porR)}
                     </span>
                   )}
+                  <span style={{ ...TEXTO, fontSize: 11.5 }}>{t(r.permiteCopia === true ? 'lab.conPermiso' : 'lab.sinPermisoCopia')}</span>
+                  {r.informe?.texto && <span style={{ ...TEXTO, fontSize: 11.5 }}>📩 {t('lab.informeEnviado')}</span>}
                   <div style={{ display: 'flex', gap: 6 }}>
                     <button type="button" className="btn-ghost" style={{ minHeight: 36, padding: '0 10px' }} onClick={() => cargar(r)}>
                       {t('lab.cargar')}
                     </button>
-                    <button type="button" className="btn-ghost" style={{ minHeight: 36, padding: '0 10px' }} onClick={async () => setEstadoGuardar(await copiarRegla(uid, r))}>
-                      {t('lab.guardarCopia')}
-                    </button>
+                    {r.permiteCopia === true && (
+                      <button type="button" className="btn-ghost" style={{ minHeight: 36, padding: '0 10px' }} onClick={async () => setEstadoGuardar(await copiarRegla(uid, r))}>
+                        {t('lab.guardarCopia')}
+                      </button>
+                    )}
                   </div>
+                  {r.permiteCopia === true ? <FormInforme r={r} t={t} /> : <span style={{ ...TEXTO, fontSize: 11.5 }}>{t('lab.copiaSinPermiso')}</span>}
                 </div>
               ))}
             </div>
