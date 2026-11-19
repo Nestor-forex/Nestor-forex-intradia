@@ -233,7 +233,10 @@ function cumple(cond, i, serie, ind) {
  * @param fechas las fechas de esas velas
  * @param spread spread del par en pips (se resta de cada operación)
  */
-export function probarEnPar(regla, par, serie, fechas, spread = 0) {
+// `desde` (opcional): solo se abren operaciones en velas POSTERIORES a esa
+// fecha (mismo formato que `fechas`). Es lo que usa el seguimiento hacia
+// adelante: los indicadores se siguen calculando con la serie entera.
+export function probarEnPar(regla, par, serie, fechas, spread = 0, desde = null) {
   const { c, h, l } = serie
   const n = c.length
   if (n < MIN_VELAS_INDICADOR || h.length !== n || l.length !== n) return []
@@ -242,6 +245,7 @@ export function probarEnPar(regla, par, serie, fechas, spread = 0) {
   const pip = pipDe(par)
   const ops = []
   for (let i = MIN_VELAS_INDICADOR; i < n - 1; i++) {
+    if (desde !== null && !(fechas[i] > desde)) continue
     const atr = ind.atr[i]
     if (!(atr > 0)) continue
     let ok = true
@@ -347,7 +351,10 @@ export function contarPrueba(antes) {
 }
 
 /** Lo que se guarda en Firestore: la regla limpia y un resumen corto. */
-export function fichaParaGuardar(reglaCruda, nombre, resultado, probadas, app) {
+// `permiteCopia`: la persona dio permiso (casilla al guardar) para que el
+// desarrollador copie la regla y la pruebe con otras medidas. Sin marcarla es
+// false, nunca se supone que sí.
+export function fichaParaGuardar(reglaCruda, nombre, resultado, probadas, app, permiteCopia = false) {
   const regla = reglaValida(reglaCruda)
   if (regla.error) return regla
   const limpio = String(nombre ?? '').trim().slice(0, 60)
@@ -367,5 +374,93 @@ export function fichaParaGuardar(reglaCruda, nombre, resultado, probadas, app) {
     ...regla,
     probadas: Number.isInteger(probadas) && probadas > 0 ? Math.min(probadas, 100000) : 1,
     resultado: res,
+    permiteCopia: permiteCopia === true,
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// SEGUIMIENTO HACIA ADELANTE (2026-11-19). Servicio adicional.
+//
+// La app sigue una regla guardada con días (o horas) NUEVOS, que la regla
+// nunca vio al probarla. Es la única prueba limpia: el resultado del pasado
+// sale de los mismos datos con los que la persona eligió la regla.
+//
+// ⚠️ SOLO CUENTAN LAS OPERACIONES QUE EMPIEZAN DESPUÉS DE ACTIVAR EL
+// SEGUIMIENTO. Lo de antes es pasado y ya se ve en «Probar».
+// ⚠️ LAS CERRADAS SE GUARDAN Y NO SE VUELVEN A CALCULAR: el archivo de velas
+// de Intradía solo trae unos 29 días, y sin guardarlas se perderían.
+// ⚠️ Cada par sigue de una en una, igual que al probar: la siguiente operación
+// de un par solo puede empezar después de que cerró la anterior.
+// ─────────────────────────────────────────────────────────────────────────
+
+export const MAX_SEGUIDAS = 5
+// Lo que cuesta el servicio al mes, aparte de la suscripción (decisión de
+// Néstor, 2026-11-19). La pantalla y la web lo LEEN de aquí.
+export const PRECIO_SEGUIMIENTO_USD = 3
+export const MAX_OPS_ADELANTE = 300
+
+/**
+ * Pasa un instante (texto ISO o milisegundos) al formato de las velas de la
+ * historia: 'AAAA-MM-DD' si son diarias, 'AAAA-MM-DD HH:00:00' si son de una
+ * hora. Devuelve null si no se entiende.
+ */
+export function claveVela(instante, fechas) {
+  const d = new Date(typeof instante === 'number' ? instante : String(instante ?? ''))
+  if (Number.isNaN(d.getTime()) || instante === null || instante === undefined || instante === '') return null
+  const iso = d.toISOString()
+  const diarias = String(fechas?.[0] ?? '').length === 10
+  return diarias ? iso.slice(0, 10) : `${iso.slice(0, 10)} ${iso.slice(11, 13)}:00:00`
+}
+
+const r3 = (v) => Math.round(v * 1000) / 1000
+
+/** Resumen de las operaciones cerradas guardadas ({p, e, s, r}). */
+export function resumenAdelante(ops) {
+  const lista = Array.isArray(ops) ? ops.filter((o) => o && Number.isFinite(o.r)) : []
+  const n = lista.length
+  const ganadas = lista.filter((o) => o.r > 0).length
+  const suma = lista.reduce((s, o) => s + o.r, 0)
+  return {
+    ops: n,
+    ganadas,
+    perdidas: n - ganadas,
+    acierto: n ? Math.round((ganadas / n) * 100) : null,
+    margen: margen(n),
+    porR: n ? r3(suma / n) : null,
+    totalR: n ? r3(suma) : null,
+  }
+}
+
+/**
+ * Avanza el seguimiento de una regla con la historia de hoy.
+ *
+ * `guardado` es lo que ya había ({ desde, ops }); si su `desde` no es el de
+ * ahora (la persona apagó y volvió a encender), se empieza de cero. Devuelve
+ * { desde, ops, abiertas, hasta } o { error }.
+ */
+export function avanzarAdelante(reglaCruda, historia, spreadDe, guardado, desde) {
+  const regla = reglaValida(reglaCruda)
+  if (regla.error) return regla
+  const fechas = historia?.fechas
+  const pares = historia?.pares
+  if (!Array.isArray(fechas) || !fechas.length || !pares || typeof pares !== 'object') return { error: 'sinHistoria' }
+  if (!desde) return { error: 'sinDesde' }
+  const viejas = guardado && guardado.desde === desde && Array.isArray(guardado.ops) ? guardado.ops : []
+  const ya = new Set(viejas.map((o) => `${o.p}@${o.e}`))
+  const ultimaSalida = {}
+  for (const o of viejas) if (!ultimaSalida[o.p] || o.s > ultimaSalida[o.p]) ultimaSalida[o.p] = o.s
+  const nuevas = []
+  let abiertas = 0
+  for (const [par, serie] of Object.entries(pares)) {
+    if (!serie || !Array.isArray(serie.c)) continue
+    const desdePar = ultimaSalida[par] && ultimaSalida[par] > desde ? ultimaSalida[par] : desde
+    const sp = Number(spreadDe(par)) || 0
+    const ops = probarEnPar(regla, par, serie, fechas.slice(fechas.length - serie.c.length), sp, desdePar)
+    for (const o of ops) {
+      if (o.estado === 'abierta') abiertas++
+      else if (!ya.has(`${par}@${o.entradaEl}`)) nuevas.push({ p: par, e: o.entradaEl, s: o.salidaEl, r: r3(o.r) })
+    }
+  }
+  const ops = [...viejas, ...nuevas].sort((a, b) => (a.e < b.e ? -1 : a.e > b.e ? 1 : a.p.localeCompare(b.p))).slice(-MAX_OPS_ADELANTE)
+  return { desde, ops, abiertas, hasta: fechas[fechas.length - 1] }
 }

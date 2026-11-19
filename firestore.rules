@@ -125,7 +125,13 @@ service cloud.firestore {
             && request.resource.data.diff(resource.data).affectedKeys()
                  .hasOnly(['nombre', 'seguimiento', 'avisos', 'perfilRiesgo', 'plantillas',
                           'avisosExp_swing', 'avisosExp_intradia', 'avisosInt', 'diasTablero', 'estilo',
-                          'curso'])
+                          'curso', 'seguimientoSolicitado'])
+            // ⚠️ AMPLIADA EL 2026-11-19 con `seguimientoSolicitado`: la persona
+            // pide activar el seguimiento hacia adelante del laboratorio
+            // (servicio adicional). Solo puede escribir la hora del servidor.
+            // Activarlo (`seguimientoActivo`) es solo del administrador.
+            && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['seguimientoSolicitado'])
+                || request.resource.data.seguimientoSolicitado == request.time)
             && (!('perfilRiesgo' in request.resource.data)
                 || perfilRiesgoValido(request.resource.data.perfilRiesgo))
             && (!('avisos' in request.resource.data)
@@ -257,7 +263,7 @@ service cloud.firestore {
         allow create: if esPropio(uid)
           && get(/databases/$(database)/documents/users/$(uid)).data.estado == 'aprobado'
           && request.resource.data.keys().hasAll(['nombre', 'app', 'lado', 'condiciones', 'riesgoATR', 'objetivoRB', 'probadas', 'creado'])
-          && request.resource.data.keys().hasOnly(['nombre', 'app', 'lado', 'condiciones', 'riesgoATR', 'objetivoRB', 'probadas', 'resultado', 'creado', 'copiaDe'])
+          && request.resource.data.keys().hasOnly(['nombre', 'app', 'lado', 'condiciones', 'riesgoATR', 'objetivoRB', 'probadas', 'resultado', 'creado', 'copiaDe', 'permiteCopia'])
           && request.resource.data.nombre is string && request.resource.data.nombre.size() > 0 && request.resource.data.nombre.size() <= 60
           && request.resource.data.app in ['swing', 'intradia']
           && request.resource.data.lado in ['COMPRA', 'VENTA']
@@ -270,7 +276,35 @@ service cloud.firestore {
           && (!('resultado' in request.resource.data)
               || request.resource.data.resultado == null || request.resource.data.resultado is map)
           && (!('copiaDe' in request.resource.data)
-              || (request.resource.data.copiaDe is string && request.resource.data.copiaDe.size() <= 128));
+              || (request.resource.data.copiaDe is string && request.resource.data.copiaDe.size() <= 128))
+          && (!('permiteCopia' in request.resource.data) || request.resource.data.permiteCopia is bool);
+
+        // SEGUIMIENTO HACIA ADELANTE (2026-11-19): el dueño solo puede
+        // encender o apagar el seguimiento de una regla, y solo si el
+        // administrador le activó el servicio. Al encenderlo, la fecha la pone
+        // el servidor. Los resultados (`adelante`) los escribe el programa con
+        // su cuenta de servicio, que no pasa por estas reglas.
+        allow update: if esPropio(uid)
+          && get(/databases/$(database)/documents/users/$(uid)).data.estado == 'aprobado'
+          && get(/databases/$(database)/documents/users/$(uid)).data.get('seguimientoActivo', false) == true
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['seguir', 'seguirDesde'])
+          && request.resource.data.seguir is bool
+          && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['seguirDesde'])
+              || request.resource.data.seguirDesde == request.time)
+          && (request.resource.data.seguir == false || request.resource.data.seguirDesde == request.time);
+
+        // EL INFORME AL AUTOR (2026-11-19): si la persona dio permiso y una
+        // prueba del desarrollador con otras medidas sale positiva, el
+        // administrador le escribe aquí qué se logró y con qué medidas.
+        // Solo ese campo.
+        allow update: if esAdmin()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['informe'])
+          && request.resource.data.informe is map
+          && request.resource.data.informe.keys().hasOnly(['texto', 'metricas', 'el'])
+          && request.resource.data.informe.texto is string
+          && request.resource.data.informe.texto.size() > 0 && request.resource.data.informe.texto.size() <= 2000
+          && request.resource.data.informe.metricas is string && request.resource.data.informe.metricas.size() <= 2000
+          && request.resource.data.informe.el == request.time;
       }
     }
 

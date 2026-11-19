@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { addDoc, collection, collectionGroup, deleteDoc, doc, onSnapshot, serverTimestamp } from 'firebase/firestore'
+import { addDoc, collection, collectionGroup, deleteDoc, doc, onSnapshot, serverTimestamp, updateDoc } from 'firebase/firestore'
 import { db } from './firebase'
 import { APP } from './identidad'
 
@@ -10,12 +10,23 @@ import { APP } from './identidad'
 // con filtro y orden pediría un índice nuevo).
 //
 // ⚠️ No hay `actualizar`: una regla cambiada es OTRA regla y se guarda aparte.
-// Las reglas de Firestore no dejan editar.
+// Las reglas de Firestore no dejan editarla. Lo único que se puede cambiar es
+// encender o apagar su seguimiento hacia adelante (si el servicio está
+// activo) y, solo el administrador, el informe al autor.
 
 const ms = (r) => (r.creado?.toMillis ? r.creado.toMillis() : Infinity)
 
 // Devuelve 'ok', 'sinPermiso' (las reglas de Firestore todavía no están
 // publicadas) o 'error'.
+async function escribir(promesa) {
+  try {
+    await promesa
+    return 'ok'
+  } catch (e) {
+    return e?.code === 'permission-denied' ? 'sinPermiso' : 'error'
+  }
+}
+
 async function guardarEn(uid, ficha) {
   if (!uid || !ficha || ficha.error) return 'error'
   try {
@@ -51,8 +62,12 @@ export function useReglas(uid) {
 
   const guardar = (ficha) => guardarEn(uid, ficha)
   const borrar = (id) => deleteDoc(doc(db, 'users', uid, 'reglas', id))
+  // Encender pone la fecha del servidor: el seguimiento empieza AHORA y lo
+  // de antes no cuenta. Apagar no borra nada; volver a encender empieza de cero.
+  const seguir = (id, encender) =>
+    escribir(updateDoc(doc(db, 'users', uid, 'reglas', id), encender ? { seguir: true, seguirDesde: serverTimestamp() } : { seguir: false }))
 
-  return { reglas, cargando, guardar, borrar }
+  return { reglas, cargando, guardar, borrar, seguir }
 }
 
 /**
@@ -101,5 +116,25 @@ export function copiarRegla(uidAdmin, regla) {
     probadas: Number.isInteger(probadas) && probadas > 0 ? probadas : 1,
     resultado: resultado ?? null,
     copiaDe: String(regla.uid ?? '').slice(0, 128),
+    permiteCopia: false,
   })
+}
+
+/** Administrador: escribirle al autor qué se logró con su idea. */
+export function informarAutor(uidAutor, reglaId, texto, metricas) {
+  return escribir(
+    updateDoc(doc(db, 'users', uidAutor, 'reglas', reglaId), {
+      informe: { texto: String(texto ?? '').slice(0, 2000), metricas: String(metricas ?? '').slice(0, 2000), el: serverTimestamp() },
+    })
+  )
+}
+
+/** La persona pide que le activen el seguimiento hacia adelante. */
+export function solicitarSeguimiento(uid) {
+  return escribir(updateDoc(doc(db, 'users', uid), { seguimientoSolicitado: serverTimestamp() }))
+}
+
+/** Administrador: activar o quitar el servicio de seguimiento a un miembro. */
+export function activarSeguimiento(uid, activo) {
+  return escribir(updateDoc(doc(db, 'users', uid), { seguimientoActivo: activo === true }))
 }
