@@ -96,6 +96,10 @@ export const LECCIONES = Object.freeze({
       'Saber leer un par no te dice hacia dónde se va a mover.',
       'Un par que sube no es «bueno» ni uno que baja «malo»: depende de qué lado estés.',
     ],
+    video: {
+      archivo: 'm1-1',
+      desc: 'Video sin voz, de 33 segundos: la fuerza de las 8 divisas en el Barrido, con los datos reales de ese día. Se toma un par de la lista, se dice cuál es la moneda base y cuál la cotizada, y se busca la fuerza de cada una en el ranking.',
+    },
     hazlo: {
       tab: 'barrido',
       boton: 'Ir al Barrido',
@@ -145,6 +149,10 @@ export const LECCIONES = Object.freeze({
       'No te dice qué lote usar: eso sale de tu riesgo y de tu Stop-loss (módulo 2).',
       'En los pares que no terminan en USD, el valor del pip cambia con el precio. La calculadora lo hace sola.',
     ],
+    video: {
+      archivo: 'm1-2',
+      desc: 'Video sin voz, de 32 segundos: la calculadora de la pestaña Riesgo. Con EUR/USD el pip vale 10 USD por lote; al cambiar a USD/JPY el valor del pip cambia, porque depende del precio. Después, el mismo movimiento de 30 pips con un microlote y con un lote entero.',
+    },
     hazlo: {
       tab: 'calc',
       boton: 'Ir a Riesgo',
@@ -194,6 +202,10 @@ export const LECCIONES = Object.freeze({
       'El spread que ves en la app es el de una cuenta real del desarrollador, no el de tu bróker. El tuyo puede ser distinto.',
       'Tener apalancamiento alto no te obliga a usarlo. El riesgo lo controlas con el lote.',
     ],
+    video: {
+      archivo: 'm1-3',
+      desc: 'Video sin voz, de 35 segundos: la tarjeta «Lo que cuesta abrir la operación» del Barrido, con el spread real de una cuenta del desarrollador ese día. Se compara el spread de EUR/USD con el de un cruce y se calcula cuánto pesa sobre un Stop-loss corto y uno largo.',
+    },
     hazlo: {
       tab: 'barrido',
       boton: 'Ir al Barrido',
@@ -239,6 +251,10 @@ export const LECCIONES = Object.freeze({
       'Parar no asegura que el día siguiente salga mejor. Lo que sí hace es que un mal día no se coma la cuenta.',
       'No te dice cuál es tu límite: lo decides tú.',
     ],
+    video: {
+      archivo: 'm3-1',
+      desc: 'Video sin voz, de 37 segundos: dos maneras de cerrar el mismo mal día con 1.000 USD, y la pestaña Riesgo con los dos frenos de «Mi perfil de riesgo»: la pérdida máxima del día y las pérdidas seguidas, que se ponen antes, con la cabeza fría.',
+    },
     hazlo: {
       tab: 'calc',
       boton: 'Ir a Riesgo',
@@ -287,6 +303,10 @@ export const LECCIONES = Object.freeze({
       'La app no te impide seguir operando: solo te avisa. La decisión de parar es tuya.',
       'Cuenta solo las operaciones de este Diario. Si operas en las dos apps, cada una lleva su propio freno.',
     ],
+    video: {
+      archivo: 'm3-2',
+      desc: 'Video sin voz, de 34 segundos: «Tu freno de hoy», arriba del Diario, con un usuario de ejemplo que hoy lleva dos operaciones perdidas. La tarjeta suma lo perdido contra el freno del día y las pérdidas seguidas contra su límite, y se pone ámbar cuando queda poco margen.',
+    },
     hazlo: {
       tab: 'diario',
       boton: 'Ir al Diario',
@@ -332,6 +352,10 @@ export const LECCIONES = Object.freeze({
       'No te promete que vayas a ganar. Ninguna herramienta puede prometerlo.',
       'No es asesoría financiera: las decisiones y el riesgo son tuyos.',
     ],
+    video: {
+      archivo: 'm0-1',
+      desc: 'Video sin voz, de 32 segundos: el Barrido con los datos reales de ese día. Se abre la tarjeta «Qué es esta app», se lee que nada de lo que se ve es una señal para copiar, y se baja hasta los avisos de los experimentos, que dicen «Esto NO son señales».',
+    },
     hazlo: {
       tab: 'barrido',
       boton: 'Ir al Barrido',
@@ -383,6 +407,10 @@ export const LECCIONES = Object.freeze({
       'No te dice si una regla funciona. Solo te dice cuándo ya se podrá saber.',
       'Es el margen del peor caso, a propósito: si se afinara a favor, serviría para presumir, no para decidir.',
     ],
+    video: {
+      archivo: 'm0-2',
+      desc: 'Video sin voz, de 31 segundos: el Historial con el registro real de ese día. Se señala el ± que va pegado al acierto y el aviso de cuántas operaciones lleva el experimento de las que hacen falta para creerle.',
+    },
     hazlo: {
       tab: 'diario',
       boton: 'Ir al Diario',
@@ -434,6 +462,10 @@ export const LECCIONES = Object.freeze({
       'No te dice que con el 1 % vayas a ganar: solo que una mala racha no te saca del juego.',
       'No es una regla del mercado: es una costumbre de gestión del riesgo. El porcentaje lo decides tú.',
     ],
+    video: {
+      archivo: 'm2-1',
+      desc: 'Video sin voz, de 40 segundos: «Mi perfil de riesgo» de la pestaña Riesgo con un perfil de ejemplo de 1.000 USD. Se cambia el riesgo entre 1 %, 2 % y 3 % y se ve cuánto se arriesga por operación; después, cuánto queda tras diez pérdidas seguidas con cada porcentaje.',
+    },
     hazlo: {
       tab: 'calc',
       boton: 'Ir a Riesgo',
@@ -484,6 +516,10 @@ export const LECCIONES = Object.freeze({
       'Un R/B alto no hace ganar por sí solo: reparte el resultado entre cuántas veces aciertas y cuánto ganas. Esta app lo midió con doce combinaciones de Stop-loss y Take-profit sobre cinco años, y ninguna convertía una regla perdedora en ganadora.',
       'No te dice dónde poner el Stop-loss: eso sale de cuánto se mueve el par (el ATR) y de tu análisis.',
     ],
+    video: {
+      archivo: 'm2-2',
+      desc: 'Video sin voz, de 49 segundos: el Analizador con los datos reales de ese día. Se elige un par y una dirección cualquiera solo para ver las cuentas, y se prueban los tres métodos de Stop-loss: cambian el Stop-loss, el Take-profit, el R/B y el lote.',
+    },
     hazlo: {
       tab: 'analizar',
       boton: 'Ir a Analizar',
