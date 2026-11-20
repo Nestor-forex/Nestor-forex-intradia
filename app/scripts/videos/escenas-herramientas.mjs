@@ -44,6 +44,26 @@ async function verHerramienta(p, nombre, rotulo) {
   return f
 }
 
+// Enciende una herramienta que sale como BLOQUE (con su título encima, como
+// Fibonacci o el FVG) y devuelve el bloque y su texto.
+async function verBloque(p, nombre, titulo = nombre) {
+  await llevar(p, p.getByText(es.an.paso4 || '4 · QUÉ HERRAMIENTAS VER', { exact: false }).first(), 20)
+  const b = await chip(p, nombre)
+  await marcar(p, b)
+  await espera(p, 1.2)
+  await desmarcar(p)
+  const texto = await p.evaluate((tt) => {
+    const t = [...document.querySelectorAll('main span')].find((x) => x.children.length === 0 && x.textContent.trim() === tt && !x.closest('button'))
+    if (!t) return null
+    t.parentElement.dataset.bloque = '1'
+    return t.parentElement.innerText
+  }, titulo)
+  exigir(texto, `el bloque «${titulo}»`)
+  const loc = p.locator('[data-bloque]')
+  await llevar(p, loc, 150)
+  return { loc, texto }
+}
+
 export const ESCENAS_HERRAMIENTAS = {
   'h-barrido': {
     async correr(p, r) {
@@ -283,6 +303,184 @@ export const ESCENAS_HERRAMIENTAS = {
       }
       await r('El spread y la actividad son de una cuenta real del desarrollador. Los de tu bróker pueden ser otros.')
       await espera(p, 4.6)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
+  'h-noticias': {
+    async correr(p, r) {
+      await r('Las noticias de los bancos centrales: lo último que publicaron la Fed, el BCE, el Banco de Nueva Zelanda e ING.')
+      await espera(p, 4.6)
+      const t = tarjeta(p, 'Noticias de los bancos centrales')
+      await llevar(p, t, 20)
+      await marcar(p, t)
+      await espera(p, 1)
+      await abrirTarjeta(p, 'Noticias de los bancos centrales')
+      await desmarcar(p)
+      await r('Primero el aviso: una noticia dice qué pasó y cuándo, nunca hacia dónde va el precio.')
+      await espera(p, 4.4)
+      const enlace = p.locator('main a[target="_blank"]').first()
+      if (await enlace.count()) {
+        await llevar(p, enlace, 220)
+        await marcar(p, enlace.locator('xpath=ancestor::*[self::div or self::li][1]'))
+        await r('Cada titular lleva delante el código de su divisa, y debajo de qué fuente es y de qué fecha.')
+        await espera(p, 4.6)
+        await desmarcar(p)
+        await r('Van tal cual los publica cada fuente, en su idioma. Al tocarlo se abre la noticia completa en su página.')
+        await espera(p, 4.6)
+      } else {
+        await r('Hoy no hay titulares nuevos, y la tarjeta lo dice.')
+        await espera(p, 3.6)
+      }
+      await r('Sirven para saber qué acaba de decir un banco central antes de operar su divisa. Qué hacer con eso lo decides tú.')
+      await espera(p, 4.6)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
+  'h-niveles': {
+    async correr(p, r) {
+      await analizador(p, r)
+      await r(`El soporte y la resistencia: el mínimo y el máximo de las últimas 20 velas. Aquí son 20 ${VELAS}.`)
+      await espera(p, 4.6)
+      const f = await verHerramienta(p, es.an.h.niveles, es.an.h.niveles)
+      const sr = exigir(await fila(p, es.an.h.niveles), 'el soporte y la resistencia')
+      const [sop, res] = sr.split('·').map((x) => x.trim())
+      await marcar(p, f.valor)
+      await r(`EUR/USD: soporte ${sop}, resistencia ${res}.`)
+      await espera(p, 4.2)
+      await desmarcar(p)
+      const b = await chip(p, es.an.h.pivote)
+      await marcar(p, b)
+      await espera(p, 1.2)
+      await desmarcar(p)
+      const fp = await filaLoc(p, es.an.h.pivote)
+      await llevar(p, fp.rotulo, 230)
+      const pv = exigir(await fila(p, es.an.h.pivote), 'el pivote')
+      await marcar(p, fp.valor)
+      await r(`El pivote sale ${APP === 'swing' ? 'del día anterior' : 'de las 24 horas anteriores'}: ${pv}. S1 es un nivel por debajo y R1 uno por encima.`)
+      await espera(p, 5)
+      await desmarcar(p)
+      await r('Son los sitios donde el precio frenó antes. Que haya frenado ahí NO quiere decir que vuelva a frenar.')
+      await espera(p, 4.6)
+      await r('Un nivel te dice dónde mirar, no qué hacer cuando el precio llegue.')
+      await espera(p, 3.8)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
+  'h-compresion': {
+    async correr(p, r) {
+      await analizador(p, r)
+      await r('La compresión compara cuánto se mueve el par ahora con cuánto se movía antes.')
+      await espera(p, 4.2)
+      const f = await verHerramienta(p, es.an.h.compresion, es.an.h.compresion)
+      const v = exigir(await fila(p, es.an.h.compresion), 'la compresión')
+      await marcar(p, f.valor)
+      await r(`EUR/USD, hoy: ${v}.`)
+      await espera(p, 3.8)
+      await desmarcar(p)
+      await r('Por debajo de 1, el par se mueve menos que antes: está apretado. Por encima de 1, se mueve más.')
+      await espera(p, 4.6)
+      await r('La palabra de al lado dice qué tan raro es ese número para este par. El número es el dato.')
+      await espera(p, 4.4)
+      await r('Que esté apretado NO dice hacia qué lado se va a soltar, ni cuándo.')
+      await espera(p, 4)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
+  'h-fibonacci': {
+    async correr(p, r) {
+      await analizador(p, r)
+      await r('Fibonacci: unos niveles que salen del último movimiento de las últimas 20 velas.')
+      await espera(p, 4.2)
+      const { loc, texto } = await verBloque(p, es.an.h.fibonacci)
+      await marcar(p, loc)
+      if (texto.includes(es.an.fibChico)) {
+        await r('Hoy el movimiento es demasiado pequeño, y la app no dibuja los niveles: no significarían nada.')
+        await espera(p, 4.6)
+      } else {
+        const mov = exigir(texto.match(/(\d[\d.,]*)\s*→\s*(\d[\d.,]*)/), 'el movimiento')
+        await r(`El último movimiento fue de ${mov[1]} a ${mov[2]}.`)
+        await espera(p, 4)
+        await r('Los niveles son el 23,6, 38,2, 50, 61,8 y 78,6 % de ese recorrido, con la distancia del precio a cada uno.')
+        await espera(p, 4.8)
+        const cerca = await p.evaluate((frase) => {
+          const x = [...document.querySelectorAll('[data-bloque] span')].find((s) => s.children.length === 0 && s.textContent.includes(frase))
+          if (!x) return null
+          const filaV = x.parentElement
+          filaV.dataset.cerca = '1'
+          return `${filaV.previousElementSibling?.innerText.trim()} → ${filaV.innerText.split('·')[0].trim()}`
+        }, es.an.fibCercano)
+        if (cerca) {
+          await marcar(p, p.locator('[data-cerca]'))
+          await r(`El más cercano al precio hoy: ${cerca}.`)
+          await espera(p, 4.2)
+        }
+      }
+      await desmarcar(p)
+      await r('No hay prueba de que el precio respete estos niveles por sí solo. Son un sitio para mirar, no una orden.')
+      await espera(p, 4.6)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
+  'h-fvg': {
+    async correr(p, r) {
+      await analizador(p, r)
+      await r('El FVG, o brecha de valor justo: un tramo de precio que quedó sin negociar cuando el precio se movió muy rápido.')
+      await espera(p, 4.8)
+      const { loc, texto } = await verBloque(p, es.an.h.fvg)
+      await marcar(p, loc)
+      if (texto.includes(es.an.fvgNinguno)) {
+        await r('Hoy no queda ningún hueco vivo en las últimas 20 velas de este par, y la app lo dice.')
+        await espera(p, 4.4)
+      } else {
+        const n = (texto.match(new RegExp(`${es.an.fvgAlcista}|${es.an.fvgBajista}`, 'g')) || []).length
+        exigir(n || null, 'los huecos')
+        await r(`Hoy EUR/USD tiene ${n === 1 ? 'un hueco vivo' : `${n} huecos vivos`}. Cada uno va con sus bordes, la distancia del precio y si ya se tocó.`)
+        await espera(p, 5)
+      }
+      await desmarcar(p)
+      await r('Muchos traders esperan que el precio vuelva al hueco. Medido en la app de swing sobre unos 5 años, entrar así NO ganó.')
+      await espera(p, 5)
+      await r('Por eso aquí solo te dice DÓNDE están los huecos, nunca hacia dónde irá el precio.')
+      await espera(p, 4.2)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
+  'h-estacionalidad': {
+    async correr(p, r) {
+      await analizador(p, r)
+      await r('La estacionalidad: cuánto suele moverse el par según el calendario, comparado con su media.')
+      await espera(p, 4.4)
+      const { loc } = await verBloque(p, es.an.h.estacionalidad)
+      const filas = await p.evaluate(() => {
+        const leaves = [...document.querySelectorAll('[data-bloque] span, [data-bloque] div')].filter((x) => x.children.length === 0)
+        return leaves.filter((x) => x.nextElementSibling).map((x) => [x.textContent.trim(), x.nextElementSibling.innerText.trim()])
+      })
+      // Los rótulos se arman igual que en la pantalla: con el mes de hoy.
+      const nombre = new Date(Date.UTC(2024, new Date().getUTCMonth(), 15)).toLocaleDateString('es', { month: 'long', timeZone: 'UTC' })
+      const mes = exigir(filas.find(([k]) => k === es.an.estMes({ mes: nombre })) || null, 'el recorrido del mes')
+      const dir = exigir(filas.find(([k]) => k === es.an.estDir({ mes: nombre })) || null, 'la dirección del mes')
+      await marcar(p, loc)
+      await r(`${mes[0]}: ${mes[1]}. Lo de «×» dice cuántas veces la media: más de 1 es que se mueve más que de costumbre.`)
+      await espera(p, 5.2)
+      await r(`Y la dirección: ${dir[0]}, ${dir[1]}.`)
+      await espera(p, 4.2)
+      await desmarcar(p)
+      await r('Mira ese ±: sale de muy pocos años. Con un margen así, la dirección casi no dice nada.')
+      await espera(p, 4.6)
+      await r('Lo que sí dice es cuánto suele moverse. Nunca hacia dónde.')
+      await espera(p, 3.8)
       await r(FIN)
       await espera(p, 2.8)
     },
