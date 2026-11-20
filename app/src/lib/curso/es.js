@@ -29,6 +29,7 @@ import { PERIODOS_MEDIAS, PERIODO_ATR, PERIODO_RSI, PESOS_FUERZA, RSI_MAX, TENDE
 import * as MC from '../marketCalc.js'
 import { UMBRAL_NEUTRO } from '../tasas.js'
 import { spreadDe } from '../../../scripts/lib/costes.mjs'
+import { HORAS_VISTA } from '../calendario.js'
 import { APP } from '../identidad.js'
 
 const L = OPS_PARA_CREER
@@ -118,12 +119,18 @@ export const MODULOS = Object.freeze([
     desc: 'El spread que pagas al entrar, el swap de cada noche, y por qué el mismo coste pesa mucho más con un Stop-loss corto.',
     lecciones: Object.freeze(['m6-1', 'm6-2', 'm6-3']),
   }),
+  Object.freeze({
+    id: 'm7',
+    n: 7,
+    titulo: 'Noticias y bancos centrales',
+    desc: 'El calendario económico, lo previsto contra lo anterior, por qué lo que mueve el precio es la sorpresa, y las noticias de los bancos centrales.',
+    lecciones: Object.freeze(['m7-1', 'm7-2', 'm7-3']),
+  }),
 ])
 
 // Los que todavía no están escritos. Se enseñan para que se vea el camino,
 // marcados «próximamente», y no se pueden abrir.
 export const PROXIMOS = Object.freeze([
-  { n: 7, titulo: 'Noticias y bancos centrales' },
   { n: 8, titulo: 'Pares que son la misma apuesta' },
   { n: 9, titulo: 'Del análisis a la operación' },
   { n: 10, titulo: 'Practicar sin dinero' },
@@ -1140,6 +1147,153 @@ export const LECCIONES = Object.freeze({
         opciones: ['Sí, porque el coste pesa menos', 'No: también se pierde más cada vez que se toca', 'Sí, siempre'],
         correcta: 1,
         porque: 'El coste pesa menos, pero cada pérdida es más grande. Se probó en la app de swing y no ayudó.',
+      },
+    ],
+  },
+  'm7-1': {
+    titulo: 'El calendario: a qué hora puede haber sacudida',
+    objetivo: 'Leer el calendario económico y saber para qué lo miran los traders: para elegir la hora, no la dirección.',
+    explicacion: [
+      'Los países publican datos de su economía en fechas y horas fijas: inflación, empleo, ventas, decisiones de tasas. El calendario económico es la lista de esas publicaciones.',
+      `La app enseña las de las próximas ${HORAS_VISTA} horas de las 8 divisas que sigue. Cada una lleva la hora (la de tu teléfono), la divisa, el nombre en inglés tal como sale en cualquier calendario, y entre paréntesis de qué familia es.`,
+      'También dice cuánto suele mover el precio: «Mueve mucho» o «Mueve algo». Las que casi no mueven nada no se enseñan, para que no tapen las importantes. Si en esas horas no viene ninguna, la tarjeta lo dice: no desaparece.',
+    ],
+    ejemplo: [
+      'Minutos antes y después de una noticia que «mueve mucho», el precio puede pegar saltos y el spread se abre. Es cuando más caro sale entrar a ciegas.',
+      'La tarjeta «Calendario económico» va arriba del todo en el Barrido. En el Analizador, la herramienta «Calendario» enseña solo las noticias de las dos divisas del par que estás mirando.',
+    ],
+    noDice: [
+      'El calendario no dice hacia dónde se va a mover el precio: solo cuándo puede haber sacudida.',
+      'No cambia ninguna señal de la app: es información para que elijas la hora.',
+      '«Mueve mucho» no quiere decir que esa vez vaya a moverse: quiere decir que suele hacerlo.',
+    ],
+    video: {
+      archivo: 'm7-1',
+      desc: 'Video sin voz: el Barrido con el calendario real de la mañana del día de la grabación. Se abre la tarjeta «Calendario económico» y se señalan la hora, la divisa y cuánto suele mover una noticia.',
+    },
+    hazlo: {
+      tab: 'barrido',
+      boton: 'Ir al Barrido',
+      texto: 'Abre «Calendario económico» y busca la próxima noticia que «mueve mucho»: ¿de qué divisa es y a qué hora sale?',
+    },
+    preguntas: [
+      {
+        p: '¿Para qué miran los traders el calendario económico?',
+        opciones: ['Para saber hacia dónde irá el precio', 'Para saber a qué hora puede haber sacudida', 'Para elegir el lote'],
+        correcta: 1,
+        porque: 'El calendario dice cuándo, no hacia dónde.',
+      },
+      {
+        p: '¿Qué suele pasar con el spread minutos antes de una noticia que «mueve mucho»?',
+        opciones: ['Se abre', 'Se cierra del todo', 'No cambia nunca'],
+        correcta: 0,
+        porque: 'Con una noticia fuerte el precio pega saltos y el spread se abre.',
+      },
+      {
+        p: 'La hora que enseña el calendario de la app es…',
+        opciones: ['La de Nueva York', 'La de tu teléfono', 'La de Londres'],
+        correcta: 1,
+        porque: 'Cada uno ve su propia hora: un suscriptor en Madrid y otro en Bogotá ven cada uno la suya.',
+      },
+    ],
+  },
+
+  'm7-2': {
+    titulo: 'Lo previsto, lo anterior y la sorpresa',
+    objetivo: 'Leer «previsto» y «anterior» en una noticia, y entender por qué lo que mueve el precio es la sorpresa.',
+    explicacion: [
+      'Muchas noticias traen dos números antes de publicarse. «Anterior» es lo que salió la última vez. «Previsto» es lo que esperan los analistas que salga ahora.',
+      'Lo que suele mover el precio no es el número en sí, sino la SORPRESA: cuánto se aleja el dato real de lo previsto. Si sale como se esperaba, muchas veces pasa poco, porque el mercado ya lo tenía en cuenta.',
+      'Debajo de cada noticia hay un botón «¿Qué significa?». Explica en palabras sencillas de qué familia es (inflación, empleo, tasas…), qué quiere decir la jerga del nombre (Core, m/m, y/y…) y si lo previsto es más alto, más bajo o igual que lo anterior.',
+    ],
+    ejemplo: [
+      'Si se prevé 0,0 % y la vez anterior salió −0,4 %, la app dice que se espera MÁS ALTO que la vez anterior. Eso compara dos números: no dice qué hará el precio.',
+      'Los discursos y las actas no traen números: lo que se escucha es si dan pistas sobre las tasas. Por eso pueden mover el precio sin previsto ni anterior.',
+    ],
+    formula: {
+      texto: 'sorpresa = dato real − previsto',
+      conNumeros: 'previsto 0,3 % y sale 0,6 %: la sorpresa es +0,3 puntos, o sea salió más alto de lo esperado. Si sale 0,3 %, la sorpresa es cero.',
+    },
+    noDice: [
+      'Que lo previsto sea más alto que lo anterior no dice si el precio subirá o bajará.',
+      'Que un dato salga más alto de lo esperado tampoco dice hacia dónde irá el precio: el mercado puede reaccionar de cualquier forma.',
+      '«¿Qué significa?» nunca te dirá compra o vende. Explica el dato, no la operación.',
+    ],
+    video: {
+      archivo: 'm7-2',
+      desc: 'Video sin voz: el calendario real de la mañana del día de la grabación. Se señalan el previsto y el anterior de una noticia y se abre su «¿Qué significa?».',
+    },
+    hazlo: {
+      tab: 'barrido',
+      boton: 'Ir al Barrido',
+      texto: 'Abre «Calendario económico», busca una noticia con previsto y anterior, y toca «¿Qué significa?».',
+    },
+    preguntas: [
+      {
+        p: '¿Qué es el «previsto» de una noticia?',
+        opciones: ['Lo que salió la vez anterior', 'Lo que esperan los analistas que salga ahora', 'El dato definitivo'],
+        correcta: 1,
+        porque: '«Anterior» es lo de la última vez; «previsto» es lo que se espera ahora.',
+      },
+      {
+        p: 'Se prevé 0,3 % y sale exactamente 0,3 %. ¿Cuánto es la sorpresa?',
+        opciones: ['0,3', 'Cero', '0,6'],
+        correcta: 1,
+        porque: 'La sorpresa es el dato real menos lo previsto: 0,3 − 0,3 = 0.',
+      },
+      {
+        p: 'Lo previsto es más alto que lo anterior. ¿Qué te dice sobre el precio?',
+        opciones: ['Que el precio tiene que subir', 'Nada sobre hacia dónde irá', 'Que hay que vender'],
+        correcta: 1,
+        porque: 'Compara dos números. No dice qué hará el precio.',
+      },
+    ],
+  },
+
+  'm7-3': {
+    titulo: 'Las noticias de los bancos centrales',
+    objetivo: 'Saber qué enseña la tarjeta de noticias, de dónde salen los titulares y por qué solo de esas fuentes.',
+    explicacion: [
+      'Los bancos centrales deciden las tasas de interés de su divisa, y lo que dicen puede cambiar el día del mercado. La tarjeta «Noticias de los bancos centrales» junta lo último que publicaron, con su fecha.',
+      'Las fuentes son cuatro: la Reserva Federal (dólar), el Banco Central Europeo (euro), el Banco de la Reserva de Nueva Zelanda (dólar neozelandés) e ING, un banco que publica análisis. De ING solo salen las notas que nombran alguna de las 8 divisas que sigue la app.',
+      'Cada titular lleva delante el código de su divisa, y debajo la fuente y la fecha. Va tal cual lo publica cada fuente y en su idioma: al tocarlo se abre la noticia completa en su página.',
+    ],
+    ejemplo: [
+      'Solo se usan fuentes cuyas condiciones permiten reproducir sus titulares en una app de pago. Otras páginas de noticias muy conocidas lo prohíben sin un permiso por escrito, y por eso no están.',
+      'Los titulares van en inglés porque así los publica cada fuente, y algunas piden no alterarlos. Al tocarlo se abre la noticia completa en la página de la fuente.',
+    ],
+    noDice: [
+      'Una noticia dice qué pasó y cuándo, nunca hacia dónde va el precio.',
+      'Que una divisa salga en muchos titulares no quiere decir que vaya a moverse más.',
+      'La app no resume ni interpreta los titulares: los enseña tal cual. La decisión de operar es tuya.',
+    ],
+    video: {
+      archivo: 'm7-3',
+      desc: 'Video sin voz: el Barrido con las noticias reales del día de la grabación. Se abre la tarjeta «Noticias de los bancos centrales» y se señala un titular con su divisa, su fuente y su fecha.',
+    },
+    hazlo: {
+      tab: 'barrido',
+      boton: 'Ir al Barrido',
+      texto: 'Abre «Noticias de los bancos centrales» y mira de qué divisa y de qué fecha es el titular más reciente.',
+    },
+    preguntas: [
+      {
+        p: '¿Qué te dice un titular de un banco central?',
+        opciones: ['Qué pasó y cuándo', 'Hacia dónde irá el precio', 'Qué par operar'],
+        correcta: 0,
+        porque: 'Una noticia dice qué pasó y cuándo. La dirección no.',
+      },
+      {
+        p: '¿Por qué la app no usa cualquier página de noticias?',
+        opciones: ['Porque son lentas', 'Porque sus condiciones no permiten reproducir los titulares en una app de pago', 'Porque están en inglés'],
+        correcta: 1,
+        porque: 'Solo se usan fuentes que lo permiten. Las demás lo prohíben sin un permiso por escrito.',
+      },
+      {
+        p: '¿Por qué los titulares van en inglés?',
+        opciones: ['Porque la app no sabe traducir', 'Porque así los publica cada fuente, y algunas piden no alterarlos', 'Porque es más fácil'],
+        correcta: 1,
+        porque: 'Van tal cual los publica cada fuente.',
       },
     ],
   },

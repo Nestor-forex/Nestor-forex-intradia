@@ -121,6 +121,28 @@ ok(pipUSD('EUR/USD', {}) === 10 && LECCIONES['m1-2'].ejemplo.some((p) => p.inclu
   const m63 = JSON.stringify(LECCIONES['m6-3'])
   ok(m63.includes('53,3 %') && m63.includes('50,8 %'), 'el ejemplo del módulo 6 lleva los números que salen de la cuenta')
 }
+{
+  // Módulo 7: las horas del calendario salen de `calendario.js`, y las fuentes
+  // de noticias que nombra la lección son las que de verdad se publican (la
+  // lista vive solo en la app de swing, que es la que publica las noticias).
+  const { HORAS_VISTA } = await import('../src/lib/calendario.js')
+  ok(JSON.stringify(LECCIONES['m7-1']).includes(`próximas ${HORAS_VISTA} horas`), 'el módulo 7 dice cuántas horas enseña el calendario (`HORAS_VISTA`)')
+  const es = readFileSync(new URL('../src/lib/curso/es.js', import.meta.url), 'utf8')
+  ok(/import \{ HORAS_VISTA \} from '\.\.\/calendario\.js'/.test(es), 'y lo importa en vez de escribirlo')
+  const m73 = JSON.stringify(LECCIONES['m7-3'])
+  const rutaNoticias = new URL('./lib/noticias.mjs', import.meta.url)
+  if (existsSync(rutaNoticias)) {
+    const { FUENTES_PUBLICABLES } = await import(rutaNoticias.href)
+    const nombres = { fed: 'Reserva Federal', bce: 'Banco Central Europeo', rbnz: 'Banco de la Reserva de Nueva Zelanda', ing: 'ING' }
+    ok(FUENTES_PUBLICABLES.length === 4 && m73.includes('Las fuentes son cuatro'), 'la lección dice cuántas fuentes de noticias se publican')
+    ok(FUENTES_PUBLICABLES.every((f) => nombres[f.id] && m73.includes(nombres[f.id])), 'y nombra cada una de las que publica `noticias.mjs`')
+    const ing = FUENTES_PUBLICABLES.find((f) => f.id === 'ing')
+    ok(ing?.soloSiNombraDivisa === true && m73.includes('De ING solo salen las notas que nombran'), 'lo del filtro de ING sale de `soloSiNombraDivisa`')
+  } else {
+    ok(m73.includes('Las fuentes son cuatro'), 'la lección de noticias está (la lista de fuentes se comprueba en la app de swing)')
+  }
+  ok(!/se les pidió permiso/.test(m73), 'no afirma que se pidió un permiso que no consta enviado')
+}
 
 // Los videos: cada uno tiene su descripción, y CADA app guarda los suyos
 // (2026-11-20): el archivo tiene que existir en este repositorio y pesar poco.
