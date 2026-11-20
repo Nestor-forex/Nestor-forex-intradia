@@ -329,6 +329,15 @@ export const GEMELOS = [
   'src/lib/useCurso.js',
   'src/components/Curso.jsx',
   'scripts/prueba-curso.mjs',
+  // Los videos del curso (2026-11-20): la lista de herramientas en video y la
+  // herramienta de grabación son iguales; cada app graba y guarda SUS videos.
+  'src/lib/curso/herramientas.js',
+  'scripts/videos/banco.mjs',
+  'scripts/videos/escenas-herramientas.mjs',
+  'scripts/videos/dobles.js',
+  'scripts/videos/main.jsx',
+  'scripts/videos/index.html',
+  'scripts/videos/vite.config.js',
   // El laboratorio «prueba tu propia regla» (2026-11-18): el motor, la
   // pantalla, cómo se guardan las reglas y de dónde baja las velas (cada app
   // la suya, por `APP`). Lo que PUBLICA la historia es de cada app (PRIMO).
@@ -433,6 +442,9 @@ export const GEMELOS = [
 // empeora en Swing; está medido. Unificar umbrales sería el peor error posible
 // aquí.
 export const PRIMOS = {
+  // Las escenas de las LECCIONES: el Historial de cada app es distinto (en
+  // intradía el ± sale en el retroceso) y cada una lee su propio barrido.
+  'scripts/videos/grabar.mjs': 'escenas de las lecciones adaptadas a la pantalla de cada app',
   'scripts/lib/historia-publicada.mjs':
     'Las dos apps publican la historia del laboratorio con el MISMO formato, ' +
     'pero la arman distinto: Swing pide los 14 pares directos y tiene máximos ' +

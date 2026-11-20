@@ -14,13 +14,23 @@
 // escribe dentro de la lección con `soloSwing`, nunca aquí.
 
 import { MODULOS, LECCIONES, PROXIMOS } from './curso/es.js'
+import { APP } from './identidad.js'
 
 export { MODULOS, LECCIONES, PROXIMOS }
 
-// Dónde viven los videos del curso. Dirección COMPLETA a propósito: los
-// archivos están en la página de la app de swing y las dos apps los usan desde
-// ahí (este archivo es gemelo). Un video se sube una vez, no dos.
-export const URL_VIDEOS = 'https://nestor-forex.github.io/Nestor-forex/curso/videos/'
+// Dónde viven los videos del curso: CADA APP LOS SUYOS (2026-11-20).
+//
+// Néstor: «que los videos de intradía sean lo que corresponde a ella y así para
+// swing». Un video de la app de swing enseñado en la de intradía le mostraría a
+// alguien una pantalla que no es la que tiene delante. Así que cada app graba,
+// guarda (`public/curso/videos/`) y enseña sus videos, con el mismo nombre de
+// archivo en las dos. La dirección es COMPLETA y sale de `APP`: así este
+// archivo sigue siendo gemelo.
+const PAGINAS = Object.freeze({
+  swing: 'https://nestor-forex.github.io/Nestor-forex/',
+  intradia: 'https://nestor-forex.github.io/Nestor-forex-intradia/',
+})
+export const URL_VIDEOS = `${PAGINAS[APP]}curso/videos/`
 
 // Tope de la lista guardada. Lo mismo dice `firestore.rules`.
 export const MAX_HECHAS = 100

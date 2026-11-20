@@ -571,6 +571,8 @@ export default {
     descargado: "파일을 다운로드했습니다.",
   },
   curso: {
+    herramientas: "도구 영상",
+    herramientasDesc: "이 앱의 각 도구에 대한 짧은 영상: 무엇인지, 어떻게 쓰는지, 그리고 알려주지 않는 것.",
     aprender: "강좌",
     video: "보기",
     empezar: "시작",

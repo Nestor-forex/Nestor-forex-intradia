@@ -568,6 +568,8 @@ export default {
     descargado: "文件已下载。",
   },
   curso: {
+    herramientas: "工具视频",
+    herramientasDesc: "本应用每个工具一段短视频：它是什么、怎么用，以及它不能告诉你什么。",
     aprender: "课程",
     video: "看一看",
     empezar: "开始",

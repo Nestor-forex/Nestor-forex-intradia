@@ -572,6 +572,8 @@ export default {
     descargado: "Il file è stato scaricato.",
   },
   curso: {
+    herramientas: "Gli strumenti in video",
+    herramientasDesc: "Un breve video per ogni strumento di questa app: cos'è, come si usa e cosa NON ti dice.",
     aprender: "Corso",
     video: "Guardalo",
     empezar: "Inizia",

@@ -98,7 +98,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm1-1',
-      desc: 'Video sin voz, de 33 segundos: la fuerza de las 8 divisas en el Barrido, con los datos reales de ese día. Se toma un par de la lista, se dice cuál es la moneda base y cuál la cotizada, y se busca la fuerza de cada una en el ranking.',
+      desc: 'Video sin voz: la fuerza de las 8 divisas en el Barrido, con los datos reales de ese día. Se toma un par de la lista, se dice cuál es la moneda base y cuál la cotizada, y se busca la fuerza de cada una en el ranking.',
     },
     hazlo: {
       tab: 'barrido',
@@ -151,7 +151,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm1-2',
-      desc: 'Video sin voz, de 32 segundos: la calculadora de la pestaña Riesgo. Con EUR/USD el pip vale 10 USD por lote; al cambiar a USD/JPY el valor del pip cambia, porque depende del precio. Después, el mismo movimiento de 30 pips con un microlote y con un lote entero.',
+      desc: 'Video sin voz: la calculadora de la pestaña Riesgo. Con EUR/USD el pip vale 10 USD por lote; al cambiar a USD/JPY el valor del pip cambia, porque depende del precio. Después, el mismo movimiento de 30 pips con un microlote y con un lote entero.',
     },
     hazlo: {
       tab: 'calc',
@@ -204,7 +204,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm1-3',
-      desc: 'Video sin voz, de 35 segundos: la tarjeta «Lo que cuesta abrir la operación» del Barrido, con el spread real de una cuenta del desarrollador ese día. Se compara el spread de EUR/USD con el de un cruce y se calcula cuánto pesa sobre un Stop-loss corto y uno largo.',
+      desc: 'Video sin voz: la tarjeta «Lo que cuesta abrir la operación» del Barrido, con el spread real de una cuenta del desarrollador ese día. Se compara el spread de EUR/USD con el de un cruce y se calcula cuánto pesa sobre un Stop-loss corto y uno largo.',
     },
     hazlo: {
       tab: 'barrido',
@@ -253,7 +253,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm3-1',
-      desc: 'Video sin voz, de 37 segundos: dos maneras de cerrar el mismo mal día con 1.000 USD, y la pestaña Riesgo con los dos frenos de «Mi perfil de riesgo»: la pérdida máxima del día y las pérdidas seguidas, que se ponen antes, con la cabeza fría.',
+      desc: 'Video sin voz: dos maneras de cerrar el mismo mal día con 1.000 USD, y la pestaña Riesgo con los dos frenos de «Mi perfil de riesgo»: la pérdida máxima del día y las pérdidas seguidas, que se ponen antes, con la cabeza fría.',
     },
     hazlo: {
       tab: 'calc',
@@ -305,7 +305,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm3-2',
-      desc: 'Video sin voz, de 34 segundos: «Tu freno de hoy», arriba del Diario, con un usuario de ejemplo que hoy lleva dos operaciones perdidas. La tarjeta suma lo perdido contra el freno del día y las pérdidas seguidas contra su límite, y se pone ámbar cuando queda poco margen.',
+      desc: 'Video sin voz: «Tu freno de hoy», arriba del Diario, con un usuario de ejemplo que hoy lleva dos operaciones perdidas. La tarjeta suma lo perdido contra el freno del día y las pérdidas seguidas contra su límite, y se pone ámbar cuando queda poco margen.',
     },
     hazlo: {
       tab: 'diario',
@@ -354,7 +354,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm0-1',
-      desc: 'Video sin voz, de 32 segundos: el Barrido con los datos reales de ese día. Se abre la tarjeta «Qué es esta app», se lee que nada de lo que se ve es una señal para copiar, y se baja hasta los avisos de los experimentos, que dicen «Esto NO son señales».',
+      desc: 'Video sin voz: el Barrido con los datos reales de ese día. Se abre la tarjeta «Qué es esta app», se lee que nada de lo que se ve es una señal para copiar, y se baja hasta los avisos de los experimentos, que dicen «Esto NO son señales».',
     },
     hazlo: {
       tab: 'barrido',
@@ -409,7 +409,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm0-2',
-      desc: 'Video sin voz, de 31 segundos: el Historial con el registro real de ese día. Se señala el ± que va pegado al acierto y el aviso de cuántas operaciones lleva el experimento de las que hacen falta para creerle.',
+      desc: 'Video sin voz: el Historial con el registro real de ese día. Se señala el ± que va pegado al acierto según cuántas operaciones lleva cada regla, y el aviso de cuántas le faltan al experimento para que su número signifique algo.',
     },
     hazlo: {
       tab: 'diario',
@@ -464,7 +464,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm2-1',
-      desc: 'Video sin voz, de 40 segundos: «Mi perfil de riesgo» de la pestaña Riesgo con un perfil de ejemplo de 1.000 USD. Se cambia el riesgo entre 1 %, 2 % y 3 % y se ve cuánto se arriesga por operación; después, cuánto queda tras diez pérdidas seguidas con cada porcentaje.',
+      desc: 'Video sin voz: «Mi perfil de riesgo» de la pestaña Riesgo con un perfil de ejemplo de 1.000 USD. Se cambia el riesgo entre 1 %, 2 % y 3 % y se ve cuánto se arriesga por operación; después, cuánto queda tras diez pérdidas seguidas con cada porcentaje.',
     },
     hazlo: {
       tab: 'calc',
@@ -518,7 +518,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm2-2',
-      desc: 'Video sin voz, de 49 segundos: el Analizador con los datos reales de ese día. Se elige un par y una dirección cualquiera solo para ver las cuentas, y se prueban los tres métodos de Stop-loss: cambian el Stop-loss, el Take-profit, el R/B y el lote.',
+      desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se elige un par y una dirección cualquiera solo para ver las cuentas, y se prueban los tres métodos de Stop-loss: cambian el Stop-loss, el Take-profit, el R/B y el lote.',
     },
     hazlo: {
       tab: 'analizar',
@@ -573,7 +573,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm2-3-lote',
-      desc: 'Video sin voz, de 20 segundos: la calculadora con un perfil de 1.000 USD y un 1 % por operación. El Stop-loss pasa de 25 a 50 pips, el lote baja de 0,04 a 0,02 y lo que se arriesga se queda en 10 USD.',
+      desc: 'Video sin voz: la calculadora con un perfil de 1.000 USD y un 1 % por operación. El Stop-loss pasa de 25 a 50 pips, el lote baja de 0,04 a 0,02 y lo que se arriesga se queda en 10 USD.',
     },
     hazlo: {
       tab: 'calc',

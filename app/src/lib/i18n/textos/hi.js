@@ -571,6 +571,8 @@ export default {
     descargado: "फ़ाइल डाउनलोड हो गई।",
   },
   curso: {
+    herramientas: "टूल्स वीडियो में",
+    herramientasDesc: "इस ऐप के हर टूल पर एक छोटा वीडियो: वह क्या है, कैसे इस्तेमाल करें और वह आपको क्या नहीं बताता।",
     aprender: "कोर्स",
     video: "देखें",
     empezar: "शुरू करें",

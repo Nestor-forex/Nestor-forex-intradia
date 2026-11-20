@@ -571,6 +571,8 @@ export default {
     descargado: "Dosya indirildi.",
   },
   curso: {
+    herramientas: "Araçlar videoda",
+    herramientasDesc: "Bu uygulamadaki her araç için kısa bir video: ne olduğu, nasıl kullanıldığı ve sana ne SÖYLEMEDİĞİ.",
     aprender: "Kurs",
     video: "İzle",
     empezar: "Başla",
