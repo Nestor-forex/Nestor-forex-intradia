@@ -74,6 +74,14 @@ ok(m32.includes(`${frenoEnDolares(pe)} USD`) && m32.includes(`número ${operacio
 ok(/import \{ SUGERIDO, frenoEnDolares, operacionesHastaElFreno \} from '\.\.\/perfilRiesgo\.js'/.test(es), 'el módulo 3 importa los frenos, no los escribe')
 // El valor del pip del módulo 1 es el de la calculadora.
 ok(pipUSD('EUR/USD', {}) === 10 && LECCIONES['m1-2'].ejemplo.some((p) => p.includes('10 USD con un lote entero')), 'el pip de EUR/USD (10 USD por lote) es el de la calculadora')
+{
+  // Módulo 4: las ventanas, los pesos y el umbral salen de `marketCalc.js` de ESTA app.
+  const { VENTANAS_FUERZA, PESOS_FUERZA, UMBRAL_FUERZA } = await import('../src/lib/marketCalc.js')
+  const m41 = JSON.stringify(LECCIONES['m4-1'])
+  ok(VENTANAS_FUERZA.every((k) => m41.includes(`${k} `)) && PESOS_FUERZA.every((w) => m41.includes(`${Math.round(w * 100)} %`)), 'el módulo 4 lee las ventanas y los pesos de la fuerza de `marketCalc.js`')
+  ok(JSON.stringify(LECCIONES['m4-2']).includes(String(UMBRAL_FUERZA).replace('.', ',')), 'y el umbral de fuerza')
+  ok(/import \{ PESOS_FUERZA, UMBRAL_FUERZA, VENTANAS_FUERZA \} from '\.\.\/marketCalc\.js'/.test(es), 'el módulo 4 los importa, no los escribe')
+}
 
 // Los videos: cada uno tiene su descripción, y CADA app guarda los suyos
 // (2026-11-20): el archivo tiene que existir en este repositorio y pesar poco.

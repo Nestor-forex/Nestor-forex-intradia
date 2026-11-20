@@ -27,9 +27,58 @@ import { abrir, abrirTarjeta, bajar, cajaDe, desmarcar, espera, exigir, FIN, irA
 import { ESCENAS_HERRAMIENTAS } from './escenas-herramientas.mjs'
 import { OPS_PARA_CREER } from '../../src/lib/sombra.js'
 import { margen } from '../../src/lib/diagnostico.js'
+import { UMBRAL_FUERZA, VENTANAS_FUERZA } from '../../src/lib/marketCalc.js'
+import { APP } from '../../src/lib/identidad.js'
 
 const VIDEOS = fileURLToPath(new URL('../../public/curso/videos/', import.meta.url))
 const coma = (x) => String(x).replace('.', ',')
+
+// Módulo 4: el ranking de fuerza del Barrido y la «Dif» del tablero completo,
+// leídos de la pantalla.
+const VELA1 = APP === 'swing' ? 'día' : 'hora'
+const VELAN = APP === 'swing' ? 'días' : 'horas'
+async function rankingFuerza(p) {
+  const ranking = await p.evaluate(() => {
+    const caja = [...document.querySelectorAll('main div')].find((d) => d.children.length === 8 && [...d.children].every((c) => /^[A-Z]{3}\s+\d/.test(c.innerText.trim())))
+    if (!caja) return null
+    caja.dataset.ranking = '1'
+    return [...caja.children].map((c) => c.innerText.trim().split(/\s+/))
+  })
+  exigir(ranking, 'el ranking de fuerza')
+  return ranking
+}
+async function abrirTablero(p) {
+  const ver = p.locator('main a', { hasText: 'Ver tablero completo' }).first()
+  await llevar(p, ver, 200)
+  await ver.click()
+  await espera(p, 1.4)
+}
+// Un par con la Dif más grande y, si lo hay, uno con Dif claramente por debajo
+// del umbral. Marca sus tarjetas con `data-dif`.
+async function dosDif(p) {
+  const d = await p.evaluate((u) => {
+    const filas = [...document.querySelectorAll('main span')].filter((s) => /^Dif\s+[+−-]?\d/.test(s.textContent.trim()))
+    const datos = filas.map((s) => {
+      const txt = s.textContent.trim().replace(/^Dif\s+/, '')
+      let caja = s
+      while (caja && !caja.querySelector('.mono[dir="ltr"]')?.textContent.match(/^[A-Z]{3}\/[A-Z]{3}$/)) caja = caja.parentElement
+      const par = [...(caja?.querySelectorAll('.mono') ?? [])].map((x) => x.textContent.trim()).find((x) => /^[A-Z]{3}\/[A-Z]{3}$/.test(x))
+      return { s, caja, par, dif: txt, n: Math.abs(parseFloat(txt.replace('−', '-'))) }
+    }).filter((x) => x.par && Number.isFinite(x.n))
+    if (!datos.length) return null
+    const alto = datos.reduce((a, b) => (b.n > a.n ? b : a))
+    const bajo = datos.filter((x) => x.n < u - 0.15).sort((a, b) => a.n - b.n)[0]
+    ;(alto.caja ?? alto.s).dataset.dif = 'alto'
+    if (bajo) (bajo.caja ?? bajo.s).dataset.dif = 'bajo'
+    // ¿Pasa el umbral DE VERDAD? Lo dice la etiqueta de la tarjeta (COMPRA,
+    // VENTA o VIGILAR solo salen por encima del umbral). En intradía el umbral
+    // sube a algunas horas, así que compararlo con el base podría mentir.
+    const pasa = /\b(COMPRA|VENTA|VIGILAR)\b/.test(alto.caja?.innerText ?? '')
+    return { alto: { par: alto.par, dif: alto.dif, pasa }, bajo: bajo ? { par: bajo.par, dif: bajo.dif } : null }
+  }, UMBRAL_FUERZA)
+  exigir(d, 'la «Dif» de los pares en el tablero completo')
+  return d
+}
 
 const ESCENAS = {
   // ─── Módulo 0 ───────────────────────────────────────────────────────────────
@@ -413,6 +462,88 @@ const ESCENAS = {
       await desmarcar(p)
       await r('La app no cierra nada ni te bloquea: no está conectada a tu bróker. Solo te pone tu regla delante.')
       await espera(p, 4.6)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+  'm4-1': {
+    desc: 'Video sin voz: el Barrido con los datos reales de ese día. Se señalan las barras de fuerza de las ocho divisas, la más fuerte y la más débil, y se explica que cada una sale de compararla con las otras siete.',
+    async correr(p, r) {
+      await r('Un par son dos divisas. Si EUR/USD sube, ¿fue el euro o fue el dólar? El par solo no lo dice.')
+      await espera(p, 4.6)
+      const ranking = await rankingFuerza(p)
+      const caja = p.locator('[data-ranking]')
+      await llevar(p, caja, 120)
+      await marcar(p, caja)
+      await r('Por eso la app compara cada divisa contra las otras siete a la vez. Estas son las barras.')
+      await espera(p, 4.2)
+      await r(`Se mira cuánto cambió en ${VENTANAS_FUERZA.map((k) => `${k} ${k === 1 ? VELA1 : VELAN}`).join(', ')}, y se promedia contra las siete.`)
+      await espera(p, 4.8)
+      const [fuerte, debil] = [ranking[0], ranking[ranking.length - 1]]
+      await r(`Hoy la más fuerte es ${fuerte[0]} y la más débil ${debil[0]}.`)
+      await espera(p, 3.8)
+      await desmarcar(p)
+      await r('Es un resumen de lo que ya pasó. No dice que la fuerte vaya a seguir fuerte.')
+      await espera(p, 4)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+  'm4-2': {
+    desc: 'Video sin voz: el tablero completo con los datos reales de ese día. Se señala la «Dif» de un par, se compara con el umbral de la app, y se ve un par que lo pasa y otro que no.',
+    async correr(p, r) {
+      await r('Para un par lo que cuenta es la DIFERENCIA de fuerza entre sus dos divisas.')
+      await espera(p, 4)
+      await abrirTablero(p)
+      const d = await dosDif(p)
+      await r(`Aquí sale como «Dif». La app no mira un par hasta que pasa ${coma(UMBRAL_FUERZA)}${APP === 'swing' ? '' : ' (el umbral base: a las horas de más movimiento sube)'}.`)
+      await espera(p, 5)
+      const alto = p.locator('[data-dif="alto"]')
+      await llevar(p, alto, 160)
+      await marcar(p, alto)
+      await r(d.alto.pasa ? `${d.alto.par}: Dif ${d.alto.dif}. Una divisa le saca ventaja a la otra: pasa.` : `La más grande de hoy, ${d.alto.par}, va a ${d.alto.dif}: a esta hora no llega. Hoy ningún par pasa.`)
+      await espera(p, 4.4)
+      await desmarcar(p)
+      if (d.bajo) {
+        const bajo = p.locator('[data-dif="bajo"]')
+        await llevar(p, bajo, 160)
+        await marcar(p, bajo)
+        await r(`${d.bajo.par}: Dif ${d.bajo.dif}. Las dos están casi igual de fuertes: no pasa.`)
+        await espera(p, 4.4)
+        await desmarcar(p)
+      }
+      await r('Pasar el umbral es solo la primera condición. Y una Dif grande no dice hacia dónde irá el precio.')
+      await espera(p, 4.6)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+  'm4-3': {
+    desc: 'Video sin voz: las barras de fuerza del Barrido, donde siempre hay un 10 y un 0, y después la «Dif» real del tablero completo, que es la que la app compara con el umbral.',
+    async correr(p, r) {
+      const ranking = await rankingFuerza(p)
+      const caja = p.locator('[data-ranking]')
+      await llevar(p, caja, 120)
+      await marcar(p, caja)
+      const [fuerte, debil] = [ranking[0], ranking[ranking.length - 1]]
+      await r(`Arriba: ${fuerte[0]} ${fuerte[1]} y ${debil[0]} ${debil[1]}. ¿Mucha diferencia?`)
+      await espera(p, 4)
+      exigir(fuerte[1] === '10.0' && debil[1] === '0.0', 'que la escala vaya de 0 a 10')
+      await r('No se sabe. La escala es un ORDEN: la más fuerte del día vale 10 y la más débil 0. Siempre.')
+      await espera(p, 5)
+      await r('Aunque las ocho estén casi iguales, siempre habrá un 10 y un 0.')
+      await espera(p, 4)
+      await desmarcar(p)
+      await abrirTablero(p)
+      const d = await dosDif(p)
+      const alto = p.locator('[data-dif="alto"]')
+      await llevar(p, alto, 160)
+      await marcar(p, alto)
+      await r(`La medida de verdad es la «Dif». La más grande de hoy: ${d.alto.par}, ${d.alto.dif}.`)
+      await espera(p, 4.6)
+      await desmarcar(p)
+      await r(`Esa es la que la app compara con el umbral (${coma(UMBRAL_FUERZA)}${APP === 'swing' ? '' : ' o más, según la hora'}), no el 10 contra 0.`)
+      await espera(p, 4.2)
       await r(FIN)
       await espera(p, 2.8)
     },

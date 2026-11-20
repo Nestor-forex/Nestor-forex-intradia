@@ -22,6 +22,8 @@
 import { OPS_PARA_CREER } from '../sombra.js'
 import { margen } from '../diagnostico.js'
 import { SUGERIDO, frenoEnDolares, operacionesHastaElFreno } from '../perfilRiesgo.js'
+import { PESOS_FUERZA, UMBRAL_FUERZA, VENTANAS_FUERZA } from '../marketCalc.js'
+import { APP } from '../identidad.js'
 
 const L = OPS_PARA_CREER
 
@@ -32,6 +34,14 @@ const PERFIL_EJEMPLO = Object.freeze({ capital: 1000, riesgoPct: 1, ...SUGERIDO 
 const FRENO_USD = frenoEnDolares(PERFIL_EJEMPLO)
 const OPS_FRENO = operacionesHastaElFreno(PERFIL_EJEMPLO)
 const fmt = (n) => String(n).replace('.', ',')
+
+// Módulo 4: la fuerza se calcula con las ventanas y los pesos que usa ESTA app
+// (velas diarias en swing, de una hora en intradía). Se leen de `marketCalc.js`.
+const VELA = APP === 'swing' ? 'día' : 'hora'
+const VELAS = APP === 'swing' ? 'días' : 'horas'
+const VENT = VENTANAS_FUERZA.map((k) => `${k} ${k === 1 ? VELA : VELAS}`)
+const PCT = PESOS_FUERZA.map((w) => `${Math.round(w * 100)} %`)
+const UMBRAL = fmt(UMBRAL_FUERZA)
 
 export const MODULOS = Object.freeze([
   Object.freeze({
@@ -62,12 +72,18 @@ export const MODULOS = Object.freeze([
     desc: 'Por qué los días malos se vuelven peores, y cómo una regla escrita antes te protege de ti mismo.',
     lecciones: Object.freeze(['m3-1', 'm3-2']),
   }),
+  Object.freeze({
+    id: 'm4',
+    n: 4,
+    titulo: 'Quién manda hoy',
+    desc: 'La fuerza de cada divisa, la diferencia que la app mira en cada par, y por qué «10 contra 0» no quiere decir mucha diferencia.',
+    lecciones: Object.freeze(['m4-1', 'm4-2', 'm4-3']),
+  }),
 ])
 
 // Los que todavía no están escritos. Se enseñan para que se vea el camino,
 // marcados «próximamente», y no se pueden abrir.
 export const PROXIMOS = Object.freeze([
-  { n: 4, titulo: 'Quién manda hoy' },
   { n: 5, titulo: 'Tendencia y rango' },
   { n: 6, titulo: 'Lo que cuesta operar' },
   { n: 7, titulo: 'Noticias y bancos centrales' },
@@ -598,6 +614,162 @@ export const LECCIONES = Object.freeze({
         opciones: ['Elegir el lote', 'Decidir cuánto arriesgar y dónde va el Stop-loss', 'Abrir la operación'],
         correcta: 1,
         porque: 'Primero el riesgo y el Stop-loss; el lote sale de ahí.',
+      },
+    ],
+  },
+  'm4-1': {
+    titulo: 'La fuerza de cada divisa',
+    objetivo: 'Entender qué miden las barras de fuerza de las ocho divisas, arriba del Barrido.',
+    explicacion: [
+      'Un par son dos divisas. Si EUR/USD sube, puede ser porque el euro se fortalece o porque el dólar se debilita: mirando solo ese par no se sabe cuál de las dos fue.',
+      'Por eso la app compara cada divisa contra las otras siete a la vez. Una divisa que sube contra casi todas está fuerte; una que baja contra casi todas, débil.',
+      'Es como una liga de fútbol: no importa si un equipo le ganó a uno solo, sino cómo le va contra todos los demás.',
+    ],
+    ejemplo: [
+      `En esta app se mira cuánto cambió cada divisa contra cada una de las otras siete en tres plazos: ${VENT.join(', ')}.`,
+      `El plazo más corto pesa el ${PCT[0]} y los otros dos el ${PCT[1]} cada uno: así un solo movimiento brusco no decide todo.`,
+      'Luego se promedian las siete comparaciones y sale un número por divisa. La lista del Barrido las ordena de la más fuerte a la más débil.',
+    ],
+    formula: {
+      texto: `fuerza = promedio, contra las otras 7 divisas, de (${PCT[0]} × cambio en ${VENT[0]} + ${PCT[1]} × cambio en ${VENT[1]} + ${PCT[2]} × cambio en ${VENT[2]})`,
+      conNumeros: `si el euro sube un 0,2 % contra el dólar en el plazo corto y un 1 % en los dos largos: ${fmt(PESOS_FUERZA[0])} × 0,2 + ${fmt(PESOS_FUERZA[1])} × 1 + ${fmt(PESOS_FUERZA[2])} × 1 = ${fmt(+(PESOS_FUERZA[0] * 0.2 + PESOS_FUERZA[1] + PESOS_FUERZA[2]).toFixed(2))} en esa comparación; lo mismo contra las otras seis, y el promedio.`,
+    },
+    noDice: [
+      'No dice que la divisa fuerte vaya a seguir fuerte: mide lo que ya pasó.',
+      'No dice qué par abrir ni cuándo.',
+      'No es una señal. Es un resumen de cómo se movieron las ocho divisas.',
+    ],
+    video: {
+      archivo: 'm4-1',
+      desc: 'Video sin voz: el Barrido con los datos reales de ese día. Se señalan las barras de fuerza de las ocho divisas, la más fuerte y la más débil, y se explica que cada una sale de compararla con las otras siete.',
+    },
+    hazlo: {
+      tab: 'barrido',
+      boton: 'Ir al Barrido',
+      texto: 'Arriba del Barrido están las barras de fuerza de las ocho divisas. Busca la más fuerte y la más débil de hoy.',
+    },
+    preguntas: [
+      {
+        p: 'EUR/USD sube. ¿Qué puedes saber solo con eso?',
+        opciones: ['Que el euro está fuerte', 'Que el dólar está débil', 'Nada seguro: pudo ser cualquiera de las dos'],
+        correcta: 2,
+        porque: 'Un par solo no dice cuál de sus dos divisas se movió. Para eso la app compara cada una contra las otras siete.',
+      },
+      {
+        p: '¿Contra cuántas divisas se compara cada una?',
+        opciones: ['Contra una', 'Contra las otras siete', 'Contra el oro'],
+        correcta: 1,
+        porque: 'Contra las otras siete de la app, y se promedia.',
+      },
+      {
+        p: 'Una divisa sale la más fuerte del día. ¿Qué te dice eso de mañana?',
+        opciones: ['Que seguirá subiendo', 'Nada: mide lo que ya pasó', 'Que mañana se dará la vuelta'],
+        correcta: 1,
+        porque: 'La fuerza resume el pasado. No dice hacia dónde irá el precio.',
+      },
+    ],
+  },
+
+  'm4-2': {
+    titulo: 'La diferencia que la app mira en cada par',
+    objetivo: 'Saber qué es la «Dif» de cada par y por qué la app no mira un par hasta que pasa un umbral.',
+    explicacion: [
+      'Para un par, lo que cuenta es la diferencia entre la fuerza de sus dos divisas. En el tablero completo sale como «Dif».',
+      'Si la Dif es positiva, la primera divisa del par (la base) está más fuerte que la segunda. Si es negativa, al revés.',
+      'Con una Dif pequeña, las dos divisas están casi igual de fuertes y el par no tiene a nadie que lo empuje. Por eso la app no mira un par hasta que la diferencia pasa un umbral.',
+    ],
+    ejemplo: [
+      `En esta app el umbral es ${UMBRAL}: un par con Dif +1,2 o −0,9 lo pasa; uno con Dif +0,3 no.`,
+      ...(APP === 'swing'
+        ? []
+        : ['En la app de intradía el umbral sube en las horas de más movimiento (por ejemplo, cuando Londres y Nueva York están abiertas a la vez): a esas horas todo se mueve más, y se pide más diferencia para creerla.']),
+      'Si ningún par pasa el umbral, la app no propone nada ese día. No es un fallo: es que ninguna divisa le saca suficiente ventaja a otra.',
+    ],
+    noDice: [
+      'Una Dif grande no dice hacia dónde irá el precio, ni cuándo.',
+      'Pasar el umbral es solo la primera condición: la app pide más cosas antes de enseñar un experimento.',
+      'Lo que sale de aquí siguen siendo experimentos, no señales para copiar.',
+    ],
+    video: {
+      archivo: 'm4-2',
+      desc: 'Video sin voz: el tablero completo con los datos reales de ese día. Se señala la «Dif» de un par, se compara con el umbral de la app, y se ve un par que lo pasa y otro que no.',
+    },
+    hazlo: {
+      tab: 'barrido',
+      boton: 'Ir al Barrido',
+      texto: 'Toca «Ver tablero completo» y busca la «Dif» de cada par. Fíjate cuáles pasan el umbral y cuáles no.',
+    },
+    preguntas: [
+      {
+        p: 'Un par tiene Dif +1,5. ¿Qué quiere decir?',
+        opciones: ['Que la primera divisa del par está más fuerte que la segunda', 'Que el precio del par tiene que subir', 'Que hay que abrirlo'],
+        correcta: 0,
+        porque: 'La Dif solo compara la fuerza de las dos divisas. No dice hacia dónde irá el precio.',
+      },
+      {
+        p: `Un par tiene Dif +0,2 y el umbral es ${UMBRAL}. ¿La app lo mira?`,
+        opciones: ['Sí', 'No: no pasa el umbral', 'Depende del RSI'],
+        correcta: 1,
+        porque: `0,2 está por debajo de ${UMBRAL}: las dos divisas están casi igual de fuertes.`,
+      },
+      {
+        p: 'Un día ningún par pasa el umbral. ¿Qué significa?',
+        opciones: ['Que la app está rota', 'Que ninguna divisa le saca suficiente ventaja a otra', 'Que hay que bajar el umbral'],
+        correcta: 1,
+        porque: 'Un día sin señales también es información: el mercado no tiene a nadie claramente por delante.',
+      },
+    ],
+  },
+
+  'm4-3': {
+    titulo: 'Por qué «10 contra 0» no es mucha diferencia',
+    objetivo: 'No confundir la escala de 0 a 10 de las barras con la diferencia real entre dos divisas.',
+    explicacion: [
+      'Las barras de fuerza van de 0 a 10. Pero esa escala es un ORDEN: la divisa más fuerte del día vale 10 y la más débil vale 0. Siempre, todos los días.',
+      'O sea que «10 contra 0» no quiere decir que haya mucha diferencia. Quiere decir que una es la primera y otra la última, y eso es verdad aunque las ocho estén casi iguales.',
+      'Es como la estatura de un grupo de amigos: siempre hay un más alto y un más bajo, aunque se lleven dos centímetros.',
+    ],
+    ejemplo: [
+      'Un caso real, en la app de intradía, el 12 de octubre de 2026: el dólar salía en 10,0 y el franco suizo en 0,0. Parecía la diferencia máxima posible.',
+      'Pero la Dif del par más separado de ese momento era 0,31, y ese día a esa hora hacía falta 0,59. Ningún par pasó el umbral y no hubo señales.',
+      'La medida de verdad es la Dif del tablero completo, no la escala de 0 a 10.',
+    ],
+    formula: {
+      texto: 'escala = (fuerza de la divisa − la más débil) ÷ (la más fuerte − la más débil) × 10',
+      conNumeros: 'la más débil sale siempre (x − x) ÷ (…) × 10 = 0, y la más fuerte siempre 10, sea grande o pequeña la diferencia.',
+    },
+    noDice: [
+      'La escala de 0 a 10 no dice cuánta diferencia hay. Para eso está la Dif.',
+      'No dice que haya que operar el par de la más fuerte contra la más débil.',
+      'No dice hacia dónde irá ninguna de las dos.',
+    ],
+    video: {
+      archivo: 'm4-3',
+      desc: 'Video sin voz: las barras de fuerza del Barrido, donde siempre hay un 10 y un 0, y después la «Dif» real del tablero completo, que es la que la app compara con el umbral.',
+    },
+    hazlo: {
+      tab: 'barrido',
+      boton: 'Ir al Barrido',
+      texto: 'Mira las barras: ¿hay un 10 y un 0? Siempre los hay. Luego abre el tablero completo y compara con la Dif de los pares.',
+    },
+    preguntas: [
+      {
+        p: 'En las barras, una divisa sale en 10 y otra en 0. ¿Qué sabes?',
+        opciones: ['Que hay una diferencia enorme', 'Solo que una es la primera y otra la última', 'Que hay que operar ese par'],
+        correcta: 1,
+        porque: 'La escala es un orden: siempre hay un 10 y un 0, aunque la diferencia real sea pequeña.',
+      },
+      {
+        p: '¿Dónde se ve la diferencia real entre las dos divisas de un par?',
+        opciones: ['En la escala de 0 a 10', 'En la «Dif» del tablero completo', 'En el RSI'],
+        correcta: 1,
+        porque: 'La Dif es la resta de las fuerzas sin escalar, y es la que la app compara con el umbral.',
+      },
+      {
+        p: 'El 12 de octubre de 2026 salió «dólar 10,0 y franco 0,0». ¿Hubo señales?',
+        opciones: ['Sí, muchas', 'No: la Dif más grande no pasó el umbral', 'Solo en el franco'],
+        correcta: 1,
+        porque: 'La Dif más grande era 0,31 y hacía falta 0,59. El 10 contra 0 engañaba.',
       },
     ],
   },

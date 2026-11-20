@@ -130,6 +130,13 @@ function perfilPorHora(barras, serieHi, serieLo, serie) {
 // (horas, no días): no es un número prestado, es la misma regla en su escala.
 export const MIN_ATR_FIBONACCI = 2
 
+// La fuerza de cada divisa: su cambio contra cada una de las otras siete en
+// tres ventanas de velas, con estos pesos, y el promedio. Se exportan para que
+// el curso (módulo 4) LEA los números en vez de escribirlos. PRIMO: las
+// ventanas son de cada app (velas diarias o de una hora).
+export const VENTANAS_FUERZA = Object.freeze([1, 4, 24])
+export const PESOS_FUERZA = Object.freeze([0.2, 0.4, 0.4])
+
 export const PERIODOS_MEDIAS = Object.freeze({ sma: [20, 50, 200], ema: [9, 21, 50, 200] })
 
 export const emaLast = (c, p) => {
@@ -398,7 +405,7 @@ export function computarBarrido(barras, rates, rangos = null, { largo = null } =
     let s = 0
     CCY.forEach((q) => {
       // Ventanas cortas de intradía: 1h / 4h / 24h (en vez de 1d / 5d / 20d).
-      if (q !== b) s += 0.2 * chg(b, q, 1) + 0.4 * chg(b, q, 4) + 0.4 * chg(b, q, 24)
+      if (q !== b) s += VENTANAS_FUERZA.reduce((t, k, i) => t + PESOS_FUERZA[i] * chg(b, q, k), 0)
     })
     raw[b] = s / 7
   })
