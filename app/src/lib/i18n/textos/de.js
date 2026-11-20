@@ -1237,6 +1237,7 @@ export default {
       minimo: ({ n }) => `bricht das Tief von ${n} Kerzen`,
       maximo: ({ n }) => `bricht das Hoch von ${n} Kerzen`,
     },
+    avance: ({ precio }) => `Enthält die Vorwärtsverfolgung: deine Regeln, an neuen Tagen gemessen · Zusatzdienst, ${precio} USD pro Monat. Öffne sie, um sie anzusehen und anzufragen.`,
     beneficioTitulo: 'Deine Idee kann mehr wert sein',
     beneficio: 'Wenn du deine Regel speicherst und die Erlaubnis gibst, kann der Entwickler der App sie kopieren und mit anderen Einstellungen testen: anderer Stop-loss, anderes Ziel, andere Paare oder Filter. Wenn eine Variante positiv ausfällt, sagen wir dir genau hier, was deine Idee erreicht hat, und geben dir die Einstellungen, mit denen gemessen wurde, damit du sie nutzen kannst. Das ist in deinem Abo enthalten.',
     permiso: 'Ich erlaube dem Entwickler, diese Regel zu kopieren und mit anderen Einstellungen zu testen. Fällt eine positiv aus, teilt er mir das Ergebnis und die Einstellungen mit.',

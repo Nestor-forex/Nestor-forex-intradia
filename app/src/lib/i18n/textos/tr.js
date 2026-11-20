@@ -1232,6 +1232,7 @@ export default {
       minimo: ({ n }) => `${n} mumun dibini kırar`,
       maximo: ({ n }) => `${n} mumun zirvesini kırar`,
     },
+    avance: ({ precio }) => `İleriye dönük takip dahil: kuralların yeni günlerde ölçülür · ek hizmet, ayda ${precio} USD. Görmek ve talep etmek için aç.`,
     beneficioTitulo: 'Fikrin daha değerli olabilir',
     beneficio: 'Kuralını kaydedip izin verirsen, uygulamanın geliştiricisi onu kopyalayıp başka ayarlarla deneyebilir: başka bir Stop-loss, başka bir hedef, başka pariteler veya filtreler. Bir varyant pozitif çıkarsa, fikrinin ne başardığını tam burada sana bildirir ve ölçümde kullanılan ayarları veririz, sen kullanasın diye. Aboneliğine dahil bir avantajdır.',
     permiso: 'Geliştiricinin bu kuralı kopyalayıp başka ayarlarla denemesine izin veriyorum. Pozitif çıkan olursa sonucu ve ayarları bana bildirecek.',

@@ -366,7 +366,13 @@ export default function Laboratorio({ uid, ficha }) {
 
   return (
     <div onClickCapture={() => !tocado && setTocado(true)}>
-      <TarjetaPlegable sigla="LAB" titulo={t('lab.titulo')} desc={t('lab.desc')} paraQue={t('lab.paraQue')}>
+      <TarjetaPlegable
+        sigla="LAB"
+        titulo={t('lab.titulo')}
+        desc={t('lab.desc')}
+        paraQue={t('lab.paraQue')}
+        avance={<span style={{ fontSize: 12.5, color: 'var(--cta)', fontWeight: 600 }}>📈 {t('lab.avance', { precio: PRECIO_SEGUIMIENTO_USD })}</span>}
+      >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <p style={{ ...TEXTO, color: 'var(--amber)' }}>{t('lab.aviso')}</p>
 
@@ -375,6 +381,47 @@ export default function Laboratorio({ uid, ficha }) {
             <strong style={{ fontSize: 14 }}>💡 {t('lab.beneficioTitulo')}</strong>
             <p style={TEXTO}>{t('lab.beneficio')}</p>
           </div>
+
+          {/* Seguimiento hacia adelante: primero qué es, después el botón. Va ARRIBA,
+              junto al beneficio, y no al final (Néstor, 2026-11-20: «no lo veo»):
+              detrás del constructor y de «Mis reglas» nadie lo encontraba. */}
+          <div style={{ ...CAJA, borderColor: 'var(--cta)', borderWidth: 2 }}>
+            <strong style={{ fontSize: 14 }}>📈 {t('lab.adelanteTitulo')}</strong>
+            <span style={{ ...ROTULO, color: 'var(--cta)' }}>{t('lab.adelanteServicio', { precio: PRECIO_SEGUIMIENTO_USD })}</span>
+            <p style={TEXTO}>{t('lab.adelanteQue')}</p>
+            <p style={TEXTO}>{t('lab.adelantePara')}</p>
+            <p style={TEXTO}>{t('lab.adelantePros')}</p>
+            <p style={{ ...TEXTO, color: 'var(--amber)' }}>{t('lab.adelanteNo')}</p>
+            {servicioActivo ? (
+              <p style={{ ...TEXTO, fontWeight: 600 }}>{t('lab.adelanteActivo', { max: MAX_SEGUIDAS })}</p>
+            ) : solicitadoEl ? (
+              <p style={{ ...TEXTO, fontWeight: 600 }}>{t('lab.adelanteSolicitado', { fecha: solicitadoEl })}</p>
+            ) : (
+              <button type="button" className="btn btn-primary" disabled={estadoServicio === 'guardando'} onClick={pedir}>
+                {t('lab.adelanteSolicitar')}
+              </button>
+            )}
+            {(estadoServicio === 'sinPermiso' || estadoServicio === 'error') && <p style={{ ...TEXTO, color: 'var(--amber)' }}>{t(`lab.estado.${estadoServicio}`)}</p>}
+          </div>
+
+          {esAdmin && (
+            <div style={CAJA}>
+              <span style={ROTULO}>{t('lab.adminSeg')}</span>
+              {!pedidos.length && <p style={TEXTO}>{t('lab.adminSegNadie')}</p>}
+              {pedidos.map((u) => (
+                <div key={u.uid} style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+                  <span style={TEXTO}>
+                    {u.seguimientoActivo === true
+                      ? t('lab.adminSegActivo', { quien: nombreDe(u.uid) })
+                      : t('lab.adminSegPedido', { quien: nombreDe(u.uid), fecha: fechaCorta(u.seguimientoSolicitado, locale) ?? '—' })}
+                  </span>
+                  <button type="button" className="btn-ghost" style={{ minHeight: 36, padding: '0 10px' }} onClick={() => activarSeguimiento(u.uid, u.seguimientoActivo !== true)}>
+                    {u.seguimientoActivo === true ? t('lab.desactivar') : t('lab.activar')}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
           {cargando && <p style={TEXTO}>{t('lab.cargando')}</p>}
           {fallo && <p style={{ ...TEXTO, color: 'var(--amber)' }}>{t('lab.fallo', { motivo: fallo })}</p>}
@@ -501,45 +548,6 @@ export default function Laboratorio({ uid, ficha }) {
                 </div>
               ))}
               {servicioActivo && seguidas >= MAX_SEGUIDAS && <p style={{ ...TEXTO, fontSize: 11.5 }}>{t('lab.maxSeguidas', { max: MAX_SEGUIDAS })}</p>}
-            </div>
-          )}
-
-          {/* Seguimiento hacia adelante: primero qué es, después el botón. */}
-          <div style={{ ...CAJA, borderColor: 'var(--cta)', borderWidth: 2 }}>
-            <strong style={{ fontSize: 14 }}>📈 {t('lab.adelanteTitulo')}</strong>
-            <span style={{ ...ROTULO, color: 'var(--cta)' }}>{t('lab.adelanteServicio', { precio: PRECIO_SEGUIMIENTO_USD })}</span>
-            <p style={TEXTO}>{t('lab.adelanteQue')}</p>
-            <p style={TEXTO}>{t('lab.adelantePara')}</p>
-            <p style={TEXTO}>{t('lab.adelantePros')}</p>
-            <p style={{ ...TEXTO, color: 'var(--amber)' }}>{t('lab.adelanteNo')}</p>
-            {servicioActivo ? (
-              <p style={{ ...TEXTO, fontWeight: 600 }}>{t('lab.adelanteActivo', { max: MAX_SEGUIDAS })}</p>
-            ) : solicitadoEl ? (
-              <p style={{ ...TEXTO, fontWeight: 600 }}>{t('lab.adelanteSolicitado', { fecha: solicitadoEl })}</p>
-            ) : (
-              <button type="button" className="btn btn-primary" disabled={estadoServicio === 'guardando'} onClick={pedir}>
-                {t('lab.adelanteSolicitar')}
-              </button>
-            )}
-            {(estadoServicio === 'sinPermiso' || estadoServicio === 'error') && <p style={{ ...TEXTO, color: 'var(--amber)' }}>{t(`lab.estado.${estadoServicio}`)}</p>}
-          </div>
-
-          {esAdmin && (
-            <div style={CAJA}>
-              <span style={ROTULO}>{t('lab.adminSeg')}</span>
-              {!pedidos.length && <p style={TEXTO}>{t('lab.adminSegNadie')}</p>}
-              {pedidos.map((u) => (
-                <div key={u.uid} style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-                  <span style={TEXTO}>
-                    {u.seguimientoActivo === true
-                      ? t('lab.adminSegActivo', { quien: nombreDe(u.uid) })
-                      : t('lab.adminSegPedido', { quien: nombreDe(u.uid), fecha: fechaCorta(u.seguimientoSolicitado, locale) ?? '—' })}
-                  </span>
-                  <button type="button" className="btn-ghost" style={{ minHeight: 36, padding: '0 10px' }} onClick={() => activarSeguimiento(u.uid, u.seguimientoActivo !== true)}>
-                    {u.seguimientoActivo === true ? t('lab.desactivar') : t('lab.activar')}
-                  </button>
-                </div>
-              ))}
             </div>
           )}
 

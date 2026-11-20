@@ -1313,6 +1313,7 @@ export default {
       minimo: ({ n }) => `rompe el mínimo de ${n} velas`,
       maximo: ({ n }) => `rompe el máximo de ${n} velas`,
     },
+    avance: ({ precio }) => `Incluye el Seguimiento hacia adelante: tus reglas medidas con días nuevos · servicio adicional de ${precio} USD al mes. Ábrelo para verlo y solicitarlo.`,
     beneficioTitulo: 'Tu idea puede valer más',
     beneficio: 'Si guardas tu regla y das permiso, el desarrollador de la app puede copiarla y probarla con otras medidas: otro Stop-loss, otro objetivo, otros pares o filtros. Si alguna variante sale positiva, te avisamos aquí mismo de lo que se logró con tu idea y te damos las medidas con las que se midió, para que tú las uses. Es un beneficio incluido en tu suscripción.',
     permiso: 'Doy permiso para que el desarrollador copie esta regla y la pruebe con otras medidas. Si alguna sale positiva, me avisará del resultado y de las medidas.',
