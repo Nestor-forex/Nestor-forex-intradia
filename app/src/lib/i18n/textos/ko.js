@@ -1067,8 +1067,8 @@ export default {
     sinDatos: '아직 중개사 가격이 없습니다. MetaTrader 5가 돌아가는 컴퓨터가 켜져 있을 때만 다리가 게시합니다.',
     vieja: (v) => `이 가격은 ${v.h}시간도 더 전의 것입니다. 다리가 꺼져 있었습니다. 지금 가격이 아니라 참고로 보세요.`,
     par: '통화쌍',
-    bid: '매수',
-    ask: '매도',
+    bid: 'BID',
+    ask: 'ASK',
     spread: '스프레드',
     actividad: '활동',
     actividadPie:

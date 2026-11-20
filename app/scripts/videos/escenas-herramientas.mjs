@@ -291,7 +291,7 @@ export const ESCENAS_HERRAMIENTAS = {
       await espera(p, 4.4)
       const caja = p.locator('.card', { hasText: 'Lo que cuesta abrir la operación' }).last()
       await llevar(p, caja, 20)
-      await r('Para cada par: precio de compra, precio de venta y la diferencia, que es el spread, en pips.')
+      await r('Para cada par: precio de venta (BID), precio de compra (ASK) y la diferencia, que es el spread, en pips.')
       await espera(p, 4.6)
       const encab = caja.getByText(es.vivo.actividad, { exact: true }).first()
       if (await encab.count()) {

@@ -1073,8 +1073,8 @@ export default {
     sinDatos: 'Pas encore de prix du courtier. Le pont ne les publie que pendant que l\'ordinateur qui fait tourner MetaTrader 5 est allumé.',
     vieja: (v) => `Ces prix ont été relevés il y a plus de ${v.h} h. Le pont était éteint ; à prendre comme référence, pas comme prix actuel.`,
     par: 'Paire',
-    bid: 'Achat',
-    ask: 'Vente',
+    bid: 'BID',
+    ask: 'ASK',
     spread: 'Spread',
     actividad: 'Activité',
     actividadPie:

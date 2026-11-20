@@ -27,6 +27,8 @@ import { PERIODOS_MEDIAS, PERIODO_ATR, PERIODO_RSI, PESOS_FUERZA, RSI_MAX, TENDE
 // Stop-loss) se lee por aquí: un nombre que la otra app no exporta sale
 // `undefined` en vez de romper la importación.
 import * as MC from '../marketCalc.js'
+import { UMBRAL_NEUTRO } from '../tasas.js'
+import { spreadDe } from '../../../scripts/lib/costes.mjs'
 import { APP } from '../identidad.js'
 
 const L = OPS_PARA_CREER
@@ -52,6 +54,19 @@ const EMA_C = PERIODOS_MEDIAS.ema[0]
 const EMA_L = PERIODOS_MEDIAS.ema[1]
 const SWING = APP === 'swing'
 const CORTES = UMBRALES_COMPRESION
+
+// Módulo 6: los spreads salen de la MISMA tabla con la que el banco de pruebas
+// descuenta el coste (`scripts/lib/costes.mjs`), y la banda del swap de
+// `tasas.js`. Si cambian allí, la lección cambia sola.
+const SP_MAYOR = spreadDe('EUR/USD')
+const SP_CRUCE = spreadDe('NZD/CHF')
+const pct1 = (x) => fmt((x * 100).toFixed(1))
+// Con stop y objetivo a la misma distancia, un coste c (en fracción del stop)
+// se paga al ganar y al perder: p·(1 − c) = (1 − p)·(1 + c) → p = (1 + c) / 2.
+export const aciertoParaEmpatar = (spreadPips, stopPips) => (1 + spreadPips / stopPips) / 2
+const STOP_SW = 120
+const STOP_ID = 30
+const SP_EJ = 2
 
 export const MODULOS = Object.freeze([
   Object.freeze({
@@ -96,12 +111,18 @@ export const MODULOS = Object.freeze([
     desc: 'Las medias móviles, el RSI y el ATR, y cómo se ve un mercado que va de lado: soportes, resistencias y compresión.',
     lecciones: Object.freeze(['m5-1', 'm5-2', 'm5-3']),
   }),
+  Object.freeze({
+    id: 'm6',
+    n: 6,
+    titulo: 'Lo que cuesta operar',
+    desc: 'El spread que pagas al entrar, el swap de cada noche, y por qué el mismo coste pesa mucho más con un Stop-loss corto.',
+    lecciones: Object.freeze(['m6-1', 'm6-2', 'm6-3']),
+  }),
 ])
 
 // Los que todavía no están escritos. Se enseñan para que se vea el camino,
 // marcados «próximamente», y no se pueden abrir.
 export const PROXIMOS = Object.freeze([
-  { n: 6, titulo: 'Lo que cuesta operar' },
   { n: 7, titulo: 'Noticias y bancos centrales' },
   { n: 8, titulo: 'Pares que son la misma apuesta' },
   { n: 9, titulo: 'Del análisis a la operación' },
@@ -958,6 +979,167 @@ export const LECCIONES = Object.freeze({
         opciones: ['Hacia arriba', 'Hacia abajo', 'Nada: la compresión no tiene dirección'],
         correcta: 2,
         porque: 'La compresión mide cuánto se mueve, no hacia dónde.',
+      },
+    ],
+  },
+  'm6-1': {
+    titulo: 'El spread: lo que pagas al entrar',
+    objetivo: 'Saber qué es el spread, por qué toda operación empieza perdiendo un poco y por qué cambia según el par y la hora.',
+    explicacion: [
+      'Cada par tiene dos precios a la vez: el de venta (BID) y el de compra (ASK). El de compra siempre es un poco más alto. La diferencia entre los dos es el spread, y se mide en pips.',
+      'Compras al precio de compra y, para cerrar, vendes al de venta. Por eso toda operación empieza perdiendo el spread: es lo que cobra el bróker por dejarte entrar.',
+      'El spread no es fijo. Se estrecha cuando hay mucha gente operando (Londres y Nueva York abiertas a la vez) y se abre de golpe minutos antes y después de una noticia fuerte, de madrugada y los lunes al abrir.',
+    ],
+    ejemplo: [
+      `Los pares con dólar suelen costar menos que los cruces. En la tabla con la que la app descuenta el coste en sus pruebas, EUR/USD cuesta ${fmt(SP_MAYOR)} pips y NZD/CHF ${fmt(SP_CRUCE)}: ${fmt((SP_CRUCE / SP_MAYOR).toFixed(1))} veces más.`,
+      'En el Barrido, la tarjeta «Lo que cuesta abrir la operación» enseña el spread real de cada par mientras el puente de MT5 del desarrollador está encendido. Es el de una cuenta real del desarrollador de la app: el de tu bróker puede ser otro.',
+    ],
+    formula: {
+      texto: 'spread = precio de compra (ASK) − precio de venta (BID)',
+      conNumeros: `ASK ${fmt((1.16 + SP_MAYOR * 0.0001).toFixed(5))} y BID 1,16000: la diferencia es ${fmt((SP_MAYOR * 0.0001).toFixed(5))}, o sea ${fmt(SP_MAYOR)} pips.`,
+    },
+    noDice: [
+      'Un spread bajo no hace que la operación gane: solo hace que entrar cueste menos.',
+      'El spread que enseña la app no es el de tu bróker. Míralo en tu plataforma antes de operar.',
+      'Un spread que se abre no dice hacia dónde se va a mover el precio: dice que en ese momento entrar es más caro.',
+    ],
+    video: {
+      archivo: 'm6-1',
+      desc: 'Video sin voz: el Barrido con los datos reales de ese día. Se señala la tarjeta «Lo que cuesta abrir la operación» y el spread de un par con dólar y el de un cruce.',
+    },
+    hazlo: {
+      tab: 'barrido',
+      boton: 'Ir al Barrido',
+      texto: 'Busca la tarjeta «Lo que cuesta abrir la operación» y compara el spread de EUR/USD con el de un cruce como EUR/NZD.',
+    },
+    preguntas: [
+      {
+        p: 'El precio de compra de un par es 1,16012 y el de venta 1,16000. ¿Cuánto es el spread?',
+        opciones: ['1,2 pips', '12 pips', '0,12 pips'],
+        correcta: 0,
+        porque: 'La diferencia es 0,00012, o sea 1,2 pips.',
+      },
+      {
+        p: '¿Por qué toda operación empieza perdiendo un poco?',
+        opciones: ['Porque el bróker cobra el spread al entrar', 'Porque el precio siempre baja al abrir', 'Porque el Stop-loss está mal puesto'],
+        correcta: 0,
+        porque: 'Compras al precio de compra y cierras al de venta: la diferencia es el spread.',
+      },
+      {
+        p: '¿Cuándo suele abrirse el spread?',
+        opciones: ['Cuando hay mucha gente operando', 'Minutos antes y después de una noticia fuerte', 'Nunca cambia'],
+        correcta: 1,
+        porque: 'Con una noticia fuerte el precio pega saltos y el spread se abre. Con mucha gente, se estrecha.',
+      },
+    ],
+  },
+
+  'm6-2': {
+    titulo: 'El swap: lo que cuesta dejarla abierta de noche',
+    objetivo: 'Saber qué es el swap, de dónde sale y por qué la diferencia de tasas no es el swap de tu bróker.',
+    explicacion: [
+      'Si una operación sigue abierta al corte diario del bróker (hacia las 5 de la tarde de Nueva York), pagas o cobras un swap. Se cobra cada noche que siga abierta.',
+      'Sale de la diferencia entre las tasas de interés de las dos divisas del par. Comprar la divisa que paga más interés suele cobrar; comprar la que paga menos suele costar.',
+      'Pero el bróker le suma su margen, y ese margen no lo publica nadie. Por eso casi siempre se paga más en un sentido de lo que se cobra en el otro, y a veces se paga en los dos.',
+      'Un día de la semana el swap cuenta triple, para cubrir el fin de semana. Cuál día lo dice cada bróker.',
+    ],
+    ejemplo: [
+      `En el Barrido, la tarjeta «Tasas de interés y swap» enseña la tasa de cada banco central y hacia qué lado suele jugar el swap en cada par. Si la diferencia es menor de ${fmt(UMBRAL_NEUTRO)} puntos dice «apenas pesa»: el margen del bróker se la come entera.`,
+      SWING
+        ? 'Las operaciones de esta app duran días, así que el swap se paga muchas noches. En las pruebas de la app se descuenta a varios niveles, porque cada bróker cobra distinto.'
+        : 'Esta app es de intradía, pero eso es la intención: medido en septiembre de 2026, la mitad de sus operaciones reales cruzaron al menos una noche y pagaron swap.',
+    ],
+    formula: {
+      texto: 'swap de la operación = swap por noche × noches (la noche triple cuenta 3)',
+      conNumeros: '0,5 pips por noche y 5 noches con la triple dentro: 0,5 × (4 + 3) = 3,5 pips.',
+    },
+    noDice: [
+      'La diferencia de tasas no es tu swap: tu bróker le suma su margen. Míralo en tu plataforma.',
+      'Un swap a favor no es una razón para abrir una operación: es un coste o un ingreso, no una dirección.',
+      'Que una divisa pague más interés no dice que vaya a subir.',
+    ],
+    video: {
+      archivo: 'm6-2',
+      desc: 'Video sin voz: el Barrido con los datos reales de ese día. Se abre la tarjeta «Tasas de interés y swap» y se señala la diferencia de tasas de un par y hacia qué lado juega el swap.',
+    },
+    hazlo: {
+      tab: 'barrido',
+      boton: 'Ir al Barrido',
+      texto: 'Abre «Tasas de interés y swap» y busca un par donde el swap «apenas pesa» y otro donde la diferencia sea grande.',
+    },
+    preguntas: [
+      {
+        p: '¿Cuándo se paga o se cobra el swap?',
+        opciones: ['Al abrir la operación', 'Cada noche que la operación sigue abierta', 'Solo los viernes'],
+        correcta: 1,
+        porque: 'Se cobra al corte diario del bróker, cada noche que la operación sigue abierta.',
+      },
+      {
+        p: 'La diferencia de tasas de un par es 3 puntos. ¿Es ése tu swap?',
+        opciones: ['Sí, exactamente', 'No: el bróker le suma un margen que no publica', 'Sí, pero solo los miércoles'],
+        correcta: 1,
+        porque: 'La diferencia de tasas da el signo y el tamaño aproximado. El margen del bróker no lo publica nadie.',
+      },
+      {
+        p: 'Un par tiene el swap a favor de la compra. ¿Qué te dice eso sobre si comprarlo?',
+        opciones: ['Que hay que comprarlo', 'Nada: es un coste o un ingreso, no una dirección', 'Que el precio tiene que subir'],
+        correcta: 1,
+        porque: 'El swap dice cuánto cuesta mantenerla abierta, no hacia dónde irá el precio.',
+      },
+    ],
+  },
+
+  'm6-3': {
+    titulo: 'Por qué el mismo coste pesa distinto',
+    objetivo: 'Entender que el coste importa comparado con el Stop-loss, y por qué con Stop-loss cortos hay que acertar más solo para empatar.',
+    explicacion: [
+      'El spread se paga en pips, y es el mismo aunque tu Stop-loss sea grande o pequeño. Lo que cambia es cuánto pesa: 2 pips son poco sobre un Stop-loss de 120 y mucho sobre uno de 30.',
+      'Como el coste se paga al ganar y al perder, sube el acierto que necesitas solo para quedarte igual. Con Stop-loss y Take-profit a la misma distancia, sin coste bastaría acertar el 50 %; con coste hace falta más.',
+      'Por eso el mismo bróker y el mismo spread pesan mucho más en intradía que en swing: los Stop-loss de una hora son mucho más cortos que los de un día.',
+    ],
+    ejemplo: [
+      `Con un spread de ${SP_EJ} pips: sobre un Stop-loss de ${STOP_SW} pips el coste es el ${pct1(SP_EJ / STOP_SW)} % del riesgo y hay que acertar el ${pct1(aciertoParaEmpatar(SP_EJ, STOP_SW))} % para empatar. Sobre uno de ${STOP_ID} pips es el ${pct1(SP_EJ / STOP_ID)} % y hay que acertar el ${pct1(aciertoParaEmpatar(SP_EJ, STOP_ID))} %.`,
+      SWING
+        ? 'Los Stop-loss de esta app miden el movimiento de días, así que suelen ser varias veces más largos que los de la app de intradía, que miden horas. Por eso aquí el spread pesa poco, y allí el mismo spread pesa unas cuatro veces más.'
+        : 'Los Stop-loss de esta app miden el movimiento de horas, así que suelen ser varias veces más cortos que los de la app de swing, que miden días. Por eso aquí el mismo spread pesa unas cuatro veces más.',
+      'En el Analizador, la herramienta «Spread y actividad» enseña cuánto es el spread comparado con el Stop-loss de la tarjeta que estás armando.',
+    ],
+    formula: {
+      texto: 'peso del coste = spread ÷ Stop-loss · acierto para empatar (1:1) = (1 + peso) ÷ 2',
+      conNumeros: `${SP_EJ} ÷ ${STOP_ID} = ${pct1(SP_EJ / STOP_ID)} %, y (1 + ${fmt((SP_EJ / STOP_ID).toFixed(3))}) ÷ 2 = ${pct1(aciertoParaEmpatar(SP_EJ, STOP_ID))} %.`,
+    },
+    noDice: [
+      'Alejar el Stop-loss para que el coste pese menos no hace ganar: también se pierde más cuando se toca. En la app de swing se probaron doce combinaciones de Stop-loss y Take-profit, y las doce perdieron.',
+      'Que el coste pese poco no hace buena una operación: solo hace que entrar no la ponga cuesta arriba.',
+      'El peso del coste no dice hacia dónde irá el precio.',
+    ],
+    video: {
+      archivo: 'm6-3',
+      desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se arma una tarjeta y se señala el spread del par y cuánto pesa comparado con su Stop-loss.',
+    },
+    hazlo: {
+      tab: 'analizar',
+      boton: 'Ir al Analizador',
+      texto: 'Elige un par y una dirección, enciende «Spread y actividad» y mira qué porcentaje del Stop-loss se lleva el spread.',
+    },
+    preguntas: [
+      {
+        p: 'Mismo spread de 2 pips. ¿Dónde pesa más?',
+        opciones: ['Con un Stop-loss de 120 pips', 'Con un Stop-loss de 30 pips', 'Pesa igual en los dos'],
+        correcta: 1,
+        porque: '2 de 30 es mucho más que 2 de 120.',
+      },
+      {
+        p: 'Con Stop-loss y Take-profit a la misma distancia y sin ningún coste, ¿qué acierto hace falta para empatar?',
+        opciones: ['El 50 %', 'El 60 %', 'El 33 %'],
+        correcta: 0,
+        porque: 'Ganas lo mismo que pierdes: la mitad de las veces basta. Con coste, hace falta algo más.',
+      },
+      {
+        p: '¿Alejar el Stop-loss hace que la estrategia gane?',
+        opciones: ['Sí, porque el coste pesa menos', 'No: también se pierde más cada vez que se toca', 'Sí, siempre'],
+        correcta: 1,
+        porque: 'El coste pesa menos, pero cada pérdida es más grande. Se probó en la app de swing y no ayudó.',
       },
     ],
   },

@@ -1143,8 +1143,8 @@ export default {
     sinDatos: 'Todavía no hay precios del bróker. El puente los publica solo mientras el computador donde corre MetaTrader 5 está encendido.',
     vieja: (v) => `Estos precios se tomaron hace más de ${v.h} h. El puente estaba apagado; sirven de referencia, no como precio de ahora.`,
     par: 'Par',
-    bid: 'Compra',
-    ask: 'Venta',
+    bid: 'BID',
+    ask: 'ASK',
     spread: 'Spread',
     actividad: 'Actividad',
     actividadPie:

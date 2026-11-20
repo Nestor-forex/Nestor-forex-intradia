@@ -1073,8 +1073,8 @@ export default {
     sinDatos: 'Ainda não há preços do corretor. A ponte só os publica enquanto o computador onde corre o MetaTrader 5 estiver ligado.',
     vieja: (v) => `Estes preços foram tomados há mais de ${v.h} h. A ponte estava desligada; servem de referência, não como preço de agora.`,
     par: 'Par',
-    bid: 'Compra',
-    ask: 'Venda',
+    bid: 'BID',
+    ask: 'ASK',
     spread: 'Spread',
     actividad: 'Atividade',
     actividadPie:
