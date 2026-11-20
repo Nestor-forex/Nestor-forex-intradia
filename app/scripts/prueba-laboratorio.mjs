@@ -240,5 +240,18 @@ console.log('\n9 · Los textos existen en los 13 idiomas')
   }
 }
 
+console.log('\n10 · El seguimiento hacia adelante se ve sin buscarlo')
+{
+  // Néstor (2026-11-20): «no veo lo de la regla hacia adelante… ese botón
+  // debería estar en el mismo espacio donde está "prueba tu propia regla"».
+  // Estaba al FINAL de la tarjeta, detrás del constructor y de «Mis reglas».
+  const jsx = leer('src/components/Laboratorio.jsx')
+  const boton = jsx.indexOf("t('lab.adelanteSolicitar')")
+  const paso1 = jsx.indexOf("t('lab.paso1')")
+  ok(boton > 0 && paso1 > 0 && boton < paso1, 'el botón «Solicitar activación» va ANTES del constructor de reglas')
+  ok(/avance=\{.*t\('lab\.avance'/.test(jsx), 'la tarjeta cerrada ya dice que existe el servicio (avance)')
+  ok(jsx.includes("t('lab.avance', { precio: PRECIO_SEGUIMIENTO_USD })"), 'el precio del aviso se LEE, no se escribe')
+}
+
 console.log(fallos ? `\n✗ ${fallos} comprobaciones fallaron` : '\n✓ todo bien')
 process.exit(fallos ? 1 : 0)

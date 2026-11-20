@@ -1233,6 +1233,7 @@ export default {
       minimo: ({ n }) => `rompe il minimo di ${n} candele`,
       maximo: ({ n }) => `rompe il massimo di ${n} candele`,
     },
+    avance: ({ precio }) => `Include il Monitoraggio in avanti: le tue regole misurate su giorni nuovi · servizio aggiuntivo da ${precio} USD al mese. Aprilo per vederlo e richiederlo.`,
     beneficioTitulo: 'La tua idea può valere di più',
     beneficio: 'Se salvi la tua regola e dai il permesso, lo sviluppatore dell’app può copiarla e provarla con altre impostazioni: un altro Stop-loss, un altro obiettivo, altre coppie o filtri. Se qualche variante risulta positiva, ti avvisiamo qui stesso di cosa ha ottenuto la tua idea e ti diamo le impostazioni con cui è stata misurata, perché tu le usi. È un vantaggio incluso nel tuo abbonamento.',
     permiso: 'Do il permesso allo sviluppatore di copiare questa regola e provarla con altre impostazioni. Se qualcuna risulta positiva, mi avviserà del risultato e delle impostazioni.',

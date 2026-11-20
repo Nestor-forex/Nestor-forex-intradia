@@ -1237,6 +1237,7 @@ export default {
       minimo: ({ n }) => `casse le plus bas de ${n} bougies`,
       maximo: ({ n }) => `casse le plus haut de ${n} bougies`,
     },
+    avance: ({ precio }) => `Inclut le Suivi en avant : tes règles mesurées sur de nouveaux jours · service supplémentaire, ${precio} USD par mois. Ouvre-le pour le voir et le demander.`,
     beneficioTitulo: 'Ton idée peut valoir plus',
     beneficio: 'Si tu enregistres ta règle et donnes ton accord, le développeur de l’app peut la copier et la tester avec d’autres réglages : un autre Stop-loss, un autre objectif, d’autres paires ou filtres. Si une variante sort positive, on te dit ici même ce que ton idée a donné et on te donne les réglages utilisés, pour que tu t’en serves. C’est un avantage inclus dans ton abonnement.',
     permiso: 'J’autorise le développeur à copier cette règle et à la tester avec d’autres réglages. Si l’une sort positive, il me communiquera le résultat et les réglages.',

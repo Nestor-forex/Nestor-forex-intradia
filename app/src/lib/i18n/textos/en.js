@@ -1237,6 +1237,7 @@ export default {
       minimo: ({ n }) => `breaks the low of ${n} candles`,
       maximo: ({ n }) => `breaks the high of ${n} candles`,
     },
+    avance: ({ precio }) => `Includes Forward tracking: your rules measured on new days · add-on service, ${precio} USD a month. Open it to see it and request it.`,
     beneficioTitulo: 'Your idea may be worth more',
     beneficio: 'If you save your rule and give permission, the app developer can copy it and test it with other settings: another Stop-loss, another target, other pairs or filters. If any variant comes out positive, we let you know right here what your idea achieved and give you the settings it was measured with, so you can use them. It is a benefit included in your subscription.',
     permiso: 'I give the developer permission to copy this rule and test it with other settings. If one comes out positive, they will tell me the result and the settings.',
