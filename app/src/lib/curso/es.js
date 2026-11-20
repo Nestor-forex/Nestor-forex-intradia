@@ -22,7 +22,11 @@
 import { OPS_PARA_CREER } from '../sombra.js'
 import { margen } from '../diagnostico.js'
 import { SUGERIDO, frenoEnDolares, operacionesHastaElFreno } from '../perfilRiesgo.js'
-import { PESOS_FUERZA, UMBRAL_FUERZA, VENTANAS_FUERZA } from '../marketCalc.js'
+import { PERIODOS_MEDIAS, PERIODO_ATR, PERIODO_RSI, PESOS_FUERZA, RSI_MAX, TENDENCIA_MIN, UMBRALES_COMPRESION, UMBRAL_FUERZA, VELAS_ATRAS_COMPRESION, VENTANAS_FUERZA } from '../marketCalc.js'
+// Lo que solo existe en UNA de las dos apps (el modo rango y la distancia del
+// Stop-loss) se lee por aquí: un nombre que la otra app no exporta sale
+// `undefined` en vez de romper la importación.
+import * as MC from '../marketCalc.js'
 import { APP } from '../identidad.js'
 
 const L = OPS_PARA_CREER
@@ -42,6 +46,12 @@ const VELAS = APP === 'swing' ? 'días' : 'horas'
 const VENT = VENTANAS_FUERZA.map((k) => `${k} ${k === 1 ? VELA : VELAS}`)
 const PCT = PESOS_FUERZA.map((w) => `${Math.round(w * 100)} %`)
 const UMBRAL = fmt(UMBRAL_FUERZA)
+
+// Módulo 5: las medias que ESTA app usa para la tendencia, y su RSI y su ATR.
+const EMA_C = PERIODOS_MEDIAS.ema[0]
+const EMA_L = PERIODOS_MEDIAS.ema[1]
+const SWING = APP === 'swing'
+const CORTES = UMBRALES_COMPRESION
 
 export const MODULOS = Object.freeze([
   Object.freeze({
@@ -79,12 +89,18 @@ export const MODULOS = Object.freeze([
     desc: 'La fuerza de cada divisa, la diferencia que la app mira en cada par, y por qué «10 contra 0» no quiere decir mucha diferencia.',
     lecciones: Object.freeze(['m4-1', 'm4-2', 'm4-3']),
   }),
+  Object.freeze({
+    id: 'm5',
+    n: 5,
+    titulo: 'Tendencia y rango',
+    desc: 'Las medias móviles, el RSI y el ATR, y cómo se ve un mercado que va de lado: soportes, resistencias y compresión.',
+    lecciones: Object.freeze(['m5-1', 'm5-2', 'm5-3']),
+  }),
 ])
 
 // Los que todavía no están escritos. Se enseñan para que se vea el camino,
 // marcados «próximamente», y no se pueden abrir.
 export const PROXIMOS = Object.freeze([
-  { n: 5, titulo: 'Tendencia y rango' },
   { n: 6, titulo: 'Lo que cuesta operar' },
   { n: 7, titulo: 'Noticias y bancos centrales' },
   { n: 8, titulo: 'Pares que son la misma apuesta' },
@@ -770,6 +786,178 @@ export const LECCIONES = Object.freeze({
         opciones: ['Sí, muchas', 'No: la Dif más grande no pasó el umbral', 'Solo en el franco'],
         correcta: 1,
         porque: 'La Dif más grande era 0,31 y hacía falta 0,59. El 10 contra 0 engañaba.',
+      },
+    ],
+  },
+
+  'm5-1': {
+    titulo: 'Tendencia: el precio y sus medias',
+    objetivo: 'Saber qué es una media móvil y cómo decide la app si un par está en tendencia o no.',
+    explicacion: [
+      'Una media móvil es el precio promedio de las últimas velas. Si el precio está por encima de su media, viene subiendo; si está por debajo, viene bajando.',
+      'Hay dos tipos. La SMA (media simple) da el mismo peso a todas las velas. La EMA (media exponencial) da más peso a las más recientes, así que reacciona antes.',
+      `La app compara el precio con dos EMA: una rápida de ${EMA_C} velas y una lenta de ${EMA_L}. Aquí cada vela es ${SWING ? 'un día' : 'una hora'}.`,
+      `Si el precio está por encima de la EMA ${EMA_C} y la EMA ${EMA_C} por encima de la EMA ${EMA_L}, la app dice «Alcista». Al revés, «Bajista». Si no están en ese orden, «Rango»: no hay una dirección clara.`,
+    ],
+    ejemplo: [
+      TENDENCIA_MIN === 'media'
+        ? `En esta app, para que un experimento aparezca basta con que el precio esté del lado correcto de la EMA ${EMA_C}. No espera a que las dos medias se ordenen, porque eso tarda en llegar después de un giro.`
+        : `En esta app, para que un experimento de tendencia aparezca, las dos medias tienen que estar en orden: precio por encima de la EMA ${EMA_C} y la EMA ${EMA_C} por encima de la EMA ${EMA_L} (o todo al revés).`,
+      `En el Analizador, «Medias móviles» enseña además las SMA ${PERIODOS_MEDIAS.sma.join(', ')} y las EMA ${PERIODOS_MEDIAS.ema.join(', ')}. Son las mismas que verías en un gráfico.`,
+      'La EMA 200 puede salir vacía: necesita muchas velas de historia para dar el número correcto, y cuando no las hay la app prefiere no enseñarla a enseñar una cifra a medias.',
+    ],
+    formula: {
+      texto: `Alcista = precio > EMA ${EMA_C} > EMA ${EMA_L} · Bajista = precio < EMA ${EMA_C} < EMA ${EMA_L} · si no, Rango`,
+      conNumeros: `precio 1,1650, EMA ${EMA_C} 1,1620 y EMA ${EMA_L} 1,1580: 1,1650 > 1,1620 > 1,1580, así que la app dice «Alcista».`,
+    },
+    noDice: [
+      'Que un par esté «Alcista» no dice que vaya a seguir subiendo: las medias miran hacia atrás.',
+      'Las medias llegan tarde a los giros: el precio se da la vuelta primero y las medias lo siguen después.',
+      'No es una señal para entrar. Es una forma de resumir hacia dónde se movió el precio.',
+    ],
+    video: {
+      archivo: 'm5-1',
+      desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se señala la fila «Tendencia» con sus dos EMA y después las medias móviles, y se explica cómo decide la app si un par está en tendencia o en rango.',
+    },
+    hazlo: {
+      tab: 'analizar',
+      boton: 'Ir al Analizador',
+      texto: 'Elige un par y enciende «Tendencia (EMA)» y «Medias móviles». Mira si el precio está por encima o por debajo de cada media.',
+    },
+    preguntas: [
+      {
+        p: '¿En qué se diferencia una EMA de una SMA?',
+        opciones: ['La EMA da más peso a las velas recientes', 'La EMA usa más velas', 'Son lo mismo con otro nombre'],
+        correcta: 0,
+        porque: 'La SMA pesa igual todas las velas; la EMA pesa más las últimas, por eso reacciona antes.',
+      },
+      {
+        p: `Precio por encima de la EMA ${EMA_C}, pero la EMA ${EMA_C} por debajo de la EMA ${EMA_L}. ¿Qué dice la app?`,
+        opciones: ['Alcista', 'Bajista', 'Rango: no están en orden'],
+        correcta: 2,
+        porque: 'Solo es «Alcista» si están las tres en orden: precio, media rápida y media lenta.',
+      },
+      {
+        p: 'Un par sale «Alcista». ¿Qué sabes de mañana?',
+        opciones: ['Que seguirá subiendo', 'Nada seguro: las medias miran hacia atrás', 'Que hay que abrirlo'],
+        correcta: 1,
+        porque: 'La tendencia resume lo que ya pasó. No dice qué va a pasar.',
+      },
+    ],
+  },
+
+  'm5-2': {
+    titulo: 'RSI y ATR: cuánto se estiró y cuánto se mueve',
+    objetivo: 'Leer el RSI y el ATR, y entender por qué el Stop-loss sale del ATR.',
+    explicacion: [
+      `El RSI mide si el precio subió o bajó con mucha fuerza en las últimas ${PERIODO_RSI} velas. Va de 0 a 100. Por encima de 70 se suele decir que subió con mucha fuerza; por debajo de 30, que cayó con mucha fuerza.`,
+      `El ATR mide cuánto se mueve el par en una vela normal: es el recorrido medio de las últimas ${PERIODO_ATR}. Un par con ATR de 40 pips suele recorrer unos 40 pips en ${SWING ? 'un día' : 'una hora'}.`,
+      'Para qué sirve el ATR: un Stop-loss más corto que el movimiento normal del par lo toca el ruido de cualquier día, aunque la idea fuera buena. Por eso la app calcula el Stop-loss con el ATR.',
+    ],
+    ejemplo: [
+      RSI_MAX == null
+        ? 'En esta app el RSI se enseña como dato y NO decide qué experimentos aparecen. Se midió si filtrar por RSI mejoraba los resultados, y no los mejoró.'
+        : `En esta app el RSI sí cuenta: no aparecen experimentos para comprar con el RSI en ${RSI_MAX} o más, ni para vender con el RSI en ${100 - RSI_MAX} o menos. Se midió y aquí ayudaba algo.`,
+      SWING
+        ? `Las señales de esta app ponen el Stop-loss por fuera del mínimo de los últimos 10 días (o del máximo, si es venta), con un cojín de ${fmt(MC.COJIN_ATR_STOP)} ATR más.`
+        : `Las señales de tendencia de esta app ponen el Stop-loss a ${fmt(MC.ATR_STOP)} ATR del precio.`,
+    ],
+    formula: SWING
+      ? {
+          texto: `Stop-loss (compra) = mínimo de 10 días − ${fmt(MC.COJIN_ATR_STOP)} × ATR`,
+          conNumeros: `mínimo de 10 días en 1,1500 y ATR de 40 pips: 1,1500 − ${fmt(MC.COJIN_ATR_STOP)} × 0,0040 = ${fmt((1.15 - MC.COJIN_ATR_STOP * 0.004).toFixed(4))}.`,
+        }
+      : {
+          texto: `Stop-loss (compra) = precio − ${fmt(MC.ATR_STOP)} × ATR`,
+          conNumeros: `precio 1,1600 y ATR de 20 pips: 1,1600 − ${fmt(MC.ATR_STOP)} × 0,0020 = ${fmt((1.16 - MC.ATR_STOP * 0.002).toFixed(4))}.`,
+        },
+    noDice: [
+      'Un RSI alto no dice que el precio vaya a bajar, ni uno bajo que vaya a subir: puede seguir así varios días.',
+      'El ATR no dice hacia dónde irá el precio. Solo cuánto se mueve.',
+      'Un Stop-loss bien puesto no hace que la operación gane: solo hace que no la saque el ruido normal del par.',
+    ],
+    video: {
+      archivo: 'm5-2',
+      desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se señalan el RSI y el ATR de un par, y después el Stop-loss de la tarjeta, que sale del ATR.',
+    },
+    hazlo: {
+      tab: 'analizar',
+      boton: 'Ir al Analizador',
+      texto: 'Elige un par y una dirección, enciende «RSI» y «ATR», y compara el ATR con la distancia del Stop-loss en pips.',
+    },
+    preguntas: [
+      {
+        p: 'Un par tiene el RSI en 78. ¿Qué quiere decir?',
+        opciones: ['Que el precio tiene que bajar', 'Que subió con mucha fuerza últimamente', 'Que hay que abrirlo'],
+        correcta: 1,
+        porque: 'El RSI mide lo que ya pasó. No dice hacia dónde irá el precio.',
+      },
+      {
+        p: '¿Qué mide el ATR?',
+        opciones: ['Hacia dónde irá el precio', 'Cuánto se mueve el par en una vela normal', 'Cuántas operaciones ganaste'],
+        correcta: 1,
+        porque: 'El ATR es el recorrido medio de una vela. No tiene dirección.',
+      },
+      {
+        p: '¿Por qué la app calcula el Stop-loss con el ATR?',
+        opciones: ['Para que la operación gane', 'Para que el movimiento normal del par no lo toque', 'Porque lo pide el bróker'],
+        correcta: 1,
+        porque: 'Un Stop-loss más corto que el movimiento normal lo saca el ruido de cualquier día.',
+      },
+    ],
+  },
+
+  'm5-3': {
+    titulo: 'Rango: soportes, resistencias y compresión',
+    objetivo: 'Reconocer un mercado que va de lado y leer la compresión sin creer que dice hacia dónde se va a soltar.',
+    explicacion: [
+      'No siempre hay tendencia. Muchas veces el precio va de lado, rebotando entre un piso y un techo. A eso se le llama rango.',
+      'El soporte es el precio más bajo de las últimas 20 velas y la resistencia el más alto. Son los sitios donde el precio frenó antes.',
+      `La compresión compara cuánto se mueve el par ahora (su ATR) con cuánto se movía hace ${VELAS_ATRAS_COMPRESION} velas. Por debajo de 1, se mueve menos que antes: está apretado. Por encima de 1, se mueve más.`,
+    ],
+    ejemplo: [
+      `La palabra que sale al lado de la compresión dice qué tan raro es el número para esta app: por debajo de ${fmt(CORTES.muy)} «muy apretado», hasta ${fmt(CORTES.algo)} «algo apretado», por encima de ${fmt(CORTES.ancho)} «más suelto». Esos cortes salen de medir miles de velas de esta app.`,
+      SWING
+        ? 'Esta app no tiene un modo de rango: sus señales miran la fuerza y la tendencia. El soporte, la resistencia y la compresión se enseñan como datos para tu propio análisis.'
+        : `Esta app sí tiene un modo de rango. Solo se activa si el par está en «Rango», la compresión es de ${fmt(MC.COMPRESION_MIN)} o más, el rango mide al menos ${MC.RANGO_MIN_ATR} ATR y el precio está en el ${Math.round(MC.RANGO_BORDE * 100)} % de abajo o de arriba del rango.`,
+      'Se midió si la compresión ayuda a elegir mejores operaciones, y no ayudó: los resultados con y sin ese filtro salieron iguales o sin muestra suficiente para decir nada.',
+    ],
+    formula: {
+      texto: `compresión = ATR de ahora ÷ ATR de hace ${VELAS_ATRAS_COMPRESION} velas`,
+      conNumeros: 'ATR de ahora 30 pips y ATR de antes 40 pips: 30 ÷ 40 = 0,75. El par se mueve un 25 % menos que antes.',
+    },
+    noDice: [
+      'Que el precio frenara en un soporte no quiere decir que vuelva a frenar ahí.',
+      'Que un par esté apretado no dice hacia qué lado se va a soltar, ni cuándo.',
+      'Ninguno de estos datos es una señal: te dicen dónde mirar, no qué hacer.',
+    ],
+    video: {
+      archivo: 'm5-3',
+      desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se señalan el soporte y la resistencia de un par y después su compresión, con la palabra que dice qué tan raro es ese número.',
+    },
+    hazlo: {
+      tab: 'analizar',
+      boton: 'Ir al Analizador',
+      texto: 'Elige un par, enciende «Soporte y resistencia» y «Compresión», y mira dónde está el precio entre el piso y el techo.',
+    },
+    preguntas: [
+      {
+        p: '¿Qué es el soporte en la app?',
+        opciones: ['El precio más bajo de las últimas 20 velas', 'El precio al que hay que comprar', 'La media de 20 velas'],
+        correcta: 0,
+        porque: 'Es el mínimo de las últimas 20 velas: un sitio donde el precio frenó antes.',
+      },
+      {
+        p: 'La compresión sale 0,70. ¿Qué significa?',
+        opciones: ['Que el par se mueve menos que antes', 'Que el precio tiene que subir pronto', 'Que el par está barato'],
+        correcta: 0,
+        porque: 'Por debajo de 1 el par se mueve menos que antes. No dice hacia dónde.',
+      },
+      {
+        p: 'Un par está «muy apretado». ¿Qué sabes de hacia dónde se soltará?',
+        opciones: ['Hacia arriba', 'Hacia abajo', 'Nada: la compresión no tiene dirección'],
+        correcta: 2,
+        porque: 'La compresión mide cuánto se mueve, no hacia dónde.',
       },
     ],
   },

@@ -137,6 +137,11 @@ export const MIN_ATR_FIBONACCI = 2
 export const VENTANAS_FUERZA = Object.freeze([1, 4, 24])
 export const PESOS_FUERZA = Object.freeze([0.2, 0.4, 0.4])
 
+// Cuántas velas miran el RSI y el ATR. Se exportan para que el curso (módulo
+// 5) diga el número que la app usa de verdad, en vez de llevarlo escrito.
+export const PERIODO_RSI = 14
+export const PERIODO_ATR = 14
+
 export const PERIODOS_MEDIAS = Object.freeze({ sma: [20, 50, 200], ema: [9, 21, 50, 200] })
 
 export const emaLast = (c, p) => {
@@ -146,7 +151,7 @@ export const emaLast = (c, p) => {
   return e
 }
 
-export const rsi = (c, p = 14) => {
+export const rsi = (c, p = PERIODO_RSI) => {
   let g = 0
   let l = 0
   for (let i = 1; i <= p; i++) {
@@ -237,7 +242,7 @@ export const TOPE_BARRA_COMPRESION = 1.8
 //   TR = max(máximo − mínimo, |máximo − cierre previo|, |mínimo − cierre previo|)
 // El ATR real es bastante mayor que aquel sustituto, y de él dependen el
 // stop y el tamaño del objetivo.
-export function atrWilder(highs, lows, closes, p = 14) {
+export function atrWilder(highs, lows, closes, p = PERIODO_ATR) {
   const n = closes.length
   const trs = []
   for (let i = Math.max(1, n - 60); i < n; i++) {
@@ -796,13 +801,13 @@ const motivoVigilar = (p, thr, { adxMin = ADX_MIN, rsiMax = RSI_MAX } = {}) => {
 //      (venta) del rango; en la mitad del medio no hay nada que hacer.
 //   4. El RSI tiene que acompañar: no se compra un piso con el RSI todavía
 //      alto ni se vende un techo con el RSI ya hundido.
-const RANGO_MIN_ATR = 3
-const RANGO_BORDE = 0.3
+export const RANGO_MIN_ATR = 3
+export const RANGO_BORDE = 0.3
 // Por debajo de este cociente el mercado lleva rato apretándose: es la
 // antesala típica de una ruptura, no un lateral tranquilo donde operar
 // rebotes. Vender el techo justo antes de que estalle es la peor operación
 // posible, así que en compresión el modo rango se calla.
-const COMPRESION_MIN = 0.75
+export const COMPRESION_MIN = 0.75
 
 // ⚠️ `adxMax` es SUYO y no el de las señales de tendencia. Desde que el de
 // tendencia subió a 35, ya ni siquiera valen lo mismo: este se quedó en 20
@@ -928,7 +933,7 @@ const razon = (p, esc, t) => {
 // nacieran con relación 1:0.4 … 1:0.8, siempre marcados con aviso. Con el
 // stop a 1.5 ATR el riesgo queda proporcional a lo movido que esté el par,
 // que es lo que el ATR mide.
-const ATR_STOP = 1.5
+export const ATR_STOP = 1.5
 
 // El objetivo es el primer obstáculo real que el precio se va a encontrar:
 // el extremo de las últimas 20 velas o los pivotes de sesión, el que quede

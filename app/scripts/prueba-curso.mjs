@@ -80,7 +80,29 @@ ok(pipUSD('EUR/USD', {}) === 10 && LECCIONES['m1-2'].ejemplo.some((p) => p.inclu
   const m41 = JSON.stringify(LECCIONES['m4-1'])
   ok(VENTANAS_FUERZA.every((k) => m41.includes(`${k} `)) && PESOS_FUERZA.every((w) => m41.includes(`${Math.round(w * 100)} %`)), 'el módulo 4 lee las ventanas y los pesos de la fuerza de `marketCalc.js`')
   ok(JSON.stringify(LECCIONES['m4-2']).includes(String(UMBRAL_FUERZA).replace('.', ',')), 'y el umbral de fuerza')
-  ok(/import \{ PESOS_FUERZA, UMBRAL_FUERZA, VENTANAS_FUERZA \} from '\.\.\/marketCalc\.js'/.test(es), 'el módulo 4 los importa, no los escribe')
+  ok(/import \{[^}]*\bPESOS_FUERZA\b[^}]*\bUMBRAL_FUERZA\b[^}]*\bVENTANAS_FUERZA\b[^}]*\} from '\.\.\/marketCalc\.js'/.test(es), 'el módulo 4 los importa, no los escribe')
+}
+{
+  // Módulo 5: las medias, el RSI, el ATR, el Stop-loss y la compresión salen de
+  // `marketCalc.js` de ESTA app (velas diarias en swing, de una hora en intradía).
+  const MC = await import('../src/lib/marketCalc.js')
+  const { APP } = await import('../src/lib/identidad.js')
+  const coma = (n) => String(n).replace('.', ',')
+  const [c, l] = MC.PERIODOS_MEDIAS.ema
+  const m51 = JSON.stringify(LECCIONES['m5-1'])
+  ok(m51.includes(`EMA ${c} > EMA ${l}`), `el módulo 5 dice las medias de la tendencia de esta app (EMA ${c} y EMA ${l})`)
+  const mc = readFileSync(new URL('../src/lib/marketCalc.js', import.meta.url), 'utf8')
+  ok(new RegExp(`const tend = c > e${c} && e${c} > e${l}`).test(mc), 'y son las que la app usa de verdad para decir «Alcista» o «Bajista»')
+  ok(m51.includes(MC.TENDENCIA_MIN === 'media' ? 'basta con que el precio' : 'las dos medias tienen que estar en orden'), 'y lo que exige la app para un experimento sale de `TENDENCIA_MIN`')
+  const m52 = JSON.stringify(LECCIONES['m5-2'])
+  ok(m52.includes(`últimas ${MC.PERIODO_RSI} velas`) && m52.includes(`últimas ${MC.PERIODO_ATR}`), 'el RSI y el ATR dicen cuántas velas miran')
+  ok(MC.RSI_MAX == null ? m52.includes('NO decide') : m52.includes(`RSI en ${MC.RSI_MAX} o más`), 'y si el RSI decide algo en esta app sale de `RSI_MAX`')
+  const stop = APP === 'swing' ? MC.COJIN_ATR_STOP : MC.ATR_STOP
+  ok(Number.isFinite(stop) && m52.includes(`${coma(stop)} × ATR`), `la distancia del Stop-loss (${stop} ATR) se lee de la geometría de la app`)
+  const m53 = JSON.stringify(LECCIONES['m5-3'])
+  const cortes = MC.UMBRALES_COMPRESION
+  ok([cortes.muy, cortes.algo, cortes.ancho].every((x) => m53.includes(coma(x))) && m53.includes(`hace ${MC.VELAS_ATRAS_COMPRESION} velas`), 'la compresión dice los cortes y las velas de esta app')
+  ok(APP === 'swing' ? m53.includes('no tiene un modo de rango') : m53.includes(coma(MC.COMPRESION_MIN)) && m53.includes(`${MC.RANGO_MIN_ATR} ATR`), 'y lo del modo rango sale del código de esta app')
 }
 
 // Los videos: cada uno tiene su descripción, y CADA app guarda los suyos
