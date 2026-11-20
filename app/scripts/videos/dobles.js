@@ -78,8 +78,18 @@ export function useTrades() {
   return { trades, cargando: false, guardar: async () => {}, borrar: async () => {}, cerrar: async () => {} }
 }
 
+// La práctica guarda en memoria lo que se crea durante la grabación, para que
+// el video enseñe la operación recién creada con los niveles REALES que puso
+// la tarjeta del Analizador. Nada se escribe en Firestore.
 export function usePractica() {
-  return { ops: [], cargando: false, crear: async () => ({ ok: false }), borrar: async () => {}, abiertas: [] }
+  const [ops, setOps] = useState([])
+  const crear = async (op) => {
+    const ahora = Date.now()
+    setOps((x) => [{ ...op, id: `p${x.length + 1}`, creado: { toMillis: () => ahora } }, ...x])
+    return 'ok'
+  }
+  const borrar = async (id) => setOps((x) => x.filter((o) => o.id !== id))
+  return { ops, cargando: false, crear, borrar, abiertas: ops.filter((o) => !o.estado).length }
 }
 
 export function useMembers() {
