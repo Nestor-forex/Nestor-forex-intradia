@@ -141,7 +141,23 @@ ok(pipUSD('EUR/USD', {}) === 10 && LECCIONES['m1-2'].ejemplo.some((p) => p.inclu
   } else {
     ok(m73.includes('Las fuentes son cuatro'), 'la lección de noticias está (la lista de fuentes se comprueba en la app de swing)')
   }
-  ok(!/se les pidió permiso/.test(m73), 'no afirma que se pidió un permiso que no consta enviado')
+  // Los correos de permiso los envió Néstor (2026-11-20) y nadie ha respondido:
+  // la lección puede decir que se pidió, pero no que se concedió.
+  ok(!/(concedi|dieron|aceptaron) (el )?permiso/.test(m73), 'no afirma que alguna página de noticias haya dado permiso')
+}
+{
+  // Módulo 8: la correlación solo existe en la app de swing. Donde existe
+  // `correlacion.js`, los dos números de la lección tienen que ser los suyos.
+  const m82 = JSON.stringify(LECCIONES['m8-2'])
+  const coma = (n) => String(n).replace('.', ',')
+  const rutaCorrel = new URL('../src/lib/correlacion.js', import.meta.url)
+  if (existsSync(rutaCorrel)) {
+    const { CORREL_ALTA, VENTANA_CORREL } = await import(rutaCorrel.href)
+    ok(m82.includes(`últimas ${VENTANA_CORREL} sesiones`) && m82.includes(`A partir de ${coma(CORREL_ALTA)}`), 'el módulo 8 usa la ventana y el umbral de `correlacion.js`')
+  } else {
+    ok(m82.includes('no calcula la correlación'), 'en esta app la lección dice que la correlación está en la app de swing')
+  }
+  ok(/'juntas'/.test(readFileSync(new URL('./videos/dobles.js', import.meta.url), 'utf8')), 'el banco de grabación tiene las operaciones de ejemplo que comparten divisa')
 }
 
 // Los videos: cada uno tiene su descripción, y CADA app guarda los suyos

@@ -69,6 +69,13 @@ const STOP_SW = 120
 const STOP_ID = 30
 const SP_EJ = 2
 
+// Módulo 8: la correlación solo la calcula la app de swing (`correlacion.js`
+// no existe en intradía, y por eso no se puede importar desde aquí, que es
+// gemelo). Los dos números van escritos, y `prueba-curso.mjs` los compara con
+// `correlacion.js` donde el archivo existe.
+const CORREL_ALTA_TXT = 0.7
+const VENTANA_CORREL_TXT = 60
+
 export const MODULOS = Object.freeze([
   Object.freeze({
     id: 'm0',
@@ -126,12 +133,18 @@ export const MODULOS = Object.freeze([
     desc: 'El calendario económico, lo previsto contra lo anterior, por qué lo que mueve el precio es la sorpresa, y las noticias de los bancos centrales.',
     lecciones: Object.freeze(['m7-1', 'm7-2', 'm7-3']),
   }),
+  Object.freeze({
+    id: 'm8',
+    n: 8,
+    titulo: 'Pares que son la misma apuesta',
+    desc: 'Cuándo dos operaciones son en realidad una sola, qué mide la correlación entre pares, y por qué tantas operaciones son una apuesta al dólar.',
+    lecciones: Object.freeze(['m8-1', 'm8-2', 'm8-3']),
+  }),
 ])
 
 // Los que todavía no están escritos. Se enseñan para que se vea el camino,
 // marcados «próximamente», y no se pueden abrir.
 export const PROXIMOS = Object.freeze([
-  { n: 8, titulo: 'Pares que son la misma apuesta' },
   { n: 9, titulo: 'Del análisis a la operación' },
   { n: 10, titulo: 'Practicar sin dinero' },
   { n: 11, titulo: 'Un número que significa algo' },
@@ -1259,7 +1272,7 @@ export const LECCIONES = Object.freeze({
       'Cada titular lleva delante el código de su divisa, y debajo la fuente y la fecha. Va tal cual lo publica cada fuente y en su idioma: al tocarlo se abre la noticia completa en su página.',
     ],
     ejemplo: [
-      'Solo se usan fuentes cuyas condiciones permiten reproducir sus titulares en una app de pago. Otras páginas de noticias muy conocidas lo prohíben sin un permiso por escrito, y por eso no están.',
+      'Solo se usan fuentes cuyas condiciones permiten reproducir sus titulares en una app de pago. Otras páginas de noticias muy conocidas lo prohíben sin un permiso por escrito: se les pidió, y mientras no lo den no están.',
       'Los titulares van en inglés porque así los publica cada fuente, y algunas piden no alterarlos. Al tocarlo se abre la noticia completa en la página de la fuente.',
     ],
     noDice: [
@@ -1287,13 +1300,168 @@ export const LECCIONES = Object.freeze({
         p: '¿Por qué la app no usa cualquier página de noticias?',
         opciones: ['Porque son lentas', 'Porque sus condiciones no permiten reproducir los titulares en una app de pago', 'Porque están en inglés'],
         correcta: 1,
-        porque: 'Solo se usan fuentes que lo permiten. Las demás lo prohíben sin un permiso por escrito.',
+        porque: 'Solo se usan fuentes que lo permiten. A las demás se les pidió permiso por escrito, y mientras no lo den no están.',
       },
       {
         p: '¿Por qué los titulares van en inglés?',
         opciones: ['Porque la app no sabe traducir', 'Porque así los publica cada fuente, y algunas piden no alterarlos', 'Porque es más fácil'],
         correcta: 1,
         porque: 'Van tal cual los publica cada fuente.',
+      },
+    ],
+  },
+  'm8-1': {
+    titulo: 'Dos operaciones que son una sola',
+    objetivo: 'Darte cuenta de cuándo dos operaciones abiertas comparten una divisa y son, en el fondo, la misma apuesta.',
+    explicacion: [
+      'Cada par lleva dos divisas. Si compras EUR/USD y compras EUR/CHF, en las dos estás comprando euros. No son dos ideas distintas: es una sola idea, el euro, apostada dos veces.',
+      'Si el euro cae, las dos operaciones pierden a la vez. Lo que parecía repartir el riesgo en realidad lo junta.',
+      'El Diario lo avisa solo: cuando tienes dos o más operaciones abiertas que comparten una divisa, sale una tarjeta de «Riesgo concentrado» que dice cuál es y en qué pares.',
+    ],
+    ejemplo: [
+      'Arriesgas el 1 % en EUR/USD y el 1 % en EUR/CHF, las dos compras. Si el euro se da la vuelta, pierdes las dos: es como haber arriesgado el 2 % en una sola idea.',
+      'Compartir divisa no siempre suma: comprar EUR/USD y vender EUR/CHF son lados opuestos con el euro, y una puede tapar a la otra. El aviso del Diario solo mira que la divisa se repita; el lado lo tienes que mirar tú.',
+    ],
+    formula: {
+      texto: 'riesgo de la idea = suma del riesgo de cada operación que apuesta a lo mismo',
+      conNumeros: '1 % + 1 % = 2 % del capital en una sola idea (el euro).',
+    },
+    noDice: [
+      'El aviso no dice que alguna de las dos esté mal: dice que dependen de lo mismo.',
+      'No dice cuál cerrar. Esa decisión es tuya.',
+      'Dos pares que no comparten divisa también pueden moverse juntos: eso es la correlación, la lección siguiente.',
+    ],
+    video: {
+      archivo: 'm8-1',
+      desc: 'Video sin voz: el Diario de un usuario de ejemplo con dos operaciones abiertas que comparten el euro, y la tarjeta de «Riesgo concentrado» que sale sola.',
+    },
+    hazlo: {
+      tab: 'diario',
+      boton: 'Ir al Diario',
+      texto: 'Mira tus operaciones abiertas: ¿alguna divisa se repite? Si es así, el Diario te lo dice arriba.',
+    },
+    preguntas: [
+      {
+        p: 'Compras EUR/USD y compras EUR/CHF. ¿Qué divisa se repite?',
+        opciones: ['El dólar', 'El euro', 'El franco'],
+        correcta: 1,
+        porque: 'Las dos llevan el euro, y en las dos lo compras.',
+      },
+      {
+        p: 'Arriesgas el 1 % en cada una de esas dos operaciones. ¿Cuánto tienes en juego en la idea «el euro sube»?',
+        opciones: ['El 1 %', 'El 2 %', 'Nada'],
+        correcta: 1,
+        porque: 'Si el euro cae, pierden las dos: 1 % + 1 %.',
+      },
+      {
+        p: '¿Qué dice el aviso de «Riesgo concentrado»?',
+        opciones: ['Que cierres una', 'Que esas operaciones dependen de la misma divisa', 'Que van a perder'],
+        correcta: 1,
+        porque: 'Solo avisa de que no son apuestas independientes. La decisión es tuya.',
+      },
+    ],
+  },
+
+  'm8-2': {
+    titulo: 'La correlación: cuánto se mueven juntos',
+    objetivo: 'Leer un número de correlación y saber cuándo dos pares, sin compartir divisa, son casi la misma apuesta.',
+    explicacion: [
+      'La correlación mide cuánto se han movido dos pares al mismo tiempo. Va de −1 a +1. Cerca de +1, suben y bajan juntos; cerca de −1, uno sube cuando el otro baja; cerca de 0, no tienen nada que ver.',
+      `Se calcula con los cambios de cada día de las últimas ${VENTANA_CORREL_TXT} sesiones, no con el precio. Con el precio, dos pares que subieron todo el año saldrían parecidos aunque su día a día no se pareciera en nada.`,
+      `A partir de ${fmt(CORREL_ALTA_TXT)} (o −${fmt(CORREL_ALTA_TXT)}), para el riesgo cuentan como lo mismo. Y el lado importa: dos pares que van juntos, comprados los dos, son una apuesta doble; uno comprado y otro vendido, se anulan y pagas dos spreads para nada.`,
+    ],
+    ejemplo: [
+      SWING
+        ? `En el tablero completo, la tarjeta «Correlación entre pares» enseña los que pasan de ${fmt(CORREL_ALTA_TXT)}. Y si dos experimentos del mismo día son la misma apuesta, una tarjeta lo avisa antes de la lista, teniendo en cuenta el lado de cada uno.`
+        : `Esta app no calcula la correlación con sus velas de una hora: ${VENTANA_CORREL_TXT} velas serían dos días y medio, demasiado poco para saber si dos pares se parecen de verdad. La tarjeta «Correlación entre pares» está en la app de swing, y el aviso «Dos de tus pares se mueven igual» de la pestaña Avisos usa esa medida.`,
+      'Dos pares pueden moverse casi igual sin repetir ninguna divisa. El aviso del Diario solo mira si una divisa se repite, así que ese caso no lo ve; la correlación sí.',
+    ],
+    noDice: [
+      'Una correlación alta no dice hacia dónde se va a mover ninguno de los dos.',
+      'Mide los últimos meses: dos pares que se movieron juntos hasta hoy pueden dejar de hacerlo.',
+      'Que se muevan juntos no quiere decir que uno mueva al otro: muchas veces los dos reaccionan a lo mismo.',
+    ],
+    video: {
+      archivo: 'm8-2',
+      desc: 'Video sin voz con los datos reales de ese día. En la app de swing, la tarjeta «Correlación entre pares» del tablero completo; en la de intradía, el aviso de correlación de la pestaña Avisos.',
+    },
+    hazlo: {
+      tab: SWING ? 'barrido' : 'avisos',
+      boton: SWING ? 'Ir al Barrido' : 'Ir a Avisos',
+      texto: SWING
+        ? 'Entra en «Ver tablero completo», abre «Correlación entre pares» y busca dos pares que se muevan al revés.'
+        : 'En Avisos, mira el aviso «Dos de tus pares se mueven igual» y decide si te sirve encenderlo.',
+    },
+    preguntas: [
+      {
+        p: 'Dos pares tienen una correlación de +0,9. ¿Qué quiere decir?',
+        opciones: ['Que suelen subir y bajar juntos', 'Que uno sube cuando el otro baja', 'Que no tienen nada que ver'],
+        correcta: 0,
+        porque: 'Cerca de +1 se mueven juntos; cerca de −1, al revés.',
+      },
+      {
+        p: 'Dos pares van a +0,9 y compras uno y vendes el otro. ¿Qué pasa?',
+        opciones: ['Doblas la apuesta', 'Se anulan: pagas dos spreads para nada', 'Nada especial'],
+        correcta: 1,
+        porque: 'Si se mueven juntos y tomas lados opuestos, lo que gana uno lo pierde el otro.',
+      },
+      {
+        p: '¿Por qué la correlación se calcula con los cambios de cada día y no con el precio?',
+        opciones: ['Porque es más rápido', 'Porque con el precio dos pares que subieron todo el año parecerían iguales aunque su día a día no se pareciera', 'Porque lo pide el bróker'],
+        correcta: 1,
+        porque: 'Lo que importa para el riesgo es si se mueven juntos día a día.',
+      },
+    ],
+  },
+
+  'm8-3': {
+    titulo: 'Cinco operaciones, una apuesta al dólar',
+    objetivo: 'Ver cuántos pares llevan el dólar, por qué eso junta el riesgo, y qué tiene que ver el oro.',
+    explicacion: [
+      'De los pares que siguen las apps, los que más se repiten llevan el dólar: EUR/USD, GBP/USD, USD/JPY, USD/CHF, USD/CAD, AUD/USD y NZD/USD. Si el dólar se mueve, todos se mueven a la vez.',
+      'Por eso, abrir varias operaciones con el dólar del mismo lado no es repartir el riesgo: es apostar al dólar varias veces. Comprar EUR/USD y vender USD/CHF, por ejemplo, son las dos «vender dólar».',
+      'El oro se suele mover al revés que el dólar: cuando el dólar se fortalece, el oro suele bajar, y al revés. Es una costumbre del mercado, no una ley.',
+    ],
+    ejemplo: [
+      'En el Barrido, el ranking de fuerza dice dónde está el dólar comparado con las otras siete divisas. Si está arriba o abajo del todo, es la divisa que más está moviendo los pares que la llevan.',
+      SWING
+        ? 'En el Barrido, la tarjeta del oro enseña cuánto se ha movido el oro junto a cada par en las últimas 60 sesiones. En la medición del 30 de septiembre de 2026, los pares con dólar salieron con números altos y los cruces casi en cero: lo que seguía el oro era el dólar.'
+        : 'La tarjeta del oro está en la app de swing: mide cuánto se ha movido el oro junto a cada par en las últimas 60 sesiones. En la medición del 30 de septiembre de 2026, lo que seguía el oro era el dólar.',
+    ],
+    noDice: [
+      'Que el oro baje no dice que el dólar vaya a subir mañana, ni al revés.',
+      'Que el dólar esté arriba en el ranking dice lo que ya pasó, no lo que va a pasar.',
+      'Tener varias operaciones con el dólar no está prohibido: solo hay que saber que es una sola apuesta más grande.',
+    ],
+    video: {
+      archivo: 'm8-3',
+      desc: SWING
+        ? 'Video sin voz: el Barrido con los datos reales de ese día. Se señala el dólar en el ranking de fuerza y después la tarjeta del oro, con su número frente a los pares con dólar y frente a los cruces.'
+        : 'Video sin voz: el Barrido con los datos reales de ese día. Se señala el dólar en el ranking de fuerza y la lista de pares que lo llevan.',
+    },
+    hazlo: {
+      tab: 'barrido',
+      boton: 'Ir al Barrido',
+      texto: 'Busca el dólar en el ranking de fuerza. Luego cuenta cuántos de tus pares lo llevan.',
+    },
+    preguntas: [
+      {
+        p: 'Compras EUR/USD y vendes USD/CHF. ¿Qué estás haciendo con el dólar?',
+        opciones: ['Comprarlo dos veces', 'Venderlo dos veces', 'Nada: se anulan'],
+        correcta: 1,
+        porque: 'En EUR/USD el dólar va segundo: comprar el par es vender dólar. En USD/CHF va primero: vender el par es vender dólar.',
+      },
+      {
+        p: '¿Cómo se suele mover el oro respecto al dólar?',
+        opciones: ['Igual que el dólar', 'Al revés que el dólar', 'No tiene relación'],
+        correcta: 1,
+        porque: 'Suele ir al revés. Es una costumbre medida, no una ley.',
+      },
+      {
+        p: 'Tienes tres operaciones abiertas vendiendo dólar. ¿Cuántas apuestas son?',
+        opciones: ['Tres apuestas independientes', 'Una sola apuesta al dólar, más grande', 'Ninguna'],
+        correcta: 1,
+        porque: 'Si el dólar se da la vuelta, se dan la vuelta las tres.',
       },
     ],
   },
