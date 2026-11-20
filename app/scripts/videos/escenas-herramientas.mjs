@@ -22,7 +22,8 @@ const VELA = APP === 'swing' ? 'un día' : 'una hora'
 const VELAS = APP === 'swing' ? 'días' : 'horas'
 
 // Abre el Analizador con un par y una dirección, solo para tener la tarjeta.
-async function analizador(p, r, { par = 'EUR/USD', conLado = true } = {}) {
+// Exportada (y `verHerramienta`) para las escenas de las lecciones del curso.
+export async function analizador(p, r, { par = 'EUR/USD', conLado = true } = {}) {
   await irA(p, 'Analizar')
   await p.locator('main select.field').first().selectOption(par)
   await espera(p, 0.6)
@@ -33,7 +34,7 @@ async function analizador(p, r, { par = 'EUR/USD', conLado = true } = {}) {
 }
 
 // Enciende una herramienta del Analizador y lleva la pantalla a su fila.
-async function verHerramienta(p, nombre, rotulo) {
+export async function verHerramienta(p, nombre, rotulo) {
   await llevar(p, p.getByText(es.an.paso4 || '4 · QUÉ HERRAMIENTAS VER', { exact: false }).first(), 20)
   const b = await chip(p, nombre)
   await marcar(p, b)

@@ -23,11 +23,13 @@ import { execFileSync } from 'node:child_process'
 import { readFile, readdir, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { abrir, abrirTarjeta, bajar, cajaDe, desmarcar, espera, exigir, FIN, irA, llevar, marcar, ponerRotulo, tarjeta } from './banco.mjs'
-import { ESCENAS_HERRAMIENTAS } from './escenas-herramientas.mjs'
+import { abrir, abrirTarjeta, bajar, cajaDe, chip, desmarcar, espera, exigir, fila, filaLoc, FIN, irA, llevar, marcar, ponerRotulo, tarjeta } from './banco.mjs'
+import { ESCENAS_HERRAMIENTAS, analizador, verHerramienta } from './escenas-herramientas.mjs'
+import es from '../../src/lib/i18n/textos/es.js'
 import { OPS_PARA_CREER } from '../../src/lib/sombra.js'
 import { margen } from '../../src/lib/diagnostico.js'
-import { UMBRAL_FUERZA, VENTANAS_FUERZA } from '../../src/lib/marketCalc.js'
+import * as MC from '../../src/lib/marketCalc.js'
+import { PERIODOS_MEDIAS, PERIODO_ATR, PERIODO_RSI, RSI_MAX, UMBRAL_FUERZA, VENTANAS_FUERZA } from '../../src/lib/marketCalc.js'
 import { APP } from '../../src/lib/identidad.js'
 
 const VIDEOS = fileURLToPath(new URL('../../public/curso/videos/', import.meta.url))
@@ -544,6 +546,95 @@ const ESCENAS = {
       await desmarcar(p)
       await r(`Esa es la que la app compara con el umbral (${coma(UMBRAL_FUERZA)}${APP === 'swing' ? '' : ' o más, según la hora'}), no el 10 contra 0.`)
       await espera(p, 4.2)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+  'm5-1': {
+    desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se señala la fila «Tendencia» con sus dos EMA y después las medias móviles, y se explica cómo decide la app si un par está en tendencia o en rango.',
+    async correr(p, r) {
+      const [c, l] = PERIODOS_MEDIAS.ema
+      await analizador(p, r)
+      await r(`Una media móvil es el precio promedio de las últimas velas. La app mira dos: la EMA ${c} y la EMA ${l}.`)
+      await espera(p, 4.6)
+      const f = await verHerramienta(p, es.an.h.tendencia, es.an.h.tendencia)
+      const v = exigir(await fila(p, es.an.h.tendencia), 'la tendencia')
+      await marcar(p, f.valor)
+      await r(`EUR/USD, hoy: ${v}.`)
+      await espera(p, 4.2)
+      await r(`«Alcista» si el precio está por encima de la EMA ${c} y esta por encima de la EMA ${l}. Al revés, «Bajista». Si no, «Rango».`)
+      await espera(p, 5.4)
+      await desmarcar(p)
+      const fm = await verHerramienta(p, es.an.h.medias, 'SMA 20')
+      await marcar(p, fm.valor)
+      await r(`«Medias móviles» enseña además las SMA ${PERIODOS_MEDIAS.sma.join(', ')} y las EMA ${PERIODOS_MEDIAS.ema.join(', ')}. Aquí cada vela es ${VELA1 === 'día' ? 'un día' : 'una hora'}.`)
+      await espera(p, 5)
+      await desmarcar(p)
+      await r('Las medias miran hacia atrás: llegan tarde a los giros y no dicen qué va a pasar.')
+      await espera(p, 4.4)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+  'm5-2': {
+    desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se señalan el RSI y el ATR de un par, y después el Stop-loss de la tarjeta, que sale del ATR.',
+    async correr(p, r) {
+      await analizador(p, r)
+      // El rótulo del Stop-loss habla de la geometría de la app: se fija ese método.
+      await chip(p, es.an.metodo.app)
+      await espera(p, 0.6)
+      const f = await verHerramienta(p, es.an.h.rsi, es.an.h.rsi)
+      const rsiV = exigir(await fila(p, es.an.h.rsi), 'el RSI')
+      await marcar(p, f.valor)
+      await r(`RSI de EUR/USD: ${rsiV}. Va de 0 a 100 y mira las últimas ${PERIODO_RSI} velas.`)
+      await espera(p, 4.6)
+      await r(RSI_MAX == null ? 'En esta app el RSI es un dato: no decide qué experimentos aparecen.' : `En esta app sí cuenta: no salen experimentos para comprar con RSI de ${RSI_MAX} o más, ni para vender con ${100 - RSI_MAX} o menos.`)
+      await espera(p, 5)
+      await desmarcar(p)
+      const fa = await verHerramienta(p, es.an.h.atr, es.an.h.atr)
+      const atr = exigir(await fila(p, es.an.h.atr), 'el ATR')
+      await marcar(p, fa.valor)
+      await r(`ATR: ${atr}. Es lo que suele recorrer el par en ${VELA1 === 'día' ? 'un día' : 'una hora'} (media de ${PERIODO_ATR} velas).`)
+      await espera(p, 4.8)
+      await desmarcar(p)
+      const fs = await filaLoc(p, es.an.stop)
+      await llevar(p, fs.rotulo, 200)
+      const sl = exigir(await fila(p, es.an.stop), 'el Stop-loss')
+      await marcar(p, fs.valor)
+      await r(`Stop-loss: ${sl}. ${APP === 'swing' ? `Va por fuera del mínimo de 10 días, con ${coma(MC.COJIN_ATR_STOP)} ATR de cojín` : `Va a ${coma(MC.ATR_STOP)} ATR del precio`}: así el ruido normal no lo toca.`)
+      await espera(p, 5.4)
+      await desmarcar(p)
+      await r('Un RSI alto no dice que vaya a darse la vuelta. Y el ATR no tiene dirección: solo dice cuánto se mueve.')
+      await espera(p, 4.8)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+  'm5-3': {
+    desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se señalan el soporte y la resistencia de un par y después su compresión, con la palabra que dice qué tan raro es ese número.',
+    async correr(p, r) {
+      await analizador(p, r)
+      await r('No siempre hay tendencia: a veces el precio va de lado, entre un piso y un techo. Eso es un rango.')
+      await espera(p, 4.6)
+      const f = await verHerramienta(p, es.an.h.niveles, es.an.h.niveles)
+      const sr = exigir(await fila(p, es.an.h.niveles), 'el soporte y la resistencia')
+      const [sop, res] = sr.split('·').map((x) => x.trim())
+      await marcar(p, f.valor)
+      await r(`EUR/USD: soporte ${sop} y resistencia ${res}, el mínimo y el máximo de las últimas 20 velas.`)
+      await espera(p, 5)
+      await desmarcar(p)
+      const fc = await verHerramienta(p, es.an.h.compresion, es.an.h.compresion)
+      const cv = exigir(await fila(p, es.an.h.compresion), 'la compresión')
+      await marcar(p, fc.valor)
+      await r(`Compresión: ${cv}. Es el ATR de ahora dividido por el de hace ${MC.VELAS_ATRAS_COMPRESION} velas.`)
+      await espera(p, 5)
+      await r('Por debajo de 1 se mueve menos que antes: está apretado. La palabra dice qué tan raro es ese número aquí.')
+      await espera(p, 5)
+      await desmarcar(p)
+      await r(APP === 'swing' ? 'Esta app no tiene modo de rango: estos datos son para tu propio análisis.' : `El modo rango de esta app solo actúa con la compresión en ${coma(MC.COMPRESION_MIN)} o más y el precio cerca del piso o del techo.`)
+      await espera(p, 4.8)
+      await r('Que esté apretado no dice hacia qué lado se va a soltar, ni cuándo.')
+      await espera(p, 4)
       await r(FIN)
       await espera(p, 2.8)
     },

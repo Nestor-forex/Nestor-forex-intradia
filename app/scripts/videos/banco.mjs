@@ -150,8 +150,15 @@ export const fila = (p, rotulo) =>
   }, rotulo)
 
 // Enciende un botón de los que se encienden y apagan (aria-pressed), si estaba apagado.
+//
+// ⚠️ Se busca el texto EXACTO y, si hay varios, el ÚLTIMO: en el Analizador el
+// paso 3 tiene un método «1,5 ATR a cada lado» y otro «Soporte y resistencia»,
+// y buscar «ATR» por trozo de texto encendía el método en vez de la
+// herramienta del paso 4 (que va después). Solo si no hay ninguno exacto se
+// busca por trozo.
 export async function chip(p, nombre) {
-  const b = p.locator('main button[aria-pressed]', { hasText: nombre }).first()
+  const exactos = p.locator('main button[aria-pressed]').filter({ hasText: new RegExp(`^\\s*${nombre.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`) })
+  const b = (await exactos.count()) ? exactos.last() : p.locator('main button[aria-pressed]', { hasText: nombre }).first()
   if ((await b.getAttribute('aria-pressed')) !== 'true') await b.click()
   return b
 }
