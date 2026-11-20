@@ -159,6 +159,30 @@ ok(pipUSD('EUR/USD', {}) === 10 && LECCIONES['m1-2'].ejemplo.some((p) => p.inclu
   }
   ok(/'juntas'/.test(readFileSync(new URL('./videos/dobles.js', import.meta.url), 'utf8')), 'el banco de grabación tiene las operaciones de ejemplo que comparten divisa')
 }
+{
+  // Módulo 9: los números del Analizador salen del código. El método simétrico
+  // usa `ATR_REVERSION` en swing y `ATR_STOP` en intradía.
+  const MC = await import('../src/lib/marketCalc.js')
+  const AN = await import('../src/lib/analizador.js')
+  const { HERRAMIENTAS_DE_ESTILO } = await import('../src/lib/estilo.js')
+  const ES = await import('../src/lib/curso/es.js')
+  const coma = (n) => String(n).replace('.', ',')
+  const atr = MC.ATR_REVERSION ?? MC.ATR_STOP
+  const m91 = JSON.stringify(LECCIONES['m9-1'])
+  const m92 = JSON.stringify(LECCIONES['m9-2'])
+  const m93 = JSON.stringify(LECCIONES['m9-3'])
+  ok(typeof atr === 'number' && ES.ATR_SIMETRICO === atr, 'el ATR del método simétrico es el que usa esta app')
+  ok(m91.includes(`«${coma(atr)} ATR a cada lado»`) && m91.includes(`${coma(AN.COJIN_ESTRUCTURA)} ATR por fuera`), 'el módulo 9 lee los dos métodos de ATR del código')
+  ok(/COJIN_ESTRUCTURA \* atr/.test(leer('src/lib/analizador.js')), '`nivelesEstructura` usa `COJIN_ESTRUCTURA` (no un 0,5 escrito aparte)')
+  const tEs = (await import('../src/lib/i18n/textos/es.js')).default
+  ok(tEs.an.metodo.simetrica === `${coma(atr)} ATR a cada lado`, 'el botón del método dice el mismo ATR que la lección')
+  ok(m92.includes(`${coma(AN.RR_AVISO)}:${coma(AN.RR_AVISO)}`), 'el aviso del R/B sale de `RR_AVISO`')
+  ok(m93.includes(`hasta ${AN.MAX_PLANTILLAS}`) && m93.includes(`empieza con ${HERRAMIENTAS_DE_ESTILO.tendencias.length}`) && m93.includes(`con ${HERRAMIENTAS_DE_ESTILO.rangos.length}`), 'las plantillas y los estilos salen de `analizador.js` y `estilo.js`')
+  for (const h of ['calendario', 'diario']) ok(m92.includes(`«${tEs.an.h[h]}»`), `la lección nombra la herramienta «${tEs.an.h[h]}» como sale en la pantalla`)
+  ok(m91.includes(tEs.an.motivo.sinLado.replace(/\.$/, '')), 'la lección cita lo que dice la tarjeta sin dirección')
+  const dob = readFileSync(new URL('./videos/dobles.js', import.meta.url), 'utf8')
+  ok(/'chequeo'/.test(dob) && /export function usePlantillas/.test(dob) && /export function useEstilo/.test(dob), 'el banco de grabación tiene el diario de chequeo y guarda plantillas y estilo en memoria')
+}
 
 // Los videos: cada uno tiene su descripción, y CADA app guarda los suyos
 // (2026-11-20): el archivo tiene que existir en este repositorio y pesar poco.
