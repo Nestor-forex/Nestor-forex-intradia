@@ -345,6 +345,8 @@ export const GEMELOS = [
   'src/lib/useHistoria.js',
   'src/lib/useReglas.js',
   'src/components/Laboratorio.jsx',
+  'src/components/SeguimientoAdelante.jsx',
+  'src/lib/laboratorioVista.js',
   'scripts/prueba-laboratorio.mjs',
   'src/lib/usePractica.js',
   'src/components/Practica.jsx',

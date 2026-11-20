@@ -14,9 +14,12 @@
 // ⚠️ ANTES DE GUARDAR SE DICE que el desarrollador de la app puede ver las
 // reglas guardadas, y la persona decide con una casilla (sin marcar por
 // defecto) si le da permiso para copiarlas y probarlas con otras medidas.
-// ⚠️ EL SEGUIMIENTO HACIA ADELANTE ES UN SERVICIO APARTE: primero se explica
-// qué es, para qué sirve y cómo lo usan los profesionales, y solo después va
-// el botón de pedir la activación. Lo activa el administrador.
+// ⚠️ NO TODAS LAS REGLAS SE ANALIZAN: el desarrollador elige algunas al azar
+// entre las que tienen permiso, y al dueño se le avisa si dio resultados.
+// Néstor (2026-11-20) quiere que eso quede «bien claro».
+// ⚠️ EL SEGUIMIENTO HACIA ADELANTE ES OTRA TARJETA (`SeguimientoAdelante.jsx`),
+// al lado y no dentro de ésta: cada una con sus cosas, distinguibles de un
+// vistazo.
 // ⚠️ EL ACIERTO NO SE PINTA DE COLOR; el resultado en R sí (es dinero).
 
 import { useMemo, useState } from 'react'
@@ -24,9 +27,7 @@ import { useIdioma } from '../lib/i18n'
 import TarjetaPlegable from './TarjetaPlegable'
 import {
   MAX_CONDICIONES,
-  MAX_SEGUIDAS,
   OBJETIVOS_RB,
-  PRECIO_SEGUIMIENTO_USD,
   REGLA_INICIAL,
   RIESGOS_ATR,
   TIPOS_CONDICION,
@@ -34,10 +35,11 @@ import {
   contarPrueba,
   fichaParaGuardar,
   probarRegla,
-  resumenAdelante,
 } from '../lib/laboratorio'
 import { useHistoria } from '../lib/useHistoria'
-import { activarSeguimiento, copiarRegla, informarAutor, solicitarSeguimiento, useReglas, useReglasTodas } from '../lib/useReglas'
+import { copiarRegla, informarAutor, useReglas, useReglasTodas } from '../lib/useReglas'
+import SeguimientoAdelante from './SeguimientoAdelante'
+import { CAJA, ROTULO, TEXTO, colorR, fmtR } from '../lib/laboratorioVista'
 import { useMembers } from '../lib/useMembers'
 import { ADMIN_EMAIL } from '../lib/firebase'
 import { APP, clave } from '../lib/identidad'
@@ -46,9 +48,6 @@ import { spreadDe } from '../../scripts/lib/costes.mjs'
 // Lo que puede salir al guardar; lo demás son errores de la regla (`lab.error`).
 const ESTADOS = ['ok', 'sinPermiso', 'error', 'sinNombre']
 
-const TEXTO = { fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }
-const ROTULO = { fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.4 }
-const CAJA = { padding: 12, borderRadius: 10, border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 8 }
 
 const CONDICION_NUEVA = {
   rsi: { tipo: 'rsi', op: '<=', valor: 30 },
@@ -87,45 +86,6 @@ const leerProbadas = () => {
   } catch {
     return 0
   }
-}
-
-const fmtR = (v) => (v === null || v === undefined ? '—' : `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(2)} R`)
-const colorR = (v) => (v === null || v === undefined ? 'var(--text-secondary)' : v >= 0 ? 'var(--green)' : 'var(--red)')
-
-/** Fecha corta de un Timestamp de Firestore (o null si no hay). */
-function fechaCorta(ts, locale) {
-  const d = ts?.toDate ? ts.toDate() : null
-  return d ? d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' }) : null
-}
-
-/** Lo que dio la regla con velas nuevas (lo escribe el programa del servidor). */
-function Adelante({ r, t, locale }) {
-  const desde = fechaCorta(r.seguirDesde, locale)
-  const res = resumenAdelante(r.adelante?.ops)
-  return (
-    <div style={{ ...CAJA, borderColor: 'var(--cta)', gap: 4 }}>
-      <span style={ROTULO}>{t('lab.adelanteRes')}</span>
-      {desde && <span style={{ ...TEXTO, fontSize: 11.5 }}>{t('lab.seguidaDesde', { fecha: desde })}</span>}
-      {res.ops === 0 ? (
-        <span style={TEXTO}>{t('lab.adelanteSinOps')}</span>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '2px 12px', fontSize: 12.5 }}>
-          <span style={{ color: 'var(--text-muted)' }}>{t('lab.ops')}</span>
-          <span className="mono" dir="ltr">{res.ops}</span>
-          <span style={{ color: 'var(--text-muted)' }}>{t('lab.acierto')}</span>
-          <span className="mono" dir="ltr">{res.acierto}% ±{res.margen}</span>
-          <span style={{ color: 'var(--text-muted)' }}>{t('lab.porR')}</span>
-          <span className="mono" dir="ltr" style={{ color: colorR(res.porR) }}>{fmtR(res.porR)}</span>
-        </div>
-      )}
-      {r.adelante?.abiertas > 0 && (
-        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-          {t('lab.abiertas')}: <bdi className="mono">{r.adelante.abiertas}</bdi>
-        </span>
-      )}
-      {res.ops > 0 && res.ops < 150 && <span style={{ ...TEXTO, fontSize: 11.5, color: 'var(--amber)' }}>{t('lab.pocas', { n: res.ops, margen: res.margen })}</span>}
-    </div>
-  )
 }
 
 /** El informe que el desarrollador le manda al autor. */
@@ -299,8 +259,6 @@ export default function Laboratorio({ uid, ficha }) {
   const abierto = tocado
   const { historia, cargando, fallo } = useHistoria(abierto)
   const { reglas, guardar, borrar, seguir } = useReglas(uid)
-  const servicioActivo = ficha?.seguimientoActivo === true
-  const solicitadoEl = fechaCorta(ficha?.seguimientoSolicitado, locale)
   const esAdmin = !!ADMIN_EMAIL && String(ficha?.email ?? '').toLowerCase() === ADMIN_EMAIL
   const todas = useReglasTodas(esAdmin && abierto)
   const { usuarios } = useMembers(esAdmin && abierto)
@@ -312,7 +270,6 @@ export default function Laboratorio({ uid, ficha }) {
   const [estadoGuardar, setEstadoGuardar] = useState(null)
   const [aBorrar, setABorrar] = useState(null)
   const [permiteCopia, setPermiteCopia] = useState(false)
-  const [estadoServicio, setEstadoServicio] = useState(null)
 
   // Cambiar la regla deja el resultado viejo sin sentido: se quita.
   const setRegla = (siguiente) => {
@@ -356,22 +313,15 @@ export default function Laboratorio({ uid, ficha }) {
   }
 
   const deEstaApp = (todas.reglas ?? []).filter((r) => r.app === APP && r.uid !== uid)
-  const seguidas = reglas.filter((r) => r.seguir === true).length
-  const pedidos = esAdmin ? (usuarios ?? []).filter((u) => u.seguimientoSolicitado || u.seguimientoActivo === true) : []
-
-  const pedir = async () => {
-    setEstadoServicio('guardando')
-    setEstadoServicio(await solicitarSeguimiento(uid))
-  }
 
   return (
-    <div onClickCapture={() => !tocado && setTocado(true)}>
+    <div onClickCapture={() => !tocado && setTocado(true)} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <TarjetaPlegable
         sigla="LAB"
         titulo={t('lab.titulo')}
         desc={t('lab.desc')}
         paraQue={t('lab.paraQue')}
-        avance={<span style={{ fontSize: 12.5, color: 'var(--cta)', fontWeight: 600 }}>📈 {t('lab.avance', { precio: PRECIO_SEGUIMIENTO_USD })}</span>}
+        avance={<span style={{ fontSize: 12.5, color: 'var(--cta)', fontWeight: 600 }}>🧪 {t('lab.avance')}</span>}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <p style={{ ...TEXTO, color: 'var(--amber)' }}>{t('lab.aviso')}</p>
@@ -380,48 +330,8 @@ export default function Laboratorio({ uid, ficha }) {
           <div style={{ ...CAJA, borderColor: 'var(--cta)', borderWidth: 2 }}>
             <strong style={{ fontSize: 14 }}>💡 {t('lab.beneficioTitulo')}</strong>
             <p style={TEXTO}>{t('lab.beneficio')}</p>
+            <p style={{ ...TEXTO, fontWeight: 600 }}>🎲 {t('lab.azar')}</p>
           </div>
-
-          {/* Seguimiento hacia adelante: primero qué es, después el botón. Va ARRIBA,
-              junto al beneficio, y no al final (Néstor, 2026-11-20: «no lo veo»):
-              detrás del constructor y de «Mis reglas» nadie lo encontraba. */}
-          <div style={{ ...CAJA, borderColor: 'var(--cta)', borderWidth: 2 }}>
-            <strong style={{ fontSize: 14 }}>📈 {t('lab.adelanteTitulo')}</strong>
-            <span style={{ ...ROTULO, color: 'var(--cta)' }}>{t('lab.adelanteServicio', { precio: PRECIO_SEGUIMIENTO_USD })}</span>
-            <p style={TEXTO}>{t('lab.adelanteQue')}</p>
-            <p style={TEXTO}>{t('lab.adelantePara')}</p>
-            <p style={TEXTO}>{t('lab.adelantePros')}</p>
-            <p style={{ ...TEXTO, color: 'var(--amber)' }}>{t('lab.adelanteNo')}</p>
-            {servicioActivo ? (
-              <p style={{ ...TEXTO, fontWeight: 600 }}>{t('lab.adelanteActivo', { max: MAX_SEGUIDAS })}</p>
-            ) : solicitadoEl ? (
-              <p style={{ ...TEXTO, fontWeight: 600 }}>{t('lab.adelanteSolicitado', { fecha: solicitadoEl })}</p>
-            ) : (
-              <button type="button" className="btn btn-primary" disabled={estadoServicio === 'guardando'} onClick={pedir}>
-                {t('lab.adelanteSolicitar')}
-              </button>
-            )}
-            {(estadoServicio === 'sinPermiso' || estadoServicio === 'error') && <p style={{ ...TEXTO, color: 'var(--amber)' }}>{t(`lab.estado.${estadoServicio}`)}</p>}
-          </div>
-
-          {esAdmin && (
-            <div style={CAJA}>
-              <span style={ROTULO}>{t('lab.adminSeg')}</span>
-              {!pedidos.length && <p style={TEXTO}>{t('lab.adminSegNadie')}</p>}
-              {pedidos.map((u) => (
-                <div key={u.uid} style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-                  <span style={TEXTO}>
-                    {u.seguimientoActivo === true
-                      ? t('lab.adminSegActivo', { quien: nombreDe(u.uid) })
-                      : t('lab.adminSegPedido', { quien: nombreDe(u.uid), fecha: fechaCorta(u.seguimientoSolicitado, locale) ?? '—' })}
-                  </span>
-                  <button type="button" className="btn-ghost" style={{ minHeight: 36, padding: '0 10px' }} onClick={() => activarSeguimiento(u.uid, u.seguimientoActivo !== true)}>
-                    {u.seguimientoActivo === true ? t('lab.desactivar') : t('lab.activar')}
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
 
           {cargando && <p style={TEXTO}>{t('lab.cargando')}</p>}
           {fallo && <p style={{ ...TEXTO, color: 'var(--amber)' }}>{t('lab.fallo', { motivo: fallo })}</p>}
@@ -497,6 +407,7 @@ export default function Laboratorio({ uid, ficha }) {
           <div style={CAJA}>
             <span style={ROTULO}>{t('lab.guardarTitulo')}</span>
             <p style={{ ...TEXTO, color: 'var(--amber)' }}>{t('lab.quienVe')}</p>
+            <p style={{ ...TEXTO, fontWeight: 600 }}>🎲 {t('lab.azar')}</p>
             <input className="field" maxLength={60} placeholder={t('lab.nombre')} value={nombre} onChange={(e) => setNombre(e.target.value)} />
             <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', cursor: 'pointer' }}>
               <input type="checkbox" checked={permiteCopia} onChange={(e) => setPermiteCopia(e.target.checked)} style={{ marginTop: 3, width: 18, height: 18 }} />
@@ -526,16 +437,11 @@ export default function Laboratorio({ uid, ficha }) {
                   )}
                   {!r.copiaDe && <span style={{ ...TEXTO, fontSize: 11.5 }}>{t(r.permiteCopia ? 'lab.conPermiso' : 'lab.sinPermisoCopia')}</span>}
                   {r.informe?.texto && <Informe informe={r.informe} t={t} />}
-                  {(r.seguir || r.adelante) && <Adelante r={r} t={t} locale={locale} />}
+                  {r.seguir && <span style={{ ...TEXTO, fontSize: 11.5, color: 'var(--cta)' }}>📈 {t('lab.seguidaNota')}</span>}
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     <button type="button" className="btn-ghost" style={{ minHeight: 36, padding: '0 10px' }} onClick={() => cargar(r)}>
                       {t('lab.cargar')}
                     </button>
-                    {servicioActivo && (r.seguir || seguidas < MAX_SEGUIDAS) && (
-                      <button type="button" className="btn-ghost" style={{ minHeight: 36, padding: '0 10px', borderColor: 'var(--cta)' }} onClick={() => seguir(r.id, !r.seguir)}>
-                        {r.seguir ? t('lab.dejarBtn') : t('lab.seguirBtn')}
-                      </button>
-                    )}
                     <button
                       type="button"
                       className="btn-ghost"
@@ -547,7 +453,6 @@ export default function Laboratorio({ uid, ficha }) {
                   </div>
                 </div>
               ))}
-              {servicioActivo && seguidas >= MAX_SEGUIDAS && <p style={{ ...TEXTO, fontSize: 11.5 }}>{t('lab.maxSeguidas', { max: MAX_SEGUIDAS })}</p>}
             </div>
           )}
 
@@ -590,6 +495,9 @@ export default function Laboratorio({ uid, ficha }) {
           <p style={{ ...TEXTO, fontSize: 11.5, color: 'var(--text-muted)' }}>{t('lab.pie')}</p>
         </div>
       </TarjetaPlegable>
+
+      {/* Al lado, no dentro: otra tarjeta con lo suyo (Néstor, 2026-11-20). */}
+      <SeguimientoAdelante uid={uid} ficha={ficha} reglas={reglas} seguir={seguir} esAdmin={esAdmin} usuarios={usuarios} nombreDe={nombreDe} />
     </div>
   )
 }

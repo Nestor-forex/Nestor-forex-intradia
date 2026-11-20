@@ -21,6 +21,7 @@ import {
   condicionValida,
   contarPrueba,
   fichaParaGuardar,
+  pasoActual,
   probarEnPar,
   probarRegla,
   reglaValida,
@@ -190,12 +191,17 @@ console.log('\n8 · La pantalla')
   ok(i("t('lab.permiso')") > 0 && i("t('lab.permiso')") < i("t('lab.guardar')}"), 'la casilla de permiso va ANTES del botón de guardar')
   ok(/useState\(false\)/.test(lab.slice(lab.indexOf('[permiteCopia'), lab.indexOf('[permiteCopia') + 80)), 'la casilla de permiso arranca SIN marcar')
   ok(/fichaParaGuardar\([^)]*permiteCopia\)/.test(lab), 'el permiso viaja con la regla')
-  for (const k of ['adelanteQue', 'adelantePara', 'adelantePros', 'adelanteNo']) {
-    ok(i(`t('lab.${k}')`) > 0 && i(`t('lab.${k}')`) < i("t('lab.adelanteSolicitar')"), `«${k}» se explica ANTES del botón de pedir la activación`)
+  const adel = leer('src/components/SeguimientoAdelante.jsx')
+  const j = (s) => adel.indexOf(s)
+  // El `paraQue` de la tarjeta (adelantePara) se pinta lo primero al abrir.
+  ok(/paraQue=\{t\('lab\.adelantePara'\)\}/.test(adel), '«para qué sirve» es el paraQue de su tarjeta')
+  for (const k of ['adelanteQue', 'adelantePros', 'adelanteNo']) {
+    ok(j(`t('lab.${k}')`) > 0 && j(`t('lab.${k}')`) < j("t('lab.adelanteSolicitar')"), `«${k}» se explica ANTES del botón de pedir la activación`)
   }
-  ok(/PRECIO_SEGUIMIENTO_USD/.test(lab) && !/\b3 USD\b/.test(lab), 'el precio se LEE de una constante, no va escrito a mano')
+  ok(/PRECIO_SEGUIMIENTO_USD/.test(adel) && !/\b3 USD\b/.test(adel + lab), 'el precio se LEE de una constante, no va escrito a mano')
   ok(/r\.permiteCopia === true && \(/.test(lab), 'el administrador solo puede copiar si el autor dio permiso')
-  ok(/servicioActivo && \(r\.seguir \|\| seguidas < MAX_SEGUIDAS\)/.test(lab), 'el botón de seguir solo sale con el servicio activo y sin pasar el límite')
+  ok(/activo && \(r\.seguir \|\| seguidas < MAX_SEGUIDAS\)/.test(adel), 'el botón de seguir solo sale con el servicio activo y sin pasar el límite')
+  ok(!/seguir\(r\.id/.test(lab), 'el botón de seguir vive en la tarjeta del seguimiento, no en «Mis reglas» del laboratorio')
   const hook = leer('src/lib/useHistoria.js')
   ok(/swing:\s*'https:\/\/raw\.githubusercontent\.com\/Nestor-forex\/Nestor-forex\/datos\/estado\/historia\.json'/.test(hook), 'Swing lee su historia')
   ok(/intradia:\s*'https:\/\/raw\.githubusercontent\.com\/Nestor-forex\/Nestor-forex-intradia\/datos\/estado\/historia\.json'/.test(hook), 'Intradía lee la suya')
@@ -231,7 +237,7 @@ console.log('\n10 · El seguimiento hacia adelante')
 
 console.log('\n9 · Los textos existen en los 13 idiomas')
 {
-  const usadas = [...leer('src/components/Laboratorio.jsx').matchAll(/t\(\s*'(lab\.[\w.]+)'/g)].map((m) => m[1])
+  const usadas = [...(leer('src/components/Laboratorio.jsx') + leer('src/components/SeguimientoAdelante.jsx')).matchAll(/t\(\s*'(lab\.[\w.]+)'/g)].map((m) => m[1])
   ok(usadas.length > 20, `la pantalla usa ${usadas.length} textos`)
   for (const c of ['es', 'en', 'pt', 'it', 'fr', 'de', 'ru', 'tr', 'zh', 'ja', 'ko', 'hi', 'ar']) {
     const { default: d } = await import(`../src/lib/i18n/textos/${c}.js`)
@@ -240,17 +246,36 @@ console.log('\n9 · Los textos existen en los 13 idiomas')
   }
 }
 
-console.log('\n10 · El seguimiento hacia adelante se ve sin buscarlo')
+console.log('\n10 · Dos tarjetas: el laboratorio y el seguimiento, una al lado de la otra')
 {
-  // Néstor (2026-11-20): «no veo lo de la regla hacia adelante… ese botón
-  // debería estar en el mismo espacio donde está "prueba tu propia regla"».
-  // Estaba al FINAL de la tarjeta, detrás del constructor y de «Mis reglas».
-  const jsx = leer('src/components/Laboratorio.jsx')
-  const boton = jsx.indexOf("t('lab.adelanteSolicitar')")
-  const paso1 = jsx.indexOf("t('lab.paso1')")
-  ok(boton > 0 && paso1 > 0 && boton < paso1, 'el botón «Solicitar activación» va ANTES del constructor de reglas')
-  ok(/avance=\{.*t\('lab\.avance'/.test(jsx), 'la tarjeta cerrada ya dice que existe el servicio (avance)')
-  ok(jsx.includes("t('lab.avance', { precio: PRECIO_SEGUIMIENTO_USD })"), 'el precio del aviso se LEE, no se escribe')
+  // Néstor (2026-11-20): «quiero que esas dos reglas estén en el mismo lugar
+  // pero separadas, no una dentro de la otra, para que siempre de un solo
+  // vistazo se distinga una de la otra». Antes el seguimiento iba DENTRO del
+  // laboratorio (y antes de eso, al final, donde nadie lo encontraba).
+  const lab = leer('src/components/Laboratorio.jsx')
+  const adel = leer('src/components/SeguimientoAdelante.jsx')
+  ok((lab.match(/<TarjetaPlegable[\s>]/g) ?? []).length === 1, 'el laboratorio es UNA tarjeta')
+  ok((adel.match(/<TarjetaPlegable[\s>]/g) ?? []).length === 1, 'el seguimiento es OTRA tarjeta, en su propio archivo')
+  const cierra = lab.indexOf('</TarjetaPlegable>')
+  const otra = lab.indexOf('<SeguimientoAdelante')
+  ok(cierra > 0 && otra > cierra, 'la tarjeta del seguimiento va DESPUÉS de cerrar la del laboratorio: al lado, no dentro')
+  ok(!lab.includes("t('lab.adelanteSolicitar')") && adel.includes("t('lab.adelanteSolicitar')"), 'el botón de pedir el servicio vive solo en su tarjeta')
+  ok(/avance=\{<span[^\n]*\{estado\}/.test(adel), 'la tarjeta cerrada del seguimiento dice el ESTADO (sin pedir / pedido / activo)')
+  for (const k of ['lab.estadoSinPedir', 'lab.estadoPedido', 'lab.estadoActivo', 'lab.pasoA1', 'lab.pasoA2', 'lab.pasoA3']) {
+    ok(adel.includes(`t('${k}'`), `«${k}» se usa`)
+  }
+  ok(pasoActual({ activo: false, solicitado: false, seguidas: 0 }) === 1, 'sin pedir: paso 1')
+  ok(pasoActual({ activo: false, solicitado: true, seguidas: 0 }) === 2, 'pedido: paso 2 (falta que lo active el desarrollador)')
+  ok(pasoActual({ activo: true, solicitado: true, seguidas: 0 }) === 3, 'activo sin reglas seguidas: paso 3')
+  ok(pasoActual({ activo: true, solicitado: false, seguidas: 2 }) === 4, 'activo y siguiendo: los tres pasos hechos')
+  // «todas las reglas guardadas no necesariamente van a ser analizadas… de
+  // manera aleatoria… se le notificará al dueño si su regla dio resultados».
+  const azar = lab.indexOf("t('lab.azar')")
+  ok(azar > 0 && azar < lab.indexOf("t('lab.paso1')"), 'lo del análisis al azar se dice arriba, antes del constructor')
+  ok(lab.indexOf("t('lab.azar')", azar + 1) > 0 && lab.indexOf("t('lab.azar')", azar + 1) < lab.indexOf("t('lab.guardar')}"), 'y otra vez junto al botón de guardar')
+  const { default: es } = await import('../src/lib/i18n/textos/es.js')
+  ok(/al azar/.test(es.lab.azar) && /no todas/i.test(es.lab.azar) && /avisaremos/.test(es.lab.azar), 'el texto dice: no todas, al azar, y se avisa al dueño')
+  ok(!/\{ ?precio/.test(String(es.lab.avance)) && typeof es.lab.avance === 'string', 'el aviso del laboratorio ya no vende el servicio: eso es de la otra tarjeta')
 }
 
 console.log(fallos ? `\n✗ ${fallos} comprobaciones fallaron` : '\n✓ todo bien')

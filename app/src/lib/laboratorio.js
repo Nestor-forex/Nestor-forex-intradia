@@ -464,3 +464,13 @@ export function avanzarAdelante(reglaCruda, historia, spreadDe, guardado, desde)
   const ops = [...viejas, ...nuevas].sort((a, b) => (a.e < b.e ? -1 : a.e > b.e ? 1 : a.p.localeCompare(b.p))).slice(-MAX_OPS_ADELANTE)
   return { desde, ops, abiertas, hasta: fechas[fechas.length - 1] }
 }
+
+/**
+ * En qué paso de la activación del seguimiento va la persona: 1 pedirlo,
+ * 2 esperar a que el desarrollador lo active tras el pago, 3 elegir reglas,
+ * 4 ya sigue alguna (los tres hechos).
+ */
+export function pasoActual({ activo, solicitado, seguidas }) {
+  if (activo) return seguidas > 0 ? 4 : 3
+  return solicitado ? 2 : 1
+}
