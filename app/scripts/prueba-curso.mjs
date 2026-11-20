@@ -104,6 +104,23 @@ ok(pipUSD('EUR/USD', {}) === 10 && LECCIONES['m1-2'].ejemplo.some((p) => p.inclu
   ok([cortes.muy, cortes.algo, cortes.ancho].every((x) => m53.includes(coma(x))) && m53.includes(`hace ${MC.VELAS_ATRAS_COMPRESION} velas`), 'la compresión dice los cortes y las velas de esta app')
   ok(APP === 'swing' ? m53.includes('no tiene un modo de rango') : m53.includes(coma(MC.COMPRESION_MIN)) && m53.includes(`${MC.RANGO_MIN_ATR} ATR`), 'y lo del modo rango sale del código de esta app')
 }
+{
+  // Módulo 6: los spreads salen de la MISMA tabla con la que el banco de pruebas
+  // descuenta el coste, y la banda del swap de `tasas.js`.
+  const { spreadDe } = await import('./lib/costes.mjs')
+  const { UMBRAL_NEUTRO } = await import('../src/lib/tasas.js')
+  const { aciertoParaEmpatar } = await import('../src/lib/curso/es.js')
+  const coma = (n) => String(n).replace('.', ',')
+  const m61 = JSON.stringify(LECCIONES['m6-1'])
+  ok(m61.includes(`EUR/USD cuesta ${coma(spreadDe('EUR/USD'))} pips`) && m61.includes(`NZD/CHF ${coma(spreadDe('NZD/CHF'))}`), 'el módulo 6 dice el spread de la tabla de costes de esta app')
+  const es = readFileSync(new URL('../src/lib/curso/es.js', import.meta.url), 'utf8')
+  ok(/import \{ spreadDe \} from '\.\.\/\.\.\/\.\.\/scripts\/lib\/costes\.mjs'/.test(es) && !/SPREAD_PIPS/.test(es), 'y la lección importa `spreadDe` en vez de copiar la tabla')
+  ok(JSON.stringify(LECCIONES['m6-2']).includes(`menor de ${coma(UMBRAL_NEUTRO)} puntos`), 'la banda en la que el swap «apenas pesa» sale de `UMBRAL_NEUTRO`')
+  ok(Math.abs(aciertoParaEmpatar(0, 30) - 0.5) < 1e-12 && Math.abs(aciertoParaEmpatar(2, 30) - 32 / 60) < 1e-12, 'el acierto para empatar: 50 % sin coste, (1 + coste) ÷ 2 con coste')
+  ok(aciertoParaEmpatar(2, 30) > aciertoParaEmpatar(2, 120), 'y con el mismo spread, un Stop-loss corto pide acertar más')
+  const m63 = JSON.stringify(LECCIONES['m6-3'])
+  ok(m63.includes('53,3 %') && m63.includes('50,8 %'), 'el ejemplo del módulo 6 lleva los números que salen de la cuenta')
+}
 
 // Los videos: cada uno tiene su descripción, y CADA app guarda los suyos
 // (2026-11-20): el archivo tiene que existir en este repositorio y pesar poco.

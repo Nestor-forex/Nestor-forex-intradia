@@ -1068,8 +1068,8 @@ export default {
     sinDatos: 'Henüz aracı kurum fiyatı yok. Köprü bunları yalnızca MetaTrader 5’in çalıştığı bilgisayar açıkken yayımlar.',
     vieja: (v) => `Bu fiyatların üzerinden ${v.h} saatten fazla geçti. Köprü kapalıydı; şu anki fiyat değil, referans sayın.`,
     par: 'Parite',
-    bid: 'Alış',
-    ask: 'Satış',
+    bid: 'BID',
+    ask: 'ASK',
     spread: 'Spread',
     actividad: 'Hareket',
     actividadPie:

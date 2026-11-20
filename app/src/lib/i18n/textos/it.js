@@ -1069,8 +1069,8 @@ export default {
     sinDatos: 'Ancora nessun prezzo del broker. Il ponte li pubblica solo mentre il computer su cui gira MetaTrader 5 è acceso.',
     vieja: (v) => `Questi prezzi sono di oltre ${v.h} h fa. Il ponte era spento; valgono come riferimento, non come prezzo di adesso.`,
     par: 'Coppia',
-    bid: 'Acquisto',
-    ask: 'Vendita',
+    bid: 'BID',
+    ask: 'ASK',
     spread: 'Spread',
     actividad: 'Attività',
     actividadPie:

@@ -639,6 +639,125 @@ const ESCENAS = {
       await espera(p, 2.8)
     },
   },
+  'm6-1': {
+    desc: 'Video sin voz: el Barrido con los datos reales de ese día. Se señala la tarjeta «Lo que cuesta abrir la operación» y el spread de un par con dólar y el de un cruce.',
+    async correr(p, r) {
+      await r('Cada par tiene dos precios: el de venta (BID) y el de compra (ASK). La diferencia es el spread.')
+      await espera(p, 4.6)
+      const caja = cajaDe(p, 'Lo que cuesta abrir la operación')
+      await llevar(p, caja, 20)
+      await espera(p, 0.8)
+      const mayor = exigir(await filaSpread(p, 'EUR/USD'), 'la fila de EUR/USD (¿puente apagado?)')
+      await marcar(p, mayor.loc)
+      await r(`EUR/USD: venta ${mayor.bid} y compra ${mayor.ask}. La diferencia, ${mayor.spread} pips, es lo que cuesta entrar.`)
+      await espera(p, 5.4)
+      await desmarcar(p)
+      const cruce = exigir(await filaSpread(p, 'EUR/NZD'), 'la fila de EUR/NZD')
+      await marcar(p, cruce.loc)
+      await r(`EUR/NZD, un cruce: ${cruce.spread} pips. Los cruces suelen costar más que los pares con dólar.`)
+      await espera(p, 5)
+      await desmarcar(p)
+      await r('Toda operación empieza perdiendo el spread. Y se abre de golpe con las noticias fuertes y de madrugada.')
+      await espera(p, 5)
+      await r('Son los precios de una cuenta real del desarrollador de la app. Los de tu bróker pueden ser otros.')
+      await espera(p, 4.6)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
+  'm6-2': {
+    desc: 'Video sin voz: el Barrido con los datos reales de ese día. Se abre la tarjeta «Tasas de interés y swap» y se señala la diferencia de tasas de un par y hacia qué lado juega el swap.',
+    async correr(p, r) {
+      await r('Si la operación sigue abierta de noche, se paga o se cobra un swap. Cada noche.')
+      await espera(p, 4.4)
+      const t = tarjeta(p, es.tasas.titulo)
+      await llevar(p, t, 20)
+      await abrirTarjeta(p, es.tasas.titulo)
+      await r('El swap sale de la diferencia entre las tasas de interés de las dos divisas del par.')
+      await espera(p, 4.4)
+      const f = exigir(await filaTasa(p), 'la primera fila de «Tasas de interés y swap»')
+      await llevar(p, f.loc, 220)
+      await marcar(p, f.loc)
+      await r(`${f.par}: ${f.dif} puntos al año de diferencia. ${f.lado}.`)
+      await espera(p, 5.2)
+      await desmarcar(p)
+      await r('Pero tu bróker le suma un margen que no publica nadie. La diferencia de tasas NO es tu swap.')
+      await espera(p, 5)
+      await r('Un día de la semana cuenta triple, por el fin de semana. Cuál día lo dice cada bróker.')
+      await espera(p, 4.6)
+      await r('Un swap a favor no es una razón para abrir: es un coste o un ingreso, no una dirección.')
+      await espera(p, 4.6)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
+  'm6-3': {
+    desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se arma una tarjeta y se señala el spread del par y cuánto pesa comparado con su Stop-loss.',
+    async correr(p, r) {
+      await analizador(p, r)
+      await chip(p, es.an.metodo.app)
+      await r('El spread se paga en pips. Lo que importa es cuánto pesa comparado con tu Stop-loss.')
+      await espera(p, 4.6)
+      const fs = await filaLoc(p, es.an.stop)
+      const stop = exigir(await fila(p, es.an.stop), 'el Stop-loss de la tarjeta')
+      await llevar(p, fs.rotulo, 200)
+      await marcar(p, fs.valor)
+      await r(`Stop-loss de esta tarjeta: ${stop}. Es la distancia que arriesgas.`)
+      await espera(p, 4.2)
+      await desmarcar(p)
+      const fp = await verHerramienta(p, es.an.h.spread, 'Spread / Stop-loss')
+      const peso = exigir(await fila(p, 'Spread / Stop-loss'), 'el peso del spread (¿puente apagado?)')
+      const sp = exigir(await fila(p, 'Spread'), 'el spread del par')
+      await marcar(p, fp.valor)
+      await r(`Spread ${sp.replace('.', ',')}: se lleva el ${peso.replace('.', ',').replace('%', ' %')} del riesgo de esta operación.`)
+      await espera(p, 5)
+      await desmarcar(p)
+      await r(APP === 'swing'
+        ? 'Aquí los Stop-loss miden días: suelen ser varias veces más largos que en la app de intradía, y allí el mismo spread pesa unas cuatro veces más.'
+        : 'Aquí los Stop-loss miden horas: suelen ser varias veces más cortos que en la app de swing, y el mismo spread pesa unas cuatro veces más.')
+      await espera(p, 5.6)
+      await r('Cuanto más pesa el coste, más hay que acertar solo para empatar.')
+      await espera(p, 4.2)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+}
+
+// Módulo 6: una fila de «Lo que cuesta abrir la operación», leída de la pantalla.
+async function filaSpread(p, par) {
+  const datos = await p.evaluate((par) => {
+    const caja = [...document.querySelectorAll('.card')].filter((c) => c.textContent.includes('Lo que cuesta abrir la operación')).pop()
+    if (!caja) return null
+    const celdas = [...caja.querySelectorAll('span.mono')]
+    const i = celdas.findIndex((s) => s.textContent.trim() === par)
+    if (i < 0) return null
+    celdas[i + 3].dataset.filaSpread = par
+    return { bid: celdas[i + 1].textContent.trim(), ask: celdas[i + 2].textContent.trim(), spread: celdas[i + 3].textContent.trim().replace('.', ',') }
+  }, par)
+  // Se marca la celda del spread, no la tabla entera.
+  return datos && { ...datos, loc: p.locator(`[data-fila-spread="${par}"]`) }
+}
+
+// Módulo 6: la primera fila de «Tasas de interés y swap» (la de mayor diferencia).
+async function filaTasa(p) {
+  const datos = await p.evaluate((titulo) => {
+    const caja = [...document.querySelectorAll('.card')].filter((c) => c.textContent.includes(titulo)).pop()
+    if (!caja) return null
+    const par = [...caja.querySelectorAll('.mono')].find((s) => s.children.length === 0 && /^[A-Z]{3}\/[A-Z]{3}$/.test(s.textContent.trim()))
+    if (!par) return null
+    // par → su columna (par + lado) → la fila (columna + diferencia).
+    const fila = par.parentElement.parentElement
+    fila.dataset.filaTasa = '1'
+    const texto = fila.innerText
+    const dif = (texto.match(/[+−-]\d+(?:\.\d+)?/) || [])[0]
+    return { par: par.textContent.trim(), dif: dif ? dif.replace('.', ',') : null, texto }
+  }, es.tasas.titulo)
+  if (!datos || !datos.dif) return null
+  const lado = Object.values(es.tasas.lado).find((l) => datos.texto.includes(l))
+  return lado ? { ...datos, lado, loc: p.locator('[data-fila-tasa]') } : null
 }
 
 async function grabar(datos, id) {
