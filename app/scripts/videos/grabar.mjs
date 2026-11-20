@@ -724,6 +724,136 @@ const ESCENAS = {
       await espera(p, 2.8)
     },
   },
+  'm7-1': {
+    desc: 'Video sin voz: el Barrido con el calendario real de la mañana del día de la grabación. Se abre la tarjeta «Calendario económico» y se señalan la hora, la divisa y cuánto suele mover una noticia.',
+    reloj: relojCalendario,
+    async correr(p, r) {
+      await r(`Calendario real, con el reloj puesto el ${fechaReloj()}: así se veían las noticias que venían.`)
+      await espera(p, 5)
+      const t = tarjeta(p, 'Calendario económico')
+      await llevar(p, t, 20)
+      await abrirTarjeta(p, 'Calendario económico')
+      await r('Son las publicaciones de datos económicos de las 8 divisas, en las próximas horas.')
+      await espera(p, 4.4)
+      const f = exigir(await filaNoticia(p), 'la primera noticia del calendario')
+      await llevar(p, f.loc, 200)
+      await marcar(p, f.loc)
+      const imp = [es.calendario.alto, es.calendario.medio, es.calendario.feriado].find((x) => x && f.linea2.includes(x))
+      await r(`${f.hora}: ${f.div}, «${f.titulo}».${imp ? ` Dice «${imp}».` : ''}`)
+      await espera(p, 5.4)
+      await desmarcar(p)
+      await r('La hora es la de tu teléfono. «Mueve mucho» o «Mueve algo» dice cuánto suele sacudir el precio.')
+      await espera(p, 5)
+      await r('Minutos antes y después de una noticia fuerte el precio pega saltos y el spread se abre.')
+      await espera(p, 4.6)
+      await r('El calendario dice CUÁNDO puede haber sacudida, no hacia dónde se va a mover el precio.')
+      await espera(p, 4.6)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
+  'm7-2': {
+    desc: 'Video sin voz: el calendario real de la mañana del día de la grabación. Se señalan el previsto y el anterior de una noticia y se abre su «¿Qué significa?».',
+    reloj: relojCalendario,
+    async correr(p, r) {
+      await r(`Calendario real, con el reloj puesto el ${fechaReloj()}.`)
+      await espera(p, 4)
+      await abrirTarjeta(p, 'Calendario económico')
+      const f = exigir(await filaNoticia(p, CAL.ev.t), `la noticia «${CAL.ev.t}»`)
+      await llevar(p, f.loc, 160)
+      const linea = exigir((f.linea2.match(/(previsto[^\n]*)/i) || [])[1], 'el previsto y el anterior')
+      await marcar(p, f.loc)
+      await r(`${f.div}, «${f.titulo}»: ${linea.replace(/\s+/g, ' ').trim()}.`)
+      await espera(p, 5)
+      await r('«Anterior» es lo que salió la última vez. «Previsto», lo que esperan los analistas ahora.')
+      await espera(p, 5)
+      await desmarcar(p)
+      const boton = f.loc.locator('button[aria-expanded]', { hasText: es.explica.boton }).first()
+      await marcar(p, boton)
+      await espera(p, 1)
+      await boton.click()
+      await desmarcar(p)
+      await espera(p, 0.8)
+      const caja = f.loc.locator('[id]').last()
+      const texto = await caja.innerText()
+      const comp = exigir((texto.match(/Se espera que salga (MÁS ALTO|MÁS BAJO|IGUAL)/) || [])[1], 'la comparación de «¿Qué significa?»')
+      await llevar(p, caja, 120)
+      await marcar(p, caja)
+      await r(`«¿Qué significa?» lo dice en palabras sencillas: se espera ${comp.toLowerCase()} que la vez anterior.`)
+      await espera(p, 5.2)
+      await desmarcar(p)
+      await r('Lo que suele mover el precio es la SORPRESA: cuánto se aleja el dato real de lo previsto.')
+      await espera(p, 5)
+      await r('Que se espere más alto o más bajo no dice hacia dónde irá el precio.')
+      await espera(p, 4.2)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
+  'm7-3': {
+    desc: 'Video sin voz: el Barrido con las noticias reales del día de la grabación. Se abre la tarjeta «Noticias de los bancos centrales» y se señala un titular con su divisa, su fuente y su fecha.',
+    async correr(p, r) {
+      await r('Lo último que publicaron la Reserva Federal, el BCE, el Banco de Nueva Zelanda e ING.')
+      await espera(p, 4.6)
+      const t = tarjeta(p, 'Noticias de los bancos centrales')
+      await llevar(p, t, 20)
+      await abrirTarjeta(p, 'Noticias de los bancos centrales')
+      await r('Primero el aviso: una noticia dice qué pasó y cuándo, nunca hacia dónde va el precio.')
+      await espera(p, 4.6)
+      const enlace = exigir(await p.locator('main a[target="_blank"]').count(), 'un titular en la tarjeta de noticias') && p.locator('main a[target="_blank"]').first()
+      const bloque = enlace.locator('xpath=ancestor::*[self::div or self::li][1]')
+      const div = exigir((await bloque.innerText()).match(/\b(USD|EUR|JPY|GBP|CHF|CAD|AUD|NZD)\b/)?.[1], 'la divisa del titular')
+      await llevar(p, bloque, 220)
+      await marcar(p, bloque)
+      await r(`Cada titular lleva delante su divisa (aquí ${div}), y debajo la fuente y la fecha.`)
+      await espera(p, 5)
+      await desmarcar(p)
+      await r('Van tal cual los publica cada fuente, en su idioma. Al tocarlo se abre la noticia completa en su página.')
+      await espera(p, 5)
+      await r('Solo salen fuentes cuyas condiciones permiten reproducir sus titulares en una app de pago.')
+      await espera(p, 4.6)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+}
+
+// Módulo 7: el calendario se graba con la hora de la mañana del día de los
+// datos, para que haya noticias por venir. Se elige la primera noticia con
+// previsto y anterior del archivo de ESTA app, y el reloj se pone 2 horas antes.
+const CAL = { ev: null, reloj: null }
+async function relojCalendario(datos) {
+  const cal = JSON.parse(await readFile(join(datos, APP === 'swing' ? 'swing' : 'intradia', 'estado/calendario.json'), 'utf8'))
+  const ev = exigir((cal.eventos || []).filter((e) => e.f && e.p).sort((a, b) => new Date(a.d) - new Date(b.d))[0], 'una noticia con previsto y anterior en el calendario')
+  const r = new Date(new Date(ev.d).getTime() - 2 * 3600e3)
+  r.setUTCMinutes(0, 0, 0)
+  CAL.ev = ev
+  CAL.reloj = r
+  return r
+}
+const fechaReloj = () => {
+  const r = CAL.reloj
+  const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+  return `${r.getUTCDate()} de ${meses[r.getUTCMonth()]} de ${r.getUTCFullYear()}, ${String(r.getUTCHours()).padStart(2, '0')}:00 UTC`
+}
+
+// Una noticia del calendario, buscada por su nombre o la primera de la lista.
+async function filaNoticia(p, titulo = null) {
+  const datos = await p.evaluate((titulo) => {
+    const caja = [...document.querySelectorAll('.card')].filter((c) => c.textContent.includes('Calendario económico')).pop()
+    if (!caja) return null
+    const bdis = [...caja.querySelectorAll('bdi')].filter((b) => b.parentElement.tagName === 'SPAN' && b.parentElement.style.flex)
+    const b = titulo ? bdis.find((x) => x.textContent.trim() === titulo) : bdis[0]
+    if (!b) return null
+    const fila = b.parentElement.parentElement.parentElement
+    fila.dataset.noticia = '1'
+    const [hora, div] = [...b.parentElement.parentElement.children].map((x) => x.textContent.trim())
+    const linea2 = fila.children[1]?.innerText || ''
+    return { hora, div, titulo: b.textContent.trim(), linea2 }
+  }, titulo)
+  return datos && { ...datos, loc: p.locator('[data-noticia]') }
 }
 
 // Módulo 6: una fila de «Lo que cuesta abrir la operación», leída de la pantalla.
@@ -765,7 +895,8 @@ async function grabar(datos, id) {
   if (!escena) throw new Error(`No hay escena «${id}»`)
   const tmp = join(datos, '..', `grabando-${id}`)
   await rm(tmp, { recursive: true, force: true })
-  const { b, ctx, p, errores } = await abrir(chromium, { datos, video: tmp, consulta: escena.consulta || '' })
+  const reloj = escena.reloj ? await escena.reloj(datos) : null
+  const { b, ctx, p, errores } = await abrir(chromium, { datos, video: tmp, consulta: escena.consulta || '', reloj })
   const r = await ponerRotulo(p)
   await escena.correr(p, r, datos)
   await ctx.close()

@@ -14,7 +14,10 @@ const TIPOS = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/cs
 export const ANCHO = 390
 export const ALTO = 720
 
-export async function abrir(chromium, { datos, video, consulta = '' }) {
+// `reloj`: una fecha para fijar la hora del navegador. Solo la usan las escenas
+// del calendario, que se graban con la hora de la mañana del día de los datos
+// para que haya noticias por venir; el rótulo de esas escenas lo dice.
+export async function abrir(chromium, { datos, video, consulta = '', reloj = null }) {
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' })
   const opciones = { viewport: { width: ANCHO, height: ALTO } }
   if (video) opciones.recordVideo = { dir: video, size: { width: ANCHO, height: ALTO } }
@@ -52,6 +55,7 @@ export async function abrir(chromium, { datos, video, consulta = '' }) {
       r.fulfill({ status: 404, body: '' })
     }
   })
+  if (reloj) await ctx.clock.setFixedTime(reloj)
   const p = await ctx.newPage()
   const errores = []
   p.on('pageerror', (e) => errores.push(String(e)))
