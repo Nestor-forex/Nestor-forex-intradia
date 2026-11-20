@@ -14,6 +14,12 @@ import { useState } from 'react'
 import { useIdioma } from '../lib/i18n'
 import { LECCIONES, MODULOS, PROXIMOS, URL_VIDEOS, moduloDe, progresoModulo, siguiente, texto, TODAS } from '../lib/curso'
 import { useCurso } from '../lib/useCurso'
+import { herramientasDe } from '../lib/curso/herramientas'
+import { APP } from '../lib/identidad'
+
+// Las herramientas de ESTA app (el COT, el oro y la correlación solo están en
+// la de swing). Cada app enseña sus propios videos.
+const HERRAMIENTAS_APP = herramientasDe(APP)
 
 // ⚠️ El contenido está en español aunque la app esté en árabe: va siempre de
 // izquierda a derecha y marcado como español, o los puntos saltan al principio
@@ -38,6 +44,78 @@ function Parrafos({ lista }) {
       {p}
     </p>
   ))
+}
+
+// El video de una lección o de una herramienta. Sin voz, a propósito por
+// ahora: se mira con el texto que va escrito encima. Dos formatos del mismo
+// video: WebM (Chrome, Android) y MP4 (iPhone, Safari).
+function VideoCurso({ video }) {
+  return (
+    <>
+      <video
+        controls
+        muted
+        playsInline
+        preload="metadata"
+        style={{ width: '100%', maxWidth: 420, borderRadius: 12, border: '1px solid var(--border)', background: '#000' }}
+      >
+        <source src={`${URL_VIDEOS}${video.archivo}.webm`} type="video/webm" />
+        <source src={`${URL_VIDEOS}${video.archivo}.mp4`} type="video/mp4" />
+      </video>
+      <p style={{ ...TEXTO, fontSize: 12.5, color: 'var(--text-muted)' }}>{video.desc}</p>
+    </>
+  )
+}
+
+// Una herramienta: qué es, el video, lo que NO te dice y dónde probarla.
+function Herramienta({ h, onIr, t }) {
+  return (
+    <article {...ES} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+      <h2 style={{ margin: 0, fontSize: 19, fontWeight: 700 }}>{h.titulo}</h2>
+      <Parte titulo={t('curso.objetivo')} borde="var(--cta)">
+        <p style={{ ...TEXTO, color: 'var(--text)' }}>{h.que}</p>
+      </Parte>
+      <Parte titulo={t('curso.video')}>
+        <VideoCurso video={h.video} />
+      </Parte>
+      <Parte titulo={t('curso.noDice')} borde="var(--amber)">
+        <Parrafos lista={h.noDice} />
+      </Parte>
+      <Parte titulo={t('curso.hazlo')}>
+        <p style={TEXTO}>{h.hazlo.texto}</p>
+        <div>
+          <button type="button" className="btn-ghost" onClick={() => onIr(h.hazlo.tab)} style={{ color: 'var(--cta)', borderColor: 'var(--cta)' }}>
+            {h.hazlo.boton} →
+          </button>
+        </div>
+      </Parte>
+    </article>
+  )
+}
+
+// La lista de herramientas en video, debajo de los módulos.
+function ListaHerramientas({ onAbrir, t, compacta }) {
+  if (!HERRAMIENTAS_APP.length) return null
+  return (
+    <section style={{ display: 'flex', flexDirection: 'column', gap: compacta ? 4 : 8, marginTop: compacta ? 10 : 6 }}>
+      <div style={{ fontSize: compacta ? 12 : 15, fontWeight: 700, color: compacta ? 'var(--text-muted)' : 'var(--text)' }}>{t('curso.herramientas')}</div>
+      {!compacta && <p style={{ ...TEXTO, fontSize: 12.5 }}>{t('curso.herramientasDesc')}</p>}
+      {HERRAMIENTAS_APP.map((h) => (
+        <button
+          key={h.id}
+          type="button"
+          onClick={() => onAbrir(h.id)}
+          className={compacta ? undefined : 'card'}
+          style={compacta
+            ? { textAlign: 'start', border: 'none', background: 'none', borderRadius: 8, padding: '6px 8px', color: 'var(--text)', font: 'inherit', fontSize: 13.5, cursor: 'pointer' }
+            : { textAlign: 'start', cursor: 'pointer', color: 'var(--text)', font: 'inherit', display: 'flex', gap: 10, alignItems: 'center' }}
+        >
+          {!compacta && <span className="mono" style={{ color: 'var(--cta)', minWidth: 18 }}>▶</span>}
+          <span {...ES} style={{ fontSize: compacta ? 13.5 : 14, fontWeight: compacta ? 400 : 600 }}>{h.titulo}</span>
+        </button>
+      ))}
+    </section>
+  )
 }
 
 function Pregunta({ q, t }) {
@@ -118,19 +196,7 @@ function Leccion({ id, hecha, onTerminar, onSiguiente, onIr, t }) {
       </Parte>
       {l.video && (
         <Parte titulo={t('curso.video')}>
-          {/* ⚠️ Sin voz, a propósito por ahora: se mira con el texto que va escrito encima. */}
-          {/* Dos formatos del mismo video: WebM (Chrome, Android) y MP4 (iPhone, Safari). */}
-          <video
-            controls
-            muted
-            playsInline
-            preload="metadata"
-            style={{ width: '100%', maxWidth: 420, borderRadius: 12, border: '1px solid var(--border)', background: '#000' }}
-          >
-            <source src={`${URL_VIDEOS}${l.video.archivo}.webm`} type="video/webm" />
-            <source src={`${URL_VIDEOS}${l.video.archivo}.mp4`} type="video/mp4" />
-          </video>
-          <p style={{ ...TEXTO, fontSize: 12.5, color: 'var(--text-muted)' }}>{l.video.desc}</p>
+          <VideoCurso video={l.video} />
         </Parte>
       )}
       <Parte titulo={t('curso.hazlo')}>
@@ -180,22 +246,32 @@ export default function Curso({ uid, ficha, onIr, web = false }) {
   const curso = useCurso(uid, ficha)
   const [moduloId, setModuloId] = useState(null)
   const [leccionId, setLeccionId] = useState(null)
+  const [herramientaId, setHerramientaId] = useState(null)
+  const herramienta = herramientaId ? HERRAMIENTAS_APP.find((h) => h.id === herramientaId) : null
 
   const modulo = moduloId ? MODULOS.find((m) => m.id === moduloId) : null
   const volver = () => {
-    if (leccionId) setLeccionId(null)
+    if (herramientaId) setHerramientaId(null)
+    else if (leccionId) setLeccionId(null)
     else setModuloId(null)
   }
   const abrirLeccion = (id) => {
+    setHerramientaId(null)
     setModuloId(moduloDe(id)?.id || null)
     setLeccionId(id)
+    window.scrollTo?.(0, 0)
+  }
+  const abrirHerramienta = (id) => {
+    setLeccionId(null)
+    setModuloId(null)
+    setHerramientaId(id)
     window.scrollTo?.(0, 0)
   }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        {!web && (modulo || leccionId) && (
+        {!web && (modulo || leccionId || herramienta) && (
           <button type="button" className="btn-ghost" onClick={volver}>
             ← {t('curso.volver')}
           </button>
@@ -240,9 +316,12 @@ export default function Curso({ uid, ficha, onIr, web = false }) {
                 {t('curso.modulo', { n: p.n })} · <span {...ES}>{p.titulo}</span> · {t('curso.proximamente')}
               </div>
             ))}
+            <ListaHerramientas onAbrir={abrirHerramienta} t={t} compacta />
           </nav>
           <div className="curso-web-leccion">
-            {leccionId ? (
+            {herramienta ? (
+              <Herramienta key={herramienta.id} h={herramienta} onIr={onIr} t={t} />
+            ) : leccionId ? (
               <Leccion key={leccionId} id={leccionId} hecha={curso.hechas.includes(leccionId)} onTerminar={curso.terminar} onSiguiente={abrirLeccion} onIr={onIr} t={t} />
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -259,6 +338,8 @@ export default function Curso({ uid, ficha, onIr, web = false }) {
             )}
           </div>
         </div>
+      ) : herramienta ? (
+        <Herramienta key={herramienta.id} h={herramienta} onIr={onIr} t={t} />
       ) : leccionId ? (
         <Leccion
           key={leccionId}
@@ -314,6 +395,7 @@ export default function Curso({ uid, ficha, onIr, web = false }) {
                 </div>
               )
             )}
+          <ListaHerramientas onAbrir={abrirHerramienta} t={t} />
         </div>
       )}
     </div>

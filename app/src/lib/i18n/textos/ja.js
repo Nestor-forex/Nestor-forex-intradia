@@ -571,6 +571,8 @@ export default {
     descargado: "ファイルをダウンロードしました。",
   },
   curso: {
+    herramientas: "ツールを動画で",
+    herramientasDesc: "このアプリの各ツールの短い動画：何なのか、使い方、そして教えてくれないこと。",
     aprender: "講座",
     video: "見てみる",
     empezar: "始める",

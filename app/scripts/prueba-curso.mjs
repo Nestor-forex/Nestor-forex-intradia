@@ -16,6 +16,8 @@ import { SUGERIDO, frenoEnDolares, operacionesHastaElFreno } from '../src/lib/pe
 import { pipUSD } from '../src/lib/calc.js'
 import { crearT } from '../src/lib/i18n/crearT.js'
 import { IDIOMAS } from '../src/lib/i18n/idiomas.js'
+import { HERRAMIENTAS, herramientasDe } from '../src/lib/curso/herramientas.js'
+import { APP } from '../src/lib/identidad.js'
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..')
 const leer = (r) => readFileSync(join(RAIZ, r), 'utf8')
@@ -73,21 +75,56 @@ ok(/import \{ SUGERIDO, frenoEnDolares, operacionesHastaElFreno \} from '\.\.\/p
 // El valor del pip del módulo 1 es el de la calculadora.
 ok(pipUSD('EUR/USD', {}) === 10 && LECCIONES['m1-2'].ejemplo.some((p) => p.includes('10 USD con un lote entero')), 'el pip de EUR/USD (10 USD por lote) es el de la calculadora')
 
-// Los videos: cada uno tiene su descripción, y si este repositorio guarda los
-// videos (el de swing), el archivo tiene que existir y pesar poco.
+// Los videos: cada uno tiene su descripción, y CADA app guarda los suyos
+// (2026-11-20): el archivo tiene que existir en este repositorio y pesar poco.
 const DIR_VIDEOS = join(RAIZ, 'public/curso/videos')
 for (const id of TODAS) {
   const v = LECCIONES[id].video
   if (!v) continue
   ok(typeof v.archivo === 'string' && !/\./.test(v.archivo) && v.desc, `${id}: el video tiene nombre (sin extensión) y descripción`)
-  if (existsSync(DIR_VIDEOS)) {
-    for (const ext of ['webm', 'mp4']) {
-      const ruta = join(DIR_VIDEOS, `${v.archivo}.${ext}`)
-      ok(existsSync(ruta) && statSync(ruta).size < 3 * 1024 * 1024, `${id}: ${v.archivo}.${ext} existe y pesa menos de 3 MB`)
-    }
+  for (const ext of ['webm', 'mp4']) {
+    const ruta = join(DIR_VIDEOS, `${v.archivo}.${ext}`)
+    ok(existsSync(ruta) && statSync(ruta).size < 3 * 1024 * 1024, `${id}: ${v.archivo}.${ext} existe en ESTA app y pesa menos de 3 MB`)
   }
 }
-ok(/URL_VIDEOS = 'https:\/\/nestor-forex\.github\.io\/Nestor-forex\/curso\/videos\/'/.test(leer('src/lib/curso.js')), 'los videos se piden a la página de swing (las dos apps los comparten)')
+{
+  const cj = leer('src/lib/curso.js')
+  ok(/swing: 'https:\/\/nestor-forex\.github\.io\/Nestor-forex\/'/.test(cj) && /intradia: 'https:\/\/nestor-forex\.github\.io\/Nestor-forex-intradia\/'/.test(cj), 'cada app tiene la dirección de su propia página')
+  ok(/URL_VIDEOS = `\$\{PAGINAS\[APP\]\}curso\/videos\/`/.test(cj), 'los videos se piden a la página de ESTA app, no a la de la otra')
+}
+
+console.log('\n3b. Las herramientas en video: cada app las suyas (2026-11-20)')
+{
+  const APPS = ['swing', 'intradia']
+  ok(HERRAMIENTAS.length > 0 && new Set(HERRAMIENTAS.map((h) => h.id)).size === HERRAMIENTAS.length, 'hay herramientas y ningún id repetido')
+  for (const h of HERRAMIENTAS) {
+    ok(h.apps.length > 0 && h.apps.every((a) => APPS.includes(a)), `${h.id}: dice en qué apps existe`)
+    ok(h.titulo && h.que && h.noDice?.length > 0 && h.video?.archivo && h.video?.desc && TABS.includes(h.hazlo?.tab) && h.hazlo?.boton, `${h.id}: tiene título, qué es, video, «lo que NO te dice» y dónde probarla`)
+  }
+  for (const id of ['h-cot']) {
+    const h = HERRAMIENTAS.find((x) => x.id === id)
+    ok(!h || !h.apps.includes('intradia'), `${id} no sale en intradía, que no tiene esa herramienta`)
+  }
+  const deEsta = herramientasDe(APP)
+  ok(deEsta.every((h) => h.apps.includes(APP)), 'esta app solo enseña las herramientas que tiene')
+  for (const h of deEsta) {
+    for (const ext of ['webm', 'mp4']) {
+      const ruta = join(DIR_VIDEOS, `${h.video.archivo}.${ext}`)
+      ok(existsSync(ruta) && statSync(ruta).size < 3 * 1024 * 1024, `${h.id}: ${h.video.archivo}.${ext} grabado en ESTA app y pesa menos de 3 MB`)
+    }
+  }
+  // Cada herramienta tiene su escena de grabación, y al revés.
+  const escenas = existsSync(join(RAIZ, 'scripts/videos/escenas-herramientas.mjs')) ? leer('scripts/videos/escenas-herramientas.mjs') : ''
+  const idsEscenas = [...escenas.matchAll(/^ {2}'(h-[a-z0-9-]+)': \{/gm)].map((m) => m[1])
+  ok(idsEscenas.length > 0, 'se leen las escenas de los videos de herramientas')
+  ok(HERRAMIENTAS.every((h) => idsEscenas.includes(h.id)) && idsEscenas.every((id) => HERRAMIENTAS.some((h) => h.id === id)), 'cada herramienta tiene su escena y cada escena su herramienta')
+  const todoH = JSON.stringify(HERRAMIENTAS) + escenas
+  for (const prohibido of [/\bcompr[aá] (?:ahora|ya|este|el par)/i, /\bvend[eé] (?:ahora|ya|este|el par)/i, /va a subir/i, /va a bajar/i, /\bsubir[aá]\b/i, /\bbajar[aá]\b/i, /garantiz/i]) {
+    ok(!prohibido.test(todoH), `las herramientas no dicen ${prohibido}`)
+  }
+  ok(!todoH.toLowerCase().includes(broker) && !todoH.toLowerCase().includes('ava trade'), 'las herramientas no nombran al bróker del desarrollador')
+  ok(/FIN\)/.test(escenas) && (escenas.match(/await r\(FIN\)/g) || []).length === idsEscenas.length, 'todas las escenas terminan con el aviso de que no es una señal')
+}
 
 console.log('\n4. El progreso')
 ok(leerHechas(null).length === 0 && leerHechas('x').length === 0, 'un valor raro no inventa lecciones terminadas')

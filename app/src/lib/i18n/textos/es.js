@@ -642,6 +642,8 @@ export default {
     descargado: "Se descargó el archivo.",
   },
   curso: {
+    herramientas: "Las herramientas, en video",
+    herramientasDesc: "Un video corto por cada herramienta de esta app: qué es, cómo se usa y lo que NO te dice.",
     aprender: "Curso",
     video: "Míralo",
     empezar: "Empezar",
