@@ -49,7 +49,8 @@ export function useAuthUser() {
 }
 
 // Operaciones de MUESTRA. `?diario=freno` deja el día de hoy con dos pérdidas
-// seguidas; `?diario=grupos` llena el Diario para «Tus números por grupos».
+// seguidas; `?diario=grupos` llena el Diario para «Tus números por grupos»;
+// `?diario=juntas` deja dos abiertas con el euro en común (módulo 8).
 function muestra() {
   const modo = params().get('diario')
   const d = hoy()
@@ -58,6 +59,14 @@ function muestra() {
     return [
       { id: 'f2', par: 'GBP/USD', dir: 'Compra', lote: 0.03, pl: -10, estado: 'cerrada', fecha: d, cerradaEl: d, cerradaEnMs: ahora - 3600e3, nota: 'Ejemplo' },
       { id: 'f1', par: 'EUR/USD', dir: 'Venta', lote: 0.04, pl: -10, estado: 'cerrada', fecha: d, cerradaEl: d, cerradaEnMs: ahora - 7200e3, nota: 'Ejemplo' },
+    ]
+  }
+  if (modo === 'juntas') {
+    // Dos operaciones abiertas que comparten el euro: el aviso de «Riesgo
+    // concentrado» del Diario (módulo 8). Ejemplo, no datos de nadie.
+    return [
+      { id: 'j2', par: 'EUR/CHF', dir: 'Compra', lote: 0.03, pl: 0, estado: 'abierta', fecha: d, nota: 'Ejemplo' },
+      { id: 'j1', par: 'EUR/USD', dir: 'Compra', lote: 0.03, pl: 0, estado: 'abierta', fecha: d, nota: 'Ejemplo' },
     ]
   }
   if (modo === 'grupos') {

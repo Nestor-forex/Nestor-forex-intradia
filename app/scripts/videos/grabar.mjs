@@ -818,6 +818,163 @@ const ESCENAS = {
       await espera(p, 2.8)
     },
   },
+  'm8-1': {
+    desc: 'Video sin voz: el Diario de un usuario de ejemplo con dos operaciones abiertas que comparten el euro, y la tarjeta de «Riesgo concentrado» que sale sola.',
+    consulta: '?diario=juntas',
+    async correr(p, r) {
+      await irA(p, 'Diario')
+      await r('Un usuario de EJEMPLO con dos operaciones abiertas: compra EUR/USD y compra EUR/CHF.')
+      await espera(p, 4.6)
+      // La tarjeta del aviso no es `.card`: es la caja que envuelve su título.
+      const caja = p.getByText(es.diario.riesgoConcentrado, { exact: true }).first().locator('xpath=..')
+      await llevar(p, caja, 60)
+      const texto = exigir(await caja.innerText().catch(() => null), 'la tarjeta de «Riesgo concentrado»')
+      const m = exigir(texto.match(/Tienes (\d+) operaciones abiertas con ([A-Z]{3}) \(([^)]+)\)/), 'el aviso de riesgo concentrado')
+      await marcar(p, caja)
+      await r(`El Diario lo avisa solo: ${m[1]} operaciones abiertas con ${m[2]} (${m[3]}).`)
+      await espera(p, 5)
+      await r('No son dos apuestas: es una sola apuesta más grande al euro. Si el euro cae, pierden las dos.')
+      await espera(p, 5)
+      await desmarcar(p)
+      await r('Arriesgando el 1 % en cada una, la idea «el euro sube» tiene en juego el 2 %.')
+      await espera(p, 4.6)
+      await r('El aviso no dice cuál cerrar ni que estén mal: dice que dependen de lo mismo.')
+      await espera(p, 4.4)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
+  'm8-2': APP === 'swing'
+    ? {
+        desc: 'Video sin voz con los datos reales de ese día. En la app de swing, la tarjeta «Correlación entre pares» del tablero completo.',
+        async correr(p, r) {
+          await r('La correlación mide cuánto se han movido dos pares al mismo tiempo. Va de −1 a +1.')
+          await espera(p, 4.6)
+          await abrirTablero(p)
+          const t = tarjeta(p, 'Correlación entre pares')
+          await llevar(p, t, 20)
+          await abrirTarjeta(p, 'Correlación entre pares')
+          const dato = await p.evaluate(() => {
+            const filas = [...document.querySelectorAll('main .mono')].filter((x) => /^[A-Z]{3}\/[A-Z]{3} · [A-Z]{3}\/[A-Z]{3}$/.test(x.textContent.trim()))
+            if (!filas.length) return null
+            const leer = (f) => ({ pareja: f.textContent.trim(), r: f.parentElement.parentElement.lastElementChild.textContent.trim(), caja: f.parentElement.parentElement })
+            const todas = filas.map(leer)
+            const pos = todas[0]
+            const neg = todas.find((x) => /^[−-]/.test(x.r))
+            pos.caja.dataset.correl = 'pos'
+            if (neg) neg.caja.dataset.correl = 'neg'
+            return { pos: { pareja: pos.pareja, r: pos.r }, neg: neg ? { pareja: neg.pareja, r: neg.r } : null }
+          })
+          exigir(dato, 'una pareja en la tarjeta de correlación')
+          const f = p.locator('[data-correl="pos"]')
+          await llevar(p, f, 240)
+          await marcar(p, f)
+          await r(`${dato.pos.pareja}: ${dato.pos.r.replace('.', ',')}. Se calcula con los cambios de cada día de las últimas 60 sesiones.`)
+          await espera(p, 5.2)
+          await desmarcar(p)
+          if (dato.neg) {
+            const g = p.locator('[data-correl="neg"]')
+            await llevar(p, g, 240)
+            await marcar(p, g)
+            await r(`${dato.neg.pareja}: ${dato.neg.r.replace('.', ',')}. Negativa: uno sube cuando el otro baja. Para el riesgo pesa igual.`)
+            await espera(p, 5.2)
+            await desmarcar(p)
+          }
+          await r('Los dos comprados, si van juntos, es una apuesta doble. Uno comprado y otro vendido, se anulan.')
+          await espera(p, 5)
+          await r('La correlación no dice hacia dónde irá ninguno de los dos.')
+          await espera(p, 4)
+          await r(FIN)
+          await espera(p, 2.8)
+        },
+      }
+    : {
+        desc: 'Video sin voz: la pestaña Avisos de la app de intradía, con el aviso «Dos de tus pares se mueven igual», que usa la correlación que mide la app de swing.',
+        async correr(p, r) {
+          await r('La correlación mide cuánto se han movido dos pares al mismo tiempo. Va de −1 a +1.')
+          await espera(p, 4.6)
+          await r('Esta app no la calcula: con velas de una hora, 60 velas son solo dos días y medio.')
+          await espera(p, 4.8)
+          await irA(p, 'Avisos')
+          const t = tarjeta(p, es.intel.titulo)
+          await llevar(p, t, 20)
+          await abrirTarjeta(p, es.intel.titulo)
+          const tit = p.getByText(es.intel.correlacionTitulo, { exact: true }).first()
+          await llevar(p, tit, 200)
+          const caja = tit.locator('xpath=ancestor::*[self::div or self::label][2]')
+          const texto = exigir(await caja.innerText().catch(() => null), 'el aviso de correlación')
+          const umbral = exigir((texto.match(/correlación de ([\d.,]+)/) || [])[1], 'el umbral del aviso de correlación')
+          await marcar(p, caja)
+          await r(`El aviso «${es.intel.correlacionTitulo}» salta con una correlación de ${umbral.replace('.', ',')} o más. Lo mide la app de swing con velas diarias.`)
+          await espera(p, 5.4)
+          await desmarcar(p)
+          await r('Los dos comprados, si van juntos, es una apuesta doble. Uno comprado y otro vendido, se anulan.')
+          await espera(p, 5)
+          await r('La correlación no dice hacia dónde irá ninguno de los dos.')
+          await espera(p, 4)
+          await r(FIN)
+          await espera(p, 2.8)
+        },
+      },
+
+  'm8-3': {
+    desc: APP === 'swing'
+      ? 'Video sin voz: el Barrido con los datos reales de ese día. Se señala el dólar en el ranking de fuerza y después la tarjeta del oro, con su número frente a los pares con dólar y frente a los cruces.'
+      : 'Video sin voz: el Barrido con los datos reales de ese día. Se señala el dólar en el ranking de fuerza y la lista de pares que lo llevan.',
+    async correr(p, r) {
+      await r('Siete de los pares que siguen las apps llevan el dólar. Si el dólar se mueve, se mueven todos a la vez.')
+      await espera(p, 5)
+      const ranking = await rankingFuerza(p)
+      const i = ranking.findIndex((x) => x[0] === 'USD')
+      exigir(i >= 0 ? ranking[i] : null, 'el dólar en el ranking')
+      const fila = p.locator('[data-ranking] > *').nth(i)
+      await llevar(p, fila, 160)
+      await marcar(p, fila)
+      await r(`El dólar hoy: ${ranking[i][1].replace('.', ',')} de 10, el ${i + 1}.º de las 8 divisas.`)
+      await espera(p, 4.8)
+      await desmarcar(p)
+      await r('Comprar EUR/USD y vender USD/CHF son lo mismo: las dos venden dólar. No es repartir el riesgo.')
+      await espera(p, 5.2)
+      if (APP === 'swing') {
+        const t = tarjeta(p, 'Oro')
+        await llevar(p, t, 20)
+        await abrirTarjeta(p, 'Oro')
+        const dato = await p.evaluate(() => {
+          const filas = [...document.querySelectorAll('main .mono')].filter((x) => /^[A-Z]{3}\/[A-Z]{3}$/.test(x.textContent.trim()) && x.closest('.card')?.innerText.includes('Cuánto se mueve el oro'))
+          if (!filas.length) return null
+          const pares = filas.map((f) => f.textContent.trim())
+          const conUsd = pares.filter((x) => x.includes('USD')).length
+          const caja = filas[0].parentElement.parentElement
+          caja.dataset.oro = '1'
+          return { n: pares.length, conUsd, par: pares[0], r: caja.lastElementChild?.textContent.trim() }
+        })
+        if (dato) {
+          const f = p.locator('[data-oro]')
+          await llevar(p, f, 250)
+          await marcar(p, f)
+          await r(`El oro suele ir al revés que el dólar. Hoy se mueve más con ${dato.par} (${dato.r.replace('.', ',')}). De los ${dato.n} pares de la lista, ${dato.conUsd} llevan dólar.`)
+          await espera(p, 6)
+          await desmarcar(p)
+        } else {
+          const vacio = p.getByText(es.oro.sinCorrel, { exact: true }).first()
+          exigir(await vacio.count(), 'el mensaje de la tarjeta del oro sin parejas')
+          await llevar(p, vacio, 220)
+          await marcar(p, vacio)
+          await r('El oro suele ir al revés que el dólar. Pero hoy ningún par pasa de 0,5 con él, y la tarjeta lo dice: eso también es un dato.')
+          await espera(p, 5.6)
+          await desmarcar(p)
+        }
+      } else {
+        await r('El oro suele ir al revés que el dólar. La tarjeta que lo mide está en la app de swing.')
+        await espera(p, 4.8)
+      }
+      await r('Que el oro baje no dice que el dólar vaya a subir. Es una costumbre, no una ley.')
+      await espera(p, 4.4)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
 }
 
 // Módulo 7: el calendario se graba con la hora de la mañana del día de los
