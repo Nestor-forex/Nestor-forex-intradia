@@ -486,6 +486,184 @@ export const ESCENAS_HERRAMIENTAS = {
     },
   },
 
+  'h-pares': {
+    consulta: '?pares=ejemplo',
+    async correr(p, r) {
+      await r('Mis pares: un usuario de ejemplo que solo opera cuatro pares.')
+      await espera(p, 3.6)
+      const viendo = p.getByText(/^Viendo \d+ de \d+ pares$/).first()
+      await llevar(p, viendo, 120)
+      await marcar(p, viendo.locator('xpath=..'))
+      const v1 = exigir(await viendo.textContent(), 'cuántos pares se ven')
+      await r(`Arriba siempre dice cuántos estás viendo: «${v1.trim()}».`)
+      await espera(p, 4)
+      const todos = p.getByRole('button', { name: /^Todos \(\d+\)$/ }).first()
+      await marcar(p, todos)
+      await r('Con un toque ves todos los pares…')
+      await espera(p, 2.4)
+      await todos.click()
+      await espera(p, 1.2)
+      const v2 = exigir(await p.getByText(/^Viendo \d+ de \d+ pares$/).first().textContent(), 'cuántos pares se ven')
+      await r(`…«${v2.trim()}».`)
+      await espera(p, 3)
+      const mis = p.getByRole('button', { name: /^Mis pares \(\d+\)$/ }).first()
+      await marcar(p, mis)
+      await r('Y con otro, vuelves a los tuyos.')
+      await espera(p, 2.6)
+      await mis.click()
+      await desmarcar(p)
+      await espera(p, 1)
+      const cambiar = p.getByRole('button', { name: 'Cambiar mis pares' }).first()
+      await marcar(p, cambiar)
+      await r('«Cambiar mis pares» abre la lista para poner o quitar pares cuando quieras.')
+      await espera(p, 3)
+      await cambiar.click()
+      await desmarcar(p)
+      await espera(p, 3.6)
+      await p.getByRole('button', { name: 'Cancelar' }).first().click()
+      await espera(p, 0.8)
+      const ranking = await p.evaluate(() => {
+        const caja = [...document.querySelectorAll('main div')].find((d) => d.children.length === 8 && [...d.children].every((c) => /^[A-Z]{3}\s+\d/.test(c.innerText.trim())))
+        if (caja) caja.dataset.ranking = '1'
+        return Boolean(caja)
+      })
+      if (ranking) {
+        await llevar(p, p.locator('[data-ranking]'), 140)
+        await marcar(p, p.locator('[data-ranking]'))
+      }
+      await r('Lo que NO se recorta nunca es el ranking de fuerza: compara cada divisa con las otras siete.')
+      await espera(p, 4.6)
+      await desmarcar(p)
+      await r('No te recomienda pares: solo filtra los que tú elegiste.')
+      await espera(p, 3.6)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
+  'h-avisos': {
+    consulta: '?pares=ejemplo',
+    async correr(p, r) {
+      await irA(p, 'Avisos')
+      await r('Mis avisos: tú pones el nivel, y la app te avisa al celular cuando el mercado llega ahí.')
+      await espera(p, 4.4)
+      await r('Primero el aviso: esto NO son señales de la app. Los niveles los pones tú.')
+      await espera(p, 4.2)
+      const lista = p.getByText(/^Mis avisos \(\d+ de \d+\)$/).first()
+      await llevar(p, lista, 90)
+      await marcar(p, lista.locator('xpath=..'))
+      const t = exigir(await lista.textContent(), 'la lista de avisos')
+      const n = exigir(t.match(/\((\d+) de (\d+)\)/), 'cuántos avisos hay')
+      await r(`Este usuario de ejemplo tiene ${n[1]} de ${n[2]} posibles. Cada uno se lee como una frase.`)
+      await espera(p, 4.6)
+      await desmarcar(p)
+      const nuevo = p.getByText('Poner un aviso nuevo', { exact: true }).first()
+      await llevar(p, nuevo, 90)
+      await r('Para poner uno: el par, de qué (precio, RSI o %B), cuándo y el nivel.')
+      await espera(p, 3.6)
+      // Los campos van dentro de su etiqueta, en este orden: par, de qué,
+      // cuándo y nivel.
+      const form = nuevo.locator('xpath=..')
+      await form.locator('select').nth(0).selectOption('EUR/USD')
+      await espera(p, 0.8)
+      await form.locator('select').nth(1).selectOption('rsi')
+      await espera(p, 0.8)
+      await form.locator('select').nth(2).selectOption('arriba')
+      await espera(p, 0.8)
+      await form.locator('input').first().fill('70')
+      await espera(p, 0.6)
+      await marcar(p, nuevo.locator('xpath=..'))
+      await r('Por ejemplo: «EUR/USD, si el RSI llega o pasa de 70». Y se pulsa «Añadir el aviso».')
+      await espera(p, 4.6)
+      await desmarcar(p)
+      await r('Si no lo ves, se repite a los 15 y a los 30 minutos, y se calla en cuanto abres esta pantalla.')
+      await espera(p, 4.6)
+      await r('Un aviso te dice qué pasó, nunca qué hacer con ello.')
+      await espera(p, 3.6)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
+  // Solo swing: el oro y la correlación no existen en la de intradía.
+  'h-oro': {
+    async correr(p, r) {
+      await r('El oro: su precio, y cuánto se ha movido junto a cada uno de tus pares.')
+      await espera(p, 4.2)
+      const t = tarjeta(p, 'Oro')
+      await llevar(p, t, 20)
+      await abrirTarjeta(p, 'Oro')
+      await r('Primero el aviso: el oro no dice comprar ni vender ningún par.')
+      await espera(p, 4)
+      const dato = await p.evaluate(() => {
+        const u = [...document.querySelectorAll('main span')].find((x) => x.textContent.trim() === 'dólares por onza')
+        const precio = u?.previousElementSibling?.textContent.trim() || null
+        const fila = [...document.querySelectorAll('main .mono')].find((x) => /^[A-Z]{3}\/[A-Z]{3}$/.test(x.textContent.trim()) && x.closest('.card')?.innerText.includes('Cuánto se mueve el oro'))
+        if (!fila) return { precio, par: null }
+        const caja = fila.parentElement.parentElement
+        caja.dataset.oro = '1'
+        return { precio, par: fila.textContent.trim(), r: caja.lastElementChild?.textContent.trim() }
+      })
+      exigir(dato.precio, 'el precio del oro')
+      await llevar(p, p.getByText('dólares por onza', { exact: true }).first(), 220)
+      await r(`Hoy: ${dato.precio} dólares la onza.`)
+      await espera(p, 3.4)
+      if (dato.par) {
+        const f = p.locator('[data-oro]')
+        await llevar(p, f, 250)
+        await marcar(p, f)
+        await r(`El par que más se ha movido con él en las últimas 60 sesiones: ${dato.par}, ${dato.r}. Va de −1 a +1.`)
+        await espera(p, 5)
+        await desmarcar(p)
+      } else {
+        await r('Hoy ningún par se ha movido de forma parecida al oro, y la tarjeta lo dice.')
+        await espera(p, 4)
+      }
+      await r('Que se muevan juntos no quiere decir que uno mueva al otro. Es un dato del pasado, no una predicción.')
+      await espera(p, 4.8)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
+  'h-correlacion': {
+    async correr(p, r) {
+      await r('La correlación: qué pares se han movido casi igual en las últimas 60 sesiones.')
+      await espera(p, 4.2)
+      const ver = p.locator('main a', { hasText: 'Ver tablero completo' }).first()
+      await llevar(p, ver, 200)
+      await marcar(p, ver)
+      await r('Está en el tablero completo.')
+      await espera(p, 2.6)
+      await ver.click()
+      await desmarcar(p)
+      await espera(p, 1.4)
+      const t = tarjeta(p, 'Correlación entre pares')
+      await llevar(p, t, 20)
+      await abrirTarjeta(p, 'Correlación entre pares')
+      const dato = await p.evaluate(() => {
+        const fila = [...document.querySelectorAll('main .mono')].find((x) => /^[A-Z]{3}\/[A-Z]{3} · [A-Z]{3}\/[A-Z]{3}$/.test(x.textContent.trim()))
+        if (!fila) return null
+        const caja = fila.parentElement.parentElement
+        caja.dataset.correl = '1'
+        return { pareja: fila.textContent.trim(), r: caja.lastElementChild.textContent.trim(), tipo: fila.nextElementSibling?.textContent.trim() }
+      })
+      exigir(dato, 'la primera pareja de la correlación')
+      const f = p.locator('[data-correl]')
+      await llevar(p, f, 240)
+      await marcar(p, f)
+      await r(`La que más se parece hoy: ${dato.pareja}, ${dato.r} («${dato.tipo}»).`)
+      await espera(p, 4.6)
+      await desmarcar(p)
+      await r('Cerca de +1 se mueven igual; cerca de −1, al revés. Las dos cosas son el mismo riesgo.')
+      await espera(p, 4.6)
+      await r('Abrir dos pares así a la vez no reparte el riesgo: es la misma apuesta con el doble de tamaño.')
+      await espera(p, 4.6)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
   // Solo swing: el COT es semanal y llega con días de retraso.
   'h-cot': {
     async correr(p, r) {

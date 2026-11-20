@@ -6,6 +6,7 @@
 // público. Lo del mercado (barrido, calendario, tasas…) sí es real: lo sirve
 // `grabar.mjs` desde los archivos publicados.
 import { useState } from 'react'
+import { APP } from '../../src/lib/identidad.js'
 
 const hoy = () => {
   const d = new Date()
@@ -21,6 +22,19 @@ export function useAuthUser() {
     curso: [],
     estilo: 'tendencias',
     ...(sinPerfil ? {} : { perfilRiesgo: { capital: 1000, riesgoPct: 1, limiteDiarioPct: 3, maxPerdidasSeguidas: 3 } }),
+    // `?pares=ejemplo`: una lista de pares y dos avisos de MUESTRA, para los
+    // videos de «Mis pares» y «Mis avisos». Los avisos son de indicador (RSI y
+    // %B) a propósito: un nivel de precio inventado no cuadraría con el
+    // precio real del día de la grabación.
+    ...(params().get('pares') === 'ejemplo'
+      ? {
+          seguimiento: ['EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CAD'],
+          avisos: [
+            { id: 'a1', par: 'GBP/USD', tipo: 'rsi', lado: 'arriba', nivel: 70, activa: true, creadoEl: new Date().toISOString(), app: APP },
+            { id: 'a2', par: 'USD/JPY', tipo: 'banda', lado: 'abajo', nivel: 0, activa: true, creadoEl: new Date().toISOString(), app: APP },
+          ],
+        }
+      : {}),
   }
   return {
     authUser: { uid: 'ejemplo', email: 'ejemplo@ejemplo.com' },
