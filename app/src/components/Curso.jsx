@@ -46,15 +46,16 @@ function Parrafos({ lista }) {
   ))
 }
 
-// El video de una lección o de una herramienta. Sin voz, a propósito por
-// ahora: se mira con el texto que va escrito encima. Dos formatos del mismo
-// video: WebM (Chrome, Android) y MP4 (iPhone, Safari).
+// El video de una lección o de una herramienta. Desde el 2026-11-21 lleva
+// voz (Google Studio-B, la que eligió Néstor) que dice lo mismo que el texto
+// escrito encima, así que ya no va silenciado: se puede mirar con o sin
+// sonido. Dos formatos del mismo video: WebM (Chrome, Android) y MP4 (iPhone,
+// Safari).
 function VideoCurso({ video }) {
   return (
     <>
       <video
         controls
-        muted
         playsInline
         preload="metadata"
         style={{ width: '100%', maxWidth: 420, borderRadius: 12, border: '1px solid var(--border)', background: '#000' }}

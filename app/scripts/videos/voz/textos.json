@@ -1,0 +1,1410 @@
+[
+ {
+  "id": "5ff5c956434b",
+  "texto": "Esto es el Barrido, con los datos reales de hoy."
+ },
+ {
+  "id": "d6503d2babf0",
+  "texto": "Arriba está Qué es esta app. Ábrela una vez y léela entera."
+ },
+ {
+  "id": "19fa2217fc2f",
+  "texto": "Nada de lo que ves aquí es una señal para copiar."
+ },
+ {
+  "id": "e5fb7e2664c4",
+  "texto": "Las direcciones, stop loss y take profit que salen son experimentos: la app los anota y los resuelve con precios reales."
+ },
+ {
+  "id": "4faa9a8e1ca0",
+  "texto": "Cada experimento necesita 150 operaciones reales antes de que su número signifique algo."
+ },
+ {
+  "id": "85efeeecc7c6",
+  "texto": "Por eso cada experimento lo dice con estas palabras."
+ },
+ {
+  "id": "8638b8671dd4",
+  "texto": "La app te ahorra tiempo de análisis. La decisión y el riesgo son tuyos."
+ },
+ {
+  "id": "d947c0d27043",
+  "texto": "Esto es formación, no una señal. La decisión es tuya."
+ },
+ {
+  "id": "ffe91fb78692",
+  "texto": "El Historial: lo que la app anotó y cómo terminó, con precios reales."
+ },
+ {
+  "id": "4866286df878",
+  "texto": "Las señales de la app: 43 por ciento de acierto sobre 239 operaciones. Con tantas, puede moverse unos más o menos 6 puntos por casualidad."
+ },
+ {
+  "id": "32ae0e321f7a",
+  "texto": "El experimento del retroceso: 32 por ciento sobre 22 operaciones. Con tan pocas, el margen es más o menos 21."
+ },
+ {
+  "id": "72ad2e88a07d",
+  "texto": "Por eso la app te dice cuántas lleva de las 150 que hacen falta para creerle."
+ },
+ {
+  "id": "99ede9b5c834",
+  "texto": "Con 9 operaciones el margen es más o menos 33. Con 25, más o menos 20. Con 150, más o menos 8."
+ },
+ {
+  "id": "13d8b6da919a",
+  "texto": "Un número bien calculado puede no significar nada todavía. El más o menos te dice cuándo ya se le puede creer."
+ },
+ {
+  "id": "4f6477f797e0",
+  "texto": "En Forex los precios van de dos en dos: se cambia una moneda por otra."
+ },
+ {
+  "id": "6d3e6d347106",
+  "texto": "dólar australiano yen: dólar australiano va primero (la base) y yen segundo (la cotizada)."
+ },
+ {
+  "id": "f935e82148ce",
+  "texto": "El precio dice cuántos yen cuesta un dólar australiano. Si sube, el dólar australiano se encarece frente al yen."
+ },
+ {
+  "id": "9a35ce408c65",
+  "texto": "Pero el par no dice cuál de las dos se movió. Para eso está la fuerza."
+ },
+ {
+  "id": "dbfe207018ab",
+  "texto": "Aquí cada divisa se compara contra las otras 7, de 0 (la más débil) a 10 (la más fuerte)."
+ },
+ {
+  "id": "a2617c6c36b8",
+  "texto": "Hoy: dólar australiano 0,0 y yen 10,0. Así se ve cuál de las dos está empujando."
+ },
+ {
+  "id": "dbd903a625f8",
+  "texto": "Saber leer un par no dice hacia dónde irá. Solo te dice qué estás mirando."
+ },
+ {
+  "id": "4a6da50ee15e",
+  "texto": "El pip es la unidad en que se mide el movimiento. En euro dólar es la cuarta cifra decimal: 0,0001."
+ },
+ {
+  "id": "ec5d23724a46",
+  "texto": "Con un lote entero (100,000 unidades), cada pip de euro dólar vale 10 dólares."
+ },
+ {
+  "id": "6c057cb67197",
+  "texto": "Ahora cambiamos a dólar yen, un par con yen."
+ },
+ {
+  "id": "9975a372b830",
+  "texto": "En los pares con yen el pip es la segunda cifra: 0,01. Y aquí vale 6,31 dólares por lote, porque depende del precio."
+ },
+ {
+  "id": "991e4ab2f3f9",
+  "texto": "El lote es el tamaño. 1 lote = 100,000 unidades; 0,1 es un minilote; 0,01 un microlote."
+ },
+ {
+  "id": "3ddca7de79b4",
+  "texto": "En euro dólar, 30 pips con un microlote (0,01) son 3 dólares. Con un lote entero, 300 dólares. El mismo movimiento."
+ },
+ {
+  "id": "2232e9e6cc0d",
+  "texto": "Cada precio tiene dos caras: a cuánto te venden (ask) y a cuánto te compran (bid)."
+ },
+ {
+  "id": "30f82a317e70",
+  "texto": "La diferencia es el spread, y se paga al abrir cada operación. Por eso toda operación empieza un poco en contra."
+ },
+ {
+  "id": "f9e8ff9156ad",
+  "texto": "En la última foto del bróker, euro dólar: 1,4 pips."
+ },
+ {
+  "id": "b56ce771cf04",
+  "texto": "En euro dólar neozelandés, un cruce: 5,1 pips."
+ },
+ {
+  "id": "4354d77baa03",
+  "texto": "Con un stop loss de 30 pips, 1,4 pips de spread son el 5 por ciento del riesgo. Con uno de 10 pips, el 14 por ciento."
+ },
+ {
+  "id": "9a407149d9c1",
+  "texto": "Ojo: este spread es el de una cuenta real del desarrollador. El de tu bróker puede ser otro."
+ },
+ {
+  "id": "4716a58c2639",
+  "texto": "El apalancamiento te deja abrir lotes más grandes, pero lo que pierdes por pip lo decide el lote, no el apalancamiento."
+ },
+ {
+  "id": "77a7929c3dda",
+  "texto": "Mi perfil de riesgo: un usuario de ejemplo con 1000 dólares."
+ },
+ {
+  "id": "1c7565102e8f",
+  "texto": "Con un 1 por ciento por operación, arriesga 10 dólares. Si toca el stop loss, pierde eso y nada más."
+ },
+ {
+  "id": "039a8866b458",
+  "texto": "Con el 2 por ciento: 20 dólares por operación."
+ },
+ {
+  "id": "f0ea18db7696",
+  "texto": "Con el 3 por ciento: 30 dólares por operación."
+ },
+ {
+  "id": "82b2e1f76176",
+  "texto": "Las pérdidas seguidas pasan aunque lo hagas todo bien. Diez seguidas, empezando con 1000 dólares:"
+ },
+ {
+  "id": "a5a3da0a98b1",
+  "texto": "Con el 1 por ciento: te quedan unos 904 dólares. Con el 2 por ciento: unos 817. Con el 10 por ciento: unos 349."
+ },
+ {
+  "id": "dcce542beff8",
+  "texto": "Y recuperar cuesta más que perder: si pierdes la mitad, tienes que ganar un 100 por ciento para volver."
+ },
+ {
+  "id": "44a3194ab7cd",
+  "texto": "Un porcentaje pequeño y siempre el mismo no te hace ganar: hace que una mala racha no te saque del juego."
+ },
+ {
+  "id": "b00e574ce9a0",
+  "texto": "El Analizador NO elige la dirección: la eliges tú."
+ },
+ {
+  "id": "89d1eb148d2b",
+  "texto": "Elegimos euro dólar y una dirección cualquiera, solo para ver las cuentas."
+ },
+ {
+  "id": "bdf2ce8d4657",
+  "texto": "El stop loss cierra la operación perdiendo; el take profit, ganando. Los dos se ponen al abrir."
+ },
+ {
+  "id": "684bbbf1c4c8",
+  "texto": "Método La de la app: la relación riesgo/beneficio sale 1 a 2,13."
+ },
+ {
+  "id": "1b293603b0d5",
+  "texto": "Método 1,5 a te erre a cada lado: la relación riesgo/beneficio sale 1 a 1."
+ },
+ {
+  "id": "fef6d7cf38f8",
+  "texto": "Método Soporte y resistencia: la relación riesgo/beneficio sale 1 a 2,09."
+ },
+ {
+  "id": "b253e2d8305d",
+  "texto": "1 a 2 es poder ganar el doble de lo que arriesgas. Para no perder hace falta acertar 1 ÷ (1 + 2) = 33 por ciento de las veces."
+ },
+ {
+  "id": "1b661f404169",
+  "texto": "Con 1 a 1, el 50 por ciento. Con 1 a 0,5, el 67 por ciento. Y encima se pagan el spread y el swap."
+ },
+ {
+  "id": "8716ba109d84",
+  "texto": "Un riesgo beneficio alto no hace ganar solo: llega menos veces. Reparte el resultado, no crea ventaja."
+ },
+ {
+  "id": "a1c9d584ebd3",
+  "texto": "Tu perfil: 1000 dólares y 1 por ciento por operación. Arriesgas 10 dólares."
+ },
+ {
+  "id": "83ef6bbf4bd6",
+  "texto": "Pon el stop loss a 25 pips."
+ },
+ {
+  "id": "e509a83cb67c",
+  "texto": "stop loss a 25 pips, 0,04 lotes."
+ },
+ {
+  "id": "7745416c9103",
+  "texto": "Ahora aleja el stop loss a 50 pips."
+ },
+ {
+  "id": "ad284e06c2b9",
+  "texto": "stop loss a 50 pips, 0,02 lotes."
+ },
+ {
+  "id": "098345ca4e0d",
+  "texto": "El lote cambió. Lo que arriesgas, no: siguen siendo 10 dólares."
+ },
+ {
+  "id": "4cab968cb939",
+  "texto": "Casi nadie pierde la cuenta en una operación. Se pierde en un mal día."
+ },
+ {
+  "id": "cce2f5ab9fdf",
+  "texto": "Dos maneras de cerrar el mismo mal día, con 1000 dólares:"
+ },
+ {
+  "id": "83d4ab130721",
+  "texto": "A: pierdes 10 y paras. Al día siguiente sigues con 990."
+ },
+ {
+  "id": "fbbce16be5ae",
+  "texto": "B: pierdes 10, abres otra con el doble para recuperar y pierdes 20; otra con 40, y pierdes. Te quedan 930."
+ },
+ {
+  "id": "b2e3d0adb9fc",
+  "texto": "B no tuvo peor suerte: tomó más decisiones con la cabeza caliente."
+ },
+ {
+  "id": "63b8af61966e",
+  "texto": "Por eso la regla de cuándo parar se escribe antes. Aquí pones tu pérdida máxima del día."
+ },
+ {
+  "id": "640cad88bfd5",
+  "texto": ".y cuántas pérdidas seguidas aguantas antes de parar."
+ },
+ {
+  "id": "6762647cbfc5",
+  "texto": "Si no sabes qué poner, la app te propone unos valores. El límite lo decides tú."
+ },
+ {
+  "id": "80015842b65d",
+  "texto": "El Diario de un usuario de ejemplo que hoy lleva dos operaciones perdidas."
+ },
+ {
+  "id": "ee9794f68568",
+  "texto": "Arriba está Tu freno de hoy. Lee los dos frenos de Mi perfil de riesgo."
+ },
+ {
+  "id": "3ed58afb0e34",
+  "texto": "Perdido hoy: 20 dólares / 30 dólares. Con 1000 dólares y un freno del día del 3 por ciento, el límite son 30 dólares."
+ },
+ {
+  "id": "2ad9cbf0d155",
+  "texto": "Pérdidas seguidas hoy: 2 / 3. El límite que se puso es 3."
+ },
+ {
+  "id": "960b1c1a1a17",
+  "texto": "Por eso está en ámbar: queda poco margen. Al tocar el límite se pone roja."
+ },
+ {
+  "id": "31b253577818",
+  "texto": "Con un riesgo del 1 por ciento y un freno del 3 por ciento, el día se acaba a la tercera pérdida: lo que llegue antes."
+ },
+ {
+  "id": "6faf938abdfb",
+  "texto": "La app no cierra nada ni te bloquea: no está conectada a tu bróker. Solo te pone tu regla delante."
+ },
+ {
+  "id": "b1f02b85da07",
+  "texto": "Un par son dos divisas. Si euro dólar sube, ¿fue el euro o fue el dólar? El par solo no lo dice."
+ },
+ {
+  "id": "752f5e475aeb",
+  "texto": "Por eso la app compara cada divisa contra las otras siete a la vez. Estas son las barras."
+ },
+ {
+  "id": "0c453e536541",
+  "texto": "Se mira cuánto cambió en 1 hora, 4 horas, 24 horas, y se promedia contra las siete."
+ },
+ {
+  "id": "624a73c6c81e",
+  "texto": "Hoy la más fuerte es yen y la más débil dólar australiano."
+ },
+ {
+  "id": "8b772f730106",
+  "texto": "Es un resumen de lo que ya pasó. No dice que la fuerte vaya a seguir fuerte."
+ },
+ {
+  "id": "0520419581ad",
+  "texto": "Para un par lo que cuenta es la diferencia de fuerza entre sus dos divisas."
+ },
+ {
+  "id": "dc98c23f5f2c",
+  "texto": "Aquí sale como Dif. La app no mira un par hasta que pasa 0,5 (el umbral base: a las horas de más movimiento sube)."
+ },
+ {
+  "id": "9a59ed0f4246",
+  "texto": "dólar australiano yen: Dif -0,5. Una divisa le saca ventaja a la otra: pasa."
+ },
+ {
+  "id": "5560b4dfb505",
+  "texto": "euro dólar: Dif -0,0. Las dos están casi igual de fuertes: no pasa."
+ },
+ {
+  "id": "dbb6adc2aa20",
+  "texto": "Pasar el umbral es solo la primera condición. Y una Dif grande no dice hacia dónde irá el precio."
+ },
+ {
+  "id": "31e49a7c7f4c",
+  "texto": "Arriba: yen 10,0 y dólar australiano 0,0. ¿Mucha diferencia?"
+ },
+ {
+  "id": "7d5d51dc9720",
+  "texto": "No se sabe. La escala es un orden: la más fuerte del día vale 10 y la más débil 0. Siempre."
+ },
+ {
+  "id": "0e9f2c169f5f",
+  "texto": "Aunque las ocho estén casi iguales, siempre habrá un 10 y un 0."
+ },
+ {
+  "id": "f23e6723ea45",
+  "texto": "La medida de verdad es la Dif. La más grande de hoy: dólar australiano yen, -0,5."
+ },
+ {
+  "id": "4ecf9316132c",
+  "texto": "Esa es la que la app compara con el umbral (0,5 o más, según la hora), no el 10 contra 0."
+ },
+ {
+  "id": "fc461097b273",
+  "texto": "Una media móvil es el precio promedio de las últimas velas. La app mira dos: la e eme a 9 y la e eme a 21."
+ },
+ {
+  "id": "055f914691c1",
+  "texto": "euro dólar, hoy: Bajista (EMA9 1,0969 · EMA21 1,0972)."
+ },
+ {
+  "id": "c907ba136e3d",
+  "texto": "Alcista si el precio está por encima de la e eme a 9 y esta por encima de la e eme a 21. Al revés, Bajista. Si no, Rango."
+ },
+ {
+  "id": "d593eaf4a5ae",
+  "texto": "Medias móviles enseña además las ese eme a 20, 50, 200 y las e eme a 9, 21, 50, 200. Aquí cada vela es una hora."
+ },
+ {
+  "id": "ead6793718a5",
+  "texto": "Las medias miran hacia atrás: llegan tarde a los giros y no dicen qué va a pasar."
+ },
+ {
+  "id": "0b0944971484",
+  "texto": "erre ese i de euro dólar: 46. Va de 0 a 100 y mira las últimas 14 velas."
+ },
+ {
+  "id": "2076858cefb8",
+  "texto": "En esta app sí cuenta: no salen experimentos para comprar con erre ese i de 70 o más, ni para vender con 30 o menos."
+ },
+ {
+  "id": "b79810ce71a0",
+  "texto": "a te erre: 10 pips · 0,09 por ciento. Es lo que suele recorrer el par en una hora (media de 14 velas)."
+ },
+ {
+  "id": "11733e3b1f4a",
+  "texto": "stop loss: 1,0953 (15 pips). Va a 1,5 a te erre del precio: así el ruido normal no lo toca."
+ },
+ {
+  "id": "2530968fa6f7",
+  "texto": "Un erre ese i alto no dice que vaya a darse la vuelta. Y el a te erre no tiene dirección: solo dice cuánto se mueve."
+ },
+ {
+  "id": "da90e25d00c6",
+  "texto": "No siempre hay tendencia: a veces el precio va de lado, entre un piso y un techo. Eso es un rango."
+ },
+ {
+  "id": "9a992a6cad06",
+  "texto": "euro dólar: soporte 1,0957 y resistencia 1,1000, el mínimo y el máximo de las últimas 20 velas."
+ },
+ {
+  "id": "aca0f0027a2b",
+  "texto": "Compresión: Algo apretado 0,75. Es el a te erre de ahora dividido por el de hace 12 velas."
+ },
+ {
+  "id": "4a697e61b46e",
+  "texto": "Por debajo de 1 se mueve menos que antes: está apretado. La palabra dice qué tan raro es ese número aquí."
+ },
+ {
+  "id": "174094702eec",
+  "texto": "El modo rango de esta app solo actúa con la compresión en 0,75 o más y el precio cerca del piso o del techo."
+ },
+ {
+  "id": "355024709731",
+  "texto": "Que esté apretado no dice hacia qué lado se va a soltar, ni cuándo."
+ },
+ {
+  "id": "9ecb33899a49",
+  "texto": "Cada par tiene dos precios: el de venta (BID) y el de compra (ASK). La diferencia es el spread."
+ },
+ {
+  "id": "db5cd5f989d7",
+  "texto": "euro dólar: venta 1,09664 y compra 1,09678. La diferencia, 1,4 pips, es lo que cuesta entrar."
+ },
+ {
+  "id": "4f18bbb21b67",
+  "texto": "euro dólar neozelandés, un cruce: 5,1 pips. Los cruces suelen costar más que los pares con dólar."
+ },
+ {
+  "id": "efdf203010eb",
+  "texto": "Toda operación empieza perdiendo el spread. Y se abre de golpe con las noticias fuertes y de madrugada."
+ },
+ {
+  "id": "653e0a79c39b",
+  "texto": "Son los precios de una cuenta real del desarrollador de la app. Los de tu bróker pueden ser otros."
+ },
+ {
+  "id": "4ef31e89e24e",
+  "texto": "Si la operación sigue abierta de noche, se paga o se cobra un swap. Cada noche."
+ },
+ {
+  "id": "65773bb22082",
+  "texto": "El swap sale de la diferencia entre las tasas de interés de las dos divisas del par."
+ },
+ {
+  "id": "145716b7ba20",
+  "texto": "dólar franco suizo: +3,88 puntos al año de diferencia. Suele jugar a favor si compras."
+ },
+ {
+  "id": "dbe07c506061",
+  "texto": "Pero tu bróker le suma un margen que no publica nadie. La diferencia de tasas NO es tu swap."
+ },
+ {
+  "id": "bda78b4396cd",
+  "texto": "Un día de la semana cuenta triple, por el fin de semana. Cuál día lo dice cada bróker."
+ },
+ {
+  "id": "d98fe5478635",
+  "texto": "Un swap a favor no es una razón para abrir: es un coste o un ingreso, no una dirección."
+ },
+ {
+  "id": "70e9afe148d8",
+  "texto": "El spread se paga en pips. Lo que importa es cuánto pesa comparado con tu stop loss."
+ },
+ {
+  "id": "c92d84d7b153",
+  "texto": "stop loss de esta tarjeta: 1,0953 (15 pips). Es la distancia que arriesgas."
+ },
+ {
+  "id": "c9f793dd1cd3",
+  "texto": "spread 1,4 pips: se lleva el 9,3 por ciento del riesgo de esta operación."
+ },
+ {
+  "id": "bd1fe9335c56",
+  "texto": "Aquí los stop loss miden horas: suelen ser varias veces más cortos que en la app de swing, y el mismo spread pesa unas cuatro veces más."
+ },
+ {
+  "id": "e2b2861e9bc9",
+  "texto": "Cuanto más pesa el coste, más hay que acertar solo para empatar."
+ },
+ {
+  "id": "c21c450e3b3e",
+  "texto": "Calendario real, con el reloj puesto el 20 de noviembre de 2026, 05 a 00 UTC: así se veían las noticias que venían."
+ },
+ {
+  "id": "289f98d00f25",
+  "texto": "Son las publicaciones de datos económicos de las 8 divisas, en las próximas horas."
+ },
+ {
+  "id": "70d074989274",
+  "texto": "07 a 00 a. m.: libra, Retail Sales m/m. Dice Mueve algo."
+ },
+ {
+  "id": "caba8ec33a7f",
+  "texto": "La hora es la de tu teléfono. Mueve mucho o Mueve algo dice cuánto suele sacudir el precio."
+ },
+ {
+  "id": "f9f4bf436ae4",
+  "texto": "Minutos antes y después de una noticia fuerte el precio pega saltos y el spread se abre."
+ },
+ {
+  "id": "54db3f0c8b9b",
+  "texto": "El calendario dice cuándo puede haber sacudida, no hacia dónde se va a mover el precio."
+ },
+ {
+  "id": "548ecc56623c",
+  "texto": "Calendario real, con el reloj puesto el 20 de noviembre de 2026, 05 a 00 UTC."
+ },
+ {
+  "id": "986a8127ecd9",
+  "texto": "libra, Retail Sales m/m: previsto 0,0 por ciento · anterior -0,4 por ciento."
+ },
+ {
+  "id": "9f0d7c1410c1",
+  "texto": "Anterior es lo que salió la última vez. Previsto, lo que esperan los analistas ahora."
+ },
+ {
+  "id": "712cee3e36a1",
+  "texto": "¿Qué significa? lo dice en palabras sencillas: se espera más alto que la vez anterior."
+ },
+ {
+  "id": "77bc828b5b50",
+  "texto": "Lo que suele mover el precio es la sorpresa: cuánto se aleja el dato real de lo previsto."
+ },
+ {
+  "id": "2879e19d044a",
+  "texto": "Que se espere más alto o más bajo no dice hacia dónde irá el precio."
+ },
+ {
+  "id": "5cfb4441701e",
+  "texto": "Lo último que publicaron la Reserva Federal, el BCE, el Banco de Nueva Zelanda e ING."
+ },
+ {
+  "id": "148929d7bc90",
+  "texto": "Primero el aviso: una noticia dice qué pasó y cuándo, nunca hacia dónde va el precio."
+ },
+ {
+  "id": "5e3b41a2f473",
+  "texto": "Cada titular lleva delante su divisa (aquí dólar), y debajo la fuente y la fecha."
+ },
+ {
+  "id": "4674e7e8fbfb",
+  "texto": "Van tal cual los publica cada fuente, en su idioma. Al tocarlo se abre la noticia completa en su página."
+ },
+ {
+  "id": "e7e4c4a33196",
+  "texto": "Solo salen fuentes cuyas condiciones permiten reproducir sus titulares en una app de pago."
+ },
+ {
+  "id": "90376defc40e",
+  "texto": "Un usuario de ejemplo con dos operaciones abiertas: compra euro dólar y compra euro franco suizo."
+ },
+ {
+  "id": "ea24b1983783",
+  "texto": "El Diario lo avisa solo: 2 operaciones abiertas con euro (euro franco suizo, euro dólar)."
+ },
+ {
+  "id": "de495ed2ec0d",
+  "texto": "No son dos apuestas: es una sola apuesta más grande al euro. Si el euro cae, pierden las dos."
+ },
+ {
+  "id": "3decfdba61df",
+  "texto": "Arriesgando el 1 por ciento en cada una, la idea el euro sube tiene en juego el 2 por ciento."
+ },
+ {
+  "id": "9ed00e36b007",
+  "texto": "El aviso no dice cuál cerrar ni que estén mal: dice que dependen de lo mismo."
+ },
+ {
+  "id": "2c3e628aff1a",
+  "texto": "La correlación mide cuánto se han movido dos pares al mismo tiempo. Va de menos 1 a +1."
+ },
+ {
+  "id": "0594c6457ec1",
+  "texto": "Esta app no la calcula: con velas de una hora, 60 velas son solo dos días y medio."
+ },
+ {
+  "id": "1b0ba18b5f42",
+  "texto": "El aviso Dos de tus pares se mueven igual salta con una correlación de 0,8 o más. Lo mide la app de swing con velas diarias."
+ },
+ {
+  "id": "917a1c96e6a1",
+  "texto": "Los dos comprados, si van juntos, es una apuesta doble. Uno comprado y otro vendido, se anulan."
+ },
+ {
+  "id": "43f5d230a927",
+  "texto": "La correlación no dice hacia dónde irá ninguno de los dos."
+ },
+ {
+  "id": "f93058f1f83e",
+  "texto": "Siete de los pares que siguen las apps llevan el dólar. Si el dólar se mueve, se mueven todos a la vez."
+ },
+ {
+  "id": "7d69d67a7d52",
+  "texto": "El dólar hoy: 6,1 de 10, el 3.º de las 8 divisas."
+ },
+ {
+  "id": "2c3602375007",
+  "texto": "Comprar euro dólar y vender dólar franco suizo son lo mismo: las dos venden dólar. No es repartir el riesgo."
+ },
+ {
+  "id": "2bf6a717fa62",
+  "texto": "El oro suele ir al revés que el dólar. La tarjeta que lo mide está en la app de swing."
+ },
+ {
+  "id": "08af93ae5e7b",
+  "texto": "Que el oro baje no dice que el dólar vaya a subir. Es una costumbre, no una ley."
+ },
+ {
+  "id": "1999513c72b1",
+  "texto": "El Analizador tiene cuatro pasos: el par, tu dirección, cómo poner el stop loss y qué herramientas ver."
+ },
+ {
+  "id": "c1ea655491db",
+  "texto": "Con el par elegido y sin dirección, la tarjeta solo dice: Elige compra o venta para ver los niveles."
+ },
+ {
+  "id": "b24937e00992",
+  "texto": "La dirección no la elige la app, a propósito: sería una señal más, y sus señales todavía son experimentos."
+ },
+ {
+  "id": "718057f0a064",
+  "texto": "compra: entrada 1,0968. stop loss 1,0953 (15 pips), por debajo. take profit 1,1000 (32 pips), por encima."
+ },
+ {
+  "id": "93676f4e1faf",
+  "texto": "El lote sale del perfil de riesgo del usuario de ejemplo: 0,07 · 10 dólares. Si cambia la distancia del stop loss, el lote se ajusta para arriesgar lo mismo."
+ },
+ {
+  "id": "e15779c75109",
+  "texto": "venta: se dan la vuelta. stop loss 1,0983 (15 pips), por encima. take profit 1,0957 (10 pips), por debajo."
+ },
+ {
+  "id": "114e64151740",
+  "texto": "La tarjeta dice dónde quedan los niveles si eliges esa dirección. No dice si la dirección es buena."
+ },
+ {
+  "id": "dbf6a8f8cf58",
+  "texto": "Un usuario de ejemplo: hoy lleva dos pérdidas y tiene dos operaciones abiertas con el euro. Arma una tarjeta de euro dólar."
+ },
+ {
+  "id": "8f8a2ef0db9a",
+  "texto": "Antes de decidir, cuatro preguntas. La tarjeta las contesta todas en el mismo sitio."
+ },
+ {
+  "id": "52ded7c59b07",
+  "texto": "1 · ¿Cuánto arriesgas y cuánto buscas ganar? riesgo beneficio 1 a 2,13; lote y riesgo: 0,07 · 10 dólares."
+ },
+ {
+  "id": "883d6ad5fbc2",
+  "texto": "2 · ¿Cómo va tu día? La tarjeta lo dice: Te queda poco margen antes de tu freno de hoy."
+ },
+ {
+  "id": "175a2d72e888",
+  "texto": "3 · ¿Hay noticias de estas dos divisas? Hoy la tarjeta dice que no hay ninguna en las próximas 48 horas."
+ },
+ {
+  "id": "d3339ec8a851",
+  "texto": "4 · ¿Qué tienes ya abierto? 2 operaciones comparten divisa con ésta: sumarla puede hacer una sola apuesta más grande."
+ },
+ {
+  "id": "5ae2b0e73983",
+  "texto": "Nada de eso le impide abrirla: la app no bloquea. Le pone delante lo que su propia regla dice."
+ },
+ {
+  "id": "dd08ae587ad0",
+  "texto": "Si la abre en su bróker, la anota en el Diario. Si quiere probarla sin dinero, la practica: es el módulo siguiente."
+ },
+ {
+  "id": "2e3308ccf153",
+  "texto": "¿Cómo operas?: este usuario de ejemplo sigue tendencias. El Analizador arranca con 6 herramientas encendidas."
+ },
+ {
+  "id": "e100758db210",
+  "texto": "Lo cambia a Opero rangos."
+ },
+ {
+  "id": "5575b905b3d2",
+  "texto": "Ahora arranca con 7: Soporte y resistencia, Pivote, erre ese i, a te erre, Bollinger (%B), Calendario, Fibonacci. No cambia ninguna señal ni dice qué estilo es mejor."
+ },
+ {
+  "id": "775d46db0d87",
+  "texto": "Una plantilla guarda las herramientas encendidas y el método del stop loss con un nombre."
+ },
+ {
+  "id": "7ba8f3cab53a",
+  "texto": "Guardada: Mis rangos ya está en Mis plantillas, junto a las otras dos de ejemplo."
+ },
+ {
+  "id": "cba29ae1a462",
+  "texto": "Un toque en Mi tendencia y el Analizador vuelve a quedar como se guardó: Tendencia (e eme a), a te erre, Fuerza de las divisas, Medias móviles (ese eme a y e eme a)."
+ },
+ {
+  "id": "3cdc1ea4e0ee",
+  "texto": "Analizar siempre con las mismas herramientas no hace ganar: hace que tus números del Diario hablen de una sola forma de operar."
+ },
+ {
+  "id": "272f87212f4a",
+  "texto": "Un usuario de ejemplo arma una compra de euro dólar en el Analizador, con los datos reales de ese día: entrada 1,0968, stop loss 1,0953 (15 pips), take profit 1,1000 (32 pips)."
+ },
+ {
+  "id": "0a115449306f",
+  "texto": "En vez de abrirla en su bróker, pulsa Practicar esta operación (sin dinero)."
+ },
+ {
+  "id": "d48940ecb9d9",
+  "texto": "La tarjeta lo confirma: Guardada en el modo práctica. La app la seguirá sola con precios reales."
+ },
+ {
+  "id": "069e9d5e748b",
+  "texto": "En el Diario, Modo práctica. Primero el aviso: esto no es dinero real ni una señal, y el resultado no se puede cambiar a mano."
+ },
+ {
+  "id": "07ea6060b44d",
+  "texto": "Sale en Abiertas con sus niveles (1,09678 · SL 1,09527 · TP 1,09999 · 1 a 2,13) y dice esperando. Desde ahora la app la sigue sola con los precios reales."
+ },
+ {
+  "id": "a4d74b400cd3",
+  "texto": "Ver la gráfica: las mismas velas con las que la app decide si ganó o perdió, con la entrada, el stop loss y el take profit encima."
+ },
+ {
+  "id": "c210965ed90d",
+  "texto": "La revisa cada 15 minutos con las velas de una hora del barrido. Solo cuentan las velas que empiezan después de crearla."
+ },
+ {
+  "id": "6313b1c1a733",
+  "texto": "Si una misma vela toca el stop loss y el take profit, cuenta como perdida: la vela no dice cuál pasó primero y se elige el peor caso."
+ },
+ {
+  "id": "0de47e2c3129",
+  "texto": "Mientras está abierta se puede borrar. Una vez resuelta, ganada o perdida, ya no: así el acierto de la práctica no miente."
+ },
+ {
+  "id": "39ec20b65311",
+  "texto": "El Modo práctica de un usuario de ejemplo, con operaciones ya resueltas. Los precios son inventados: no son los del mercado de hoy."
+ },
+ {
+  "id": "f8457fcb1065",
+  "texto": "El resultado no va en pips ni en dólares: va en R. 1 R es lo que arriesgaba. Perder es menos 1 R; ganar, lo que daba su take profit."
+ },
+ {
+  "id": "6cfa0f8508d0",
+  "texto": "Esta compra de euro dólar ganó. Bruto +1,50 R: lo que dicen sus niveles."
+ },
+ {
+  "id": "cf661be4e061",
+  "texto": "El spread se lleva menos 0,04 R y el swap de 1 noches, menos 0,02 R. Neto: +1,44 R."
+ },
+ {
+  "id": "e458b3a1e4a4",
+  "texto": "Esta perdió: bruto menos 1 R. Su entrada fue con el precio de eme te cinco, así que el spread ya iba dentro: ya en la entrada (eme te cinco)."
+ },
+ {
+  "id": "8419081b1011",
+  "texto": "Ésta no guardó su swap: la tarjeta dice sin dato, nunca un número inventado."
+ },
+ {
+  "id": "4bc8a1614c06",
+  "texto": "Arriba, la suma: +1,70 R bruto y +1,55 R neto, con el spread y el swap descontados."
+ },
+ {
+  "id": "27dc58208b27",
+  "texto": "En dinero, con lo que iba a arriesgar en cada una: +15,51 dólares. No es dinero ganado: es lo que habría sido."
+ },
+ {
+  "id": "510c98f1a3fc",
+  "texto": "El spread y el swap son los de una cuenta real del desarrollador de la app, no los del bróker de cada uno."
+ },
+ {
+  "id": "d34a7442d7f0",
+  "texto": "Un usuario de ejemplo lleva 5 operaciones de práctica resueltas (precios inventados). Ganadas: 3 / 5. Acierto: 60 por ciento más o menos 44."
+ },
+ {
+  "id": "0f22210f8597",
+  "texto": "El más o menos 44 es cuánto puede moverse ese acierto solo por casualidad. Con 5 operaciones es enorme: todavía no dice nada."
+ },
+ {
+  "id": "65f9f2cd57a6",
+  "texto": "Una Caducada no cuenta: la app no pudo mirarla a tiempo y esas velas ya no se ven. Ni ganada ni perdida."
+ },
+ {
+  "id": "b5fdcb3bea48",
+  "texto": "Descargar mis resultados (tabla) baja todas, también la abierta y la caducada, para mirarlas en una hoja de cálculo."
+ },
+ {
+  "id": "856540f88721",
+  "texto": "En Tus insignias, Practicas sin dinero ya está conseguida: cuenta las resueltas, ganadas o perdidas igual. Premia probar antes, no ganar."
+ },
+ {
+  "id": "7329de8374c9",
+  "texto": "Practicar sin dinero no es operar con dinero: con dinero la entrada puede salir peor, y se siente distinto. Sirve para probar una forma de operar antes."
+ },
+ {
+  "id": "104d4b05c90c",
+  "texto": "Un acierto solo no dice si una forma de operar gana. Depende de cuánto se gana al acertar y cuánto se pierde al fallar."
+ },
+ {
+  "id": "1dae0342c3d3",
+  "texto": "Esta tarjeta de euro dólar tiene un riesgo beneficio de 1 a 2,13. El acierto que haría falta para no perder: 1 ÷ (1 + 2,13) = 32 por ciento."
+ },
+ {
+  "id": "b03a1c3d1856",
+  "texto": "Ahora el método 1,5 a te erre a cada lado: el stop loss y el take profit a la misma distancia."
+ },
+ {
+  "id": "db17c0d81332",
+  "texto": "riesgo beneficio 1 a 1. Ahora hace falta acertar más del 50 por ciento para no perder."
+ },
+ {
+  "id": "e06034cdca7a",
+  "texto": "Con el take profit más lejos (1 a 2,13) basta acertar menos, pero también se acierta menos. Ninguna de las dos es la buena."
+ },
+ {
+  "id": "265156882372",
+  "texto": "Un porcentaje de acierto solo dice algo al lado de ese número. Y antes de costes: el spread y el swap lo suben un poco."
+ },
+ {
+  "id": "f50f3a46ec67",
+  "texto": "Tus números por grupos de un usuario de ejemplo, con 9 operaciones de muestra."
+ },
+ {
+  "id": "58393ebdee66",
+  "texto": "Pares con dólar: 71 por ciento más o menos 37, con 7 operaciones. Su rango va del 34 por ciento al 100 por ciento."
+ },
+ {
+  "id": "e303edd4d5f7",
+  "texto": "Cruces: 100 por ciento más o menos 69, con 2 operaciones. Su rango va del 31 por ciento al 100 por ciento."
+ },
+ {
+  "id": "84b3265bccd1",
+  "texto": "Los dos rangos se tocan: con tan pocas operaciones no se puede decir que en cruces le vaya mejor ni peor."
+ },
+ {
+  "id": "38e335ab4918",
+  "texto": "En el Historial, con el registro real de ese día: este experimento lleva 22 de las 150 operaciones que hacen falta para creerle."
+ },
+ {
+  "id": "2d0d5dc35f5a",
+  "texto": "Con 150 operaciones el más o menos baja a 8 puntos. Llegar no lo hace bueno: hace que su número se pueda creer, sea bueno o malo."
+ },
+ {
+  "id": "579db637fc57",
+  "texto": "El laboratorio prueba una regla sobre las velas del pasado: cómo le habría ido. Primero, el aviso."
+ },
+ {
+  "id": "723a1791c989",
+  "texto": "Cuantas más variantes pruebes sobre los mismos datos, más fácil que alguna gane solo por casualidad."
+ },
+ {
+  "id": "92cf545b1dfb",
+  "texto": "Una regla de ejemplo: comprar cuando el erre ese i baja de 30, con el stop loss y el take profit a la misma distancia."
+ },
+ {
+  "id": "2b624f3bd238",
+  "texto": "Prueba 1 a 177 operaciones, acierto 47 por ciento más o menos 7. Hace falta 50 por ciento para no perder."
+ },
+ {
+  "id": "cdbb75845cfe",
+  "texto": "Se cambia una sola cosa: el take profit a dos veces lo que se arriesga. Y se prueba otra vez."
+ },
+ {
+  "id": "a6712d19ec8a",
+  "texto": "Prueba 2 a 158 operaciones, acierto 20 por ciento más o menos 8. Ahora hace falta 33 por ciento."
+ },
+ {
+  "id": "5450fa83adc3",
+  "texto": "El contador ya va en 2. Si después de veinte pruebas una sale muy bien, todavía no hay que creerle."
+ },
+ {
+  "id": "a7b5b320e39e",
+  "texto": "Lo único que no tiene esa trampa es seguirla hacia adelante, con días que la regla nunca vio al elegirla."
+ },
+ {
+  "id": "c0b306562e1a",
+  "texto": "Importar operaciones del bróker: la app solo lee el archivo que subes. No se conecta a tu bróker ni te pide contraseñas."
+ },
+ {
+  "id": "0527736f5b9d",
+  "texto": "Un informe de ejemplo, con operaciones inventadas: entrarían 3 operaciones nuevas."
+ },
+ {
+  "id": "26d1934ff9b5",
+  "texto": "La línea del oro se salta con un aviso: la app no analiza oro, índices ni acciones."
+ },
+ {
+  "id": "1b0ec06a292d",
+  "texto": "euro dólar: en el informe, el precio dio +40, el swap menos 3,20 y la comisión menos 1,50. Entra +35,30: el neto."
+ },
+ {
+  "id": "944805d49b85",
+  "texto": "Resultado total, con swap y comisión: +28,80. Nada se guarda hasta que lo confirmes."
+ },
+ {
+  "id": "052c3f201449",
+  "texto": "Se cancela: no se guardó nada. Si subes el mismo informe otra vez, las que ya estaban no se repiten."
+ },
+ {
+  "id": "d03961bfb220",
+  "texto": "Tus números por grupos de un usuario de ejemplo, con 20 operaciones de muestra."
+ },
+ {
+  "id": "92897668bd33",
+  "texto": "Cruces: 8 operaciones, 63 por ciento más o menos 35."
+ },
+ {
+  "id": "4e9f0ea0e202",
+  "texto": "Pares con dólar: 12 operaciones, 50 por ciento más o menos 28."
+ },
+ {
+  "id": "893b41a00f36",
+  "texto": "Los rangos se tocan: con tan pocas operaciones no se puede decir que en cruces te vaya mejor."
+ },
+ {
+  "id": "95cdc969bc7f",
+  "texto": "Compras: 12 operaciones, 58 por ciento más o menos 28. Ventas: 8, 50 por ciento más o menos 35."
+ },
+ {
+  "id": "4c3630554b60",
+  "texto": "Par por par solo sale euro dólar, con 8 operaciones. Los demás no llegan a 8, así que no se enseñan sueltos."
+ },
+ {
+  "id": "99cd3f78841f",
+  "texto": "Los lotes son contexto: la app no te dice qué lote usar."
+ },
+ {
+  "id": "ac1d8d3fd9b9",
+  "texto": "El Diario de un usuario de ejemplo, con 10 operaciones de muestra."
+ },
+ {
+  "id": "f492386f6cb2",
+  "texto": "Primero el resultado: -20 dólares. Es lo que dice si se ganó o se perdió."
+ },
+ {
+  "id": "121004b37f87",
+  "texto": "Después el acierto: 70 por ciento. Acierta mucho y aun así pierde, porque las pérdidas son más grandes que las ganancias."
+ },
+ {
+  "id": "809d6c02b43d",
+  "texto": "Y con 10 operaciones, ese 70 por ciento va con más o menos 31: todavía no dice nada de esta forma de operar."
+ },
+ {
+  "id": "8c7553694eb1",
+  "texto": "Si partes tus números en muchos grupos, alguno saldrá bien por casualidad. No te quedes con el mejor sin mirar su más o menos ."
+ },
+ {
+  "id": "130ba2408280",
+  "texto": "El Barrido: la primera pantalla. Te dice en segundos qué divisas están fuertes y cuáles débiles."
+ },
+ {
+  "id": "b75fa48ddce0",
+  "texto": "Cada divisa se compara contra las otras 7, de 0 a 10. Hoy la más fuerte es yen (10,0) y la más débil dólar australiano (0,0)."
+ },
+ {
+  "id": "8c05a9290b6b",
+  "texto": "Debajo, cada par con su tendencia y su erre ese i de hoy."
+ },
+ {
+  "id": "773f93fde54e",
+  "texto": "Si un par lleva una dirección al lado, es la de un experimento que la app mide. No es una señal para copiar."
+ },
+ {
+  "id": "170e022f5f27",
+  "texto": "Arriba siempre dice de cuándo son los datos: aquí cada vela es una hora."
+ },
+ {
+  "id": "0240bc525552",
+  "texto": "El Barrido te dice dónde mirar. Qué hacer con eso lo decides tú."
+ },
+ {
+  "id": "39b6a887a255",
+  "texto": "El Analizador junta todas las herramientas de la app para el par que tú elijas."
+ },
+ {
+  "id": "f6d7c596ad29",
+  "texto": "Paso 1: el par."
+ },
+ {
+  "id": "cc9b14f6ffa5",
+  "texto": "Paso 2: la dirección. La eliges TÚ: la app no la elige por ti."
+ },
+ {
+  "id": "dd4213603a58",
+  "texto": "Paso 3: cómo poner el stop loss. Hay tres maneras, y la tarjeta cambia con cada una."
+ },
+ {
+  "id": "29783e62dd75",
+  "texto": "stop loss 1,0953 (15 pips), take profit 1,1000 (32 pips), riesgo beneficio 1 a 2,13."
+ },
+ {
+  "id": "e395797b8264",
+  "texto": "Y el lote para arriesgar lo que dice tu perfil: 0,07 · 10 dólares."
+ },
+ {
+  "id": "aa31ca0d3772",
+  "texto": "Paso 4: qué herramientas ver. Cada una sale debajo con su número de hoy."
+ },
+ {
+  "id": "0a87f59b7ca5",
+  "texto": "Y puedes guardar tus herramientas en una plantilla para la próxima vez."
+ },
+ {
+  "id": "a5507a6e8ccc",
+  "texto": "El erre ese i mide si el precio subió o bajó con mucha fuerza últimamente. Va de 0 a 100."
+ },
+ {
+  "id": "c532ae74366d",
+  "texto": "euro dólar, hoy: erre ese i 46. Aquí cada vela es una hora y el erre ese i usa las últimas 14."
+ },
+ {
+  "id": "1114fb30a584",
+  "texto": "Por encima de 70 se suele decir que subió con mucha fuerza; por debajo de 30, que cayó con mucha fuerza."
+ },
+ {
+  "id": "82a0b39ab266",
+  "texto": "Ojo: un erre ese i alto NO dice que vaya a bajar, ni uno bajo que vaya a subir. Puede seguir así días."
+ },
+ {
+  "id": "f05a7485d279",
+  "texto": "El erre ese i es un dato para mirar, no una orden: no te dice qué hacer."
+ },
+ {
+  "id": "58e89c811ea4",
+  "texto": "El a te erre mide cuánto se mueve el par en una vela normal. Aquí cada vela es una hora."
+ },
+ {
+  "id": "36388a999a90",
+  "texto": "euro dólar, hoy: 10 pips · 0,09 por ciento. O sea, eso es lo que suele recorrer en una hora."
+ },
+ {
+  "id": "a815c8cc527e",
+  "texto": "Sirve para poner el stop loss: uno más corto que el a te erre lo puede tocar el movimiento normal del par."
+ },
+ {
+  "id": "293bddb36dc7",
+  "texto": "Por eso los métodos de stop loss del Analizador salen del a te erre."
+ },
+ {
+  "id": "92434bad0000",
+  "texto": "El a te erre no dice hacia dónde irá el precio. Solo cuánto se mueve."
+ },
+ {
+  "id": "ce1d7f0c9271",
+  "texto": "Las medias móviles: el precio promedio de las últimas velas. Sirven para ver la tendencia de un vistazo."
+ },
+ {
+  "id": "12365ae3c36a",
+  "texto": "ese eme a 20 de euro dólar: 1,0972 · precio 4 pips por debajo."
+ },
+ {
+  "id": "3c7999a27102",
+  "texto": "ese eme a es la media simple. e eme a da más peso a las velas recientes. Aquí 20 velas son 20 horas."
+ },
+ {
+  "id": "269ad1cc1f74",
+  "texto": "Si el precio está por encima de sus medias, viene subiendo; por debajo, viene bajando."
+ },
+ {
+  "id": "85f90dc4b8b7",
+  "texto": "Eso es lo que YA pasó. Que esté por encima no dice que vaya a seguir subiendo."
+ },
+ {
+  "id": "00f328a7c066",
+  "texto": "Las bandas de Bollinger: una media de 20 velas con una banda arriba y otra abajo, a 2 desviaciones."
+ },
+ {
+  "id": "e547a2eb6d9d",
+  "texto": "Hoy: banda de arriba 1,0988, banda de abajo 1,0955."
+ },
+ {
+  "id": "2a154e46998e",
+  "texto": "El %B dice dónde está el precio entre las dos: 0 es la de abajo, 1 la de arriba. Hoy: 0,38."
+ },
+ {
+  "id": "7fb269375a0d",
+  "texto": "Que el precio toque una banda NO dice que vaya a darse la vuelta. Es un dato para mirar, no una orden."
+ },
+ {
+  "id": "61d7e81f194b",
+  "texto": "El calendario económico: las noticias que pueden mover el precio en las próximas 48 horas."
+ },
+ {
+  "id": "6ee8398dbe76",
+  "texto": "Cada noticia va con su divisa, su hora (la de tu teléfono) y cuánto suele mover el precio."
+ },
+ {
+  "id": "cf2a5996b02f",
+  "texto": "Hoy no hay noticias importantes en las próximas 48 horas, y la tarjeta lo dice."
+ },
+ {
+  "id": "9a57dffb2ddb",
+  "texto": "El calendario dice cuándo puede haber sacudida, nunca hacia dónde."
+ },
+ {
+  "id": "923ef840b201",
+  "texto": "Las tasas de interés de los 8 bancos centrales, y de qué lado juega el swap."
+ },
+ {
+  "id": "e3b5eade61d4",
+  "texto": "El swap es lo que se paga o se cobra cada noche que la operación sigue abierta."
+ },
+ {
+  "id": "0f3c8c48e325",
+  "texto": "Sale de la diferencia entre las tasas de las dos divisas del par."
+ },
+ {
+  "id": "dea15df19238",
+  "texto": "Ojo: la diferencia de tasas NO es tu swap. Tu bróker le suma su margen, y ese margen no lo publica nadie."
+ },
+ {
+  "id": "5b021a6d996a",
+  "texto": "Cada tasa va con la fecha de su dato, que casi nunca es la de hoy: así sabes de cuándo es."
+ },
+ {
+  "id": "11ba7946d91f",
+  "texto": "Lo que cuesta abrir una operación: el spread, con los precios de una cuenta real del desarrollador."
+ },
+ {
+  "id": "4632feb42567",
+  "texto": "Para cada par: precio de venta (BID), precio de compra (ASK) y la diferencia, que es el spread, en pips."
+ },
+ {
+  "id": "287646f1dbec",
+  "texto": "La última columna es la actividad: cuántas veces cambió el precio hoy en ese bróker."
+ },
+ {
+  "id": "5d3b9846bcd7",
+  "texto": "No es volumen y no dice hacia dónde: dice dónde hay gente ahora mismo."
+ },
+ {
+  "id": "1266c6749089",
+  "texto": "El spread y la actividad son de una cuenta real del desarrollador. Los de tu bróker pueden ser otros."
+ },
+ {
+  "id": "f69bbb2ee607",
+  "texto": "Las noticias de los bancos centrales: lo último que publicaron la Fed, el BCE, el Banco de Nueva Zelanda e ING."
+ },
+ {
+  "id": "0a12c55b90c9",
+  "texto": "Cada titular lleva delante el código de su divisa, y debajo de qué fuente es y de qué fecha."
+ },
+ {
+  "id": "a5c7e0c88935",
+  "texto": "Sirven para saber qué acaba de decir un banco central antes de operar su divisa. Qué hacer con eso lo decides tú."
+ },
+ {
+  "id": "df4a60ac4eb2",
+  "texto": "El soporte y la resistencia: el mínimo y el máximo de las últimas 20 velas. Aquí son 20 horas."
+ },
+ {
+  "id": "87080772229f",
+  "texto": "euro dólar: soporte 1,0957, resistencia 1,1000."
+ },
+ {
+  "id": "2a22d2f69119",
+  "texto": "El pivote sale de las 24 horas anteriores: S1 1,0952 · P 1,0981 · R1 1,1005. S1 es un nivel por debajo y R1 uno por encima."
+ },
+ {
+  "id": "c8908763e649",
+  "texto": "Son los sitios donde el precio frenó antes. Que haya frenado ahí NO quiere decir que vuelva a frenar."
+ },
+ {
+  "id": "832b32b17683",
+  "texto": "Un nivel te dice dónde mirar, no qué hacer cuando el precio llegue."
+ },
+ {
+  "id": "db95808cc96a",
+  "texto": "La compresión compara cuánto se mueve el par ahora con cuánto se movía antes."
+ },
+ {
+  "id": "4f76b893edde",
+  "texto": "euro dólar, hoy: Algo apretado 0,75."
+ },
+ {
+  "id": "6b8937bb2e35",
+  "texto": "Por debajo de 1, el par se mueve menos que antes: está apretado. Por encima de 1, se mueve más."
+ },
+ {
+  "id": "f345466f9a93",
+  "texto": "La palabra de al lado dice qué tan raro es ese número para este par. El número es el dato."
+ },
+ {
+  "id": "d17081319d7f",
+  "texto": "Que esté apretado NO dice hacia qué lado se va a soltar, ni cuándo."
+ },
+ {
+  "id": "4e63fa0b0aab",
+  "texto": "Fibonacci: unos niveles que salen del último movimiento de las últimas 20 velas."
+ },
+ {
+  "id": "6fccd9dc20e3",
+  "texto": "El último movimiento fue de 1,0957 a 1,1000."
+ },
+ {
+  "id": "290e4f9896af",
+  "texto": "Los niveles son el 23,6, 38,2, 50, 61,8 y 78,6 por ciento de ese recorrido, con la distancia del precio a cada uno."
+ },
+ {
+  "id": "acf5554baacc",
+  "texto": "El más cercano al precio hoy: 78,6 por ciento, 1,0967."
+ },
+ {
+  "id": "1702538ca99b",
+  "texto": "No hay prueba de que el precio respete estos niveles por sí solo. Son un sitio para mirar, no una orden."
+ },
+ {
+  "id": "5e3ae3ad041b",
+  "texto": "El efe uve ge, o brecha de valor justo: un tramo de precio que quedó sin negociar cuando el precio se movió muy rápido."
+ },
+ {
+  "id": "2626cd01e16c",
+  "texto": "Hoy euro dólar tiene un hueco vivo. Cada uno va con sus bordes, la distancia del precio y si ya se tocó."
+ },
+ {
+  "id": "d9aee9120812",
+  "texto": "Muchos traders esperan que el precio vuelva al hueco. Medido en la app de swing sobre unos 5 años, entrar así NO ganó."
+ },
+ {
+  "id": "03359155f6e5",
+  "texto": "Por eso aquí solo te dice dónde están los huecos, nunca hacia dónde irá el precio."
+ },
+ {
+  "id": "b24f5798cc26",
+  "texto": "La estacionalidad: cuánto suele moverse el par según el calendario, comparado con su media."
+ },
+ {
+  "id": "fc4e7bbeb8a2",
+  "texto": "Recorrido típico · noviembre: 0,88 por ciento · ×1,06. Lo de × dice cuántas veces la media: más de 1 es que se mueve más que de costumbre."
+ },
+ {
+  "id": "d08f4349c49f",
+  "texto": "Y la dirección: noviembre · meses que cerraron en verde, 50 por ciento más o menos 23."
+ },
+ {
+  "id": "5877926f2a72",
+  "texto": "Mira ese más o menos : sale de muy pocos años. Con un margen así, la dirección casi no dice nada."
+ },
+ {
+  "id": "21d37b6d254b",
+  "texto": "Lo que sí dice es cuánto suele moverse. Nunca hacia dónde."
+ },
+ {
+  "id": "e3e4173bcce1",
+  "texto": "Mis pares: un usuario de ejemplo que solo opera cuatro pares."
+ },
+ {
+  "id": "15f392f35047",
+  "texto": "Arriba siempre dice cuántos estás viendo: Viendo 4 de 18 pares."
+ },
+ {
+  "id": "0a2b4e1ce6e1",
+  "texto": "Con un toque ves todos los pares."
+ },
+ {
+  "id": "d1aac937c673",
+  "texto": ".Viendo 18 de 18 pares."
+ },
+ {
+  "id": "f7fa74064bc0",
+  "texto": "Y con otro, vuelves a los tuyos."
+ },
+ {
+  "id": "0d9c81f2e490",
+  "texto": "Cambiar mis pares abre la lista para poner o quitar pares cuando quieras."
+ },
+ {
+  "id": "427998976319",
+  "texto": "Lo que NO se recorta nunca es el ranking de fuerza: compara cada divisa con las otras siete."
+ },
+ {
+  "id": "1845efbbc424",
+  "texto": "No te recomienda pares: solo filtra los que tú elegiste."
+ },
+ {
+  "id": "c303dcdd7829",
+  "texto": "Mis avisos: tú pones el nivel, y la app te avisa al celular cuando el mercado llega ahí."
+ },
+ {
+  "id": "5274658825ba",
+  "texto": "Primero el aviso: esto NO son señales de la app. Los niveles los pones tú."
+ },
+ {
+  "id": "2a5a82d7f282",
+  "texto": "Este usuario de ejemplo tiene 2 de 20 posibles. Cada uno se lee como una frase."
+ },
+ {
+  "id": "9e4e2364926e",
+  "texto": "Para poner uno: el par, de qué (precio, erre ese i o %B), cuándo y el nivel."
+ },
+ {
+  "id": "3d1e9f089112",
+  "texto": "Por ejemplo: euro dólar, si el erre ese i llega o pasa de 70. Y se pulsa Añadir el aviso."
+ },
+ {
+  "id": "2011f5ce21a5",
+  "texto": "Si no lo ves, se repite a los 15 y a los 30 minutos, y se calla en cuanto abres esta pantalla."
+ },
+ {
+  "id": "4c994a8b603a",
+  "texto": "Un aviso te dice qué pasó, nunca qué hacer con ello."
+ },
+ {
+  "id": "3efeaee94f64",
+  "texto": "El modo práctica: operar sin dinero, con los niveles que te da el Analizador."
+ },
+ {
+  "id": "09256c0ec543",
+  "texto": "euro dólar, comprando: stop loss 1,0953 (15 pips), take profit 1,1000 (32 pips)."
+ },
+ {
+  "id": "d475313f2dcd",
+  "texto": "Se pulsa Practicar esta operación (sin dinero)."
+ },
+ {
+  "id": "8525909bd86d",
+  "texto": "Queda guardada, y la app la sigue sola con precios reales hasta que toca el stop loss o el take profit."
+ },
+ {
+  "id": "df7ebdcffa98",
+  "texto": "En el Diario, Modo práctica dice cuántas tienes abiertas y cuántas resueltas."
+ },
+ {
+  "id": "81ff4ea76049",
+  "texto": "Primero el aviso: no es dinero real ni una señal, y el resultado no se puede cambiar a mano."
+ },
+ {
+  "id": "710ab8cd42f0",
+  "texto": "Con su gráfica: las velas del par, la entrada, el stop loss en rojo y el take profit en verde."
+ },
+ {
+  "id": "6a0ee3e29964",
+  "texto": "Así mides tu forma de operar con precios de verdad antes de arriesgar dinero. Con pocas operaciones, el número todavía no dice nada."
+ },
+ {
+  "id": "b6e34a61dc23",
+  "texto": "El laboratorio: armas una regla y la app cuenta cómo le habría ido en el pasado."
+ },
+ {
+  "id": "505739885bff",
+  "texto": "Primero el aviso: que una regla haya ganado antes no quiere decir que vaya a ganar mañana."
+ },
+ {
+  "id": "ae07f788c81c",
+  "texto": "Una regla de ejemplo. Paso 1: el lado, comprar."
+ },
+ {
+  "id": "18eace8d0b41",
+  "texto": "Paso 2: cuándo entra. Aquí, cuando el erre ese i está en 30 o menos."
+ },
+ {
+  "id": "578b927d10c8",
+  "texto": "Paso 3: el stop loss a cuántos a te erre y el take profit a cuántas veces el riesgo. Se dejan como vienen."
+ },
+ {
+  "id": "27a961463912",
+  "texto": "177 operaciones, con un acierto de 47 por ciento más o menos 7. Para no perder hacía falta un 50 por ciento."
+ },
+ {
+  "id": "45d95c823174",
+  "texto": "Resultado por operación: menos 0,16 R. R es lo que arriesgas: menos 1 R es perderlo, +1 R ganar lo mismo."
+ },
+ {
+  "id": "d02d85ed9cb5",
+  "texto": "Debajo van las dos mitades del periodo por separado: si una regla solo gana en una, no es de fiar."
+ },
+ {
+  "id": "904a6f345945",
+  "texto": "Y ojo, salga como salga: 177 operaciones todavía son pocas (fíjate en el más o menos del acierto), y el swap de cada noche no va descontado."
+ },
+ {
+  "id": "d566e42c9fe0",
+  "texto": "Un resultado así es para seguir midiendo la idea, no para operarla con dinero."
+ },
+ {
+  "id": "4c37f1670d00",
+  "texto": "Y la app cuenta tus pruebas: cuantas más variantes pruebes, más fácil es que alguna gane por casualidad."
+ },
+ {
+  "id": "a78f96245941",
+  "texto": "Importar del bróker: tus operaciones entran solas al Diario, con el resultado neto."
+ },
+ {
+  "id": "71fb869b94c7",
+  "texto": "Exportas el historial desde MT4 o eme te cinco, o un CSV, y lo subes aquí."
+ },
+ {
+  "id": "8c177cc3969f",
+  "texto": "Para el video, un archivo de ejemplo inventado, nunca operaciones reales de nadie."
+ },
+ {
+  "id": "4c9dc2618df6",
+  "texto": "Antes de guardar enseña lo que entraría: 4 operaciones nuevas, con su resultado neto (con swap y comisión)."
+ },
+ {
+  "id": "0e76d36853ca",
+  "texto": "La de oro se salta, y lo dice: esta app solo analiza pares de divisas."
+ },
+ {
+  "id": "7e42277fc496",
+  "texto": "Nada se guarda hasta que pulsas Añadir. Y si vuelves a subir el mismo historial, no repite las que ya estaban."
+ },
+ {
+  "id": "124a2b8f5e91",
+  "texto": "El spread se lleva menos 0,04 R y el swap de 2 noches, menos 0,04 R. Neto: +1,42 R."
+ },
+ {
+  "id": "4bdda5eafaab",
+  "texto": "Arriba, la suma: +1,70 R bruto y +1,53 R neto, con el spread y el swap descontados."
+ },
+ {
+  "id": "deaf7851ad41",
+  "texto": "En dinero, con lo que iba a arriesgar en cada una: +15,32 dólares. No es dinero ganado: es lo que habría sido."
+ }
+]

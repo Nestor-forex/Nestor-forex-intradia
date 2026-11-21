@@ -345,6 +345,10 @@ export const GEMELOS = [
   'scripts/videos/main.jsx',
   'scripts/videos/index.html',
   'scripts/videos/vite.config.js',
+  // La voz de los videos (2026-11-21): cómo se pronuncia cada rótulo y cómo
+  // se pega el audio. Igual en las dos: el mismo rótulo tiene que dar el
+  // mismo audio en las dos apps, porque los audios se generan una sola vez.
+  'scripts/videos/voz.mjs',
   // El laboratorio «prueba tu propia regla» (2026-11-18): el motor, la
   // pantalla, cómo se guardan las reglas y de dónde baja las velas (cada app
   // la suya, por `APP`). Lo que PUBLICA la historia es de cada app (PRIMO).
