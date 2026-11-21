@@ -206,6 +206,26 @@ ok(pipUSD('EUR/USD', {}) === 10 && LECCIONES['m1-2'].ejemplo.some((p) => p.inclu
   const dob = readFileSync(new URL('./videos/dobles.js', import.meta.url), 'utf8')
   ok(/'ejemplo' \? practicaEjemplo\(\)/.test(dob), 'el banco de grabación tiene operaciones de práctica de ejemplo')
 }
+{
+  // Módulo 11: el acierto de equilibrio sale de `aciertoDeEquilibrio` (el del
+  // laboratorio), el margen de `margen()` y el listón de `OPS_PARA_CREER`.
+  const { aciertoDeEquilibrio } = await import('../src/lib/laboratorio.js')
+  const { margen } = await import('../src/lib/diagnostico.js')
+  const { OPS_PARA_CREER } = await import('../src/lib/sombra.js')
+  const tEs = (await import('../src/lib/i18n/textos/es.js')).default
+  const m111 = JSON.stringify(LECCIONES['m11-1'])
+  const m112 = JSON.stringify(LECCIONES['m11-2'])
+  const m113 = JSON.stringify(LECCIONES['m11-3'])
+  ok([1, 1.5, 2, 0.7].every((rb) => m111.includes(`${aciertoDeEquilibrio(rb)} %`)), 'el módulo 11 lee el acierto de equilibrio de `aciertoDeEquilibrio`')
+  ok(aciertoDeEquilibrio(1) === 50 && aciertoDeEquilibrio(2) === 33, 'la cuenta del equilibrio es 1 ÷ (1 + R/B)')
+  ok(m111.includes(`«${tEs.lab.equilibrio}»`), 'la lección nombra la fila del laboratorio como sale en pantalla')
+  ok(m112.includes(`${OPS_PARA_CREER} operaciones`) && m112.includes(`±${margen(25)}`) && m112.includes(`baja a ${margen(OPS_PARA_CREER)} puntos`), 'el módulo 11 usa el listón y el margen del código')
+  // El ejemplo de los rangos tiene que decir lo que la cuenta dice: con 25 se
+  // tocan, con 150 no.
+  ok(Math.abs(60 - 42) <= 2 * margen(25) && Math.abs(60 - 42) > 2 * margen(OPS_PARA_CREER), 'el ejemplo de los rangos cambia de veredicto entre 25 y 150 operaciones')
+  ok(m112.includes('Los rangos se tocan') && m112.includes('Ya no se tocan'), 'la lección dice los dos veredictos')
+  ok(/hacia adelante/.test(m113) && /cuenta cuántas pruebas/.test(m113), 'el módulo 11 explica el registro hacia adelante y el contador del laboratorio')
+}
 
 // Los videos: cada uno tiene su descripción, y CADA app guarda los suyos
 // (2026-11-20): el archivo tiene que existir en este repositorio y pesar poco.

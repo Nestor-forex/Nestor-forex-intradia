@@ -34,6 +34,7 @@ import { APP } from '../identidad.js'
 import { COJIN_ESTRUCTURA, MAX_PLANTILLAS, RR_AVISO } from '../analizador.js'
 import { HERRAMIENTAS_DE_ESTILO } from '../estilo.js'
 import { MAX_ABIERTAS, costesPractica } from '../practica.js'
+import { aciertoDeEquilibrio } from '../laboratorio.js'
 
 const L = OPS_PARA_CREER
 
@@ -107,6 +108,14 @@ const MARGEN_5 = margen(INSIGNIA_PRACTICA_TXT)
 const REVISA = APP === 'swing'
   ? 'La revisa cada 15 minutos con las velas diarias que publica el barrido de esta app, que se actualiza dos veces al día: una operación puede tardar unas horas en aparecer resuelta aunque ya haya tocado el nivel.'
   : 'La revisa cada 15 minutos con las velas de una hora que publica el barrido de esta app, que se actualiza cada hora.'
+
+// Módulo 11. El acierto que hace falta para no perder sale de
+// `aciertoDeEquilibrio` (el mismo que enseña el laboratorio), y el margen de
+// `margen()`. Los dos casos con fecha son de esta memoria y lo dicen.
+const EQ = (rb) => aciertoDeEquilibrio(rb)
+const M25 = margen(25)
+const M150 = margen(L)
+const solapan = (a, ma, b, mb) => Math.abs(a - b) <= ma + mb
 
 export const MODULOS = Object.freeze([
   Object.freeze({
@@ -186,12 +195,18 @@ export const MODULOS = Object.freeze([
     desc: 'Crear una operación de práctica desde el Analizador, leer su resultado en R con el spread y el swap descontados, y saber qué demuestra y qué no.',
     lecciones: Object.freeze(['m10-1', 'm10-2', 'm10-3']),
   }),
+  Object.freeze({
+    id: 'm11',
+    n: 11,
+    titulo: 'Un número que significa algo',
+    desc: 'Por qué acertar no es lo mismo que ganar, cuándo dos porcentajes son distintos de verdad, y por qué un número elegido después de mirar engaña.',
+    lecciones: Object.freeze(['m11-1', 'm11-2', 'm11-3']),
+  }),
 ])
 
 // Los que todavía no están escritos. Se enseñan para que se vea el camino,
 // marcados «próximamente», y no se pueden abrir.
 export const PROXIMOS = Object.freeze([
-  { n: 11, titulo: 'Un número que significa algo' },
   { n: 12, titulo: 'Medir tus propios números' },
 ])
 
@@ -1827,6 +1842,168 @@ export const LECCIONES = Object.freeze({
         opciones: ['Porque así se gana más', 'Porque así el resultado habla de una sola forma de operar', 'Porque lo pide la app'],
         correcta: 1,
         porque: 'Si cada vez miras cosas distintas, el resultado mezcla muchas formas de operar.',
+      },
+    ],
+  },
+
+  'm11-1': {
+    titulo: 'Acertar no es lo mismo que ganar',
+    objetivo: 'Calcular qué acierto hace falta para no perder con una relación riesgo/beneficio, y leer un porcentaje de acierto al lado de ese número.',
+    explicacion: [
+      'Un porcentaje de acierto solo no dice si una forma de operar gana o pierde. Depende de cuánto ganas cuando aciertas y cuánto pierdes cuando fallas, o sea de la relación riesgo/beneficio (R/B).',
+      `Si arriesgas lo mismo que buscas ganar (1:1), necesitas acertar más del ${EQ(1)} % para no perder. Si buscas ganar 1,5 veces lo que arriesgas, basta pasar del ${EQ(1.5)} %. Con 1:2, del ${EQ(2)} %. Y si arriesgas más de lo que buscas ganar —por ejemplo 1:0,7— necesitas acertar más del ${EQ(0.7)} %.`,
+      'Eso es antes de los costes. El spread y el swap suben un poco ese número, como se vio en el módulo 6.',
+      'Por eso esta app nunca enseña un acierto solo: en el laboratorio va al lado de «Acierto que hace falta para no perder», y en el Historial va con los pips o las unidades de riesgo.',
+    ],
+    ejemplo: [
+      `Una forma de operar acierta el 55 % con R/B 1:0,7. Parece buena; pero con 1:0,7 hace falta el ${EQ(0.7)} %. Pierde dinero acertando más de la mitad de las veces.`,
+      `Otra acierta solo el 40 % con R/B 1:2. Parece mala; pero con 1:2 basta el ${EQ(2)} %. Gana dinero fallando más de la mitad de las veces.`,
+      'Un caso real de esta app, medido en 2026 sobre cinco años de velas: las señales de la app de swing acertaban el 56 % y aun así perdían unos 4 centavos por cada dólar arriesgado.',
+    ],
+    formula: {
+      texto: 'acierto para no perder = 1 ÷ (1 + R/B)',
+      conNumeros: `con R/B 1:1,5 → 1 ÷ 2,5 = ${EQ(1.5)} %   ·   con 1:0,7 → 1 ÷ 1,7 = ${EQ(0.7)} %`,
+    },
+    noDice: [
+      'Que una forma de operar pase su acierto de equilibrio en el pasado no quiere decir que lo vaya a pasar mañana.',
+      'Un R/B alto no es mejor por sí solo: con el Take-profit más lejos se acierta menos.',
+      'Esta cuenta no dice hacia dónde irá el precio.',
+    ],
+    video: {
+      archivo: 'm11-1',
+      desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se lee el R/B de la tarjeta y se calcula el acierto que haría falta para no perder; después se cambia el método del Stop-loss a la vara neutra y se ve cómo cambia ese número.',
+    },
+    hazlo: {
+      tab: 'analizar',
+      boton: 'Ir al Analizador',
+      texto: 'Arma una tarjeta, mira su R/B y calcula el acierto que haría falta para no perder: 1 ÷ (1 + R/B).',
+    },
+    preguntas: [
+      {
+        p: 'Una forma de operar acierta el 60 %. ¿Gana dinero?',
+        opciones: ['Sí, siempre', `Depende de su R/B: con 1:0,5 haría falta el ${EQ(0.5)} %`, 'No, nunca'],
+        correcta: 1,
+        porque: 'El acierto solo no basta: hay que mirarlo al lado del R/B.',
+      },
+      {
+        p: '¿Qué acierto hace falta para no perder con R/B 1:1, antes de costes?',
+        opciones: [`Más del ${EQ(1)} %`, 'Más del 70 %', 'Más del 30 %'],
+        correcta: 0,
+        porque: `1 ÷ (1 + 1) = ${EQ(1)} %.`,
+      },
+      {
+        p: 'Los costes (spread y swap), ¿cómo mueven ese número?',
+        opciones: ['Lo bajan', 'Lo suben un poco', 'No lo tocan'],
+        correcta: 1,
+        porque: 'Cada operación paga algo, así que hace falta acertar algo más.',
+      },
+    ],
+  },
+
+  'm11-2': {
+    titulo: 'Cuándo dos números son distintos de verdad',
+    objetivo: 'Comparar dos porcentajes con su ± y saber cuándo de verdad dicen cosas distintas.',
+    explicacion: [
+      'Cada porcentaje de la app va con su ±: cuánto puede moverse solo por casualidad. Para comparar dos, no basta mirar cuál es más alto: hay que mirar si sus márgenes se tocan.',
+      'Si el rango de uno (su número menos su ±, hasta su número más su ±) se cruza con el del otro, los dos pueden ser el mismo número por debajo. Con eso no se puede decir que uno sea mejor.',
+      `Por eso la app pide ${L} operaciones reales a cada experimento antes de creerle: con ${L}, el ± baja a ${M150} puntos. Con 25 es de ±${M25}.`,
+      `En el Historial, debajo de cada experimento, la app dice cuántas lleva de las ${L}. Hasta llegar, su número no se puede tomar como señal, salga como salga.`,
+    ],
+    ejemplo: [
+      `Dos formas de operar, 25 operaciones cada una: una acierta el 60 % (±${M25}) y la otra el 42 % (±${M25}). ${solapan(60, M25, 42, M25) ? 'Los rangos se tocan' : 'Los rangos no se tocan'}: con 25 operaciones no se puede decir que la primera sea mejor.`,
+      `Las mismas dos con ${L} operaciones cada una: 60 % ±${M150} y 42 % ±${M150}. ${solapan(60, M150, 42, M150) ? 'Todavía se tocan.' : 'Ya no se tocan: ahí sí son distintas.'}`,
+      'En tu Diario pasa igual: si en cruces llevas 2 operaciones y las dos ganaron, ese 100 % va con un ± enorme y no dice nada sobre los cruces.',
+    ],
+    formula: {
+      texto: 'distintos solo si los rangos no se tocan:  |A − B| > ±A + ±B',
+      conNumeros: `con 25 operaciones: |60 − 42| = 18 y ±${M25} + ±${M25} = ${2 * M25} → no se puede decir que sean distintos. Con ${L}: 18 contra ${2 * M150} → sí lo son`,
+    },
+    noDice: [
+      'Que dos rangos no se toquen dice que los números son distintos, no por qué.',
+      'Que un experimento llegue a 150 operaciones no lo convierte en bueno: solo hace que su número se pueda creer, sea bueno o malo.',
+      'El ± habla de casualidad, no de que el mercado vaya a seguir igual.',
+    ],
+    video: {
+      archivo: 'm11-2',
+      desc: 'Video sin voz: «Tus números por grupos» de un usuario de ejemplo (operaciones de muestra) y el Historial con el registro real de ese día. Se comparan dos porcentajes con su ± para ver si se tocan, y se señala cuántas operaciones lleva un experimento de las 150.',
+    },
+    hazlo: {
+      tab: 'historial',
+      boton: 'Ir al Historial',
+      texto: 'Toma dos porcentajes del Historial con su ± y comprueba si sus rangos se tocan.',
+    },
+    preguntas: [
+      {
+        p: 'Un experimento acierta el 58 % ±20 y otro el 48 % ±20. ¿Es mejor el primero?',
+        opciones: ['Sí, claramente', 'No se puede decir: sus rangos se tocan', 'No, es peor'],
+        correcta: 1,
+        porque: '10 puntos de diferencia con 40 de márgenes sumados no distinguen nada.',
+      },
+      {
+        p: `¿Por qué la app pide ${L} operaciones a cada experimento?`,
+        opciones: ['Porque es un número bonito', `Porque con ${L} el ± baja a unos ${M150} puntos`, 'Porque lo pide el bróker'],
+        correcta: 1,
+        porque: 'Con menos, un número alto y uno bajo pueden ser el mismo.',
+      },
+      {
+        p: `Un experimento llega a ${L} operaciones. ¿Qué quiere decir?`,
+        opciones: ['Que ya es una señal buena', 'Que su número ya se puede creer, sea bueno o malo', 'Nada'],
+        correcta: 1,
+        porque: 'Llegar al listón hace el número creíble, no bueno.',
+      },
+    ],
+  },
+
+  'm11-3': {
+    titulo: 'El número que se elige después de mirar',
+    objetivo: 'Entender por qué un resultado del pasado elegido entre muchas pruebas engaña, y qué distingue un backtest de un registro hacia adelante.',
+    explicacion: [
+      'Un backtest es probar una regla sobre el pasado: cómo le habría ido. Es útil, pero tiene una trampa. Si pruebas muchas variantes sobre los mismos datos y te quedas con la que mejor salió, siempre sale alguna que gana, aunque sea por casualidad.',
+      'Por eso el laboratorio de la app cuenta cuántas pruebas llevas en tu aparato y te lo recuerda: cuantas más, más fácil que alguna gane solo por suerte.',
+      'Lo único que no tiene esa trampa es el registro hacia adelante: anotar la regla y mirar cómo le va con días que nadie había visto al elegirla. Es lo que hacen los experimentos de la app, y el seguimiento hacia adelante del laboratorio.',
+      'Por eso un experimento no se da como señal por su backtest, por bueno que sea: hace falta que el registro hacia adelante llegue a las operaciones que pide y diga lo mismo.',
+    ],
+    ejemplo: [
+      'Un caso real de esta app: una regla de la app de swing medía en 2026 un acierto del 54 % sobre cinco años de velas. En su registro real, a mediados de noviembre de 2026, iba por el 42 % con 57 operaciones.',
+      'El backtest y la realidad no se habían puesto de acuerdo. Por eso esa regla sigue en pruebas y no se propone a nadie.',
+      'Si tú pruebas 20 versiones de una regla en el laboratorio y una sale muy bien, antes de creerle síguela hacia adelante.',
+    ],
+    formula: {
+      texto: 'más variantes probadas sobre los mismos datos → más fácil que una gane por casualidad',
+      conNumeros: 'Lo que no engaña: las operaciones nuevas, con días que la regla nunca vio.',
+    },
+    noDice: [
+      'Que un backtest salga mal no prueba que la idea sea mala, y que salga bien no prueba que sea buena.',
+      'El registro hacia adelante tampoco promete nada: con pocas operaciones su número todavía no significa nada.',
+      'Ninguno de los dos dice qué va a pasar mañana.',
+    ],
+    video: {
+      archivo: 'm11-3',
+      desc: 'Video sin voz: el laboratorio de la pestaña Analizar con las velas guardadas de ese día. Se lee el aviso, se prueba una regla, se cambia una condición y se prueba otra vez: el contador de pruebas sube.',
+    },
+    hazlo: {
+      tab: 'analizar',
+      boton: 'Ir al Analizador',
+      texto: 'Abre el laboratorio, prueba una regla y fíjate en el contador de pruebas. Si una versión sale muy bien después de muchas, no te la creas todavía.',
+    },
+    preguntas: [
+      {
+        p: 'Pruebas 20 variantes de una regla y una sale muy bien. ¿Qué haces?',
+        opciones: ['Usarla ya con dinero', 'Seguirla hacia adelante antes de creerle', 'Borrar las otras 19'],
+        correcta: 1,
+        porque: 'Con muchas pruebas, siempre sale alguna buena por casualidad.',
+      },
+      {
+        p: '¿Qué es el registro hacia adelante?',
+        opciones: ['Probar sobre el pasado', 'Mirar cómo le va a la regla con días que nadie había visto al elegirla', 'Una señal del bróker'],
+        correcta: 1,
+        porque: 'Es lo único que no se puede ajustar mirando.',
+      },
+      {
+        p: 'Un backtest da 54 % y el registro real va por el 42 %. ¿Qué dice eso?',
+        opciones: ['Que hay que creerle al backtest', 'Que todavía no se han puesto de acuerdo y la regla sigue en pruebas', 'Que el registro está mal'],
+        correcta: 1,
+        porque: 'Hasta que la realidad confirme el backtest, no es una señal.',
       },
     ],
   },
