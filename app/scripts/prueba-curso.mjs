@@ -58,7 +58,7 @@ const m00 = JSON.stringify(LECCIONES['m0-1']) + JSON.stringify(LECCIONES['m0-2']
 ok(m00.includes(`${OPS_PARA_CREER} operaciones`), 'el listón de la sombra se lee de `sombra.js`')
 ok(LECCIONES['m0-2'].ejemplo.some((p) => p.includes(`±${margen(25)}`)), 'el margen de 25 operaciones se calcula con `margen()`')
 const es = leer('src/lib/curso/es.js')
-ok(/import \{ OPS_PARA_CREER \} from '\.\.\/sombra\.js'/.test(es) && /import \{ margen \} from '\.\.\/diagnostico\.js'/.test(es), 'las lecciones importan el listón y el margen')
+ok(/import \{ OPS_PARA_CREER \} from '\.\.\/sombra\.js'/.test(es) && /import \{[^}]*\bmargen\b[^}]*\} from '\.\.\/diagnostico\.js'/.test(es), 'las lecciones importan el listón y el margen')
 // El ejemplo del lote tiene que cuadrar con la calculadora de verdad.
 const a = calcularLote({ capital: 1000, riesgoPct: 1, pips: 25, par: 'EUR/USD', tasas: {} })
 const b = calcularLote({ capital: 1000, riesgoPct: 1, pips: 50, par: 'EUR/USD', tasas: {} })
@@ -225,6 +225,33 @@ ok(pipUSD('EUR/USD', {}) === 10 && LECCIONES['m1-2'].ejemplo.some((p) => p.inclu
   ok(Math.abs(60 - 42) <= 2 * margen(25) && Math.abs(60 - 42) > 2 * margen(OPS_PARA_CREER), 'el ejemplo de los rangos cambia de veredicto entre 25 y 150 operaciones')
   ok(m112.includes('Los rangos se tocan') && m112.includes('Ya no se tocan'), 'la lección dice los dos veredictos')
   ok(/hacia adelante/.test(m113) && /cuenta cuántas pruebas/.test(m113), 'el módulo 11 explica el registro hacia adelante y el contador del laboratorio')
+}
+{
+  // Módulo 12: el neto sale de `leerOperaciones` (la misma lectura que la
+  // importación), las repetidas de `quitarRepetidas`, y los grupos y su ± de
+  // `diagnostico.js`. Todo sobre operaciones de EJEMPLO.
+  const es12 = await import('../src/lib/curso/es.js')
+  const { leerOperaciones, quitarRepetidas } = await import('../src/lib/importarOperaciones.js')
+  const D = await import('../src/lib/diagnostico.js')
+  const tEs = (await import('../src/lib/i18n/textos/es.js')).default
+  const m121 = JSON.stringify(LECCIONES['m12-1'])
+  const m122 = JSON.stringify(LECCIONES['m12-2'])
+  const m123 = JSON.stringify(LECCIONES['m12-3'])
+  const op = leerOperaciones(es12.CSV_EJEMPLO, ['EUR/USD']).operaciones[0]
+  ok(op && Math.abs(op.pl - (40 - 3.2 - 1.5)) < 1e-9 && es12.IMP_NETO === op.pl, 'el neto del ejemplo es precio + swap + comisión, leído por la importación de verdad')
+  ok(m121.includes('+35,30') && quitarRepetidas([op], [op]).length === 0 && m121.includes('entran 0 operaciones nuevas'), 'la lección dice el neto y que no se repite al volver a subir')
+  ok(m121.includes(`«${tEs.importar.titulo}»`), 'la lección nombra la tarjeta como sale en pantalla')
+  ok(/cierres parciales/.test(m121) && /nunca te pide la contraseña/.test(m121), 'la lección dice lo que todavía no hace y que no pide credenciales')
+  const dg = D.diagnostico(es12.EJEMPLO_GRUPOS)
+  const cru = dg.tipoDePar.find((g) => g.clave === 'cruces')
+  const dol = dg.tipoDePar.find((g) => g.clave === 'dolar')
+  ok(cru.n === 8 && dol.n === 12 && m122.includes(`±${cru.margen}`) && m122.includes(`±${dol.margen}`), 'el ejemplo de grupos usa el ± de `margen()`')
+  ok(es12.GRUPOS_SE_TOCAN === true && m122.includes('se tocan'), 'el veredicto de los rangos sale de la cuenta')
+  ok(m122.includes(`«${tEs.diag.titulo({ n: 0 }).replace(/ \(0\)$/, '')}»`) && m122.includes(`${D.MINIMO_PARA_ENSEÑAR} operaciones o más`), 'la lección nombra la tarjeta y lee el mínimo por par del código')
+  ok(dg.pares.length === 1 && dg.pares[0].clave === 'EUR/USD' && m122.includes('solo sale EUR/USD'), 'par por par sale solo el que llega al mínimo')
+  const ra = D.resumir(es12.EJEMPLO_ACIERTO)
+  ok(ra.pct === 70 && ra.neto === -20 && m123.includes('70 % ±31') && m123.includes('−20,00'), 'el ejemplo de acierto alto y neto negativo sale de `resumir`')
+  ok(/cada app tiene su propio Diario/i.test(m123), 'la lección dice que cada app tiene su Diario')
 }
 
 // Los videos: cada uno tiene su descripción, y CADA app guarda los suyos
