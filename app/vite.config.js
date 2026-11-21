@@ -1,8 +1,19 @@
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  // Dos puertas de entrada: la app (index.html) y la página web del curso
+  // (curso.html, 2026-11-21). Comparten código, cuenta y lecciones.
+  build: {
+    rollupOptions: {
+      input: {
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        curso: fileURLToPath(new URL('./curso.html', import.meta.url)),
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({
