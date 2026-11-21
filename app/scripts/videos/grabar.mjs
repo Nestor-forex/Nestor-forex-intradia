@@ -5,8 +5,9 @@
 //   2. construir el banco:       npx vite build --config scripts/videos/vite.config.js
 //   3. grabar:                   node scripts/videos/grabar.mjs <carpeta> m0-1 m1-2 …   (sin ids: todos)
 //
-// Cada video sale en `public/curso/videos/<id>.webm` y `.mp4`, sin voz: el
-// texto que explica va en el rótulo de abajo. La app es la de verdad, con los
+// Cada video sale en `public/curso/videos/<id>.webm` y `.mp4`. Desde el
+// 2026-11-21 llevan voz (Studio-B), que dice lo mismo que el rótulo de abajo:
+// ver `voz.mjs` y `--voz`. La app es la de verdad, con los
 // datos que publica la rama `datos` ese día; lo único inventado es el usuario
 // de ejemplo y sus operaciones (`dobles.js`), y el rótulo lo dice.
 //
@@ -32,6 +33,8 @@ import { aciertoDeEquilibrio } from '../../src/lib/laboratorio.js'
 import * as MC from '../../src/lib/marketCalc.js'
 import { PERIODOS_MEDIAS, PERIODO_ATR, PERIODO_RSI, RSI_MAX, UMBRAL_FUERZA, VENTANAS_FUERZA } from '../../src/lib/marketCalc.js'
 import { APP } from '../../src/lib/identidad.js'
+import { HERRAMIENTAS } from '../../src/lib/curso/herramientas.js'
+import { apuntarTextos, duraciones, leerTextos, mezclar, rotuloConVoz } from './voz.mjs'
 
 const VIDEOS = fileURLToPath(new URL('../../public/curso/videos/', import.meta.url))
 const coma = (x) => String(x).replace('.', ',')
@@ -1788,26 +1791,47 @@ async function filaTasa(p) {
   return lado ? { ...datos, lado, loc: p.locator('[data-fila-tasa]') } : null
 }
 
-async function grabar(datos, id) {
+// `modo`: null (sin voz, como siempre) · { textos: true } (apunta lo que dice
+// cada rótulo para generar la voz) · { voz, salida } (graba con esa voz y deja
+// el video con sonido en `salida`). Ver `voz.mjs`.
+async function grabar(datos, id, modo = null) {
   const escena = ESCENAS[id] || ESCENAS_HERRAMIENTAS[id]
   if (!escena) throw new Error(`No hay escena «${id}»`)
   const tmp = join(datos, '..', `grabando-${id}`)
   await rm(tmp, { recursive: true, force: true })
   const reloj = escena.reloj ? await escena.reloj(datos) : null
   const { b, ctx, p, errores } = await abrir(chromium, { datos, video: tmp, consulta: escena.consulta || '', reloj })
-  const r = await ponerRotulo(p)
+  // El video empieza a grabarse al abrir la página: es el cero de los audios.
+  const t0 = await p.evaluate(() => performance.timeOrigin)
+  const dur = modo?.voz ? duraciones(modo.voz, await leerTextos()) : null
+  const r = rotuloConVoz(p, await ponerRotulo(p), dur, modo?.pron)
   await escena.correr(p, r, datos)
+  await r.terminar()
   await ctx.close()
   await b.close()
   if (errores.length) throw new Error(`${id}: errores en la página: ${errores.join(' · ')}`)
+  if (modo?.textos) {
+    const n = await apuntarTextos(r.log)
+    console.log(`✓ ${id}: ${r.log.length} rótulos apuntados (${n} textos en total)`)
+    for (const x of r.log) console.log(`   ${x.id}  ${x.voz}`)
+    await rm(tmp, { recursive: true, force: true })
+    return
+  }
   const [crudo] = (await readdir(tmp)).filter((f) => f.endsWith('.webm'))
   const entrada = join(tmp, crudo)
   // El primer segundo es la app cargando: fuera.
-  const corte = ['-ss', '1.2']
-  execFileSync('ffmpeg', ['-loglevel', 'error', '-y', ...corte, '-i', entrada, '-c:v', 'libvpx-vp9', '-b:v', '0', '-crf', '40', '-row-mt', '1', '-an', join(VIDEOS, `${id}.webm`)])
-  execFileSync('ffmpeg', ['-loglevel', 'error', '-y', ...corte, '-i', entrada, '-c:v', 'libx264', '-preset', 'slow', '-crf', '28', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', join(VIDEOS, `${id}.mp4`)])
+  const CORTE = 1.2
+  const corte = ['-ss', String(CORTE)]
+  // Con voz y sin --salida, el video con voz SUSTITUYE al de la app.
+  const dest = modo?.voz && modo.salida ? join(modo.salida, `${id}-${modo.voz}`) : join(VIDEOS, id)
+  const mudo = modo?.voz ? join(tmp, 'mudo') : dest
+  execFileSync('ffmpeg', ['-loglevel', 'error', '-y', ...corte, '-i', entrada, '-c:v', 'libvpx-vp9', '-b:v', '0', '-crf', '40', '-row-mt', '1', '-an', `${mudo}.webm`])
+  execFileSync('ffmpeg', ['-loglevel', 'error', '-y', ...corte, '-i', entrada, '-c:v', 'libx264', '-preset', 'slow', '-crf', '28', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', `${mudo}.mp4`])
+  if (modo?.voz) {
+    for (const ext of ['webm', 'mp4']) mezclar({ video: `${mudo}.${ext}`, salida: `${dest}.${ext}`, voz: modo.voz, log: r.log, t0, corte: CORTE })
+  }
   await rm(tmp, { recursive: true, force: true })
-  console.log(`✓ ${id}`)
+  console.log(`✓ ${id}${modo?.voz ? ` con la voz ${modo.voz} → ${dest}.mp4` : ''}`)
 }
 
 const args = process.argv.slice(2)
@@ -1816,9 +1840,25 @@ if (args[0] === '--bajar') {
 } else if (args[0] === '--descripciones') {
   for (const [id, e] of Object.entries(ESCENAS)) console.log(id, '→', e.desc)
 } else {
-  const datos = exigir(args[0], 'la carpeta de datos (node grabar.mjs <carpeta> [ids])')
-  const ids = args.length > 1 ? args.slice(1) : [...Object.keys(ESCENAS), ...Object.keys(ESCENAS_HERRAMIENTAS)]
-  for (const id of ids) await grabar(datos, id)
+  // Opciones: --textos (apunta los rótulos para la voz) · --voz <voz> [--salida <carpeta>]
+  // (sin --salida, el video con voz sustituye al de public/curso/videos)
+  // · --pronunciacion fonetica|natural (la misma al apuntar y al grabar).
+  const opc = {}
+  const resto = []
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--textos') opc.textos = true
+    else if (args[i] === '--voz') opc.voz = args[++i]
+    else if (args[i] === '--salida') opc.salida = args[++i]
+    else if (args[i] === '--pronunciacion') opc.pron = args[++i]
+    else resto.push(args[i])
+  }
+  const datos = exigir(resto[0], 'la carpeta de datos (node grabar.mjs <carpeta> [ids])')
+  // Sin ids, todas las de ESTA app: las de herramientas que solo existen en la
+  // otra (el oro, el COT y la correlación son de swing) se saltan.
+  const deEstaApp = HERRAMIENTAS.filter((h) => h.apps.includes(APP)).map((h) => h.id)
+  const ids = resto.length > 1 ? resto.slice(1) : [...Object.keys(ESCENAS), ...Object.keys(ESCENAS_HERRAMIENTAS).filter((id) => deEstaApp.includes(id))]
+  const modo = opc.textos || opc.voz ? opc : null
+  for (const id of ids) await grabar(datos, id, modo)
 }
 
 export { ESCENAS }

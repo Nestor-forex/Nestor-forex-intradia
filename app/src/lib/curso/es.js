@@ -263,7 +263,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm1-1',
-      desc: 'Video sin voz: la fuerza de las 8 divisas en el Barrido, con los datos reales de ese día. Se toma un par de la lista, se dice cuál es la moneda base y cuál la cotizada, y se busca la fuerza de cada una en el ranking.',
+      desc: 'Video con voz: la fuerza de las 8 divisas en el Barrido, con los datos reales de ese día. Se toma un par de la lista, se dice cuál es la moneda base y cuál la cotizada, y se busca la fuerza de cada una en el ranking.',
     },
     hazlo: {
       tab: 'barrido',
@@ -316,7 +316,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm1-2',
-      desc: 'Video sin voz: la calculadora de la pestaña Riesgo. Con EUR/USD el pip vale 10 USD por lote; al cambiar a USD/JPY el valor del pip cambia, porque depende del precio. Después, el mismo movimiento de 30 pips con un microlote y con un lote entero.',
+      desc: 'Video con voz: la calculadora de la pestaña Riesgo. Con EUR/USD el pip vale 10 USD por lote; al cambiar a USD/JPY el valor del pip cambia, porque depende del precio. Después, el mismo movimiento de 30 pips con un microlote y con un lote entero.',
     },
     hazlo: {
       tab: 'calc',
@@ -369,7 +369,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm1-3',
-      desc: 'Video sin voz: la tarjeta «Lo que cuesta abrir la operación» del Barrido, con el spread real de una cuenta del desarrollador ese día. Se compara el spread de EUR/USD con el de un cruce y se calcula cuánto pesa sobre un Stop-loss corto y uno largo.',
+      desc: 'Video con voz: la tarjeta «Lo que cuesta abrir la operación» del Barrido, con el spread real de una cuenta del desarrollador ese día. Se compara el spread de EUR/USD con el de un cruce y se calcula cuánto pesa sobre un Stop-loss corto y uno largo.',
     },
     hazlo: {
       tab: 'barrido',
@@ -418,7 +418,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm3-1',
-      desc: 'Video sin voz: dos maneras de cerrar el mismo mal día con 1.000 USD, y la pestaña Riesgo con los dos frenos de «Mi perfil de riesgo»: la pérdida máxima del día y las pérdidas seguidas, que se ponen antes, con la cabeza fría.',
+      desc: 'Video con voz: dos maneras de cerrar el mismo mal día con 1.000 USD, y la pestaña Riesgo con los dos frenos de «Mi perfil de riesgo»: la pérdida máxima del día y las pérdidas seguidas, que se ponen antes, con la cabeza fría.',
     },
     hazlo: {
       tab: 'calc',
@@ -470,7 +470,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm3-2',
-      desc: 'Video sin voz: «Tu freno de hoy», arriba del Diario, con un usuario de ejemplo que hoy lleva dos operaciones perdidas. La tarjeta suma lo perdido contra el freno del día y las pérdidas seguidas contra su límite, y se pone ámbar cuando queda poco margen.',
+      desc: 'Video con voz: «Tu freno de hoy», arriba del Diario, con un usuario de ejemplo que hoy lleva dos operaciones perdidas. La tarjeta suma lo perdido contra el freno del día y las pérdidas seguidas contra su límite, y se pone ámbar cuando queda poco margen.',
     },
     hazlo: {
       tab: 'diario',
@@ -519,7 +519,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm0-1',
-      desc: 'Video sin voz: el Barrido con los datos reales de ese día. Se abre la tarjeta «Qué es esta app», se lee que nada de lo que se ve es una señal para copiar, y se baja hasta los avisos de los experimentos, que dicen «Esto NO son señales».',
+      desc: 'Video con voz: el Barrido con los datos reales de ese día. Se abre la tarjeta «Qué es esta app», se lee que nada de lo que se ve es una señal para copiar, y se baja hasta los avisos de los experimentos, que dicen «Esto NO son señales».',
     },
     hazlo: {
       tab: 'barrido',
@@ -574,7 +574,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm0-2',
-      desc: 'Video sin voz: el Historial con el registro real de ese día. Se señala el ± que va pegado al acierto según cuántas operaciones lleva cada regla, y el aviso de cuántas le faltan al experimento para que su número signifique algo.',
+      desc: 'Video con voz: el Historial con el registro real de ese día. Se señala el ± que va pegado al acierto según cuántas operaciones lleva cada regla, y el aviso de cuántas le faltan al experimento para que su número signifique algo.',
     },
     hazlo: {
       tab: 'diario',
@@ -629,7 +629,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm2-1',
-      desc: 'Video sin voz: «Mi perfil de riesgo» de la pestaña Riesgo con un perfil de ejemplo de 1.000 USD. Se cambia el riesgo entre 1 %, 2 % y 3 % y se ve cuánto se arriesga por operación; después, cuánto queda tras diez pérdidas seguidas con cada porcentaje.',
+      desc: 'Video con voz: «Mi perfil de riesgo» de la pestaña Riesgo con un perfil de ejemplo de 1.000 USD. Se cambia el riesgo entre 1 %, 2 % y 3 % y se ve cuánto se arriesga por operación; después, cuánto queda tras diez pérdidas seguidas con cada porcentaje.',
     },
     hazlo: {
       tab: 'calc',
@@ -683,7 +683,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm2-2',
-      desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se elige un par y una dirección cualquiera solo para ver las cuentas, y se prueban los tres métodos de Stop-loss: cambian el Stop-loss, el Take-profit, el R/B y el lote.',
+      desc: 'Video con voz: el Analizador con los datos reales de ese día. Se elige un par y una dirección cualquiera solo para ver las cuentas, y se prueban los tres métodos de Stop-loss: cambian el Stop-loss, el Take-profit, el R/B y el lote.',
     },
     hazlo: {
       tab: 'analizar',
@@ -738,7 +738,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm2-3-lote',
-      desc: 'Video sin voz: la calculadora con un perfil de 1.000 USD y un 1 % por operación. El Stop-loss pasa de 25 a 50 pips, el lote baja de 0,04 a 0,02 y lo que se arriesga se queda en 10 USD.',
+      desc: 'Video con voz: la calculadora con un perfil de 1.000 USD y un 1 % por operación. El Stop-loss pasa de 25 a 50 pips, el lote baja de 0,04 a 0,02 y lo que se arriesga se queda en 10 USD.',
     },
     hazlo: {
       tab: 'calc',
@@ -790,7 +790,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm4-1',
-      desc: 'Video sin voz: el Barrido con los datos reales de ese día. Se señalan las barras de fuerza de las ocho divisas, la más fuerte y la más débil, y se explica que cada una sale de compararla con las otras siete.',
+      desc: 'Video con voz: el Barrido con los datos reales de ese día. Se señalan las barras de fuerza de las ocho divisas, la más fuerte y la más débil, y se explica que cada una sale de compararla con las otras siete.',
     },
     hazlo: {
       tab: 'barrido',
@@ -841,7 +841,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm4-2',
-      desc: 'Video sin voz: el tablero completo con los datos reales de ese día. Se señala la «Dif» de un par, se compara con el umbral de la app, y se ve un par que lo pasa y otro que no.',
+      desc: 'Video con voz: el tablero completo con los datos reales de ese día. Se señala la «Dif» de un par, se compara con el umbral de la app, y se ve un par que lo pasa y otro que no.',
     },
     hazlo: {
       tab: 'barrido',
@@ -894,7 +894,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm4-3',
-      desc: 'Video sin voz: las barras de fuerza del Barrido, donde siempre hay un 10 y un 0, y después la «Dif» real del tablero completo, que es la que la app compara con el umbral.',
+      desc: 'Video con voz: las barras de fuerza del Barrido, donde siempre hay un 10 y un 0, y después la «Dif» real del tablero completo, que es la que la app compara con el umbral.',
     },
     hazlo: {
       tab: 'barrido',
@@ -950,7 +950,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm5-1',
-      desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se señala la fila «Tendencia» con sus dos EMA y después las medias móviles, y se explica cómo decide la app si un par está en tendencia o en rango.',
+      desc: 'Video con voz: el Analizador con los datos reales de ese día. Se señala la fila «Tendencia» con sus dos EMA y después las medias móviles, y se explica cómo decide la app si un par está en tendencia o en rango.',
     },
     hazlo: {
       tab: 'analizar',
@@ -1011,7 +1011,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm5-2',
-      desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se señalan el RSI y el ATR de un par, y después el Stop-loss de la tarjeta, que sale del ATR.',
+      desc: 'Video con voz: el Analizador con los datos reales de ese día. Se señalan el RSI y el ATR de un par, y después el Stop-loss de la tarjeta, que sale del ATR.',
     },
     hazlo: {
       tab: 'analizar',
@@ -1066,7 +1066,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm5-3',
-      desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se señalan el soporte y la resistencia de un par y después su compresión, con la palabra que dice qué tan raro es ese número.',
+      desc: 'Video con voz: el Analizador con los datos reales de ese día. Se señalan el soporte y la resistencia de un par y después su compresión, con la palabra que dice qué tan raro es ese número.',
     },
     hazlo: {
       tab: 'analizar',
@@ -1117,7 +1117,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm6-1',
-      desc: 'Video sin voz: el Barrido con los datos reales de ese día. Se señala la tarjeta «Lo que cuesta abrir la operación» y el spread de un par con dólar y el de un cruce.',
+      desc: 'Video con voz: el Barrido con los datos reales de ese día. Se señala la tarjeta «Lo que cuesta abrir la operación» y el spread de un par con dólar y el de un cruce.',
     },
     hazlo: {
       tab: 'barrido',
@@ -1172,7 +1172,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm6-2',
-      desc: 'Video sin voz: el Barrido con los datos reales de ese día. Se abre la tarjeta «Tasas de interés y swap» y se señala la diferencia de tasas de un par y hacia qué lado juega el swap.',
+      desc: 'Video con voz: el Barrido con los datos reales de ese día. Se abre la tarjeta «Tasas de interés y swap» y se señala la diferencia de tasas de un par y hacia qué lado juega el swap.',
     },
     hazlo: {
       tab: 'barrido',
@@ -1227,7 +1227,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm6-3',
-      desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se arma una tarjeta y se señala el spread del par y cuánto pesa comparado con su Stop-loss.',
+      desc: 'Video con voz: el Analizador con los datos reales de ese día. Se arma una tarjeta y se señala el spread del par y cuánto pesa comparado con su Stop-loss.',
     },
     hazlo: {
       tab: 'analizar',
@@ -1274,7 +1274,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm7-1',
-      desc: 'Video sin voz: el Barrido con el calendario real de la mañana del día de la grabación. Se abre la tarjeta «Calendario económico» y se señalan la hora, la divisa y cuánto suele mover una noticia.',
+      desc: 'Video con voz: el Barrido con el calendario real de la mañana del día de la grabación. Se abre la tarjeta «Calendario económico» y se señalan la hora, la divisa y cuánto suele mover una noticia.',
     },
     hazlo: {
       tab: 'barrido',
@@ -1326,7 +1326,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm7-2',
-      desc: 'Video sin voz: el calendario real de la mañana del día de la grabación. Se señalan el previsto y el anterior de una noticia y se abre su «¿Qué significa?».',
+      desc: 'Video con voz: el calendario real de la mañana del día de la grabación. Se señalan el previsto y el anterior de una noticia y se abre su «¿Qué significa?».',
     },
     hazlo: {
       tab: 'barrido',
@@ -1374,7 +1374,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm7-3',
-      desc: 'Video sin voz: el Barrido con las noticias reales del día de la grabación. Se abre la tarjeta «Noticias de los bancos centrales» y se señala un titular con su divisa, su fuente y su fecha.',
+      desc: 'Video con voz: el Barrido con las noticias reales del día de la grabación. Se abre la tarjeta «Noticias de los bancos centrales» y se señala un titular con su divisa, su fuente y su fecha.',
     },
     hazlo: {
       tab: 'barrido',
@@ -1425,7 +1425,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm8-1',
-      desc: 'Video sin voz: el Diario de un usuario de ejemplo con dos operaciones abiertas que comparten el euro, y la tarjeta de «Riesgo concentrado» que sale sola.',
+      desc: 'Video con voz: el Diario de un usuario de ejemplo con dos operaciones abiertas que comparten el euro, y la tarjeta de «Riesgo concentrado» que sale sola.',
     },
     hazlo: {
       tab: 'diario',
@@ -1528,8 +1528,8 @@ export const LECCIONES = Object.freeze({
     video: {
       archivo: 'm8-3',
       desc: SWING
-        ? 'Video sin voz: el Barrido con los datos reales de ese día. Se señala el dólar en el ranking de fuerza y después la tarjeta del oro, con su número frente a los pares con dólar y frente a los cruces.'
-        : 'Video sin voz: el Barrido con los datos reales de ese día. Se señala el dólar en el ranking de fuerza y la lista de pares que lo llevan.',
+        ? 'Video con voz: el Barrido con los datos reales de ese día. Se señala el dólar en el ranking de fuerza y después la tarjeta del oro, con su número frente a los pares con dólar y frente a los cruces.'
+        : 'Video con voz: el Barrido con los datos reales de ese día. Se señala el dólar en el ranking de fuerza y la lista de pares que lo llevan.',
     },
     hazlo: {
       tab: 'barrido',
@@ -1582,7 +1582,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm9-1',
-      desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se elige un par sin dirección (la tarjeta pide elegirla), después COMPRA y VENTA, y se ve cómo el Stop-loss y el Take-profit se dan la vuelta.',
+      desc: 'Video con voz: el Analizador con los datos reales de ese día. Se elige un par sin dirección (la tarjeta pide elegirla), después COMPRA y VENTA, y se ve cómo el Stop-loss y el Take-profit se dan la vuelta.',
     },
     hazlo: {
       tab: 'analizar',
@@ -1636,7 +1636,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm9-2',
-      desc: 'Video sin voz: el Analizador de un usuario de ejemplo con dos pérdidas hoy y dos operaciones abiertas con el euro. Se arma una tarjeta de EUR/USD con los datos reales de ese día y se revisan las cuatro preguntas: R/B y lote, el freno, el calendario y el Diario.',
+      desc: 'Video con voz: el Analizador de un usuario de ejemplo con dos pérdidas hoy y dos operaciones abiertas con el euro. Se arma una tarjeta de EUR/USD con los datos reales de ese día y se revisan las cuatro preguntas: R/B y lote, el freno, el calendario y el Diario.',
     },
     hazlo: {
       tab: 'analizar',
@@ -1688,7 +1688,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm9-3',
-      desc: 'Video sin voz: el Analizador de un usuario de ejemplo. Se cambia «¿Cómo operas?» de tendencias a rangos y cambian las herramientas encendidas; después se guarda una plantilla con su nombre y se vuelve a aplicar otra con un toque.',
+      desc: 'Video con voz: el Analizador de un usuario de ejemplo. Se cambia «¿Cómo operas?» de tendencias a rangos y cambian las herramientas encendidas; después se guarda una plantilla con su nombre y se vuelve a aplicar otra con un toque.',
     },
     hazlo: {
       tab: 'analizar',
@@ -1742,7 +1742,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm10-1',
-      desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se arma una compra, se pulsa «Practicar esta operación (sin dinero)» y se va al Diario: la operación sale en «Modo práctica» como abierta, con sus niveles, y se abre su gráfica.',
+      desc: 'Video con voz: el Analizador con los datos reales de ese día. Se arma una compra, se pulsa «Practicar esta operación (sin dinero)» y se va al Diario: la operación sale en «Modo práctica» como abierta, con sus niveles, y se abre su gráfica.',
     },
     hazlo: {
       tab: 'analizar',
@@ -1796,7 +1796,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm10-2',
-      desc: 'Video sin voz: el «Modo práctica» de un usuario de ejemplo con operaciones ya resueltas (precios inventados). Se lee el resultado en R, el desglose de una ganada —bruto, spread, swap y neto— y el resultado en dinero.',
+      desc: 'Video con voz: el «Modo práctica» de un usuario de ejemplo con operaciones ya resueltas (precios inventados). Se lee el resultado en R, el desglose de una ganada —bruto, spread, swap y neto— y el resultado en dinero.',
     },
     hazlo: {
       tab: 'diario',
@@ -1850,7 +1850,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm10-3',
-      desc: 'Video sin voz: el «Modo práctica» de un usuario de ejemplo con cinco operaciones resueltas (precios inventados). Se lee el acierto con su ±, se ve la insignia «Practicas sin dinero» conseguida y el botón para descargar la tabla.',
+      desc: 'Video con voz: el «Modo práctica» de un usuario de ejemplo con cinco operaciones resueltas (precios inventados). Se lee el acierto con su ±, se ve la insignia «Practicas sin dinero» conseguida y el botón para descargar la tabla.',
     },
     hazlo: {
       tab: 'diario',
@@ -1904,7 +1904,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm11-1',
-      desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se lee el R/B de la tarjeta y se calcula el acierto que haría falta para no perder; después se cambia el método del Stop-loss a la vara neutra y se ve cómo cambia ese número.',
+      desc: 'Video con voz: el Analizador con los datos reales de ese día. Se lee el R/B de la tarjeta y se calcula el acierto que haría falta para no perder; después se cambia el método del Stop-loss a la vara neutra y se ve cómo cambia ese número.',
     },
     hazlo: {
       tab: 'analizar',
@@ -1958,7 +1958,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm11-2',
-      desc: 'Video sin voz: «Tus números por grupos» de un usuario de ejemplo (operaciones de muestra) y el Historial con el registro real de ese día. Se comparan dos porcentajes con su ± para ver si se tocan, y se señala cuántas operaciones lleva un experimento de las 150.',
+      desc: 'Video con voz: «Tus números por grupos» de un usuario de ejemplo (operaciones de muestra) y el Historial con el registro real de ese día. Se comparan dos porcentajes con su ± para ver si se tocan, y se señala cuántas operaciones lleva un experimento de las 150.',
     },
     hazlo: {
       tab: 'historial',
@@ -2012,7 +2012,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm11-3',
-      desc: 'Video sin voz: el laboratorio de la pestaña Analizar con las velas guardadas de ese día. Se lee el aviso, se prueba una regla, se cambia una condición y se prueba otra vez: el contador de pruebas sube.',
+      desc: 'Video con voz: el laboratorio de la pestaña Analizar con las velas guardadas de ese día. Se lee el aviso, se prueba una regla, se cambia una condición y se prueba otra vez: el contador de pruebas sube.',
     },
     hazlo: {
       tab: 'analizar',
@@ -2066,7 +2066,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm12-1',
-      desc: 'Video sin voz: el Diario de un usuario de ejemplo, al que se le sube un informe de EJEMPLO (operaciones inventadas). Se leen las que entrarán, el resultado total con swap y comisión, la línea que se salta y las primeras filas. Se cancela sin guardar.',
+      desc: 'Video con voz: el Diario de un usuario de ejemplo, al que se le sube un informe de EJEMPLO (operaciones inventadas). Se leen las que entrarán, el resultado total con swap y comisión, la línea que se salta y las primeras filas. Se cancela sin guardar.',
     },
     hazlo: {
       tab: 'diario',
@@ -2123,7 +2123,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm12-2',
-      desc: 'Video sin voz: «Tus números por grupos» de un usuario de ejemplo con 20 operaciones de muestra. Se leen los cruces y los pares con dólar con su ±, las compras y las ventas, el par que sale y el rango de lotes.',
+      desc: 'Video con voz: «Tus números por grupos» de un usuario de ejemplo con 20 operaciones de muestra. Se leen los cruces y los pares con dólar con su ±, las compras y las ventas, el par que sale y el rango de lotes.',
     },
     hazlo: {
       tab: 'diario',
@@ -2178,7 +2178,7 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm12-3',
-      desc: 'Video sin voz: el Diario de un usuario de ejemplo con 10 operaciones de muestra que aciertan mucho y pierden dinero. Se lee primero el resultado y después el acierto, y luego el ± del grupo en «Tus números por grupos».',
+      desc: 'Video con voz: el Diario de un usuario de ejemplo con 10 operaciones de muestra que aciertan mucho y pierden dinero. Se lee primero el resultado y después el acierto, y luego el ± del grupo en «Tus números por grupos».',
     },
     hazlo: {
       tab: 'diario',
