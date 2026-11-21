@@ -19,6 +19,7 @@
 // tarjeta alrededor.
 
 import { costesPractica, rbDe } from './practica.js'
+import { LOTE_MINIMO } from './calc.js'
 
 const num = (x) => typeof x === 'number' && Number.isFinite(x)
 
@@ -129,7 +130,12 @@ export function textoAnalisis(a, { t, fecha = '' } = {}) {
   L.push(`Take-profit ${f(n.tp)} (${Math.round(n.pipBeneficio)} pips)`)
   L.push(`R/B 1:${n.rr.toFixed(2)}`)
   L.push(`${t('exp.metodo')} ${t(`an.metodo.${a.metodo}`)}`)
-  if (a.lote) L.push(`${t('exp.lote')} ${a.lote.lote.toFixed(2)} · ${t('exp.riesgo')} $${a.lote.riesgoUsd.toFixed(2)}`)
+  if (a.lote) {
+    // Por debajo del lote mínimo no se escribe «0.00»: no se puede abrir.
+    const lote = a.lote.bajoMinimo ? `< ${LOTE_MINIMO.toFixed(2)}` : a.lote.lote.toFixed(2)
+    L.push(`${t('exp.lote')} ${lote} · ${t('exp.riesgo')} $${a.lote.riesgoUsd.toFixed(2)}`)
+    if (a.lote.bajoMinimo) L.push(t('calc.bajoMinimo', { minimo: LOTE_MINIMO.toFixed(2), riesgo: a.lote.riesgoMinimoUsd.toFixed(2) }))
+  }
 
   const h = a.herramientas || {}
   const extra = []

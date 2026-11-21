@@ -491,6 +491,7 @@ export default {
   },
 
   calc: {
+    bajoMinimo: ({ minimo, riesgo }) => `O lote fica abaixo de ${minimo}, o mínimo que uma corretora costuma deixar abrir: assim não dá para abrir. Com ${minimo} lotes você arriscaria $${riesgo}, mais do que queria arriscar.`,
     titulo: 'Calculadora de lote e risco',
     capital: 'Capital da conta (USD)',
     riesgoPct: 'Risco % (1-2)',

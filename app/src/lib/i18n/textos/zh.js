@@ -484,6 +484,7 @@ export default {
   },
 
   calc: {
+    bajoMinimo: ({ minimo, riesgo }) => `手数低于 ${minimo}，这是经纪商通常允许开仓的最小手数：这样无法开仓。用 ${minimo} 手，你会冒 $${riesgo} 的风险，比你想冒的更多。`,
     titulo: '手数与风险计算器',
     capital: '账户资金（USD）',
     riesgoPct: '风险 %（1-2）',

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { PAIR_NAMES } from '../lib/pairs'
-import { calcularLote } from '../lib/calc'
+import { LOTE_MINIMO, calcularLote } from '../lib/calc'
 import { useT } from '../lib/i18n'
 import { leerPerfil } from '../lib/perfilRiesgo'
 import MiPerfil from './MiPerfil'
@@ -66,12 +66,18 @@ export default function CalculadoraTab({ ratesUSD, loadingTasas, errorTasas, uid
         <span style={{ color: 'var(--text-muted)' }}>{t('calc.valorPip')}</span>
         <span>{r.pip ? '$' + r.pip.toFixed(2) + ' ' + t('calc.porLote') : '—'}</span>
         <span style={{ color: 'var(--text-muted)' }}>{t('calc.loteSugerido')}</span>
-        <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--green)' }}>
-          {r.ok ? r.lote.toFixed(2) + ' ' + t('calc.lotes') : ratesUSD ? t('calc.completa') : loadingTasas ? t('calc.cargandoTasas') : t('calc.sinTasas')}
+        <span style={{ fontSize: 18, fontWeight: 700, color: r.ok && r.bajoMinimo ? 'var(--amber)' : 'var(--green)' }}>
+          {r.ok ? (r.bajoMinimo ? `\u2066< ${LOTE_MINIMO.toFixed(2)}\u2069` : r.lote.toFixed(2)) + ' ' + t('calc.lotes') : ratesUSD ? t('calc.completa') : loadingTasas ? t('calc.cargandoTasas') : t('calc.sinTasas')}
         </span>
         <span style={{ color: 'var(--text-muted)' }}>{t('calc.equivale')}</span>
         <span style={{ color: 'var(--text-secondary)' }}>{r.ok ? t('calc.miniMicro', { mini: r.mini.toFixed(1), micro: r.micro.toFixed(0) }) : '—'}</span>
       </div>
+
+      {r.ok && r.bajoMinimo && (
+        <p style={{ margin: 0, fontSize: 13, color: 'var(--amber)', lineHeight: 1.5 }}>
+          {t('calc.bajoMinimo', { minimo: LOTE_MINIMO.toFixed(2), riesgo: r.riesgoMinimoUsd.toFixed(2) })}
+        </p>
+      )}
 
       {errorTasas && !ratesUSD && (
         <div style={{ padding: 12, border: '1px solid oklch(0.62 0.13 25)', borderRadius: 8, color: 'oklch(0.8 0.1 25)', fontSize: 13 }}>

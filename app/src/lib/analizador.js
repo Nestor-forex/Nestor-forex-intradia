@@ -504,7 +504,7 @@ export function armarAnalisis({
   else if (!ratesUSD) motivoLote = 'sinTasas'
   else {
     const r = calcularLote({ capital: perfil.capital, riesgoPct: perfil.riesgoPct, pips: niveles.pipRiesgo, par: ficha.name, tasas: ratesUSD })
-    if (r.ok) lote = { lote: r.lote, riesgoUsd: r.riesgoUsd, valorPip: r.pip, mini: r.mini, micro: r.micro }
+    if (r.ok) lote = { lote: r.lote, riesgoUsd: r.riesgoUsd, valorPip: r.pip, mini: r.mini, micro: r.micro, bajoMinimo: r.bajoMinimo, riesgoMinimoUsd: r.riesgoMinimoUsd }
     else motivoLote = 'sinTasas'
   }
 

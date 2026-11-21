@@ -487,6 +487,7 @@ export default {
   },
 
   calc: {
+    bajoMinimo: ({ minimo, riesgo }) => `ロットが ${minimo} を下回ります。これはブローカーが通常認める最小ロットなので、このままでは発注できません。${minimo} ロットだとリスクは $${riesgo} になり、望んでいた額より大きくなります。`,
     titulo: 'ロットとリスクの計算機',
     capital: '口座資金（USD）',
     riesgoPct: 'リスク %（1-2）',
