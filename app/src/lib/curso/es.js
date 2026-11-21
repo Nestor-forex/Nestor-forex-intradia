@@ -31,6 +31,8 @@ import { UMBRAL_NEUTRO } from '../tasas.js'
 import { spreadDe } from '../../../scripts/lib/costes.mjs'
 import { HORAS_VISTA } from '../calendario.js'
 import { APP } from '../identidad.js'
+import { COJIN_ESTRUCTURA, MAX_PLANTILLAS, RR_AVISO } from '../analizador.js'
+import { HERRAMIENTAS_DE_ESTILO } from '../estilo.js'
 
 const L = OPS_PARA_CREER
 
@@ -75,6 +77,13 @@ const SP_EJ = 2
 // `correlacion.js` donde el archivo existe.
 const CORREL_ALTA_TXT = 0.7
 const VENTANA_CORREL_TXT = 60
+
+// Módulo 9. Los números del Analizador se LEEN del código: el método «1,5 ATR
+// a cada lado» usa `ATR_REVERSION` en swing y `ATR_STOP` en intradía (las dos
+// valen 1,5 hoy, y se leen las dos con `MC` porque cada app exporta la suya).
+export const ATR_SIMETRICO = MC.ATR_REVERSION ?? MC.ATR_STOP
+const N_TENDENCIAS = HERRAMIENTAS_DE_ESTILO.tendencias.length
+const N_RANGOS = HERRAMIENTAS_DE_ESTILO.rangos.length
 
 export const MODULOS = Object.freeze([
   Object.freeze({
@@ -140,12 +149,18 @@ export const MODULOS = Object.freeze([
     desc: 'Cuándo dos operaciones son en realidad una sola, qué mide la correlación entre pares, y por qué tantas operaciones son una apuesta al dólar.',
     lecciones: Object.freeze(['m8-1', 'm8-2', 'm8-3']),
   }),
+  Object.freeze({
+    id: 'm9',
+    n: 9,
+    titulo: 'Del análisis a la operación',
+    desc: 'Armar una tarjeta en el Analizador con la dirección que eliges tú, revisarla antes de decidir, y guardar tu forma de analizar en plantillas.',
+    lecciones: Object.freeze(['m9-1', 'm9-2', 'm9-3']),
+  }),
 ])
 
 // Los que todavía no están escritos. Se enseñan para que se vea el camino,
 // marcados «próximamente», y no se pueden abrir.
 export const PROXIMOS = Object.freeze([
-  { n: 9, titulo: 'Del análisis a la operación' },
   { n: 10, titulo: 'Practicar sin dinero' },
   { n: 11, titulo: 'Un número que significa algo' },
   { n: 12, titulo: 'Medir tus propios números' },
@@ -1462,6 +1477,165 @@ export const LECCIONES = Object.freeze({
         opciones: ['Tres apuestas independientes', 'Una sola apuesta al dólar, más grande', 'Ninguna'],
         correcta: 1,
         porque: 'Si el dólar se da la vuelta, se dan la vuelta las tres.',
+      },
+    ],
+  },
+
+  'm9-1': {
+    titulo: 'Armar la tarjeta: la dirección la pones tú',
+    objetivo: 'Recorrer los cuatro pasos del Analizador y entender por qué, sin elegir una dirección, la app no calcula nada.',
+    explicacion: [
+      'El Analizador tiene cuatro pasos: el par, tu dirección (COMPRA o VENTA), cómo poner el Stop-loss y qué herramientas ver. Con eso arma una tarjeta con la entrada, el Stop-loss, el Take-profit, la relación riesgo/beneficio y el lote.',
+      'La dirección no la elige la app, a propósito. Mientras no la eliges, la tarjeta solo dice «Elige COMPRA o VENTA para ver los niveles». Si la app la eligiera por ti, sería una señal más, y las señales de esta app todavía son experimentos.',
+      `Para el Stop-loss hay tres métodos, y los tres son cuentas que la app ya usa: «La de la app» (la misma de sus señales), «${fmt(ATR_SIMETRICO)} ATR a cada lado» (la vara neutra con la que se miden las reglas en pruebas) y «Soporte y resistencia» (el Stop-loss ${fmt(COJIN_ESTRUCTURA)} ATR por fuera del extremo de las últimas 20 velas y el Take-profit en el otro extremo).`,
+    ],
+    ejemplo: [
+      'Eliges EUR/USD y COMPRA: el Stop-loss queda por debajo del precio y el Take-profit por encima. Cambias a VENTA: se dan la vuelta.',
+      'Si con un método los niveles no salen —por ejemplo, el precio está justo en el extremo de las 20 velas—, la tarjeta lo dice y te pide probar otro. No inventa un nivel a cero pips.',
+      'El lote sale de tu perfil de riesgo, con la misma cuenta que la calculadora: si cambias de método, cambia la distancia del Stop-loss y el lote se ajusta para arriesgar lo mismo.',
+    ],
+    formula: {
+      texto: 'par + tu dirección + método de Stop-loss + tu perfil = entrada, Stop-loss, Take-profit, R/B y lote',
+      conNumeros: 'Sin dirección no hay niveles; sin perfil no hay lote. Las dos cosas las pones tú.',
+    },
+    noDice: [
+      'La tarjeta no dice si la dirección que elegiste es buena: dice dónde quedan los niveles si la eliges.',
+      'Ninguno de los tres métodos es «el bueno». Son formas distintas de medir la distancia, y cada una cambia cuánto arriesgas y cuánto buscas ganar.',
+      'La app no está conectada a tu bróker: la operación, si decides abrirla, la abres tú.',
+    ],
+    video: {
+      archivo: 'm9-1',
+      desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se elige un par sin dirección (la tarjeta pide elegirla), después COMPRA y VENTA, y se ve cómo el Stop-loss y el Take-profit se dan la vuelta.',
+    },
+    hazlo: {
+      tab: 'analizar',
+      boton: 'Ir al Analizador',
+      texto: 'Elige un par y fíjate en lo que dice la tarjeta antes de elegir la dirección. Después elige una y mira dónde quedan los niveles.',
+    },
+    preguntas: [
+      {
+        p: 'Abres el Analizador y eliges un par, pero ninguna dirección. ¿Qué enseña la tarjeta?',
+        opciones: ['Los niveles de la dirección que la app recomienda', 'Que elijas COMPRA o VENTA para ver los niveles', 'Nada, está rota'],
+        correcta: 1,
+        porque: 'La app no elige la dirección: sin ella no calcula niveles ni lote.',
+      },
+      {
+        p: '¿Por qué la app no elige la dirección por ti?',
+        opciones: ['Porque sería una señal más, y sus señales todavía son experimentos', 'Porque no tiene datos', 'Porque el bróker no lo permite'],
+        correcta: 0,
+        porque: 'Elegir la dirección sería dar una señal sin validar.',
+      },
+      {
+        p: 'Cambias el método del Stop-loss y la distancia pasa de 30 a 60 pips. ¿Qué pasa con el lote?',
+        opciones: ['Se queda igual', 'Baja, para arriesgar lo mismo', 'Sube'],
+        correcta: 1,
+        porque: 'El lote sale de tu perfil: con el doble de distancia, la mitad de lote arriesga lo mismo.',
+      },
+    ],
+  },
+
+  'm9-2': {
+    titulo: 'Revisar la tarjeta antes de decidir',
+    objetivo: 'Leer la tarjeta como una lista de comprobación: cuánto arriesgas, tu freno, las noticias y lo que ya tienes abierto.',
+    explicacion: [
+      'Una vez armada la tarjeta, la decisión es tuya. Lo que la app hace es ponerte delante, en un solo sitio, las preguntas que conviene hacerse antes de abrir una operación.',
+      `¿Cuánto arriesgas y cuánto buscas ganar? Si el Take-profit queda más cerca que el Stop-loss (un R/B por debajo de ${fmt(RR_AVISO)}:${fmt(RR_AVISO)}), la tarjeta lo dice en ámbar: arriesgas más de lo que buscas ganar.`,
+      '¿Cómo va tu día? Si ya llegaste a tu freno, la tarjeta lo dice en rojo; si te queda poco, en ámbar. Es tu propia regla, la que escribiste con la cabeza fría.',
+      '¿Hay noticias de estas dos divisas en las próximas horas? ¿Ya tienes abierta otra operación con una de ellas? Las herramientas «Calendario» y «Mi diario» lo enseñan en la misma tarjeta.',
+    ],
+    ejemplo: [
+      'Un usuario de ejemplo lleva dos pérdidas hoy y tiene dos operaciones abiertas con el euro. Arma una tarjeta de EUR/USD: la tarjeta le recuerda que está cerca de su freno y que sumar ésta puede ser una sola apuesta más grande.',
+      'Nada de eso le impide abrirla: la app no bloquea. Le pone delante lo que su propia regla dice.',
+      'Cuando decides, hay dos botones al final: «Anotar en el Diario» (si la abres de verdad en tu bróker) y «Practicar esta operación (sin dinero)», que es el módulo siguiente.',
+    ],
+    formula: {
+      texto: 'antes de abrir: R/B · freno del día · noticias de las dos divisas · lo que ya tienes abierto',
+      conNumeros: 'Cuatro preguntas, todas en la misma tarjeta. Si una sale en rojo o ámbar, para un momento.',
+    },
+    noDice: [
+      'Que las cuatro preguntas salgan bien no quiere decir que la operación vaya a ganar.',
+      'Que una salga mal no la convierte en mala: dice que hay un riesgo que tienes que mirar.',
+      'La lista no es una regla de la app: es una forma ordenada de mirar. La decisión sigue siendo tuya.',
+    ],
+    video: {
+      archivo: 'm9-2',
+      desc: 'Video sin voz: el Analizador de un usuario de ejemplo con dos pérdidas hoy y dos operaciones abiertas con el euro. Se arma una tarjeta de EUR/USD con los datos reales de ese día y se revisan las cuatro preguntas: R/B y lote, el freno, el calendario y el Diario.',
+    },
+    hazlo: {
+      tab: 'analizar',
+      boton: 'Ir al Analizador',
+      texto: 'Arma una tarjeta, enciende «Calendario» y «Mi diario», y repasa las cuatro preguntas antes de decidir nada.',
+    },
+    preguntas: [
+      {
+        p: 'La tarjeta enseña el R/B en ámbar. ¿Qué quiere decir?',
+        opciones: ['Que la operación va a perder', 'Que el Take-profit queda más cerca que el Stop-loss: arriesgas más de lo que buscas ganar', 'Que falta el perfil'],
+        correcta: 1,
+        porque: 'Es un aviso sobre tu propio nivel, no sobre el mercado.',
+      },
+      {
+        p: 'Ya llegaste a tu freno del día y la tarjeta lo dice en rojo. ¿Qué hace la app?',
+        opciones: ['Te impide abrir la operación', 'Te recuerda tu propia regla; la decisión es tuya', 'Cierra tus operaciones'],
+        correcta: 1,
+        porque: 'La app no está conectada al bróker y no bloquea nada: solo avisa.',
+      },
+      {
+        p: 'Tienes dos operaciones abiertas con el euro y armas una tarjeta de EUR/USD. ¿Qué te dice «Mi diario»?',
+        opciones: ['Que sumarla puede hacer una sola apuesta más grande', 'Que ésta va a ganar', 'Nada'],
+        correcta: 0,
+        porque: 'Comparten divisa: es lo que vimos en el módulo 8.',
+      },
+    ],
+  },
+
+  'm9-3': {
+    titulo: 'Tu forma de analizar: estilo y plantillas',
+    objetivo: 'Usar «¿Cómo operas?» y las plantillas para analizar siempre igual, y saber por qué eso ayuda a medirte.',
+    explicacion: [
+      `«¿Cómo operas?» elige con qué herramientas arranca el Analizador: quien sigue tendencias empieza con ${N_TENDENCIAS} (tendencia, medias, fuerza, ATR, niveles y calendario); quien opera rangos, con ${N_RANGOS} (niveles, pivote, RSI, Bollinger, Fibonacci, ATR y calendario). No cambia ninguna señal ni dice qué estilo es mejor, y puedes cambiarlo cuando quieras.`,
+      `Una plantilla guarda las herramientas encendidas y el método del Stop-loss con un nombre. Puedes tener hasta ${MAX_PLANTILLAS}. Con un toque, el Analizador vuelve a quedar como lo dejaste.`,
+      'Para qué sirve: si analizas cada operación con las mismas herramientas, tus números del Diario hablan de una sola forma de operar. Si cada día miras cosas distintas, tus resultados mezclan muchas formas y no te dicen cuál funciona.',
+    ],
+    ejemplo: [
+      'Guardas una plantilla «Mi tendencia» con tendencia, medias y fuerza, y otra «Rangos con RSI» con niveles, RSI y Bollinger. Antes de cada operación tocas la que corresponde y miras siempre lo mismo.',
+      'Si apuntas en la nota del Diario con qué plantilla la analizaste, más adelante podrás separar tus resultados por forma de operar.',
+    ],
+    formula: {
+      texto: 'mismo análisis cada vez → tus resultados hablan de una sola forma de operar',
+      conNumeros: `Hasta ${MAX_PLANTILLAS} plantillas, cada una con su nombre, sus herramientas y su método.`,
+    },
+    noDice: [
+      'Una plantilla no hace que ganes: hace que lo que mides sea comparable.',
+      'Que una herramienta esté en tu plantilla no la convierte en una señal.',
+      'El estilo que elijas no está medido como mejor ni peor que los otros.',
+    ],
+    video: {
+      archivo: 'm9-3',
+      desc: 'Video sin voz: el Analizador de un usuario de ejemplo. Se cambia «¿Cómo operas?» de tendencias a rangos y cambian las herramientas encendidas; después se guarda una plantilla con su nombre y se vuelve a aplicar otra con un toque.',
+    },
+    hazlo: {
+      tab: 'analizar',
+      boton: 'Ir al Analizador',
+      texto: 'Elige tu estilo en «¿Cómo operas?», ajusta las herramientas a tu gusto y guárdalas como plantilla con un nombre que te diga para qué es.',
+    },
+    preguntas: [
+      {
+        p: '¿Qué cambia «¿Cómo operas?»?',
+        opciones: ['Las señales de la app', 'Con qué herramientas arranca el Analizador', 'El lote'],
+        correcta: 1,
+        porque: 'Solo elige las herramientas iniciales. Todas siguen a un toque.',
+      },
+      {
+        p: '¿Qué guarda una plantilla?',
+        opciones: ['Las herramientas encendidas y el método del Stop-loss', 'Una operación para copiar', 'Tu perfil de riesgo'],
+        correcta: 0,
+        porque: 'Es tu forma de analizar, con un nombre.',
+      },
+      {
+        p: '¿Por qué ayuda analizar siempre con las mismas herramientas?',
+        opciones: ['Porque así se acierta más', 'Porque así tus resultados hablan de una sola forma de operar y se pueden comparar', 'Porque lo pide el bróker'],
+        correcta: 1,
+        porque: 'No hace ganar: hace que tus números signifiquen algo.',
       },
     ],
   },

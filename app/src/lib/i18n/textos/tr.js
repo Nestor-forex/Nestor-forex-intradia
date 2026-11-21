@@ -487,6 +487,7 @@ export default {
   },
 
   calc: {
+    bajoMinimo: ({ minimo, riesgo }) => `Lot ${minimo} altında çıkıyor; bir aracı kurumun genelde izin verdiği en küçük lot bu: böyle açılamaz. ${minimo} lotla $${riesgo} riske girersin, istediğinden fazla.`,
     titulo: 'Lot ve risk hesaplayıcı',
     capital: 'Hesap sermayesi (USD)',
     riesgoPct: 'Risk % (1-2)',

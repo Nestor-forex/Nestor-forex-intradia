@@ -28,6 +28,7 @@ import { fichaConPrecioVivo, fuenteDePrecios, velaDeEntradaMt5 } from '../lib/pr
 import FuentePrecio from './FuentePrecio'
 import { useEstacionalidad } from '../lib/useEstacionalidad'
 import { usePlantillas } from '../lib/usePlantillas'
+import { LOTE_MINIMO } from '../lib/calc'
 import { APP, clave } from '../lib/identidad'
 import { HERRAMIENTAS_GRAFICA, MAX_ABIERTAS, fichaPractica, marcasDeAnalisis } from '../lib/practica'
 import { compartirODescargar, textoAnalisis } from '../lib/exportar'
@@ -422,8 +423,8 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
             </Fila>
             <Fila rotulo={t('an.lote')}>
               {a.lote ? (
-                <N>
-                  {a.lote.lote.toFixed(2)} · ${a.lote.riesgoUsd.toFixed(2)}
+                <N color={a.lote.bajoMinimo ? 'var(--amber)' : undefined}>
+                  {a.lote.bajoMinimo ? `< ${LOTE_MINIMO.toFixed(2)}` : a.lote.lote.toFixed(2)} · ${a.lote.riesgoUsd.toFixed(2)}
                 </N>
               ) : (
                 <span style={{ color: 'var(--text-muted)' }}>{t(`an.motivoLote.${a.motivoLote}`)}</span>
@@ -432,6 +433,11 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
           </div>
         )}
         {a.niveles && a.niveles.rr < RR_AVISO && <p style={{ ...TEXTO, color: 'var(--amber)' }}>{t('an.rrBajo')}</p>}
+        {/* Con un Stop-loss muy lejano el lote sale por debajo del mínimo: se
+            dice, en vez de enseñar «0.00» junto a un riesgo que no se cumple. */}
+        {a.lote?.bajoMinimo && (
+          <p style={{ ...TEXTO, color: 'var(--amber)' }}>{t('calc.bajoMinimo', { minimo: LOTE_MINIMO.toFixed(2), riesgo: a.lote.riesgoMinimoUsd.toFixed(2) })}</p>
+        )}
         {a.niveles && !a.lote && a.motivoLote === 'sinPerfil' && onIrAlPerfil && (
           <button className="btn" type="button" style={{ minHeight: 44 }} onClick={onIrAlPerfil}>
             {t('an.irPerfil')}
@@ -828,7 +834,7 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
                 par: a.par,
                 dir: a.lado === 'COMPRA' ? 'Compra' : 'Venta',
                 nota: t('an.notaDiario', { niveles: notaDeAnalisis(a) }),
-                lote: a.lote ? a.lote.lote.toFixed(2) : '',
+                lote: a.lote && !a.lote.bajoMinimo ? a.lote.lote.toFixed(2) : '',
                 abierta: true,
               })
             }

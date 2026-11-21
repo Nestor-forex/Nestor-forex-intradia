@@ -491,6 +491,7 @@ export default {
   },
 
   calc: {
+    bajoMinimo: ({ minimo, riesgo }) => `Das Lot liegt unter ${minimo}, dem Minimum, das ein Broker meist erlaubt: So lässt es sich nicht eröffnen. Mit ${minimo} Lots würdest du $${riesgo} riskieren, mehr als du riskieren wolltest.`,
     titulo: 'Lot- und Risikorechner',
     capital: 'Kontokapital (USD)',
     riesgoPct: 'Risiko % (1-2)',

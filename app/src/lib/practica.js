@@ -30,6 +30,8 @@
 //     están en el barrido (solo trae las últimas 20), la operación queda
 //     CADUCADA en vez de inventar el resultado.
 
+import { LOTE_MINIMO } from './calc.js'
+
 export const LADOS_PRACTICA = Object.freeze(['COMPRA', 'VENTA'])
 
 // Cuántas abiertas a la vez. No es una regla de trading: es para que la lista
@@ -122,7 +124,9 @@ export function fichaPractica({ app, analisis, metodo, vela, nota, entrada = nul
   const riesgoUsd = a.lote?.riesgoUsd
   const lote = a.lote?.lote
   if (num(riesgoUsd) && riesgoUsd > 0 && riesgoUsd <= RIESGO_USD_MAX) op.riesgoUsd = Math.round(riesgoUsd * 100) / 100
-  if (num(lote) && lote > 0 && lote <= LOTE_MAX) op.lote = Math.round(lote * 100) / 100
+  // ⚠️ Un lote por debajo de 0,01 no se guarda: redondeado saldría 0 y se
+  // leería «0.00 lote», un tamaño que no se puede abrir.
+  if (num(lote) && lote >= LOTE_MINIMO && lote <= LOTE_MAX) op.lote = Math.round(lote * 100) / 100
 
   // De dónde salió el precio de entrada, y lo que cuesta operar.
   op.fuente = entrada && num(entrada.precio) ? 'mt5' : 'twelve'

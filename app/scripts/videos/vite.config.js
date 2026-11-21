@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 import { fileURLToPath } from 'node:url'
 
 const dobles = fileURLToPath(new URL('./dobles.js', import.meta.url))
-const DOBLADOS = ['/lib/useAuthUser', '/lib/useTrades', '/lib/usePractica', '/lib/useMembers']
+const DOBLADOS = ['/lib/useAuthUser', '/lib/useTrades', '/lib/usePractica', '/lib/useMembers', '/lib/usePlantillas', '/lib/useEstilo']
 
 export default defineConfig({
   root: fileURLToPath(new URL('.', import.meta.url)),

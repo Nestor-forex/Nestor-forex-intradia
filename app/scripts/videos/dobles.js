@@ -7,6 +7,8 @@
 // `grabar.mjs` desde los archivos publicados.
 import { useState } from 'react'
 import { APP } from '../../src/lib/identidad.js'
+import { conPlantilla, leerPlantillas, sinPlantilla } from '../../src/lib/analizador.js'
+import { leerEstilo } from '../../src/lib/estilo.js'
 
 const hoy = () => {
   const d = new Date()
@@ -50,7 +52,9 @@ export function useAuthUser() {
 
 // Operaciones de MUESTRA. `?diario=freno` deja el día de hoy con dos pérdidas
 // seguidas; `?diario=grupos` llena el Diario para «Tus números por grupos»;
-// `?diario=juntas` deja dos abiertas con el euro en común (módulo 8).
+// `?diario=juntas` deja dos abiertas con el euro en común (módulo 8);
+// `?diario=chequeo` junta las dos cosas: dos pérdidas hoy y dos abiertas con
+// el euro (módulo 9, revisar la tarjeta antes de decidir).
 function muestra() {
   const modo = params().get('diario')
   const d = hoy()
@@ -59,6 +63,14 @@ function muestra() {
     return [
       { id: 'f2', par: 'GBP/USD', dir: 'Compra', lote: 0.03, pl: -10, estado: 'cerrada', fecha: d, cerradaEl: d, cerradaEnMs: ahora - 3600e3, nota: 'Ejemplo' },
       { id: 'f1', par: 'EUR/USD', dir: 'Venta', lote: 0.04, pl: -10, estado: 'cerrada', fecha: d, cerradaEl: d, cerradaEnMs: ahora - 7200e3, nota: 'Ejemplo' },
+    ]
+  }
+  if (modo === 'chequeo') {
+    return [
+      { id: 'c4', par: 'EUR/CHF', dir: 'Compra', lote: 0.03, pl: 0, estado: 'abierta', fecha: d, nota: 'Ejemplo' },
+      { id: 'c3', par: 'EUR/CAD', dir: 'Compra', lote: 0.03, pl: 0, estado: 'abierta', fecha: d, nota: 'Ejemplo' },
+      { id: 'c2', par: 'GBP/USD', dir: 'Compra', lote: 0.03, pl: -10, estado: 'cerrada', fecha: d, cerradaEl: d, cerradaEnMs: ahora - 3600e3, nota: 'Ejemplo' },
+      { id: 'c1', par: 'USD/JPY', dir: 'Venta', lote: 0.04, pl: -10, estado: 'cerrada', fecha: d, cerradaEl: d, cerradaEnMs: ahora - 7200e3, nota: 'Ejemplo' },
     ]
   }
   if (modo === 'juntas') {
@@ -103,4 +115,44 @@ export function usePractica() {
 
 export function useMembers() {
   return { usuarios: [], cargando: false, aprobar: async () => {}, retirar: async () => {}, fijarVence: async () => {} }
+}
+
+// Las plantillas y el estilo se guardan EN MEMORIA durante la grabación
+// (módulo 9): el video enseña cómo se guardan y se aplican sin escribir nada
+// en Firestore. `?plantillas=ejemplo` arranca con dos de MUESTRA.
+const PLANTILLAS_EJEMPLO = [
+  { nombre: 'Mi tendencia', herramientas: ['tendencia', 'medias', 'fuerza', 'atr'], metodo: 'app' },
+  { nombre: 'Rangos con RSI', herramientas: ['niveles', 'rsi', 'bollinger', 'atr'], metodo: 'estructura' },
+]
+export function usePlantillas() {
+  const [plantillas, setPl] = useState(() => leerPlantillas(params().get('plantillas') === 'ejemplo' ? PLANTILLAS_EJEMPLO : []))
+  return {
+    plantillas,
+    puedoEscribir: true,
+    async guardar(pl) {
+      const r = conPlantilla(plantillas, pl)
+      if (!r.ok) return r
+      setPl(r.lista)
+      return { ok: true }
+    },
+    async borrar(nombre) {
+      setPl(sinPlantilla(plantillas, nombre))
+      return { ok: true }
+    },
+  }
+}
+
+export function useEstilo(uid, ficha) {
+  const [estilo, setEstilo] = useState(() => leerEstilo(ficha?.estilo))
+  return {
+    estilo,
+    sabido: true,
+    puedoEscribir: true,
+    async guardar(nuevo) {
+      const e = leerEstilo(nuevo)
+      if (!e) return { ok: false, codigo: 'noValido' }
+      setEstilo(e)
+      return { ok: true }
+    },
+  }
 }

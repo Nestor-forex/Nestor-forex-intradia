@@ -155,11 +155,18 @@ export function pivoteClasico(h, l, c) {
   return { p, r1: 2 * p - l, s1: 2 * p - h, r2: p + (h - l), s2: p - (h - l) }
 }
 
+/**
+ * Cuántos ATR queda el Stop-loss por fuera del soporte (o la resistencia) en
+ * el método `estructura`. Exportado para que el curso lo LEA en vez de
+ * escribirlo a mano (módulo 9).
+ */
+export const COJIN_ESTRUCTURA = 0.5
+
 /** Stop medio ATR por fuera del extremo de 20 velas, objetivo en el contrario. */
 export function nivelesEstructura(ficha, compra) {
   const { sop, res, atr } = ficha ?? {}
   if (![sop, res, atr].every(num)) return null
-  return compra ? { sl: sop - 0.5 * atr, tp: res } : { sl: res + 0.5 * atr, tp: sop }
+  return compra ? { sl: sop - COJIN_ESTRUCTURA * atr, tp: res } : { sl: res + COJIN_ESTRUCTURA * atr, tp: sop }
 }
 
 /**
@@ -497,7 +504,7 @@ export function armarAnalisis({
   else if (!ratesUSD) motivoLote = 'sinTasas'
   else {
     const r = calcularLote({ capital: perfil.capital, riesgoPct: perfil.riesgoPct, pips: niveles.pipRiesgo, par: ficha.name, tasas: ratesUSD })
-    if (r.ok) lote = { lote: r.lote, riesgoUsd: r.riesgoUsd, valorPip: r.pip, mini: r.mini, micro: r.micro }
+    if (r.ok) lote = { lote: r.lote, riesgoUsd: r.riesgoUsd, valorPip: r.pip, mini: r.mini, micro: r.micro, bajoMinimo: r.bajoMinimo, riesgoMinimoUsd: r.riesgoMinimoUsd }
     else motivoLote = 'sinTasas'
   }
 

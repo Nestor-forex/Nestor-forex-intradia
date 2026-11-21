@@ -487,6 +487,7 @@ export default {
   },
 
   calc: {
+    bajoMinimo: ({ minimo, riesgo }) => `랏이 ${minimo} 아래로 나옵니다. 브로커가 보통 허용하는 최소 랏이라 이대로는 열 수 없습니다. ${minimo} 랏이면 $${riesgo}를 걸게 되어, 원래 걸려던 것보다 많습니다.`,
     titulo: '랏·리스크 계산기',
     capital: '계좌 자본 (USD)',
     riesgoPct: '리스크 % (1-2)',

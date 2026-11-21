@@ -975,11 +975,220 @@ const ESCENAS = {
       await espera(p, 2.8)
     },
   },
+
+  // ─── Módulo 9 ───────────────────────────────────────────────────────────────
+  'm9-1': {
+    desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se elige un par sin dirección (la tarjeta pide elegirla), después COMPRA y VENTA, y se ve cómo el Stop-loss y el Take-profit se dan la vuelta.',
+    async correr(p, r) {
+      await analizador(p, r, { conLado: false })
+      await r('El Analizador tiene cuatro pasos: el par, tu dirección, cómo poner el Stop-loss y qué herramientas ver.')
+      await espera(p, 4.6)
+      const sinLado = p.getByText(es.an.motivo.sinLado, { exact: true }).first()
+      exigir(await sinLado.count(), 'el aviso de la tarjeta sin dirección')
+      await llevar(p, sinLado, 200)
+      await marcar(p, sinLado)
+      await r(`Con el par elegido y sin dirección, la tarjeta solo dice: «${es.an.motivo.sinLado}»`)
+      await espera(p, 4.6)
+      await desmarcar(p)
+      await r('La dirección no la elige la app, a propósito: sería una señal más, y sus señales todavía son experimentos.')
+      await espera(p, 5)
+      const niveles = async () => ({
+        stop: exigir(await fila(p, es.an.stop), 'el Stop-loss de la tarjeta'),
+        tp: exigir(await fila(p, es.an.objetivo), 'el Take-profit de la tarjeta'),
+        entrada: exigir(await fila(p, es.an.entrada), 'la entrada de la tarjeta'),
+      })
+      for (const [lado, texto] of [['COMPRA', (n) => `COMPRA: entrada ${n.entrada}. Stop-loss ${n.stop}, por DEBAJO. Take-profit ${n.tp}, por ENCIMA.`], ['VENTA', (n) => `VENTA: se dan la vuelta. Stop-loss ${n.stop}, por ENCIMA. Take-profit ${n.tp}, por DEBAJO.`]]) {
+        await llevar(p, p.getByText(es.an.paso2, { exact: false }).first(), 20)
+        const b = p.locator('main button', { hasText: new RegExp(`^${lado}$`) }).first()
+        await marcar(p, b)
+        await b.click()
+        await espera(p, 1)
+        await desmarcar(p)
+        const fs = await filaLoc(p, es.an.stop)
+        await llevar(p, fs.rotulo, 200)
+        await marcar(p, fs.rotulo.locator('xpath=..'))
+        await r(texto(await niveles()))
+        await espera(p, 5.4)
+        await desmarcar(p)
+        if (lado === 'COMPRA') {
+          // El lote se enseña con la primera dirección: con la otra el
+          // Stop-loss puede quedar tan lejos que el lote sale por debajo de
+          // 0,01 y se lee «0.00», que confunde más de lo que enseña.
+          const lote = exigir(await fila(p, es.an.lote), 'el lote de la tarjeta')
+          const fl = await filaLoc(p, es.an.lote)
+          await marcar(p, fl.valor)
+          await r(`El lote sale del perfil de riesgo del usuario de EJEMPLO: ${lote}. Si cambia la distancia del Stop-loss, el lote se ajusta para arriesgar lo mismo.`)
+          await espera(p, 5.2)
+          await desmarcar(p)
+        }
+      }
+      await r('La tarjeta dice dónde quedan los niveles si eliges esa dirección. No dice si la dirección es buena.')
+      await espera(p, 4.8)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
+  'm9-2': {
+    desc: 'Video sin voz: el Analizador de un usuario de ejemplo con dos pérdidas hoy y dos operaciones abiertas con el euro. Se arma una tarjeta de EUR/USD con los datos reales de ese día y se revisan las cuatro preguntas: R/B y lote, el freno, el calendario y el Diario.',
+    consulta: '?diario=chequeo',
+    async correr(p, r) {
+      await analizador(p, r)
+      await chip(p, es.an.h.calendario)
+      await chip(p, es.an.h.diario)
+      await espera(p, 0.6)
+      await r('Un usuario de EJEMPLO: hoy lleva dos pérdidas y tiene dos operaciones abiertas con el euro. Arma una tarjeta de EUR/USD.')
+      await espera(p, 5)
+      await r('Antes de decidir, cuatro preguntas. La tarjeta las contesta todas en el mismo sitio.')
+      await espera(p, 4.2)
+      // 1 · R/B y lote
+      const frb = await filaLoc(p, 'R/B')
+      await llevar(p, frb.rotulo, 230)
+      const rb = exigir(await fila(p, 'R/B'), 'el R/B de la tarjeta').replace(/\s/g, '').replace('.', ',')
+      const lote = exigir(await fila(p, es.an.lote), 'el lote de la tarjeta')
+      await marcar(p, frb.valor)
+      const bajo = await p.getByText(es.an.rrBajo, { exact: true }).count()
+      await r(`1 · ¿Cuánto arriesgas y cuánto buscas ganar? R/B ${rb}; lote y riesgo: ${lote}.${bajo ? ' Y la tarjeta avisa en ámbar: arriesgas más de lo que buscas ganar.' : ''}`)
+      await espera(p, 5.6)
+      await desmarcar(p)
+      // 2 · el freno
+      const textoFreno = (await p.getByText(es.an.frenoRojo, { exact: true }).count()) ? es.an.frenoRojo : es.an.frenoCerca
+      const freno = p.getByText(textoFreno, { exact: true }).first()
+      exigir(await freno.count(), 'el aviso del freno en la tarjeta')
+      await llevar(p, freno, 200)
+      await marcar(p, freno)
+      await r(`2 · ¿Cómo va tu día? La tarjeta lo dice: «${textoFreno}»`)
+      await espera(p, 5.2)
+      await desmarcar(p)
+      // 3 · el calendario
+      const cal = exigir(await seccionCalendario(p), 'la sección del calendario')
+      await llevar(p, cal.loc, 200)
+      await marcar(p, cal.loc)
+      const sinNoticias = cal.texto.includes(es.an.calendarioVacio)
+      const nEv = sinNoticias ? 0 : cal.texto.split('\n').length - 1
+      await r(sinNoticias
+        ? '3 · ¿Hay noticias de estas dos divisas? Hoy la tarjeta dice que no hay ninguna en las próximas 48 horas.'
+        : `3 · ¿Hay noticias de estas dos divisas? La tarjeta enseña ${nEv} en las próximas 48 horas, con su hora.`)
+      await espera(p, 5.2)
+      await desmarcar(p)
+      // 4 · el Diario
+      const bloq = exigir(await bloqueDe(p, es.an.h.diario), 'el bloque «Mi diario»')
+      await llevar(p, bloq, 200)
+      await marcar(p, bloq)
+      const abiertas = exigir(await fila(p, es.an.diarioAbiertas), 'las abiertas que comparten divisa')
+      exigir(await p.getByText(es.an.diarioMismaApuesta, { exact: true }).count(), 'el aviso de una sola apuesta')
+      await r(`4 · ¿Qué tienes ya abierto? ${abiertas} operaciones comparten divisa con ésta: sumarla puede hacer una sola apuesta más grande.`)
+      await espera(p, 5.6)
+      await desmarcar(p)
+      await r('Nada de eso le impide abrirla: la app no bloquea. Le pone delante lo que su propia regla dice.')
+      await espera(p, 4.8)
+      const prac = p.locator('main button', { hasText: es.an.practicar }).first()
+      await llevar(p, prac, 260)
+      await marcar(p, p.locator('main button', { hasText: es.an.anotar }).first())
+      await r('Si la abre en su bróker, la anota en el Diario. Si quiere probarla sin dinero, la practica: es el módulo siguiente.')
+      await espera(p, 5.2)
+      await desmarcar(p)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
+  'm9-3': {
+    desc: 'Video sin voz: el Analizador de un usuario de ejemplo. Se cambia «¿Cómo operas?» de tendencias a rangos y cambian las herramientas encendidas; después se guarda una plantilla con su nombre y se vuelve a aplicar otra con un toque.',
+    consulta: '?plantillas=ejemplo',
+    async correr(p, r) {
+      await analizador(p, r)
+      const paso4 = p.getByText(es.an.paso4, { exact: false }).first()
+      await llevar(p, paso4, 20)
+      const antes = exigir(await encendidas(p), 'las herramientas encendidas')
+      const linea = p.getByText(es.estilo.tuEstilo, { exact: false }).first().locator('xpath=..')
+      await marcar(p, linea)
+      await r(`«¿Cómo operas?»: este usuario de EJEMPLO sigue tendencias. El Analizador arranca con ${antes.length} herramientas encendidas.`)
+      await espera(p, 5)
+      const cambiar = p.locator('main button', { hasText: new RegExp(`^${es.estilo.cambiar}$`) }).first()
+      await marcar(p, cambiar)
+      await cambiar.click()
+      await espera(p, 1)
+      const rangos = p.locator('main button', { hasText: es.estilo.rangosT }).first()
+      await marcar(p, rangos)
+      await r(`Lo cambia a «${es.estilo.rangosT}».`)
+      await espera(p, 2.6)
+      await rangos.click()
+      await espera(p, 1.2)
+      await desmarcar(p)
+      await llevar(p, paso4, 20)
+      const despues = exigir(await encendidas(p), 'las herramientas de rangos')
+      await r(`Ahora arranca con ${despues.length}: ${despues.join(', ')}. No cambia ninguna señal ni dice qué estilo es mejor.`)
+      await espera(p, 6)
+      const input = p.getByPlaceholder(es.an.nombrePlantilla).first()
+      await llevar(p, input, 220)
+      await marcar(p, input)
+      await r('Una plantilla guarda las herramientas encendidas y el método del Stop-loss con un nombre.')
+      await input.click()
+      await input.pressSequentially('Mis rangos', { delay: 140 })
+      await espera(p, 1)
+      await input.locator('xpath=..').locator('button').first().click()
+      await espera(p, 1)
+      await desmarcar(p)
+      exigir(await p.getByText(es.an.msg.guardada, { exact: true }).count(), 'el mensaje de plantilla guardada')
+      const plantillas = p.getByText(es.an.plantillas, { exact: false }).first()
+      await llevar(p, plantillas, 120)
+      await marcar(p, p.locator('main button', { hasText: /^Mis rangos$/ }).first())
+      await r('Guardada: «Mis rangos» ya está en «Mis plantillas», junto a las otras dos de EJEMPLO.')
+      await espera(p, 4.8)
+      const tend = p.locator('main button', { hasText: /^Mi tendencia$/ }).first()
+      await marcar(p, tend)
+      await tend.click()
+      await espera(p, 1.2)
+      await llevar(p, paso4, 20)
+      const conPlantilla = exigir(await encendidas(p), 'las herramientas de la plantilla')
+      await r(`Un toque en «Mi tendencia» y el Analizador vuelve a quedar como se guardó: ${conPlantilla.join(', ')}.`)
+      await espera(p, 5.6)
+      await desmarcar(p)
+      await r('Analizar siempre con las mismas herramientas no hace ganar: hace que tus números del Diario hablen de una sola forma de operar.')
+      await espera(p, 5.6)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
 }
 
 // Módulo 7: el calendario se graba con la hora de la mañana del día de los
 // datos, para que haya noticias por venir. Se elige la primera noticia con
 // previsto y anterior del archivo de ESTA app, y el reloj se pone 2 horas antes.
+// Módulo 9. Las herramientas encendidas en el paso 4 del Analizador, leídas de
+// la pantalla (los botones del estilo y de las plantillas no cuentan).
+async function encendidas(p) {
+  return p.evaluate((paso) => {
+    const t = [...document.querySelectorAll('main span')].find((x) => x.children.length === 0 && x.textContent.trim() === paso)
+    const caja = t?.closest('.card')
+    if (!caja) return null
+    return [...caja.querySelectorAll('button[aria-pressed="true"]')].map((b) => b.textContent.trim())
+  }, es.an.paso4)
+}
+
+// La sección «Calendario» de la tarjeta: su texto (eventos o «sin noticias»).
+async function seccionCalendario(p) {
+  const texto = await p.evaluate((rot) => {
+    const t = [...document.querySelectorAll('main span')].find((x) => x.children.length === 0 && x.textContent.trim() === rot && !x.closest('button') && x.parentElement?.style.borderTop)
+    if (!t) return null
+    t.parentElement.dataset.cal = '1'
+    return t.parentElement.innerText
+  }, es.an.h.calendario)
+  return texto ? { texto, loc: p.locator('[data-cal]') } : null
+}
+
+// La caja (Bloque) de una herramienta de la tarjeta, por su título.
+async function bloqueDe(p, titulo) {
+  const ok = await p.evaluate((tt) => {
+    const t = [...document.querySelectorAll('main span, main div')].find((x) => x.children.length === 0 && x.textContent.trim() === tt && !x.closest('button'))
+    if (!t) return false
+    t.parentElement.dataset.bloq = tt
+    return true
+  }, titulo)
+  return ok ? p.locator(`[data-bloq="${titulo}"]`) : null
+}
+
 const CAL = { ev: null, reloj: null }
 async function relojCalendario(datos) {
   const cal = JSON.parse(await readFile(join(datos, APP === 'swing' ? 'swing' : 'intradia', 'estado/calendario.json'), 'utf8'))

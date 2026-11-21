@@ -36,7 +36,7 @@ import {
   sinPlantilla,
   tamanoPip,
 } from '../src/lib/analizador.js'
-import { calcularLote } from '../src/lib/calc.js'
+import { LOTE_MINIMO, calcularLote } from '../src/lib/calc.js'
 import { carryDeSenal } from '../src/lib/carrySenal.js'
 import { monedasDe } from '../src/lib/pairs.js'
 import { fichaAnalisis, nivelesApp, PERIODOS_MEDIAS } from '../src/lib/marketCalc.js'
@@ -441,6 +441,33 @@ console.log('\n9. El cableado')
   comprobar('la práctica también usa solo herramientas disponibles', /HERRAMIENTAS_GRAFICA\.filter\(\(x\)\s*=>\s*disponibles\.includes\(x\)\)/.test(tab))
   const diario = leer('../src/components/DiarioTab.jsx')
   comprobar('el Diario acepta el lote que llega del Analizador', /prellenar\.lote/.test(diario))
+}
+
+console.log('\n10. Un lote por debajo de 0,01')
+{
+  // Con un Stop-loss muy lejano el lote sale por debajo de lo que deja abrir un
+  // bróker. Escribir «0.00 · $10.00» dice que se arriesgan 10 dólares con un
+  // lote que no se puede abrir; la pantalla tiene que decirlo y dar el riesgo
+  // real con el mínimo.
+  const enorme = calcularLote({ capital: 1000, riesgoPct: 1, pips: 3000, par: 'EUR/USD', tasas: RATES })
+  comprobar('con un Stop-loss enorme el lote sale por debajo del mínimo y lo marca', enorme.ok && enorme.lote < LOTE_MINIMO && enorme.bajoMinimo === true)
+  comprobar('…y da el riesgo real con 0,01 lotes (0,01 × pips × valor del pip)', cerca(enorme.riesgoMinimoUsd, LOTE_MINIMO * 3000 * enorme.pip))
+  comprobar('…que es más de lo que se quería arriesgar', enorme.riesgoMinimoUsd > enorme.riesgoUsd)
+  const normal = calcularLote({ capital: 1000, riesgoPct: 1, pips: 30, par: 'EUR/USD', tasas: RATES })
+  comprobar('con un Stop-loss normal NO se marca', normal.bajoMinimo === false)
+  comprobar('el mínimo es 0,01', LOTE_MINIMO === 0.01)
+  // Un capital chico da el mismo caso que un Stop-loss enorme: el lote no llega al mínimo.
+  const lejos = armarAnalisis({ ficha, lado: 'COMPRA', metodo: 'simetrica', perfil: { capital: 5, riesgoPct: 1 }, ratesUSD: RATES })
+  comprobar('la tarjeta del Analizador lleva `bajoMinimo` y el riesgo con el mínimo', lejos.lote?.bajoMinimo === true && lejos.lote.riesgoMinimoUsd > 0)
+  comprobar('el texto existe en español y lleva los dos números', typeof es.calc?.bajoMinimo === 'function' && /0\.01/.test(es.calc.bajoMinimo({ minimo: '0.01', riesgo: '30.00' })) && /30\.00/.test(es.calc.bajoMinimo({ minimo: '0.01', riesgo: '30.00' })))
+  for (const [nombre, archivo] of [['el Analizador', '../src/components/AnalizadorTab.jsx'], ['la calculadora', '../src/components/CalculadoraTab.jsx']]) {
+    const src = sinComentarios(leer(archivo))
+    comprobar(`${nombre} enseña el aviso \`calc.bajoMinimo\``, /calc\.bajoMinimo/.test(src) && /bajoMinimo\s*\?/.test(src))
+  }
+  const prac = sinComentarios(leer('../src/lib/practica.js'))
+  comprobar('la práctica no guarda un lote por debajo del mínimo', /lote\s*>=\s*LOTE_MINIMO/.test(prac))
+  const tab = sinComentarios(leer('../src/components/AnalizadorTab.jsx'))
+  comprobar('al anotar en el Diario no se rellena un lote por debajo del mínimo', /!a\.lote\.bajoMinimo/.test(tab))
 }
 
 console.log(fallos ? `\n✗ ${fallos} comprobación(es) fallaron\n` : '\n✓ todo bien\n')
