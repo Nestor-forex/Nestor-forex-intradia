@@ -20,7 +20,6 @@
 // historial, avisos, calc.
 
 import { OPS_PARA_CREER } from '../sombra.js'
-import { margen } from '../diagnostico.js'
 import { SUGERIDO, frenoEnDolares, operacionesHastaElFreno } from '../perfilRiesgo.js'
 import { PERIODOS_MEDIAS, PERIODO_ATR, PERIODO_RSI, PESOS_FUERZA, RSI_MAX, TENDENCIA_MIN, UMBRALES_COMPRESION, UMBRAL_FUERZA, VELAS_ATRAS_COMPRESION, VENTANAS_FUERZA } from '../marketCalc.js'
 // Lo que solo existe en UNA de las dos apps (el modo rango y la distancia del
@@ -35,6 +34,8 @@ import { COJIN_ESTRUCTURA, MAX_PLANTILLAS, RR_AVISO } from '../analizador.js'
 import { HERRAMIENTAS_DE_ESTILO } from '../estilo.js'
 import { MAX_ABIERTAS, costesPractica } from '../practica.js'
 import { aciertoDeEquilibrio } from '../laboratorio.js'
+import { leerOperaciones, quitarRepetidas } from '../importarOperaciones.js'
+import { MINIMO_PARA_ENSEÑAR, diagnostico, margen, resumir } from '../diagnostico.js'
 
 const L = OPS_PARA_CREER
 
@@ -116,6 +117,33 @@ const EQ = (rb) => aciertoDeEquilibrio(rb)
 const M25 = margen(25)
 const M150 = margen(L)
 const solapan = (a, ma, b, mb) => Math.abs(a - b) <= ma + mb
+
+// Módulo 12: los ejemplos se calculan con las MISMAS funciones que usa la app
+// al importar del bróker y al partir el Diario en grupos. Son operaciones de
+// EJEMPLO, no de nadie.
+export const CSV_EJEMPLO = 'Ticket,Symbol,Type,Volume,Close time,Profit,Swap,Commission\n1001,EURUSD,buy,0.03,2026.11.10 15:00,40.00,-3.20,-1.50\n'
+const IMP = leerOperaciones(CSV_EJEMPLO, ['EUR/USD']).operaciones[0]
+export const IMP_NETO = IMP.pl
+export const IMP_REPETIDAS = quitarRepetidas([IMP], [IMP]).length
+const din = (n) => (n >= 0 ? '+' : '−') + fmt(Math.abs(n).toFixed(2))
+
+// 20 operaciones de ejemplo: 8 en cruces (5 ganadas) y 12 con dólar (6
+// ganadas). Lo que importa es el ± de cada grupo, no los números.
+const opEj = (par, dir, pl) => ({ par, dir, pl, lote: 0.03, estado: 'cerrada' })
+export const EJEMPLO_GRUPOS = Object.freeze([
+  ...['EUR/CHF', 'GBP/JPY', 'EUR/CAD', 'EUR/CHF', 'GBP/JPY', 'EUR/CAD', 'EUR/CHF', 'GBP/JPY'].map((par, i) => opEj(par, i % 2 ? 'Venta' : 'Compra', i < 5 ? 10 : -10)),
+  ...['EUR/USD', 'USD/JPY', 'EUR/USD', 'EUR/USD', 'AUD/USD', 'EUR/USD', 'EUR/USD', 'USD/CAD', 'EUR/USD', 'EUR/USD', 'USD/JPY', 'EUR/USD'].map((par, i) => opEj(par, i % 3 ? 'Compra' : 'Venta', i < 6 ? 10 : -10)),
+])
+const DG = diagnostico(EJEMPLO_GRUPOS)
+const G_CRU = DG.tipoDePar.find((g) => g.clave === 'cruces')
+const G_DOL = DG.tipoDePar.find((g) => g.clave === 'dolar')
+const G_EURUSD = DG.pares.find((g) => g.clave === 'EUR/USD')
+const pct0 = (x) => Math.round(x)
+export const GRUPOS_SE_TOCAN = Math.abs(pct0(G_CRU.pct) - pct0(G_DOL.pct)) <= G_CRU.margen + G_DOL.margen
+
+// 10 operaciones de ejemplo: 7 ganan poco y 3 pierden mucho.
+export const EJEMPLO_ACIERTO = Object.freeze([...Array(7).fill(10), ...Array(3).fill(-30)].map((pl) => opEj('EUR/USD', 'Compra', pl)))
+const RA = resumir(EJEMPLO_ACIERTO)
 
 export const MODULOS = Object.freeze([
   Object.freeze({
@@ -202,13 +230,18 @@ export const MODULOS = Object.freeze([
     desc: 'Por qué acertar no es lo mismo que ganar, cuándo dos porcentajes son distintos de verdad, y por qué un número elegido después de mirar engaña.',
     lecciones: Object.freeze(['m11-1', 'm11-2', 'm11-3']),
   }),
+  Object.freeze({
+    id: 'm12',
+    n: 12,
+    titulo: 'Medir tus propios números',
+    desc: 'Traer tus operaciones del bróker con el resultado neto, partir tus números en grupos con su margen, y saber qué mirar y qué no concluir de ellos.',
+    lecciones: Object.freeze(['m12-1', 'm12-2', 'm12-3']),
+  }),
 ])
 
 // Los que todavía no están escritos. Se enseñan para que se vea el camino,
 // marcados «próximamente», y no se pueden abrir.
-export const PROXIMOS = Object.freeze([
-  { n: 12, titulo: 'Medir tus propios números' },
-])
+export const PROXIMOS = Object.freeze([])
 
 export const LECCIONES = Object.freeze({
   'm1-1': {
@@ -2004,6 +2037,172 @@ export const LECCIONES = Object.freeze({
         opciones: ['Que hay que creerle al backtest', 'Que todavía no se han puesto de acuerdo y la regla sigue en pruebas', 'Que el registro está mal'],
         correcta: 1,
         porque: 'Hasta que la realidad confirme el backtest, no es una señal.',
+      },
+    ],
+  },
+  'm12-1': {
+    titulo: 'Traer tus operaciones del bróker',
+    objetivo: 'Pasar tu historial de MT4 o MT5 al Diario sin copiarlo a mano, y entender por qué entra el resultado neto.',
+    explicacion: [
+      'En la pestaña Diario está «Importar operaciones del bróker». Exportas tu historial desde la plataforma (MT4: «Guardar como informe detallado»; MT5: «Informe») o un CSV, lo eliges, y la app lo lee.',
+      'La app no se conecta a tu bróker y nunca te pide la contraseña de tu cuenta: solo lee el archivo que tú subes. Así nadie le entrega a la app la llave de su dinero.',
+      'Antes de guardar nada te enseña cuántas operaciones entrarán, el resultado total y las cinco primeras, para que compruebes que el par y el resultado se leyeron bien. Nada se guarda hasta que lo confirmas.',
+      'Cada operación entra con el resultado NETO: lo que dio el precio, más el swap, más la comisión. Es el único número que dice de verdad si ganaste o perdiste.',
+      'Si vuelves a subir el informe entero, las que ya estaban no se repiten: la app las reconoce por el número de operación del bróker. Y lo que no analiza (oro, índices, acciones o pares que no sigue) se salta con un aviso.',
+    ],
+    ejemplo: [
+      'Una línea de un informe de EJEMPLO: EUR/USD, resultado del precio +40,00, swap −3,20, comisión −1,50.',
+      `La app la guarda con un resultado de ${din(IMP_NETO)}: lo que de verdad quedó en la cuenta.`,
+      `Si subes el mismo informe otra vez, entran ${IMP_REPETIDAS} operaciones nuevas: la que ya estaba no se cuenta dos veces.`,
+    ],
+    formula: {
+      texto: 'resultado neto = resultado del precio + swap + comisión',
+      conNumeros: `40,00 + (−3,20) + (−1,50) = ${din(IMP_NETO)}`,
+    },
+    noDice: [
+      'La app lee lo que dice tu informe: si el informe trae un error, entra el error.',
+      'Si cerraste una operación por partes, revísala: la app todavía no sabe juntar los cierres parciales.',
+      'Importar no juzga tus operaciones: solo las apunta.',
+    ],
+    video: {
+      archivo: 'm12-1',
+      desc: 'Video sin voz: el Diario de un usuario de ejemplo, al que se le sube un informe de EJEMPLO (operaciones inventadas). Se leen las que entrarán, el resultado total con swap y comisión, la línea que se salta y las primeras filas. Se cancela sin guardar.',
+    },
+    hazlo: {
+      tab: 'diario',
+      boton: 'Ir al Diario',
+      texto: 'Exporta tu historial desde MT4 o MT5 y súbelo en «Importar operaciones del bróker». Antes de confirmar, mira que el par y el resultado de las primeras estén bien.',
+    },
+    preguntas: [
+      {
+        p: '¿Necesita la app la contraseña de tu cuenta del bróker para importar?',
+        opciones: ['Sí', 'No: solo lee el archivo que tú subes', 'Solo la primera vez'],
+        correcta: 1,
+        porque: 'La app nunca se conecta al bróker ni pide credenciales.',
+      },
+      {
+        p: 'Una operación dio +40 por el precio, −3,20 de swap y −1,50 de comisión. ¿Qué entra al Diario?',
+        opciones: ['+40,00', `${din(IMP_NETO)}`, '+44,70'],
+        correcta: 1,
+        porque: 'Entra el neto: precio más swap más comisión.',
+      },
+      {
+        p: 'Subes el mismo informe dos veces. ¿Qué pasa?',
+        opciones: ['Todo queda contado dos veces', 'Las que ya estaban no se repiten', 'Se borra lo anterior'],
+        correcta: 1,
+        porque: 'La app reconoce cada operación por su número en el bróker.',
+      },
+    ],
+  },
+
+  'm12-2': {
+    titulo: 'Tus números por grupos',
+    objetivo: 'Leer «Tus números por grupos» del Diario y saber qué dice cada grupo con su ±.',
+    explicacion: [
+      'En el Diario, la tarjeta «Tus números por grupos» parte tus operaciones cerradas de tres formas: cruces contra pares con dólar, compras contra ventas, y par por par.',
+      'Cada grupo dice cuántas operaciones tiene, qué porcentaje acertaste y cuánto ganaste o perdiste en total. Y al lado de cada porcentaje va su ±: cuánto puede moverse solo por casualidad.',
+      `Par por par solo salen los que tienen ${MINIMO_PARA_ENSEÑAR} operaciones o más, y van ordenados por cuántas operaciones tienen, nunca por acierto: ordenar por acierto pondría arriba un par con dos operaciones ganadas y un 100 % que no dice nada.`,
+      'Debajo dice qué lotes usaste, del menor al mayor. Es contexto: la app no te dice qué lote usar.',
+      'Los grupos con pocas operaciones también salen. Esconderlos dejaría solo los que parecen decir algo.',
+    ],
+    ejemplo: [
+      `Con 20 operaciones de EJEMPLO: cruces ${pct0(G_CRU.pct)} % ±${G_CRU.margen} (${G_CRU.n} operaciones) y pares con dólar ${pct0(G_DOL.pct)} % ±${G_DOL.margen} (${G_DOL.n}).`,
+      `Los rangos van del ${Math.max(0, pct0(G_CRU.pct) - G_CRU.margen)} % al ${Math.min(100, pct0(G_CRU.pct) + G_CRU.margen)} % y del ${Math.max(0, pct0(G_DOL.pct) - G_DOL.margen)} % al ${Math.min(100, pct0(G_DOL.pct) + G_DOL.margen)} %: ${GRUPOS_SE_TOCAN ? 'se tocan, así que no se puede decir que en cruces te vaya mejor.' : 'no se tocan: ahí sí son distintos.'}`,
+      G_EURUSD
+        ? `Par por par, solo sale EUR/USD, que tiene ${G_EURUSD.n} operaciones. Los demás tienen menos de ${MINIMO_PARA_ENSEÑAR}.`
+        : `Par por par no sale ninguno: ninguno llega a ${MINIMO_PARA_ENSEÑAR} operaciones.`,
+    ],
+    formula: {
+      texto: '± ≈ 98 ÷ √(operaciones del grupo)',
+      conNumeros: `con ${G_CRU.n} operaciones: ±${G_CRU.margen} · con ${G_DOL.n}: ±${G_DOL.margen} · con 100: ±${margen(100)}`,
+    },
+    noDice: [
+      'Un grupo que va mejor no dice por qué: puede ser el par, la hora, el lote o la casualidad.',
+      'No compara tus números con los de la app ni con los experimentos.',
+      'No te dice qué dejar de operar.',
+    ],
+    video: {
+      archivo: 'm12-2',
+      desc: 'Video sin voz: «Tus números por grupos» de un usuario de ejemplo con 20 operaciones de muestra. Se leen los cruces y los pares con dólar con su ±, las compras y las ventas, el par que sale y el rango de lotes.',
+    },
+    hazlo: {
+      tab: 'diario',
+      boton: 'Ir al Diario',
+      texto: 'Abre «Tus números por grupos» y, para cada grupo, mira primero cuántas operaciones tiene y su ± antes que su porcentaje.',
+    },
+    preguntas: [
+      {
+        p: '¿Por qué los pares no se ordenan por acierto?',
+        opciones: ['Por estética', 'Porque arriba quedaría un par con muy pocas operaciones y un porcentaje que no dice nada', 'Porque el acierto no se calcula'],
+        correcta: 1,
+        porque: 'Se ordenan por cuántas operaciones tienen: del que más se puede decir.',
+      },
+      {
+        p: `Cruces ${pct0(G_CRU.pct)} % ±${G_CRU.margen} y pares con dólar ${pct0(G_DOL.pct)} % ±${G_DOL.margen}. ¿Te va mejor en cruces?`,
+        opciones: ['Sí', 'No se puede decir: los rangos se tocan', 'No, peor'],
+        correcta: 1,
+        porque: `${Math.abs(pct0(G_CRU.pct) - pct0(G_DOL.pct))} puntos de diferencia contra ${G_CRU.margen + G_DOL.margen} de márgenes sumados.`,
+      },
+      {
+        p: 'La tarjeta dice que usaste lotes del 0,01 al 0,10. ¿Qué te recomienda?',
+        opciones: ['Usar siempre 0,10', 'Nada: es contexto, no un consejo', 'Usar siempre 0,01'],
+        correcta: 1,
+        porque: 'La app enseña el dato y no dice qué lote usar.',
+      },
+    ],
+  },
+
+  'm12-3': {
+    titulo: 'Qué mirar en tus números y qué no concluir',
+    objetivo: 'Leer tu Diario en el orden que no engaña y no sacar conclusiones que los números no sostienen.',
+    explicacion: [
+      'Primero el resultado neto, después el acierto. Acertar mucho y perder dinero es posible si las pérdidas son más grandes que las ganancias (módulo 11).',
+      'Después, el número de operaciones y el ± de cada porcentaje. Con pocas operaciones, ninguno de tus porcentajes dice nada todavía, por bueno o malo que se vea.',
+      'Cuidado con partir tus números en muchos grupos y quedarte con el mejor: con suficientes grupos siempre sale alguno que va bien solo por casualidad. Es la misma trampa del número elegido después de mirar.',
+      'Cada app tiene su propio Diario: lo que anotas en la de swing no cuenta en la de intradía, ni al revés.',
+      'Lo que tus números sí sirven para ver es tu forma de operar: si respetas tu freno, si anotas por qué entraste, si el lote se mantiene. Eso no depende de acertar el mercado.',
+    ],
+    ejemplo: [
+      `Un Diario de EJEMPLO con 10 operaciones: 7 ganan 10 dólares y 3 pierden 30. Acierto: ${pct0(RA.pct)} % ±${RA.margen}.`,
+      `Resultado neto: ${din(RA.neto)} dólares. Con un ${pct0(RA.pct)} % de acierto, ese Diario pierde dinero.`,
+      `Y aunque ganara, con ${RA.n} operaciones el ± es de ${RA.margen} puntos: todavía no se puede decir nada de esa forma de operar.`,
+    ],
+    formula: {
+      texto: 'resultado neto = suma de los resultados netos de cada operación',
+      conNumeros: `7 × 10 + 3 × (−30) = ${din(RA.neto)}`,
+    },
+    noDice: [
+      'Que tus números vayan bien no dice que vayan a seguir igual.',
+      'Que vayan mal no dice que tu forma de operar no sirva: con pocas operaciones no se distingue de la casualidad.',
+      'Ningún número del Diario es una señal para la próxima operación.',
+    ],
+    video: {
+      archivo: 'm12-3',
+      desc: 'Video sin voz: el Diario de un usuario de ejemplo con 10 operaciones de muestra que aciertan mucho y pierden dinero. Se lee primero el resultado y después el acierto, y luego el ± del grupo en «Tus números por grupos».',
+    },
+    hazlo: {
+      tab: 'diario',
+      boton: 'Ir al Diario',
+      texto: 'En tu Diario, lee primero el resultado y después el acierto. Si tienes pocas operaciones, apunta el ± antes de sacar ninguna conclusión.',
+    },
+    preguntas: [
+      {
+        p: 'Tu Diario acierta el 70 % y el resultado es negativo. ¿Es posible?',
+        opciones: ['No', 'Sí, si las pérdidas son más grandes que las ganancias', 'Solo con errores de la app'],
+        correcta: 1,
+        porque: 'El acierto no dice cuánto se gana ni cuánto se pierde.',
+      },
+      {
+        p: 'Partes tus números en 12 grupos y uno va muy bien. ¿Qué haces?',
+        opciones: ['Operar solo ese grupo', 'Desconfiar: con tantos grupos alguno sale bien por casualidad', 'Borrar los otros'],
+        correcta: 1,
+        porque: 'Es la trampa del número elegido después de mirar.',
+      },
+      {
+        p: '¿Lo que anotas en la app de swing cuenta en la de intradía?',
+        opciones: ['Sí', 'No: cada app tiene su propio Diario', 'Solo las ganadas'],
+        correcta: 1,
+        porque: 'Cada app guarda sus operaciones aparte.',
       },
     ],
   },

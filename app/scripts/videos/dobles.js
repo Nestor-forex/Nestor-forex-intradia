@@ -9,6 +9,7 @@ import { useState } from 'react'
 import { APP } from '../../src/lib/identidad.js'
 import { conPlantilla, leerPlantillas, sinPlantilla } from '../../src/lib/analizador.js'
 import { leerEstilo } from '../../src/lib/estilo.js'
+import { EJEMPLO_ACIERTO, EJEMPLO_GRUPOS } from '../../src/lib/curso/es.js'
 
 const hoy = () => {
   const d = new Date()
@@ -54,7 +55,9 @@ export function useAuthUser() {
 // seguidas; `?diario=grupos` llena el Diario para «Tus números por grupos»;
 // `?diario=juntas` deja dos abiertas con el euro en común (módulo 8);
 // `?diario=chequeo` junta las dos cosas: dos pérdidas hoy y dos abiertas con
-// el euro (módulo 9, revisar la tarjeta antes de decidir).
+// el euro (módulo 9, revisar la tarjeta antes de decidir). `?diario=grupos12`
+// y `?diario=acierto` usan las MISMAS operaciones de ejemplo que las
+// lecciones del módulo 12, para que el video diga lo mismo que la lección.
 function muestra() {
   const modo = params().get('diario')
   const d = hoy()
@@ -80,6 +83,14 @@ function muestra() {
       { id: 'j2', par: 'EUR/CHF', dir: 'Compra', lote: 0.03, pl: 0, estado: 'abierta', fecha: d, nota: 'Ejemplo' },
       { id: 'j1', par: 'EUR/USD', dir: 'Compra', lote: 0.03, pl: 0, estado: 'abierta', fecha: d, nota: 'Ejemplo' },
     ]
+  }
+  if (modo === 'grupos12' || modo === 'acierto') {
+    const base = modo === 'acierto' ? EJEMPLO_ACIERTO : EJEMPLO_GRUPOS
+    return base.map((o, i) => {
+      const f = new Date(ahora - (i + 1) * 86400e3)
+      const dia = `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, '0')}-${String(f.getDate()).padStart(2, '0')}`
+      return { ...o, id: `m${i}`, fecha: dia, cerradaEl: dia, cerradaEnMs: f.getTime(), nota: 'Ejemplo' }
+    })
   }
   if (modo === 'grupos') {
     const pares = ['EUR/USD', 'USD/JPY', 'EUR/USD', 'GBP/JPY', 'EUR/CHF', 'USD/CAD', 'EUR/USD', 'AUD/USD', 'USD/JPY']

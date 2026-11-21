@@ -27,7 +27,7 @@ import { abrir, abrirTarjeta, bajar, cajaDe, chip, desmarcar, espera, exigir, fi
 import { ESCENAS_HERRAMIENTAS, analizador, verHerramienta } from './escenas-herramientas.mjs'
 import es from '../../src/lib/i18n/textos/es.js'
 import { OPS_PARA_CREER } from '../../src/lib/sombra.js'
-import { margen } from '../../src/lib/diagnostico.js'
+import { MINIMO_PARA_ENSEÑAR, margen } from '../../src/lib/diagnostico.js'
 import { aciertoDeEquilibrio } from '../../src/lib/laboratorio.js'
 import * as MC from '../../src/lib/marketCalc.js'
 import { PERIODOS_MEDIAS, PERIODO_ATR, PERIODO_RSI, RSI_MAX, UMBRAL_FUERZA, VENTANAS_FUERZA } from '../../src/lib/marketCalc.js'
@@ -1483,13 +1483,144 @@ const ESCENAS = {
       await espera(p, 2.8)
     },
   },
+  'm12-1': {
+    desc: 'Video sin voz: el Diario de un usuario de ejemplo, al que se le sube un informe de EJEMPLO (operaciones inventadas). Se leen las que entrarán, el resultado total con swap y comisión, la línea que se salta y las primeras filas. Se cancela sin guardar.',
+    async correr(p, r) {
+      await irA(p, 'Diario')
+      const caja = p.locator('#importar-broker')
+      exigir(await caja.count(), 'la tarjeta de importar')
+      await llevar(p, caja, 120)
+      await marcar(p, caja)
+      await r(`«${es.importar.titulo}»: la app solo lee el archivo que subes. No se conecta a tu bróker ni te pide contraseñas.`)
+      await espera(p, 6)
+      await desmarcar(p)
+      await abrirTarjeta(p, es.importar.titulo)
+      await espera(p, 1)
+      await caja.locator('input[type=file]').setInputFiles({ name: 'informe-de-ejemplo.csv', mimeType: 'text/csv', buffer: Buffer.from(INFORME_EJEMPLO) })
+      await espera(p, 1.2)
+      const txt = (await caja.innerText()).replace(/\s+/g, ' ')
+      const n = exigir(txt.match(/(\d+) operaciones nuevas entrarán/), 'cuántas entran')[1]
+      const total = exigir(txt.match(/con swap y comisión\): ([+−-]?[\d.]+)/), 'el resultado total')[1]
+      const eu = exigir(txt.match(/EUR\/USD Compra \S+ ([+−-]?[\d.]+)/), 'la fila de EUR/USD')[1]
+      exigir(/Se saltó una operación/.test(txt), 'el aviso de la línea saltada')
+      await llevar(p, caja.getByText('informe-de-ejemplo.csv').first(), 100)
+      await r(`Un informe de EJEMPLO, con operaciones inventadas: entrarían ${n} operaciones nuevas.`)
+      await espera(p, 5)
+      const aviso = caja.getByText(/Se saltó una operación/).first()
+      await marcar(p, aviso)
+      await r('La línea del oro se salta con un aviso: la app no analiza oro, índices ni acciones.')
+      await espera(p, 5.4)
+      await desmarcar(p)
+      const fEu = caja.getByText('EUR/USD', { exact: true }).first().locator('xpath=..')
+      await marcar(p, fEu)
+      await r(`EUR/USD: en el informe, el precio dio +40.00, el swap −3.20 y la comisión −1.50. Entra ${eu}: el neto.`)
+      await espera(p, 6.4)
+      await desmarcar(p)
+      const fTot = caja.getByText(es.importar.resultadoTotal).first()
+      await marcar(p, fTot)
+      await r(`Resultado total, con swap y comisión: ${total}. Nada se guarda hasta que lo confirmes.`)
+      await espera(p, 6)
+      await desmarcar(p)
+      const cancelar = caja.getByRole('button', { name: es.importar.cancelar })
+      await marcar(p, cancelar)
+      await espera(p, 1.4)
+      await cancelar.click()
+      await desmarcar(p)
+      await r('Se cancela: no se guardó nada. Si subes el mismo informe otra vez, las que ya estaban no se repiten.')
+      await espera(p, 5.8)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
+  'm12-2': {
+    desc: 'Video sin voz: «Tus números por grupos» de un usuario de ejemplo con 20 operaciones de muestra. Se leen los cruces y los pares con dólar con su ±, las compras y las ventas, el par que sale y el rango de lotes.',
+    consulta: '?diario=grupos12',
+    async correr(p, r) {
+      await irA(p, 'Diario')
+      await llevar(p, await abrirTarjeta(p, 'Tus números por grupos'), 90)
+      await r('«Tus números por grupos» de un usuario de EJEMPLO, con 20 operaciones de muestra.')
+      await espera(p, 4.6)
+      const cru = await filaGrupo(p, es.diag.cruces)
+      const dol = await filaGrupo(p, es.diag.dolar)
+      await llevar(p, cru.loc, 220)
+      await marcar(p, cru.loc)
+      await r(`Cruces: ${cru.n} operaciones, ${cru.pct} % ±${cru.mg}.`)
+      await espera(p, 5)
+      await desmarcar(p)
+      await marcar(p, dol.loc)
+      await r(`Pares con dólar: ${dol.n} operaciones, ${dol.pct} % ±${dol.mg}.`)
+      await espera(p, 5)
+      await desmarcar(p)
+      const tocan = Math.abs(dol.pct - cru.pct) <= dol.mg + cru.mg
+      await r(tocan
+        ? `Los rangos se tocan: con tan pocas operaciones no se puede decir que en cruces te vaya mejor.`
+        : `Los rangos no se tocan: ahí sí son distintos.`)
+      await espera(p, 5.6)
+      const com = await filaGrupo(p, es.direccion.Compra)
+      const ven = await filaGrupo(p, es.direccion.Venta)
+      await llevar(p, com.loc, 220)
+      await marcar(p, com.loc)
+      await r(`Compras: ${com.n} operaciones, ${com.pct} % ±${com.mg}. Ventas: ${ven.n}, ${ven.pct} % ±${ven.mg}.`)
+      await espera(p, 6)
+      await desmarcar(p)
+      const par = await filaGrupo(p, 'EUR/USD')
+      await llevar(p, par.loc, 220)
+      await marcar(p, par.loc)
+      await r(`Par por par solo sale EUR/USD, con ${par.n} operaciones. Los demás no llegan a ${MINIMO_PARA_ENSEÑAR}, así que no se enseñan sueltos.`)
+      await espera(p, 6.4)
+      await desmarcar(p)
+      const lote = p.getByText(/^Lot: del /).first()
+      exigir(await lote.count(), 'la línea de los lotes')
+      await llevar(p, lote, 260)
+      await marcar(p, lote)
+      await r('Los lotes son contexto: la app no te dice qué lote usar.')
+      await espera(p, 5)
+      await desmarcar(p)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
+  'm12-3': {
+    desc: 'Video sin voz: el Diario de un usuario de ejemplo con 10 operaciones de muestra que aciertan mucho y pierden dinero. Se lee primero el resultado y después el acierto, y luego el ± del grupo en «Tus números por grupos».',
+    consulta: '?diario=acierto',
+    async correr(p, r) {
+      await irA(p, 'Diario')
+      const pl = await statDiario(p, es.diario.pl)
+      const win = await statDiario(p, es.diario.ganadas)
+      await llevar(p, pl.loc, 160)
+      await r('El Diario de un usuario de EJEMPLO, con 10 operaciones de muestra.')
+      await espera(p, 4.4)
+      await marcar(p, pl.loc)
+      await r(`Primero el resultado: ${pl.valor} dólares. Es lo que dice si se ganó o se perdió.`)
+      await espera(p, 5.6)
+      await desmarcar(p)
+      await marcar(p, win.loc)
+      await r(`Después el acierto: ${win.valor}. Acierta mucho y aun así pierde, porque las pérdidas son más grandes que las ganancias.`)
+      await espera(p, 6.6)
+      await desmarcar(p)
+      await llevar(p, await abrirTarjeta(p, 'Tus números por grupos'), 90)
+      const dol = await filaGrupo(p, es.diag.dolar)
+      await llevar(p, dol.loc, 220)
+      await marcar(p, dol.loc)
+      await r(`Y con ${dol.n} operaciones, ese ${dol.pct} % va con ±${dol.mg}: todavía no dice nada de esta forma de operar.`)
+      await espera(p, 6.4)
+      await desmarcar(p)
+      await r('Si partes tus números en muchos grupos, alguno saldrá bien por casualidad. No te quedes con el mejor sin mirar su ±.')
+      await espera(p, 6)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
 }
 
 // Módulo 11. Una fila de «Tus números por grupos»: operaciones, acierto y ±.
 async function filaGrupo(p, etiqueta) {
   const res = await p.evaluate((e) => {
-    const hoja = [...document.querySelectorAll('main div')].find((x) => x.children.length === 0 && x.textContent.trim() === e)
-    const f = hoja?.parentElement
+    const filaDe = (x) => { let y = x; for (let i = 0; i < 3 && y; i++, y = y.parentElement) if (/\d+ ops/.test(y.textContent)) return y; return null }
+    const hoja = [...document.querySelectorAll('main div, main span')].find((x) => x.children.length === 0 && x.textContent.trim() === e && filaDe(x))
+    const f = hoja && filaDe(hoja)
     if (!f) return null
     document.querySelectorAll('[data-grupo]').forEach((x) => { if (x.dataset.grupo === e) delete x.dataset.grupo })
     f.dataset.grupo = e
@@ -1499,6 +1630,30 @@ async function filaGrupo(p, etiqueta) {
   const m = exigir(res.match(/(\d+) ops (\d+)% ±(\d+)/), `ops, acierto y ± en «${res}»`)
   return { loc: p.locator(`[data-grupo="${etiqueta}"]`), n: Number(m[1]), pct: Number(m[2]), mg: Number(m[3]) }
 }
+
+// Módulo 12. Un número de arriba del Diario (el resultado o el acierto).
+async function statDiario(p, etiqueta) {
+  const res = await p.evaluate((e) => {
+    const hoja = [...document.querySelectorAll('main div')].find((x) => x.children.length === 0 && x.textContent.trim() === e)
+    const f = hoja?.parentElement
+    if (!f) return null
+    document.querySelectorAll('[data-stat]').forEach((x) => { if (x.dataset.stat === e) delete x.dataset.stat })
+    f.dataset.stat = e
+    return f.querySelector('.mono')?.textContent.trim() ?? null
+  }, etiqueta)
+  exigir(res, `el número «${etiqueta}»`)
+  return { loc: p.locator(`[data-stat="${etiqueta}"]`), valor: res }
+}
+
+// Módulo 12: el informe de EJEMPLO que se sube en el video. Operaciones
+// inventadas; la del oro está para enseñar que se salta.
+const INFORME_EJEMPLO = [
+  'Ticket,Symbol,Type,Volume,Close time,Profit,Swap,Commission',
+  '2001,EURUSD,buy,0.03,2026.11.10 15:00,40.00,-3.20,-1.50',
+  '2002,USDJPY,sell,0.02,2026.11.11 10:00,-22.00,0.40,-1.00',
+  '2003,GBPUSD,buy,0.03,2026.11.12 18:00,18.50,-0.90,-1.50',
+  '2004,XAUUSD,buy,0.01,2026.11.13 14:00,55.00,0,-1.00',
+].join('\n') + '\n'
 
 // Módulo 10. Una fila del «Modo práctica» por su par y un texto que lleve
 // (su estado), con sus niveles y su desglose leídos de la pantalla.
