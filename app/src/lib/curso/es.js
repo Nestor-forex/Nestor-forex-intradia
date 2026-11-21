@@ -33,6 +33,7 @@ import { HORAS_VISTA } from '../calendario.js'
 import { APP } from '../identidad.js'
 import { COJIN_ESTRUCTURA, MAX_PLANTILLAS, RR_AVISO } from '../analizador.js'
 import { HERRAMIENTAS_DE_ESTILO } from '../estilo.js'
+import { MAX_ABIERTAS, costesPractica } from '../practica.js'
 
 const L = OPS_PARA_CREER
 
@@ -84,6 +85,28 @@ const VENTANA_CORREL_TXT = 60
 export const ATR_SIMETRICO = MC.ATR_REVERSION ?? MC.ATR_STOP
 const N_TENDENCIAS = HERRAMIENTAS_DE_ESTILO.tendencias.length
 const N_RANGOS = HERRAMIENTAS_DE_ESTILO.rangos.length
+
+// Módulo 10. ⚠️ El 5 de la insignia va escrito: `insignias.js` importa
+// `curso.js`, que importa este archivo, así que importarlo de allí haría un
+// círculo. `prueba-curso.mjs` lo compara con `META.practica`.
+export const INSIGNIA_PRACTICA_TXT = 5
+// El ejemplo del módulo 10 se CALCULA con `costesPractica`, la misma cuenta
+// que la tarjeta: una compra de EUR/USD con 30 pips de Stop-loss y 45 de
+// Take-profit (1:1,5) que ganó, con la entrada de Twelve Data (spread 1,2
+// pips) y 0,6 pips de swap en contra por noche. Abierta un lunes y resuelta en
+// la vela del martes: dos noches. Solo es aritmética, no un resultado medido.
+export const EJEMPLO_PRACTICA = Object.freeze({
+  app: APP, par: 'EUR/USD', lado: 'COMPRA', entrada: 1.1, sl: 1.097, tp: 1.1045,
+  estado: 'ganada', r: 1.5, fuente: 'twelve', spread: 1.2, swap: -0.6, swap3: 3, riesgoUsd: 10,
+  creado: Date.parse('2026-11-16T10:00:00Z'),
+  velaResuelta: APP === 'swing' ? '2026-11-17' : '2026-11-17 23:00:00',
+})
+const C10 = costesPractica(EJEMPLO_PRACTICA)
+const r2 = (x) => fmt(Math.abs(x).toFixed(2))
+const MARGEN_5 = margen(INSIGNIA_PRACTICA_TXT)
+const REVISA = APP === 'swing'
+  ? 'La revisa cada 15 minutos con las velas diarias que publica el barrido de esta app, que se actualiza dos veces al día: una operación puede tardar unas horas en aparecer resuelta aunque ya haya tocado el nivel.'
+  : 'La revisa cada 15 minutos con las velas de una hora que publica el barrido de esta app, que se actualiza cada hora.'
 
 export const MODULOS = Object.freeze([
   Object.freeze({
@@ -156,12 +179,18 @@ export const MODULOS = Object.freeze([
     desc: 'Armar una tarjeta en el Analizador con la dirección que eliges tú, revisarla antes de decidir, y guardar tu forma de analizar en plantillas.',
     lecciones: Object.freeze(['m9-1', 'm9-2', 'm9-3']),
   }),
+  Object.freeze({
+    id: 'm10',
+    n: 10,
+    titulo: 'Practicar sin dinero',
+    desc: 'Crear una operación de práctica desde el Analizador, leer su resultado en R con el spread y el swap descontados, y saber qué demuestra y qué no.',
+    lecciones: Object.freeze(['m10-1', 'm10-2', 'm10-3']),
+  }),
 ])
 
 // Los que todavía no están escritos. Se enseñan para que se vea el camino,
 // marcados «próximamente», y no se pueden abrir.
 export const PROXIMOS = Object.freeze([
-  { n: 10, titulo: 'Practicar sin dinero' },
   { n: 11, titulo: 'Un número que significa algo' },
   { n: 12, titulo: 'Medir tus propios números' },
 ])
@@ -1636,6 +1665,168 @@ export const LECCIONES = Object.freeze({
         opciones: ['Porque así se acierta más', 'Porque así tus resultados hablan de una sola forma de operar y se pueden comparar', 'Porque lo pide el bróker'],
         correcta: 1,
         porque: 'No hace ganar: hace que tus números signifiquen algo.',
+      },
+    ],
+  },
+
+  'm10-1': {
+    titulo: 'Crear una operación de práctica',
+    objetivo: 'Mandar una tarjeta del Analizador al modo práctica y saber cómo decide la app si ganó o perdió.',
+    explicacion: [
+      'El modo práctica es operar sin dinero. Armas la tarjeta en el Analizador como siempre —el par, tu dirección, el método del Stop-loss— y en vez de abrirla en tu bróker pulsas «Practicar esta operación (sin dinero)».',
+      `Desde ese momento la app la sigue sola con los precios reales. ${REVISA}`,
+      'Cómo decide: solo cuentan las velas que EMPIEZAN después de crear la operación, para que nadie pueda practicar con un precio que ya sabe adónde fue. Si una misma vela toca el Stop-loss y el Take-profit, cuenta como perdida: la vela no dice cuál pasó primero y se elige el peor caso.',
+      `Puedes tener hasta ${MAX_ABIERTAS} abiertas a la vez. Una abierta se puede borrar; una resuelta no, ni ganada ni perdida: si se pudieran borrar las perdidas, el acierto de la práctica sería inventado.`,
+    ],
+    ejemplo: [
+      'Armas una compra de EUR/USD y pulsas «Practicar esta operación (sin dinero)». En el Diario, en «Modo práctica», aparece como abierta con su entrada, su Stop-loss y su Take-profit, y dice «esperando».',
+      'Con «Ver la gráfica» ves las mismas velas con las que la app decide, y encima lo que tenías en el Analizador al crearla.',
+      'Cuando el precio toca uno de los dos niveles, pasa sola a «Resueltas» como ganada o perdida. Tú no haces nada.',
+    ],
+    formula: {
+      texto: 'tarjeta del Analizador → «Practicar esta operación (sin dinero)» → la app la sigue sola → ganada o perdida',
+      conNumeros: `Hasta ${MAX_ABIERTAS} abiertas. Solo cuentan las velas que empiezan después de crearla; si una vela toca los dos niveles, cuenta como perdida.`,
+    },
+    noDice: [
+      'Que una operación de práctica gane no quiere decir que la misma operación hubiera ganado con dinero: con dinero el precio de entrada puede salir peor.',
+      'La práctica no es una señal: la dirección la eliges tú, como en el Analizador.',
+      'Que la app la siga sola no quiere decir que la operación sea buena: dice qué pasó, no si había que hacerla.',
+    ],
+    video: {
+      archivo: 'm10-1',
+      desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se arma una compra, se pulsa «Practicar esta operación (sin dinero)» y se va al Diario: la operación sale en «Modo práctica» como abierta, con sus niveles, y se abre su gráfica.',
+    },
+    hazlo: {
+      tab: 'analizar',
+      boton: 'Ir al Analizador',
+      texto: 'Arma una tarjeta con la dirección que tú elijas y pulsa «Practicar esta operación (sin dinero)». Después búscala en el Diario, en «Modo práctica».',
+    },
+    preguntas: [
+      {
+        p: '¿Desde dónde se crea una operación de práctica?',
+        opciones: ['Desde el Barrido', 'Desde la tarjeta del Analizador, con «Practicar esta operación (sin dinero)»', 'Desde el bróker'],
+        correcta: 1,
+        porque: 'Sale de la misma tarjeta, para que los niveles se calculen en un solo sitio.',
+      },
+      {
+        p: 'Una misma vela toca el Stop-loss y el Take-profit. ¿Cómo cuenta?',
+        opciones: ['Como ganada', 'Como perdida, porque la vela no dice cuál pasó primero', 'No cuenta'],
+        correcta: 1,
+        porque: 'Se elige el peor caso: un número que se equivoca a tu favor no sirve para decidir.',
+      },
+      {
+        p: '¿Se puede borrar una operación de práctica que ya perdió?',
+        opciones: ['Sí, cuando quieras', 'No: solo se borran las abiertas, para que el acierto no mienta', 'Solo el primer día'],
+        correcta: 1,
+        porque: 'Si se pudieran borrar las perdidas, el número de la práctica sería inventado.',
+      },
+    ],
+  },
+
+  'm10-2': {
+    titulo: 'El resultado en R, con lo que cuesta de verdad',
+    objetivo: 'Leer el resultado de una operación de práctica en R, separar lo bruto de lo neto, y saber de dónde sale el dinero que enseña.',
+    explicacion: [
+      'El resultado de la práctica no va en pips ni en dólares: va en R. 1 R es lo que arriesgabas. Perder es siempre −1 R; ganar es lo que daba tu Take-profit: con un R/B de 1:1,5, ganar son +1,5 R.',
+      'Así se pueden comparar operaciones con Stop-loss distintos: perder 30 pips con un Stop-loss de 30 y perder 120 con uno de 120 son las dos −1 R.',
+      'Lo bruto es lo que dicen los niveles. Lo neto le resta lo que cuesta operar: el spread (si la entrada fue con el precio de Twelve Data; con el de MT5 ya va dentro) y el swap de cada noche que la operación siguió abierta, con el corte a las 22:00 UTC de lunes a viernes y el triple un día de la semana.',
+      'Si guardaste un perfil de riesgo, la tarjeta pasa lo neto a dinero: cada operación multiplica su R neto por lo que ibas a arriesgar en ella. Lo que no se sabe —una operación sin spread o sin swap guardado— dice «sin dato», nunca un número inventado.',
+    ],
+    ejemplo: [
+      `Una compra de EUR/USD con 30 pips de Stop-loss y 45 de Take-profit gana: bruto +${r2(C10.rBruto)} R.`,
+      `El spread era de 1,2 pips sobre un Stop-loss de 30: se lleva ${r2(C10.spreadR)} R. Estuvo abierta ${C10.noches} noches con 0,6 pips de swap en contra cada una: otros ${r2(C10.swapR)} R.`,
+      `Neto: +${r2(C10.rNeto)} R. Si ibas a arriesgar 10 dólares, son +${r2(C10.usdNeto)} dólares.`,
+    ],
+    formula: {
+      texto: 'R neto = R bruto − spread (en R) + swap (en R)        dinero = R neto × lo que arriesgabas',
+      conNumeros: `+${r2(C10.rBruto)} − ${r2(C10.spreadR)} − ${r2(C10.swapR)} = +${r2(C10.rNeto)} R  →  ×10 dólares = +${r2(C10.usdNeto)} dólares`,
+    },
+    noDice: [
+      'El spread y el swap que se descuentan son los de una cuenta real del desarrollador de la app, no los de tu bróker. Los tuyos pueden ser distintos.',
+      'El dinero que enseña no es dinero que hayas ganado o perdido: es lo que habría sido con lo que ibas a arriesgar.',
+      'Ni el R ni el neto dicen si la siguiente operación va a ganar.',
+    ],
+    video: {
+      archivo: 'm10-2',
+      desc: 'Video sin voz: el «Modo práctica» de un usuario de ejemplo con operaciones ya resueltas (precios inventados). Se lee el resultado en R, el desglose de una ganada —bruto, spread, swap y neto— y el resultado en dinero.',
+    },
+    hazlo: {
+      tab: 'diario',
+      boton: 'Ir al Diario',
+      texto: 'Abre «Modo práctica» y, en una operación resuelta, lee su línea de bruto, spread, swap y neto.',
+    },
+    preguntas: [
+      {
+        p: 'Una operación de práctica perdió. ¿Cuánto es en R?',
+        opciones: ['Depende de los pips', 'Siempre −1 R', 'Cero'],
+        correcta: 1,
+        porque: '1 R es lo que arriesgabas, y perder es perder eso.',
+      },
+      {
+        p: 'La entrada fue con el precio de MT5. ¿Se descuenta el spread aparte?',
+        opciones: ['Sí', 'No: con el precio de MT5 el spread ya va dentro de la entrada', 'Solo de noche'],
+        correcta: 1,
+        porque: 'Con MT5 la entrada es el ASK al comprar o el BID al vender, así que el spread ya está pagado.',
+      },
+      {
+        p: 'Una operación no guardó su swap. ¿Qué enseña la tarjeta?',
+        opciones: ['Un swap de cero', '«sin dato»', 'Un swap medio'],
+        correcta: 1,
+        porque: 'Lo que no se sabe no se inventa.',
+      },
+    ],
+  },
+
+  'm10-3': {
+    titulo: 'Para qué sirve practicar, y lo que no demuestra',
+    objetivo: 'Usar la práctica para probar una forma de operar, y saber cuándo su número empieza a decir algo.',
+    explicacion: [
+      'La práctica sirve para probar una forma de operar antes de ponerle dinero, que es lo que hacen los traders con experiencia con cualquier idea nueva. Funciona mejor si practicas siempre con la misma plantilla del Analizador: así el resultado habla de una sola forma de operar.',
+      `Arriba, la tarjeta enseña tu acierto con su ±, igual que el Diario. Con pocas operaciones ese ± es enorme: con ${INSIGNIA_PRACTICA_TXT} resueltas es de ±${MARGEN_5} puntos. Por eso un 80 % de 5 no se distingue de un 50 %.`,
+      `La insignia «Practicas sin dinero» se consigue con ${INSIGNIA_PRACTICA_TXT} operaciones resueltas, ganadas o perdidas igual: premia el hábito de probar antes, no el de ganar.`,
+      '«Descargar mis resultados (tabla)» baja todas tus operaciones de práctica —también las abiertas, las caducadas y las que no valieron— para que las mires en una hoja de cálculo. Las celdas vacías son datos que no se saben, no ceros.',
+    ],
+    ejemplo: [
+      `Un usuario de ejemplo lleva ${INSIGNIA_PRACTICA_TXT} operaciones resueltas: 3 ganadas y 2 perdidas, 60 %. Con el ±${MARGEN_5} al lado, ese 60 % puede ser cualquier cosa entre un ${Math.max(0, 60 - MARGEN_5)} % y un ${Math.min(100, 60 + MARGEN_5)} %: todavía no dice nada.`,
+      'Su insignia «Practicas sin dinero» ya está conseguida: le da igual que haya ganado o perdido.',
+      'Si quiere saber si su forma de operar funciona, tiene que seguir practicando con la misma plantilla hasta que el ± sea pequeño. Eso es el módulo siguiente.',
+    ],
+    formula: {
+      texto: 'acierto ± margen · el margen baja con más operaciones',
+      conNumeros: `Con ${INSIGNIA_PRACTICA_TXT} operaciones, ±${MARGEN_5} puntos.`,
+    },
+    noDice: [
+      'Practicar sin dinero no es lo mismo que operar con dinero: con dinero el precio de entrada puede salir peor, el spread de tu bróker puede ser otro, y decidir con tu dinero en juego se siente distinto.',
+      'Que la práctica salga bien no quiere decir que tu forma de operar funcione: con pocas operaciones no se distingue de la suerte.',
+      'La insignia no dice que operes bien: dice que pruebas antes.',
+    ],
+    video: {
+      archivo: 'm10-3',
+      desc: 'Video sin voz: el «Modo práctica» de un usuario de ejemplo con cinco operaciones resueltas (precios inventados). Se lee el acierto con su ±, se ve la insignia «Practicas sin dinero» conseguida y el botón para descargar la tabla.',
+    },
+    hazlo: {
+      tab: 'diario',
+      boton: 'Ir al Diario',
+      texto: 'Mira tu acierto de práctica con su ± y fíjate en cuántas operaciones lleva. Si vas a practicar más, hazlo siempre con la misma plantilla.',
+    },
+    preguntas: [
+      {
+        p: `Llevas ${INSIGNIA_PRACTICA_TXT} operaciones de práctica y 4 ganadas: 80 %. ¿Qué dice eso?`,
+        opciones: ['Que tu forma de operar funciona', `Casi nada: con ${INSIGNIA_PRACTICA_TXT} el ± es de ${MARGEN_5} puntos`, 'Que ya puedes operar con dinero'],
+        correcta: 1,
+        porque: 'Con tan pocas operaciones, un 80 % y un 50 % no se distinguen.',
+      },
+      {
+        p: '¿Qué premia la insignia «Practicas sin dinero»?',
+        opciones: ['Ganar en la práctica', 'Probar antes: cuenta las resueltas, ganadas o perdidas igual', 'Operar mucho'],
+        correcta: 1,
+        porque: 'Ninguna insignia premia ganar.',
+      },
+      {
+        p: '¿Por qué conviene practicar siempre con la misma plantilla?',
+        opciones: ['Porque así se gana más', 'Porque así el resultado habla de una sola forma de operar', 'Porque lo pide la app'],
+        correcta: 1,
+        porque: 'Si cada vez miras cosas distintas, el resultado mezcla muchas formas de operar.',
       },
     ],
   },

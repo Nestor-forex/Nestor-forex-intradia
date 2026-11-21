@@ -183,6 +183,29 @@ ok(pipUSD('EUR/USD', {}) === 10 && LECCIONES['m1-2'].ejemplo.some((p) => p.inclu
   const dob = readFileSync(new URL('./videos/dobles.js', import.meta.url), 'utf8')
   ok(/'chequeo'/.test(dob) && /export function usePlantillas/.test(dob) && /export function useEstilo/.test(dob), 'el banco de grabación tiene el diario de chequeo y guarda plantillas y estilo en memoria')
 }
+{
+  // Módulo 10: el modo práctica. Los números salen de `practica.js` y el
+  // ejemplo de dinero se calcula con `costesPractica`, la cuenta de la tarjeta.
+  const PR = await import('../src/lib/practica.js')
+  const { META } = await import('../src/lib/insignias.js')
+  const { margen } = await import('../src/lib/diagnostico.js')
+  const ES = await import('../src/lib/curso/es.js')
+  const tEs = (await import('../src/lib/i18n/textos/es.js')).default
+  const coma2 = (x) => Math.abs(x).toFixed(2).replace('.', ',')
+  const m101 = JSON.stringify(LECCIONES['m10-1'])
+  const m102 = JSON.stringify(LECCIONES['m10-2'])
+  const m103 = JSON.stringify(LECCIONES['m10-3'])
+  ok(m101.includes(`hasta ${PR.MAX_ABIERTAS} abiertas`), 'el módulo 10 dice el tope de abiertas de `practica.js`')
+  ok(m101.includes(`«${tEs.an.practicar}»`), 'la lección nombra el botón como sale en el Analizador')
+  ok(ES.INSIGNIA_PRACTICA_TXT === META.practica, 'las operaciones de la insignia son las de `insignias.js`')
+  ok(m103.includes(`±${margen(META.practica)} puntos`), 'el ± del módulo 10 sale de `margen()`')
+  const c = PR.costesPractica(ES.EJEMPLO_PRACTICA)
+  ok(c && c.noches === 2 && !c.sinSpread && !c.sinSwap, 'el ejemplo de la práctica tiene spread, swap y dos noches en esta app')
+  ok([c.rBruto, c.spreadR, c.swapR, c.rNeto, c.usdNeto].every((x) => m102.includes(coma2(x))), 'el ejemplo de dinero sale de `costesPractica`')
+  ok(m102.includes(`${c.noches} noches`), 'el ejemplo dice las noches que cuenta `nochesDeSwap`')
+  const dob = readFileSync(new URL('./videos/dobles.js', import.meta.url), 'utf8')
+  ok(/'ejemplo' \? practicaEjemplo\(\)/.test(dob), 'el banco de grabación tiene operaciones de práctica de ejemplo')
+}
 
 // Los videos: cada uno tiene su descripción, y CADA app guarda los suyos
 // (2026-11-20): el archivo tiene que existir en este repositorio y pesar poco.

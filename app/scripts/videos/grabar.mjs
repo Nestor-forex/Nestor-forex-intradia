@@ -1151,6 +1151,206 @@ const ESCENAS = {
       await espera(p, 2.8)
     },
   },
+
+  'm10-1': {
+    desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se arma una compra, se pulsa «Practicar esta operación (sin dinero)» y se va al Diario: la operación sale en «Modo práctica» como abierta, con sus niveles, y se abre su gráfica.',
+    async correr(p, r) {
+      await analizador(p, r)
+      const entrada = exigir(await fila(p, es.an.entrada), 'la entrada de la tarjeta')
+      const stop = exigir(await fila(p, es.an.stop), 'el Stop-loss de la tarjeta')
+      const tp = exigir(await fila(p, es.an.objetivo), 'el Take-profit de la tarjeta')
+      await r(`Un usuario de EJEMPLO arma una compra de EUR/USD en el Analizador, con los datos reales de ese día: entrada ${entrada}, Stop-loss ${stop}, Take-profit ${tp}.`)
+      await espera(p, 5.6)
+      const prac = p.locator('main button', { hasText: es.an.practicar }).first()
+      exigir(await prac.count(), 'el botón de practicar')
+      await llevar(p, prac, 300)
+      await marcar(p, prac)
+      await r(`En vez de abrirla en su bróker, pulsa «${es.an.practicar}».`)
+      await espera(p, 4)
+      // Mientras el precio se conecta, el botón espera: no se guarda con un precio que va a cambiar.
+      await p.waitForFunction((txt) => { const b = [...document.querySelectorAll('main button')].find((x) => x.textContent.includes(txt)); return b && !b.disabled }, es.an.practicar, { timeout: 20000 })
+      await prac.click()
+      await espera(p, 1.2)
+      await desmarcar(p)
+      const ok = p.getByText(es.an.practicaOk, { exact: false }).first()
+      exigir(await ok.count(), 'el mensaje de práctica guardada')
+      await marcar(p, ok.locator('xpath=..'))
+      await r(`La tarjeta lo confirma: «${es.an.practicaOk}»`)
+      await espera(p, 4.6)
+      await desmarcar(p)
+      await p.locator('main button', { hasText: es.an.practicaVer }).first().click()
+      await espera(p, 1.4)
+      await abrirTarjeta(p, es.prac.titulo)
+      const aviso = p.getByText(es.prac.aviso, { exact: true }).first()
+      await llevar(p, aviso, 160)
+      await marcar(p, aviso)
+      await r('En el Diario, «Modo práctica». Primero el aviso: esto no es dinero real ni una señal, y el resultado no se puede cambiar a mano.')
+      await espera(p, 5.4)
+      await desmarcar(p)
+      const filaAb = await filaPractica(p, 'EUR/USD', es.prac.esperando)
+      await llevar(p, filaAb.loc, 200)
+      await marcar(p, filaAb.loc)
+      await r(`Sale en «Abiertas» con sus niveles (${filaAb.niveles}) y dice «${es.prac.esperando}». Desde ahora la app la sigue sola con los precios reales.`)
+      await espera(p, 6)
+      await desmarcar(p)
+      const ver = filaAb.loc.locator('button', { hasText: es.prac.grafVer }).first()
+      await ver.click()
+      await espera(p, 1.4)
+      const sinVelas = await p.getByText(es.prac.grafSinDatos, { exact: true }).count()
+      const graf = filaAb.loc.locator('svg').first()
+      if (!sinVelas && (await graf.count())) {
+        await llevar(p, graf, 160)
+        await marcar(p, graf)
+        await r('«Ver la gráfica»: las mismas velas con las que la app decide si ganó o perdió, con la entrada, el Stop-loss y el Take-profit encima.')
+      } else {
+        await r('La gráfica sale en cuanto el barrido publique las velas de nuevo.')
+      }
+      await espera(p, 5.6)
+      await desmarcar(p)
+      await r(APP === 'swing'
+        ? 'La revisa cada 15 minutos con las velas diarias del barrido, que se publica dos veces al día. Solo cuentan las velas que empiezan después de crearla.'
+        : 'La revisa cada 15 minutos con las velas de una hora del barrido. Solo cuentan las velas que empiezan después de crearla.')
+      await espera(p, 6)
+      await r('Si una misma vela toca el Stop-loss y el Take-profit, cuenta como perdida: la vela no dice cuál pasó primero y se elige el peor caso.')
+      await espera(p, 5.6)
+      const borrar = filaAb.loc.locator(`button[aria-label="${es.diario.borrar}"]`).first()
+      await llevar(p, filaAb.loc, 200)
+      await marcar(p, borrar)
+      await r('Mientras está abierta se puede borrar. Una vez resuelta, ganada o perdida, ya no: así el acierto de la práctica no miente.')
+      await espera(p, 5.6)
+      await desmarcar(p)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
+  'm10-2': {
+    desc: 'Video sin voz: el «Modo práctica» de un usuario de ejemplo con operaciones ya resueltas (precios inventados). Se lee el resultado en R, el desglose de una ganada —bruto, spread, swap y neto— y el resultado en dinero.',
+    consulta: '?practica=ejemplo',
+    async correr(p, r) {
+      await irA(p, 'Diario')
+      await llevar(p, await abrirTarjeta(p, es.prac.titulo), 90)
+      await r('El «Modo práctica» de un usuario de EJEMPLO, con operaciones ya resueltas. Los precios son INVENTADOS: no son los del mercado de hoy.')
+      await espera(p, 5.4)
+      await r('El resultado no va en pips ni en dólares: va en R. 1 R es lo que arriesgaba. Perder es −1 R; ganar, lo que daba su Take-profit.')
+      await espera(p, 6)
+      const gan = await filaPractica(p, 'EUR/USD', es.prac.est_ganada)
+      await llevar(p, gan.loc, 160)
+      await marcar(p, gan.loc)
+      const d = exigir(gan.desglose, 'el desglose de la operación ganada')
+      await r(`Esta compra de EUR/USD ganó. Bruto ${d.bruto}: lo que dicen sus niveles.`)
+      await espera(p, 4.8)
+      await r(`El spread se lleva ${d.spread} y el swap de ${d.noches} noches, ${d.swap}. Neto: ${d.neto}.`)
+      await espera(p, 6)
+      await desmarcar(p)
+      const per = await filaPractica(p, 'GBP/USD', es.prac.est_perdida)
+      await llevar(p, per.loc, 160)
+      await marcar(p, per.loc)
+      const dp = exigir(per.desglose, 'el desglose de la perdida')
+      await r(`Esta perdió: bruto ${dp.bruto}. Su entrada fue con el precio de MT5, así que el spread ya iba dentro: «${es.prac.cIncluido}».`)
+      await espera(p, 6.2)
+      await desmarcar(p)
+      const sin = await filaPractica(p, 'USD/JPY', es.prac.est_ganada)
+      await llevar(p, sin.loc, 160)
+      await marcar(p, sin.loc)
+      exigir(sin.texto.includes(es.prac.cSinDato), 'el «sin dato» del swap')
+      await r(`Ésta no guardó su swap: la tarjeta dice «${es.prac.cSinDato}», nunca un número inventado.`)
+      await espera(p, 5)
+      await desmarcar(p)
+      const resultado = exigir(await valorTras(p, es.prac.sumaL), 'el resultado en R')
+      const neto = exigir(await valorTras(p, es.prac.netoL), 'el neto en R')
+      const dinero = exigir(await valorTras(p, es.prac.dineroL), 'el resultado en dinero')
+      const cab = p.getByText(es.prac.netoL, { exact: false }).first().locator('xpath=../..')
+      await llevar(p, p.getByText(es.prac.aciertoL, { exact: false }).first(), 200)
+      await marcar(p, cab)
+      await r(`Arriba, la suma: ${resultado} bruto y ${neto} neto, con el spread y el swap descontados.`)
+      await espera(p, 5.4)
+      await desmarcar(p)
+      await marcar(p, p.getByText(es.prac.dineroL, { exact: false }).first().locator('xpath=..'))
+      await r(`En dinero, con lo que iba a arriesgar en cada una: ${dinero}. No es dinero ganado: es lo que habría sido.`)
+      await espera(p, 5.6)
+      await desmarcar(p)
+      await r('El spread y el swap son los de una cuenta real del desarrollador de la app, no los del bróker de cada uno.')
+      await espera(p, 5)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
+  'm10-3': {
+    desc: 'Video sin voz: el «Modo práctica» de un usuario de ejemplo con cinco operaciones resueltas (precios inventados). Se lee el acierto con su ±, se ve la insignia «Practicas sin dinero» conseguida y el botón para descargar la tabla.',
+    consulta: '?practica=ejemplo',
+    async correr(p, r) {
+      await irA(p, 'Diario')
+      await llevar(p, await abrirTarjeta(p, es.prac.titulo), 90)
+      const acierto = exigir(await valorTras(p, es.prac.aciertoL), 'el acierto de la práctica')
+      const ganadas = exigir(await valorTras(p, es.prac.opsL), 'las ganadas')
+      const n = Number(ganadas.split('/')[1])
+      exigir(Number.isFinite(n) && n > 0, 'cuántas resueltas')
+      const caja = p.getByText(es.prac.aciertoL, { exact: false }).first().locator('xpath=..')
+      await llevar(p, caja, 220)
+      await marcar(p, caja)
+      await r(`Un usuario de EJEMPLO lleva ${n} operaciones de práctica resueltas (precios inventados). Ganadas: ${ganadas}. Acierto: ${acierto}.`)
+      await espera(p, 6)
+      await r(`El ±${margen(n)} es cuánto puede moverse ese acierto solo por casualidad. Con ${n} operaciones es enorme: todavía no dice nada.`)
+      await espera(p, 6)
+      await desmarcar(p)
+      const cad = await filaPractica(p, 'NZD/USD', es.prac.est_caducada)
+      await llevar(p, cad.loc, 180)
+      await marcar(p, cad.loc)
+      await r(`Una «${es.prac.est_caducada}» no cuenta: la app no pudo mirarla a tiempo y esas velas ya no se ven. Ni ganada ni perdida.`)
+      await espera(p, 5.6)
+      await desmarcar(p)
+      const exp = p.locator('main button', { hasText: es.exp.descargarPractica }).first()
+      await llevar(p, exp, 300)
+      await marcar(p, exp)
+      await r(`«${es.exp.descargarPractica}» baja todas, también la abierta y la caducada, para mirarlas en una hoja de cálculo.`)
+      await espera(p, 5.6)
+      await desmarcar(p)
+      await abrirTarjeta(p, es.insig.titulo)
+      const ins = p.getByText(es.insig.practicaT, { exact: true }).first().locator('xpath=../..')
+      exigir(await ins.count(), 'la insignia de la práctica')
+      await llevar(p, ins, 220)
+      await marcar(p, ins)
+      await r(`En «${es.insig.titulo}», «${es.insig.practicaT}» ya está conseguida: cuenta las resueltas, ganadas o perdidas igual. Premia probar antes, no ganar.`)
+      await espera(p, 6.2)
+      await desmarcar(p)
+      await r('Practicar sin dinero no es operar con dinero: con dinero la entrada puede salir peor, y se siente distinto. Sirve para probar una forma de operar antes.')
+      await espera(p, 6.2)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+}
+
+// Módulo 10. Una fila del «Modo práctica» por su par y un texto que lleve
+// (su estado), con sus niveles y su desglose leídos de la pantalla.
+async function filaPractica(p, par, estado) {
+  const res = await p.evaluate(([par, estado]) => {
+    const filas = [...document.querySelectorAll('main div')].filter((d) => d.style.borderTop && d.textContent.includes(par) && d.textContent.includes(estado))
+    const f = filas.find((d) => ![...d.querySelectorAll('div')].some((x) => filas.includes(x)))
+    if (!f) return null
+    document.querySelectorAll('[data-filaprac]').forEach((x) => delete x.dataset.filaprac)
+    f.dataset.filaprac = '1'
+    const niv = [...f.querySelectorAll('span.mono')].find((x) => x.textContent.includes('SL'))?.textContent.trim() || null
+    const des = [...f.querySelectorAll('div')].find((x) => x.textContent.trim().startsWith('Bruto'))?.innerText.replace(/\s+/g, ' ') || null
+    return { niveles: niv, desglose: des, texto: f.innerText }
+  }, [par, estado])
+  exigir(res, `la fila de práctica ${par} (${estado})`)
+  let desglose = null
+  if (res.desglose) {
+    const m = res.desglose.match(/Bruto ([^·]+R).*?Spread ([^·]+?)(?: \(.*?\))? · Swap ([^·(]+?)(?: \(noches: (\d+)\))? · Neto ([^·]+R)/)
+    if (m) desglose = { bruto: m[1].trim(), spread: m[2].trim(), swap: m[3].trim(), noches: m[4] ? Number(m[4]) : null, neto: m[5].trim() }
+  }
+  return { loc: p.locator('[data-filaprac]'), niveles: exigir(res.niveles, `los niveles de ${par}`), desglose, texto: res.texto }
+}
+
+// El valor que va detrás de un rótulo en la misma línea: «Acierto 60% ±44».
+async function valorTras(p, rotulo) {
+  return p.evaluate((e) => {
+    const s = [...document.querySelectorAll('main span, main div')].find((x) => x.firstChild?.nodeType === 3 && x.firstChild.textContent.trim() === e && x.querySelector(':scope > span.mono'))
+    return s?.querySelector(':scope > span.mono')?.textContent.trim() || null
+  }, rotulo)
 }
 
 // Módulo 7: el calendario se graba con la hora de la mañana del día de los

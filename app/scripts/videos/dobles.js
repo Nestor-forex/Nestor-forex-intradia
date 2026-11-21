@@ -99,11 +99,41 @@ export function useTrades() {
   return { trades, cargando: false, guardar: async () => {}, borrar: async () => {}, cerrar: async () => {} }
 }
 
+// `?practica=ejemplo`: operaciones de práctica de MUESTRA, ya resueltas, para
+// los videos del módulo 10 (leer el resultado en R, el spread y el swap, y el
+// ± de pocas operaciones). Cinco resueltas (3 ganadas, 2 perdidas), una
+// caducada y una abierta. Los precios son INVENTADOS y el video lo dice: no
+// cuadran con el mercado del día de la grabación, y por eso esos videos no
+// abren su gráfica.
+function practicaEjemplo() {
+  const ahora = Date.now()
+  const dia = 86400e3
+  // La vela en que se resolvió, en el formato de cada app (UTC): el día en
+  // Swing, la hora en Intradía.
+  const vela = (ms) => {
+    const iso = new Date(ms).toISOString()
+    return APP === 'swing' ? iso.slice(0, 10) : `${iso.slice(0, 13).replace('T', ' ')}:00:00`
+  }
+  const op = (id, diasAtras, duracionDias, x) => {
+    const creado = ahora - diasAtras * dia
+    return { id, app: APP, metodo: 'app', creado: { toMillis: () => creado }, vela: vela(creado), velaResuelta: x.estado === 'ganada' || x.estado === 'perdida' ? vela(creado + duracionDias * dia) : undefined, ...x }
+  }
+  return [
+    op('e7', 0.2, 0, { par: 'USD/CAD', lado: 'COMPRA', entrada: 1.38, sl: 1.376, tp: 1.386, fuente: 'twelve', spread: 1.6 }),
+    op('e6', 3, 0, { par: 'NZD/USD', lado: 'VENTA', entrada: 0.592, sl: 0.5955, tp: 0.5865, estado: 'caducada', fuente: 'twelve', spread: 2.1 }),
+    op('e5', 5, 1, { par: 'EUR/CHF', lado: 'COMPRA', entrada: 0.935, sl: 0.932, tp: 0.9386, estado: 'ganada', r: 1.2, fuente: 'mt5', spread: 1.8, swap: -0.4, swap3: 3, riesgoUsd: 10, lote: 0.03 }),
+    op('e4', 7, 2, { par: 'AUD/USD', lado: 'VENTA', entrada: 0.655, sl: 0.6585, tp: 0.6515, estado: 'perdida', r: -1, fuente: 'twelve', spread: 1.6, swap: -0.3, swap3: 3, riesgoUsd: 10, lote: 0.03 }),
+    op('e3', 9, 1, { par: 'USD/JPY', lado: 'COMPRA', entrada: 150, sl: 149.6, tp: 150.4, estado: 'ganada', r: 1, fuente: 'twelve', spread: 1.4, riesgoUsd: 10, lote: 0.04 }),
+    op('e2', 11, 1, { par: 'GBP/USD', lado: 'VENTA', entrada: 1.27, sl: 1.274, tp: 1.264, estado: 'perdida', r: -1, fuente: 'mt5', spread: 1.5, swap: 0.2, swap3: 3, riesgoUsd: 10, lote: 0.03 }),
+    op('e1', 13, 2, { par: 'EUR/USD', lado: 'COMPRA', entrada: 1.1, sl: 1.097, tp: 1.1045, estado: 'ganada', r: 1.5, fuente: 'twelve', spread: 1.2, swap: -0.6, swap3: 3, riesgoUsd: 10, lote: 0.03 }),
+  ]
+}
+
 // La práctica guarda en memoria lo que se crea durante la grabación, para que
 // el video enseñe la operación recién creada con los niveles REALES que puso
 // la tarjeta del Analizador. Nada se escribe en Firestore.
 export function usePractica() {
-  const [ops, setOps] = useState([])
+  const [ops, setOps] = useState(() => (params().get('practica') === 'ejemplo' ? practicaEjemplo() : []))
   const crear = async (op) => {
     const ahora = Date.now()
     setOps((x) => [{ ...op, id: `p${x.length + 1}`, creado: { toMillis: () => ahora } }, ...x])
