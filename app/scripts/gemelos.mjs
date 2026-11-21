@@ -329,6 +329,13 @@ export const GEMELOS = [
   'src/lib/useCurso.js',
   'src/components/Curso.jsx',
   'scripts/prueba-curso.mjs',
+  // La página web del curso (curso.html): en Swing desde el 2026-11-18, en
+  // Intradía desde el 2026-11-21. Misma puerta; cada app enlaza SU app y
+  // enseña SUS videos y SUS capturas de vista previa (`public/curso/vista-*`).
+  'curso.html',
+  'src/web/main-curso.jsx',
+  'src/web/CursoWeb.jsx',
+  'scripts/prueba-curso-web.mjs',
   // Los videos del curso (2026-11-20): la lista de herramientas en video y la
   // herramienta de grabación son iguales; cada app graba y guarda SUS videos.
   'src/lib/curso/herramientas.js',

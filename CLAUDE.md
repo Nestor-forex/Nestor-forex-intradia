@@ -3032,3 +3032,12 @@ Cambio emparejado con Swing (misma rama). El detalle completo está en el
   (las dos aperturas son del mismo instante), al revés que el máximo y el mínimo.
 - Una entrada de práctica con el precio de MT5 cae en la vela de la HORA EN
   CURSO (`velaDeEntradaMt5`), con el formato del barrido.
+
+## La página web del curso, también aquí (2026-11-21)
+
+`app/curso.html` + `src/web/` (gemelos de Swing): la misma app con otra puerta,
+en `nestor-forex.github.io/Nestor-forex-intradia/curso.html`. Sin suscripción
+activa solo se ve la vista previa (temario y tres capturas de lecciones hechas
+con ESTA app, en `public/curso/vista-*.png`); con la ficha aprobada, el curso
+entero con los videos de Intradía. El nombre de la app sale bajo el título.
+⚠️ Es una puerta, no una caja fuerte: los repositorios son públicos.
