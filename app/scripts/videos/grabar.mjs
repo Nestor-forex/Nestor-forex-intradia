@@ -28,6 +28,7 @@ import { ESCENAS_HERRAMIENTAS, analizador, verHerramienta } from './escenas-herr
 import es from '../../src/lib/i18n/textos/es.js'
 import { OPS_PARA_CREER } from '../../src/lib/sombra.js'
 import { margen } from '../../src/lib/diagnostico.js'
+import { aciertoDeEquilibrio } from '../../src/lib/laboratorio.js'
 import * as MC from '../../src/lib/marketCalc.js'
 import { PERIODOS_MEDIAS, PERIODO_ATR, PERIODO_RSI, RSI_MAX, UMBRAL_FUERZA, VENTANAS_FUERZA } from '../../src/lib/marketCalc.js'
 import { APP } from '../../src/lib/identidad.js'
@@ -1321,6 +1322,182 @@ const ESCENAS = {
       await espera(p, 2.8)
     },
   },
+  'm11-1': {
+    desc: 'Video sin voz: el Analizador con los datos reales de ese día. Se lee el R/B de la tarjeta y se calcula el acierto que haría falta para no perder; después se cambia el método del Stop-loss a la vara neutra y se ve cómo cambia ese número.',
+    async correr(p, r) {
+      await analizador(p, r)
+      await r('Un acierto solo no dice si una forma de operar gana. Depende de cuánto se gana al acertar y cuánto se pierde al fallar.')
+      await espera(p, 5.4)
+      const leerRb = async () => {
+        const t = exigir(await fila(p, 'R/B'), 'el R/B de la tarjeta')
+        const m = exigir(t.replace(/\s/g, '').match(/^1:([\d.]+)$/), `un R/B legible («${t}»)`)
+        return Number(m[1])
+      }
+      const rb1 = await leerRb()
+      const f1 = await filaLoc(p, 'R/B')
+      await llevar(p, f1.rotulo, 230)
+      await marcar(p, f1.valor)
+      await r(`Esta tarjeta de EUR/USD tiene un R/B de 1:${coma(rb1)}. El acierto que haría falta para no perder: 1 ÷ (1 + ${coma(rb1)}) = ${aciertoDeEquilibrio(rb1)} %.`)
+      await espera(p, 6.4)
+      await desmarcar(p)
+      await llevar(p, p.getByText(es.an.paso3 || '3 ·', { exact: false }).first(), 20)
+      const b = await chip(p, es.an.metodo.simetrica)
+      await marcar(p, b)
+      await r(`Ahora el método «${es.an.metodo.simetrica}»: el Stop-loss y el Take-profit a la misma distancia.`)
+      await espera(p, 4.2)
+      await desmarcar(p)
+      const rb2 = await leerRb()
+      const f2 = await filaLoc(p, 'R/B')
+      await llevar(p, f2.rotulo, 230)
+      await marcar(p, f2.valor)
+      await r(`R/B 1:${coma(rb2)}. Ahora hace falta acertar más del ${aciertoDeEquilibrio(rb2)} % para no perder.`)
+      await espera(p, 5.4)
+      await desmarcar(p)
+      await r(rb1 > rb2
+        ? `Con el Take-profit más lejos (1:${coma(rb1)}) basta acertar menos, pero también se acierta menos. Ninguna de las dos es «la buena».`
+        : `Con el Take-profit más cerca (1:${coma(rb1)}) hace falta acertar más, aunque también se acierta más. Ninguna de las dos es «la buena».`)
+      await espera(p, 6.2)
+      await r('Un porcentaje de acierto solo dice algo al lado de ese número. Y antes de costes: el spread y el swap lo suben un poco.')
+      await espera(p, 5.6)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
+  'm11-2': {
+    desc: 'Video sin voz: «Tus números por grupos» de un usuario de ejemplo (operaciones de muestra) y el Historial con el registro real de ese día. Se comparan dos porcentajes con su ± para ver si se tocan, y se señala cuántas operaciones lleva un experimento de las 150.',
+    consulta: '?diario=grupos',
+    async correr(p, r) {
+      await irA(p, 'Diario')
+      await llevar(p, await abrirTarjeta(p, 'Tus números por grupos'), 90)
+      await r('«Tus números por grupos» de un usuario de EJEMPLO, con 9 operaciones de muestra.')
+      await espera(p, 4.6)
+      const dol = await filaGrupo(p, es.diag.dolar)
+      const cru = await filaGrupo(p, es.diag.cruces)
+      await llevar(p, dol.loc, 220)
+      await marcar(p, dol.loc)
+      await r(`Pares con dólar: ${dol.pct} % ±${dol.mg}, con ${dol.n} operaciones. Su rango va del ${Math.max(0, dol.pct - dol.mg)} % al ${Math.min(100, dol.pct + dol.mg)} %.`)
+      await espera(p, 6)
+      await desmarcar(p)
+      await marcar(p, cru.loc)
+      await r(`Cruces: ${cru.pct} % ±${cru.mg}, con ${cru.n} operaciones. Su rango va del ${Math.max(0, cru.pct - cru.mg)} % al ${Math.min(100, cru.pct + cru.mg)} %.`)
+      await espera(p, 6)
+      await desmarcar(p)
+      const tocan = Math.abs(dol.pct - cru.pct) <= dol.mg + cru.mg
+      await r(tocan
+        ? `Los dos rangos se tocan: con tan pocas operaciones no se puede decir que en cruces le vaya mejor ni peor.`
+        : `Los dos rangos no se tocan: ahí sí son distintos.`)
+      await espera(p, 5.4)
+      await irA(p, 'Historial')
+      const aviso = p.getByText(/Todavía NO se puede tomar como señal: lleva \d+ de las \d+/).first()
+      exigir(await aviso.count(), 'el aviso de las operaciones que lleva un experimento')
+      const txt = await aviso.innerText()
+      const m = exigir(txt.match(/lleva (\d+) de las (\d+)/), 'cuántas lleva y cuántas hacen falta')
+      await llevar(p, aviso, 220)
+      await marcar(p, aviso)
+      await r(`En el Historial, con el registro real de ese día: este experimento lleva ${m[1]} de las ${m[2]} operaciones que hacen falta para creerle.`)
+      await espera(p, 6)
+      await desmarcar(p)
+      await r(`Con ${OPS_PARA_CREER} operaciones el ± baja a ${margen(OPS_PARA_CREER)} puntos. Llegar no lo hace bueno: hace que su número se pueda creer, sea bueno o malo.`)
+      await espera(p, 6)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+
+  'm11-3': {
+    desc: 'Video sin voz: el laboratorio de la pestaña Analizar con las velas guardadas de ese día. Se lee el aviso, se prueba una regla, se cambia una condición y se prueba otra vez: el contador de pruebas sube.',
+    async correr(p, r) {
+      await irA(p, 'Analizar')
+      const lab = await abrirTarjeta(p, es.lab.titulo)
+      const aviso = p.getByText(es.lab.aviso, { exact: true }).first()
+      await llevar(p, lab, 90)
+      await marcar(p, aviso)
+      await r('El laboratorio prueba una regla sobre las velas del pasado: cómo le habría ido. Primero, el aviso.')
+      await espera(p, 5.6)
+      await r('Cuantas más variantes pruebes sobre los mismos datos, más fácil que alguna gane solo por casualidad.')
+      await espera(p, 5.6)
+      await desmarcar(p)
+      const caja = p.locator('.card', { hasText: es.lab.paso1 }).last()
+      const p1 = caja.getByText(es.lab.paso1, { exact: true }).first()
+      await llevar(p, p1, 120)
+      const compra = p1.locator('xpath=..').locator('button', { hasText: new RegExp(`^${es.lado.COMPRA}$`) }).first()
+      await compra.click()
+      await espera(p, 0.6)
+      const masRsi = caja.locator('button', { hasText: `+ ${es.lab.tipo.rsi}` }).first()
+      await marcar(p, masRsi)
+      await r('Una regla de EJEMPLO: comprar cuando el RSI baja de 30, con el Stop-loss y el Take-profit a la misma distancia.')
+      await masRsi.click()
+      await espera(p, 4.6)
+      await desmarcar(p)
+      const probar = caja.locator('button', { hasText: es.lab.probar }).first()
+      const resultado = async () => ({
+        ops: exigir(await fila(p, es.lab.ops), 'las operaciones del resultado'),
+        acierto: exigir(await fila(p, es.lab.acierto), 'el acierto del resultado'),
+        eq: exigir(await fila(p, es.lab.equilibrio), 'el acierto que hace falta'),
+        porR: exigir(await fila(p, es.lab.porR), 'el resultado por operación'),
+        pruebas: exigir((await caja.getByText(/Pruebas hechas en este aparato: \d+/).first().innerText()).match(/: (\d+)/), 'el contador')[1],
+      })
+      await llevar(p, probar, 260)
+      await marcar(p, probar)
+      await probar.click()
+      await espera(p, 1.6)
+      await desmarcar(p)
+      const a = await resultado()
+      const fa = await filaLoc(p, es.lab.acierto)
+      await llevar(p, fa.rotulo, 260)
+      await marcar(p, fa.rotulo.locator('xpath=..'))
+      await r(`Prueba ${a.pruebas}: ${a.ops} operaciones, acierto ${a.acierto}. Hace falta ${a.eq} para no perder.`)
+      await espera(p, 6)
+      await desmarcar(p)
+      const obj = caja.locator('button', { hasText: /^1 : 2$/ }).first()
+      await llevar(p, obj, 200)
+      await marcar(p, obj)
+      await r('Se cambia una sola cosa: el Take-profit a dos veces lo que se arriesga. Y se prueba otra vez.')
+      await obj.click()
+      await espera(p, 4)
+      await desmarcar(p)
+      await probar.click()
+      await espera(p, 1.6)
+      const b = await resultado()
+      const fb = await filaLoc(p, es.lab.acierto)
+      await llevar(p, fb.rotulo, 260)
+      await marcar(p, fb.rotulo.locator('xpath=..'))
+      await r(`Prueba ${b.pruebas}: ${b.ops} operaciones, acierto ${b.acierto}. Ahora hace falta ${b.eq}.`)
+      await espera(p, 6)
+      await desmarcar(p)
+      const positivo = (x) => /^\+/.test(x.porR.trim())
+      if (positivo(a) && positivo(b)) {
+        await r(`Las dos salen en positivo sobre el pasado (${a.porR} y ${b.porR} por operación). Justo ahí es cuando más cuesta no creerle.`)
+        await espera(p, 6)
+      }
+      const cont = caja.getByText(/Pruebas hechas en este aparato: \d+/).first()
+      await llevar(p, cont, 260)
+      await marcar(p, cont)
+      await r(`El contador ya va en ${b.pruebas}. Si después de veinte pruebas una sale muy bien, todavía no hay que creerle.`)
+      await espera(p, 6)
+      await desmarcar(p)
+      await r('Lo único que no tiene esa trampa es seguirla hacia adelante, con días que la regla nunca vio al elegirla.')
+      await espera(p, 5.6)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+}
+
+// Módulo 11. Una fila de «Tus números por grupos»: operaciones, acierto y ±.
+async function filaGrupo(p, etiqueta) {
+  const res = await p.evaluate((e) => {
+    const hoja = [...document.querySelectorAll('main div')].find((x) => x.children.length === 0 && x.textContent.trim() === e)
+    const f = hoja?.parentElement
+    if (!f) return null
+    document.querySelectorAll('[data-grupo]').forEach((x) => { if (x.dataset.grupo === e) delete x.dataset.grupo })
+    f.dataset.grupo = e
+    return f.innerText.replace(/\s+/g, ' ')
+  }, etiqueta)
+  exigir(res, `la fila «${etiqueta}»`)
+  const m = exigir(res.match(/(\d+) ops (\d+)% ±(\d+)/), `ops, acierto y ± en «${res}»`)
+  return { loc: p.locator(`[data-grupo="${etiqueta}"]`), n: Number(m[1]), pct: Number(m[2]), mg: Number(m[3]) }
 }
 
 // Módulo 10. Una fila del «Modo práctica» por su par y un texto que lleve
