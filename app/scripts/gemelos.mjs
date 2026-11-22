@@ -326,6 +326,11 @@ export const GEMELOS = [
   // pintan igual en las dos apps.
   'src/lib/curso.js',
   'src/lib/curso/es.js',
+  // El modo «Paso a paso» (2026-11-22): las herramientas en el orden en que se
+  // usan. Igual en las dos apps; lo que cambia lo pone cada `App.jsx`.
+  'src/lib/pasoAPaso.js',
+  'src/components/PasoAPaso.jsx',
+  'scripts/prueba-paso-a-paso.mjs',
   'src/lib/useCurso.js',
   'src/components/Curso.jsx',
   'scripts/prueba-curso.mjs',

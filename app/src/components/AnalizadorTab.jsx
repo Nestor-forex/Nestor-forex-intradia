@@ -136,7 +136,10 @@ const horaLocal = (hUTC, locale) => {
   return d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
 }
 
-export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trades = [], cal, cot = null, oro = null, correlaciones, onAnotar, onIrAlPerfil, vela = null, onPracticar, onVerPractica }) {
+// `parInicial` y `ladoInicial` (2026-11-22): los pone el modo «Paso a paso»
+// cuando la persona ya eligió par y dirección allí. Mandan sobre lo último que
+// usó; si no vienen, todo arranca como siempre.
+export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trades = [], cal, cot = null, oro = null, correlaciones, onAnotar, onIrAlPerfil, vela = null, onPracticar, onVerPractica, parInicial = null, ladoInicial = null }) {
   const { t, locale } = useIdioma()
   const tasasPub = useTasas()
   const mt5 = usePrecioMt5()
@@ -149,8 +152,8 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
 
   const ultimo = useMemo(leerUltimo, [])
   const nombres = fichas.map((f) => f.name)
-  const [par, setPar] = useState(ultimo?.par && nombres.includes(ultimo.par) ? ultimo.par : null)
-  const [lado, setLado] = useState(null)
+  const [par, setPar] = useState(parInicial && nombres.includes(parInicial) ? parInicial : ultimo?.par && nombres.includes(ultimo.par) ? ultimo.par : null)
+  const [lado, setLado] = useState(ladoInicial === 'COMPRA' || ladoInicial === 'VENTA' ? ladoInicial : null)
   const [metodo, setMetodo] = useState(METODOS.includes(ultimo?.metodo) ? ultimo.metodo : 'app')
   const [herr, setHerr] = useState(
     // Lo último que usó manda; si nunca usó el Analizador, o si cambió de

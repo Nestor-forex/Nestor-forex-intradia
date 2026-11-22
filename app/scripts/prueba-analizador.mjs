@@ -429,7 +429,9 @@ console.log('\n9. El cableado')
   const nav = leer('../src/components/BottomNav.jsx')
   comprobar('la barra de abajo tiene la pestaña', /tab: 'analizar'/.test(nav) && /nav\.analizar/.test(nav))
   const tab = sinComentarios(leer('../src/components/AnalizadorTab.jsx'))
-  comprobar('la pantalla arranca SIN dirección elegida', /useState\(null\)\s*\n\s*const \[metodo/.test(tab) || /\[lado, setLado\] = useState\(null\)/.test(tab))
+  // Sin dirección elegida, salvo que la traiga el modo «Paso a paso» (donde la
+  // eligió la persona): `ladoInicial` viene null en cualquier otro caso.
+  comprobar('la pantalla arranca SIN dirección elegida (salvo la que la persona eligió en el Paso a paso)', /\[lado, setLado\] = useState\(ladoInicial === 'COMPRA' \|\| ladoInicial === 'VENTA' \? ladoInicial : null\)/.test(tab) && /ladoInicial = null/.test(tab))
   comprobar('la pantalla usa `armarAnalisis` (no hace sus propias cuentas)', /armarAnalisis\(/.test(tab) && !/atrAbs|lo10|hi10/.test(tab))
   comprobar('la pantalla lee el freno del guardián', /estadoDelDia\(/.test(tab))
   comprobar('la pantalla decide qué ofrecer con `herramientasDisponibles`', /herramientasDisponibles\(/.test(tab))
