@@ -619,6 +619,12 @@ export default {
     abrirApp: "Open the app",
     enApp: "The same course is inside both apps, with your progress shared.",
     lecciones: "Lessons:",
+    gratisTitulo: "Free lessons",
+    gratisDesc: "Without a subscription you can see module 0 (what the app is and is not) and module 2 (managing risk) in full, plus the first lesson of every other module. Your progress is not saved here.",
+    gratisModulo: "full and free",
+    unaGratis: "1 free lesson",
+    muestraFin: "This lesson is free. To see the rest of the course, with its videos, and save your progress, sign in with your subscription.",
+    volverGratis: "Back to the free lessons",
     beneficios: "What your subscription includes besides the course",
   },
   estilo: {

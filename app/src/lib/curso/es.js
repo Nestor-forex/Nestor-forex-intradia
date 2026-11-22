@@ -36,6 +36,17 @@ import { MAX_ABIERTAS, costesPractica } from '../practica.js'
 import { aciertoDeEquilibrio } from '../laboratorio.js'
 import { leerOperaciones, quitarRepetidas } from '../importarOperaciones.js'
 import { MINIMO_PARA_ENSEÑAR, diagnostico, margen, resumir } from '../diagnostico.js'
+import { MEDICION } from '../medicion.js'
+
+// La medición de la app con la vara neutra (Stop-loss y Take-profit a la misma
+// distancia), que es la que separa «acierta la dirección» de «gana dinero».
+// En la app de swing el campo se llama `porRiesgo`; en la de intradía,
+// `porRiesgoConSpread`. Las dos llevan el spread descontado.
+const NEUTRA = MEDICION.neutra ?? {}
+export const POR_R_NEUTRA_NUM = NEUTRA.porRiesgo ?? NEUTRA.porRiesgoConSpread
+export const POR_R_NEUTRA = Number.isFinite(POR_R_NEUTRA_NUM)
+  ? (POR_R_NEUTRA_NUM < 0 ? '−' : '+') + Math.abs(POR_R_NEUTRA_NUM).toFixed(2).replace('.', ',')
+  : 'un resultado negativo'
 
 const L = OPS_PARA_CREER
 
@@ -178,8 +189,8 @@ export const MODULOS = Object.freeze([
     id: 'm4',
     n: 4,
     titulo: 'Quién manda hoy',
-    desc: 'La fuerza de cada divisa, la diferencia que la app mira en cada par, y por qué «10 contra 0» no quiere decir mucha diferencia.',
-    lecciones: Object.freeze(['m4-1', 'm4-2', 'm4-3']),
+    desc: 'La fuerza de cada divisa, la diferencia que la app mira en cada par, por qué «10 contra 0» no quiere decir mucha diferencia, y cómo combinar una divisa fuerte con una débil eligiendo tú la dirección.',
+    lecciones: Object.freeze(['m4-1', 'm4-2', 'm4-3', 'm4-4']),
   }),
   Object.freeze({
     id: 'm5',
@@ -919,6 +930,63 @@ export const LECCIONES = Object.freeze({
         opciones: ['Sí, muchas', 'No: la Dif más grande no pasó el umbral', 'Solo en el franco'],
         correcta: 1,
         porque: 'La Dif más grande era 0,31 y hacía falta 0,59. El 10 contra 0 engañaba.',
+      },
+    ],
+  },
+
+  'm4-4': {
+    titulo: 'Combinar una divisa fuerte con una débil, y elegir tú la dirección',
+    objetivo: 'Saber formar el par con una divisa fuerte y una débil, leer cuál va primero, y entender qué dirección va a favor de la fuerza y cuál en contra.',
+    explicacion: [
+      'Un par son dos divisas: la primera es la base y la segunda la cotizada. El precio del par dice cuántas unidades de la segunda cuesta una de la primera.',
+      'Si la base se fortalece y la cotizada se debilita, las dos empujan el precio del par hacia arriba a la vez. Si pasa al revés, las dos lo empujan hacia abajo. Por eso se busca juntar una fuerte con una débil: es el par donde las dos fuerzas van en el mismo sentido.',
+      'El orden importa. Si la fuerte va PRIMERO, comprar el par es ponerse del lado de la fuerte. Si la fuerte va SEGUNDA, ponerse de su lado es vender el par.',
+      'No todas las combinaciones existen en la app. Si el par de la más fuerte con la más débil no está, se mira el par más separado que sí está: la «Dif» del tablero completo lo dice.',
+      'Y la decisión es tuya. Ir a favor de la fuerza es una forma de operar; ir en contra, esperando que la divisa que más subió se canse, es otra. Ninguna de las dos está validada en esta app, y por eso no te la elige.',
+    ],
+    ejemplo: [
+      'Si la libra es la más fuerte y el yen el más débil, el par es GBP/JPY y la libra va primero: a favor de la fuerza sería COMPRA de GBP/JPY; en contra, VENTA.',
+      'Si el franco suizo es el más fuerte y el dólar el más débil, el par es USD/CHF y el franco va SEGUNDO: a favor de la fuerza sería VENTA de USD/CHF, aunque el franco sea el fuerte.',
+      `Si la más fuerte es el euro y la más débil el yen, EUR/JPY no está en esta app. Se mira entonces, en el tablero completo, el par con la «Dif» más grande de los que sí están.`,
+      `Las señales de esta app siguen justo la idea de ir a favor de la fuerza, y medidas con años de mercado real y con los costes descontados dan ${POR_R_NEUTRA} por cada unidad arriesgada. Por eso esta lección te enseña a leerlo, no a seguirlo sin más.`,
+    ],
+    formula: {
+      texto: 'a favor de la fuerza: si la fuerte es la base → COMPRA del par · si la fuerte es la cotizada → VENTA del par',
+      conNumeros: 'libra fuerte y yen débil → GBP/JPY, la libra es la base → a favor de la fuerza, COMPRA. Franco fuerte y dólar débil → USD/CHF, el franco es la cotizada → a favor de la fuerza, VENTA.',
+    },
+    noDice: [
+      'No dice que la divisa fuerte vaya a seguir fuerte: la fuerza mide lo que ya pasó.',
+      'No dice que ir a favor de la fuerza sea lo bueno. Medido en esta app, por sí solo pierde.',
+      'Antes de decidir faltan la tendencia, las noticias, lo que cuesta la operación y tu riesgo: son los módulos que siguen.',
+      'No es una señal. La dirección la eliges tú.',
+    ],
+    video: {
+      archivo: 'm4-4',
+      desc: 'Video con voz: el Barrido con los datos reales de ese día. Se leen la divisa más fuerte y la más débil, se busca el par que las junta, se ve cuál va primero y qué dirección va a favor de la fuerza y cuál en contra, y se abre el Analizador, que espera a que la persona elija.',
+    },
+    hazlo: {
+      tab: 'barrido',
+      boton: 'Ir al Barrido',
+      texto: 'Busca la divisa más fuerte y la más débil de hoy. ¿Existe en la app el par que las junta? ¿Cuál va primero? Di en voz alta qué dirección va a favor de la fuerza.',
+    },
+    preguntas: [
+      {
+        p: 'La libra es la más fuerte y el yen el más débil. ¿Qué dirección de GBP/JPY va a favor de la fuerza?',
+        opciones: ['COMPRA', 'VENTA', 'Ninguna'],
+        correcta: 0,
+        porque: 'La libra va primero: comprar GBP/JPY es comprar libras con yenes.',
+      },
+      {
+        p: 'El franco suizo es el más fuerte y el dólar el más débil. ¿Qué dirección de USD/CHF va a favor de la fuerza?',
+        opciones: ['COMPRA', 'VENTA', 'Ninguna'],
+        correcta: 1,
+        porque: 'El franco va segundo: vender USD/CHF es vender dólares para quedarte con francos.',
+      },
+      {
+        p: 'Ir a favor de la fuerza, ¿te asegura algo?',
+        opciones: ['Sí, que el par se mueva a tu favor', 'No: es una forma de operar, y medida en esta app por sí sola pierde', 'Solo si la diferencia es de 10 contra 0'],
+        correcta: 1,
+        porque: 'La fuerza mide el pasado. Por eso hay que mirar lo demás antes de decidir.',
       },
     ],
   },

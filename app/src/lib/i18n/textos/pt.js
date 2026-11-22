@@ -619,6 +619,12 @@ export default {
     abrirApp: "Abrir o app",
     enApp: "O mesmo curso está dentro dos dois apps, com seu progresso compartilhado.",
     lecciones: "Lições:",
+    gratisTitulo: "Lições grátis",
+    gratisDesc: "Sem assinatura você pode ver completos o módulo 0 (o que o app é e o que não é) e o módulo 2 (gerenciar o risco), e a primeira lição de cada um dos outros. Seu progresso não é salvo aqui.",
+    gratisModulo: "completo e grátis",
+    unaGratis: "1 lição grátis",
+    muestraFin: "Esta lição é grátis. Para ver o resto do curso, com os vídeos, e salvar seu progresso, entre com sua assinatura.",
+    volverGratis: "Voltar às lições grátis",
     beneficios: "O que sua assinatura traz além do curso",
   },
   estilo: {

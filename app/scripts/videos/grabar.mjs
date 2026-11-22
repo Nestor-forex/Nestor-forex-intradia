@@ -34,6 +34,8 @@ import * as MC from '../../src/lib/marketCalc.js'
 import { PERIODOS_MEDIAS, PERIODO_ATR, PERIODO_RSI, RSI_MAX, UMBRAL_FUERZA, VENTANAS_FUERZA } from '../../src/lib/marketCalc.js'
 import { APP } from '../../src/lib/identidad.js'
 import { HERRAMIENTAS } from '../../src/lib/curso/herramientas.js'
+import { POR_R_NEUTRA } from '../../src/lib/curso/es.js'
+import { PAIR_NAMES } from '../../src/lib/pairs.js'
 import { apuntarTextos, duraciones, leerTextos, mezclar, rotuloConVoz } from './voz.mjs'
 
 const VIDEOS = fileURLToPath(new URL('../../public/curso/videos/', import.meta.url))
@@ -550,6 +552,49 @@ const ESCENAS = {
       await desmarcar(p)
       await r(`Esa es la que la app compara con el umbral (${coma(UMBRAL_FUERZA)}${APP === 'swing' ? '' : ' o más, según la hora'}), no el 10 contra 0.`)
       await espera(p, 4.2)
+      await r(FIN)
+      await espera(p, 2.8)
+    },
+  },
+  'm4-4': {
+    desc: 'Video con voz: el Barrido con los datos reales de ese día. Se leen la divisa más fuerte y la más débil, se busca el par que las junta, se ve cuál va primero y qué dirección va a favor de la fuerza y cuál en contra, y se abre el Analizador, que espera a que la persona elija.',
+    async correr(p, r) {
+      const ranking = await rankingFuerza(p)
+      const caja = p.locator('[data-ranking]')
+      await llevar(p, caja, 120)
+      await marcar(p, caja)
+      const esc = Object.fromEntries(ranking.map(([c, v]) => [c, parseFloat(v)]))
+      const [fuerte, debil] = [ranking[0][0], ranking[ranking.length - 1][0]]
+      await r(`Hoy la divisa más fuerte es el ${fuerte} y la más débil el ${debil}.`)
+      await espera(p, 4)
+      await r('Se busca juntar una fuerte con una débil: es el par donde las dos empujan el precio en el mismo sentido.')
+      await espera(p, 4.8)
+      await desmarcar(p)
+      // La escala de 0 a 10 es la fuerza estirada igual para las ocho, así que
+      // ordena los pares igual que la «Dif».
+      const directo = PAIR_NAMES.find((x) => x === `${fuerte}/${debil}` || x === `${debil}/${fuerte}`)
+      const par = directo ?? PAIR_NAMES.map((x) => [x, Math.abs(esc[x.slice(0, 3)] - esc[x.slice(4)])]).sort((a, b) => b[1] - a[1])[0][0]
+      if (directo) await r(`El par que las junta sí está en la app: ${par}.`)
+      else await r(`El par ${fuerte}/${debil} no está en esta app. De los que sí están, el más separado es ${par}.`)
+      await espera(p, 4.4)
+      const [b, q] = par.split('/')
+      const baseFuerte = esc[b] > esc[q]
+      await r(`En ${par} va primero ${b}, que es la ${baseFuerte ? 'más fuerte' : 'más débil'} de las dos.`)
+      await espera(p, 4)
+      await r(`Así que a favor de la fuerza sería ${baseFuerte ? 'COMPRA' : 'VENTA'} de ${par}. En contra, ${baseFuerte ? 'VENTA' : 'COMPRA'}.`)
+      await espera(p, 4.8)
+      await r(`Las señales de la app siguen la idea de ir a favor de la fuerza, y medidas con años de mercado real dan ${POR_R_NEUTRA} por cada unidad arriesgada.`)
+      await espera(p, 5.4)
+      await analizador(p, r, { par, conLado: false })
+      const sinLado = p.getByText(es.an.motivo.sinLado, { exact: true }).first()
+      exigir(await sinLado.count(), 'el aviso de la tarjeta sin dirección')
+      await llevar(p, sinLado, 200)
+      await marcar(p, sinLado)
+      await r(`Por eso el Analizador no elige la dirección de ${par}: espera a que la elijas tú.`)
+      await espera(p, 4.6)
+      await desmarcar(p)
+      await r('Antes de elegir, mira la tendencia, las noticias y lo que cuesta la operación: son los módulos que siguen.')
+      await espera(p, 4.8)
       await r(FIN)
       await espera(p, 2.8)
     },

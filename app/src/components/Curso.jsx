@@ -159,10 +159,13 @@ function Pregunta({ q, t }) {
   )
 }
 
-function Leccion({ id, hecha, onTerminar, onSiguiente, onIr, t }) {
+// `muestra`: la lección se ve SIN suscripción (página web). No se guarda nada:
+// en vez de «Marcar como terminada» sale la invitación a suscribirse, y
+// «Siguiente» solo lleva a otra lección gratis (`muestra.siguiente`).
+export function Leccion({ id, hecha, onTerminar, onSiguiente, onIr, t, muestra = null }) {
   const l = LECCIONES[id]
   const [estado, setEstado] = useState(null)
-  const sig = siguiente(id)
+  const sig = muestra ? muestra.siguiente : siguiente(id)
   const terminar = async () => {
     setEstado('guardando')
     const r = await onTerminar(id)
@@ -214,7 +217,9 @@ function Leccion({ id, hecha, onTerminar, onSiguiente, onIr, t }) {
         ))}
       </Parte>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, borderTop: '1px solid var(--border)', paddingTop: 14 }}>
-        {hecha ? (
+        {muestra ? (
+          <p style={{ ...TEXTO, color: 'var(--text)', fontWeight: 600 }}>{t('cursoWeb.muestraFin')}</p>
+        ) : hecha ? (
           <p style={{ ...TEXTO, color: 'var(--cta)', fontWeight: 600 }}>✓ {t('curso.terminada')}</p>
         ) : (
           <button

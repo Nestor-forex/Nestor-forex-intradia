@@ -80,6 +80,16 @@ ok(pipUSD('EUR/USD', {}) === 10 && LECCIONES['m1-2'].ejemplo.some((p) => p.inclu
   const m41 = JSON.stringify(LECCIONES['m4-1'])
   ok(VENTANAS_FUERZA.every((k) => m41.includes(`${k} `)) && PESOS_FUERZA.every((w) => m41.includes(`${Math.round(w * 100)} %`)), 'el módulo 4 lee las ventanas y los pesos de la fuerza de `marketCalc.js`')
   ok(JSON.stringify(LECCIONES['m4-2']).includes(String(UMBRAL_FUERZA).replace('.', ',')), 'y el umbral de fuerza')
+  // m4-4: los pares del ejemplo existen en las dos apps, el que se pone como
+  // «no está» de verdad no está, y la medición de la vara neutra se LEE.
+  {
+    const m44 = JSON.stringify(LECCIONES['m4-4'])
+    const { PAIR_NAMES } = await import('../src/lib/pairs.js')
+    const { POR_R_NEUTRA, POR_R_NEUTRA_NUM } = await import('../src/lib/curso/es.js')
+    ok(['GBP/JPY', 'USD/CHF'].every((x) => PAIR_NAMES.includes(x)), 'm4-4: GBP/JPY y USD/CHF están en esta app')
+    ok(!PAIR_NAMES.includes('EUR/JPY') && m44.includes('EUR/JPY no está en esta app'), 'm4-4: EUR/JPY de verdad no está')
+    ok(Number.isFinite(POR_R_NEUTRA_NUM) && m44.includes(POR_R_NEUTRA), `m4-4: dice la medición de la vara neutra de medicion.js (${POR_R_NEUTRA})`)
+  }
   ok(/import \{[^}]*\bPESOS_FUERZA\b[^}]*\bUMBRAL_FUERZA\b[^}]*\bVENTANAS_FUERZA\b[^}]*\} from '\.\.\/marketCalc\.js'/.test(es), 'el módulo 4 los importa, no los escribe')
 }
 {
