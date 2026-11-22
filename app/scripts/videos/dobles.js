@@ -24,7 +24,7 @@ export function useAuthUser() {
     estado: 'aprobado',
     curso: [],
     estilo: 'tendencias',
-    ...(sinPerfil ? {} : { perfilRiesgo: { capital: 1000, riesgoPct: 1, limiteDiarioPct: 3, maxPerdidasSeguidas: 3 } }),
+    ...(sinPerfil ? {} : { perfilRiesgo: { capital: 1000, riesgoPct: 1, limiteDiarioPct: 3, maxPerdidasSeguidas: 3, ...(params().get('moneda') === 'EUR' ? { moneda: 'EUR' } : {}) } }),
     // `?pares=ejemplo`: una lista de pares y dos avisos de MUESTRA, para los
     // videos de «Mis pares» y «Mis avisos». Los avisos son de indicador (RSI y
     // %B) a propósito: un nivel de precio inventado no cuadraría con el

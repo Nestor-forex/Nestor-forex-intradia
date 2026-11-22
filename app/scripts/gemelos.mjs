@@ -177,6 +177,8 @@ export const GEMELOS = [
   'src/components/Sparkline.jsx',
   'src/lib/authErrors.js',
   'src/lib/calc.js',
+  // La moneda de la cuenta, dólares o euros (2026-11-22).
+  'src/lib/monedaCuenta.js',
   'src/lib/display.js',
   'src/lib/firebase.js',
   'src/lib/format.js',
@@ -302,6 +304,7 @@ export const GEMELOS = [
   'src/lib/usePerfilRiesgo.js',
   'src/components/MiPerfil.jsx',
   'scripts/prueba-perfil.mjs',
+  'scripts/prueba-moneda.mjs',
   // El guardian de riesgo del Diario: cuanto lleva perdido hoy la persona
   // frente a los dos frenos de su perfil. Identico porque lee el MISMO perfil
   // y la cuenta es la misma en las dos apps; lo unico que cambia es de que

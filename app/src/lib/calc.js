@@ -1,3 +1,5 @@
+import { MONEDA_POR_DEFECTO, factorDesdeDolar } from './monedaCuenta.js'
+
 export function pipUSD(par, tasas) {
   const [, q] = par.split('/')
   if (q === 'USD') return 10
@@ -16,15 +18,30 @@ export function pipUSD(par, tasas) {
  */
 export const LOTE_MINIMO = 0.01
 
-export function calcularLote({ capital, riesgoPct, pips, par, tasas }) {
-  const pip = pipUSD(par, tasas)
+/**
+ * El lote que arriesga lo pedido.
+ *
+ * `moneda` es la de la cuenta de la persona (dólares o euros, ver
+ * `monedaCuenta.js`). El capital va en esa moneda, y el valor del pip se pasa
+ * a ella con las mismas tasas: así el riesgo y el lote salen en la moneda en
+ * que su bróker le lleva la cuenta.
+ *
+ * ⚠️ Los nombres `riesgoUsd` y `riesgoMinimoUsd` se quedan por compatibilidad
+ * (la práctica guarda `riesgoUsd` en Firestore), pero desde el 2026-11-22 van
+ * EN LA MONEDA DE LA CUENTA, que se devuelve en `moneda`.
+ */
+export function calcularLote({ capital, riesgoPct, pips, par, tasas, moneda = MONEDA_POR_DEFECTO }) {
+  const pipDolar = pipUSD(par, tasas)
+  const factor = factorDesdeDolar(moneda, tasas)
+  const pip = pipDolar && factor ? pipDolar * factor : null
   if (!isFinite(capital) || !isFinite(riesgoPct) || !isFinite(pips) || pips <= 0 || !pip) {
-    return { ok: false, pip }
+    return { ok: false, pip, moneda }
   }
   const riesgoUsd = (capital * riesgoPct) / 100
   const lote = riesgoUsd / (pips * pip)
   return {
     ok: true,
+    moneda,
     pip,
     riesgoUsd,
     lote,

@@ -36,14 +36,18 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(uid)).data.estado == 'aprobado';
     }
 
-    // El perfil de riesgo de una persona: los cuatro campos, ni uno más ni uno
-    // menos, cada uno dentro de sus límites. ⚠️ Los números son los de
+    // El perfil de riesgo de una persona: los cuatro campos obligatorios y la
+    // moneda opcional, ni uno más, cada uno dentro de sus límites. ⚠️ Los números son los de
     // `LIMITES` en `src/lib/perfilRiesgo.js`: si cambian allí, cambian aquí y
     // hay que volver a publicar estas reglas.
     function perfilRiesgoValido(p) {
       return p is map
-        && p.keys().hasOnly(['capital', 'riesgoPct', 'limiteDiarioPct', 'maxPerdidasSeguidas'])
+        && p.keys().hasOnly(['capital', 'riesgoPct', 'limiteDiarioPct', 'maxPerdidasSeguidas', 'moneda'])
         && p.keys().hasAll(['capital', 'riesgoPct', 'limiteDiarioPct', 'maxPerdidasSeguidas'])
+        // La moneda de la cuenta (2026-11-22) es OPCIONAL: un perfil viejo no
+        // la trae y vale como dólares. Las mismas de `MONEDAS_CUENTA` en
+        // `src/lib/monedaCuenta.js`.
+        && (!('moneda' in p) || p.moneda in ['USD', 'EUR'])
         && p.capital is number && p.capital >= 1 && p.capital <= 10000000
         && p.riesgoPct is number && p.riesgoPct >= 0.1 && p.riesgoPct <= 10
         && p.limiteDiarioPct is number && p.limiteDiarioPct >= 0.5 && p.limiteDiarioPct <= 20
@@ -212,7 +216,7 @@ service cloud.firestore {
         allow create: if esPropio(uid)
           && get(/databases/$(database)/documents/users/$(uid)).data.estado == 'aprobado'
           && request.resource.data.keys().hasAll(['app', 'par', 'lado', 'entrada', 'sl', 'tp', 'vela', 'metodo', 'creado'])
-          && request.resource.data.keys().hasOnly(['app', 'par', 'lado', 'entrada', 'sl', 'tp', 'vela', 'metodo', 'creado', 'nota', 'riesgoUsd', 'lote', 'fuente', 'spread', 'spreadEl', 'swap', 'swap3', 'marcas'])
+          && request.resource.data.keys().hasOnly(['app', 'par', 'lado', 'entrada', 'sl', 'tp', 'vela', 'metodo', 'creado', 'nota', 'riesgoUsd', 'moneda', 'lote', 'fuente', 'spread', 'spreadEl', 'swap', 'swap3', 'marcas'])
           && request.resource.data.app in ['swing', 'intradia']
           && request.resource.data.lado in ['COMPRA', 'VENTA']
           && request.resource.data.par is string && request.resource.data.par.size() <= 10
@@ -226,6 +230,8 @@ service cloud.firestore {
               || (request.resource.data.nota is string && request.resource.data.nota.size() <= 300))
           && (!('riesgoUsd' in request.resource.data)
               || (request.resource.data.riesgoUsd is number && request.resource.data.riesgoUsd > 0 && request.resource.data.riesgoUsd <= 1000000))
+          // En qué moneda está `riesgoUsd` (2026-11-22). Sin el campo, dólares.
+          && (!('moneda' in request.resource.data) || request.resource.data.moneda in ['USD', 'EUR'])
           && (!('lote' in request.resource.data)
               || (request.resource.data.lote is number && request.resource.data.lote > 0 && request.resource.data.lote <= 1000))
           // Lo que cuesta operar de verdad (2026-11-17): de dónde salió la

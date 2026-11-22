@@ -30,6 +30,7 @@
 // «ficha» que arma su `marketCalc.js`. Por eso este archivo puede ser GEMELO.
 
 import { calcularLote } from './calc.js'
+import { monedaDe } from './monedaCuenta.js'
 import { proximos } from './calendario.js'
 import { carryDeSenal } from './carrySenal.js'
 import { resumir } from './diagnostico.js'
@@ -503,8 +504,11 @@ export function armarAnalisis({
   else if (!(num(perfil?.capital) && num(perfil?.riesgoPct))) motivoLote = 'sinPerfil'
   else if (!ratesUSD) motivoLote = 'sinTasas'
   else {
-    const r = calcularLote({ capital: perfil.capital, riesgoPct: perfil.riesgoPct, pips: niveles.pipRiesgo, par: ficha.name, tasas: ratesUSD })
-    if (r.ok) lote = { lote: r.lote, riesgoUsd: r.riesgoUsd, valorPip: r.pip, mini: r.mini, micro: r.micro, bajoMinimo: r.bajoMinimo, riesgoMinimoUsd: r.riesgoMinimoUsd }
+    // La moneda es la de la cuenta de la persona (dólares o euros). Un perfil
+    // sin ella es de dólares, como todos los de antes.
+    const moneda = monedaDe(perfil)
+    const r = calcularLote({ capital: perfil.capital, riesgoPct: perfil.riesgoPct, pips: niveles.pipRiesgo, par: ficha.name, tasas: ratesUSD, moneda })
+    if (r.ok) lote = { moneda, lote: r.lote, riesgoUsd: r.riesgoUsd, valorPip: r.pip, mini: r.mini, micro: r.micro, bajoMinimo: r.bajoMinimo, riesgoMinimoUsd: r.riesgoMinimoUsd }
     else motivoLote = 'sinTasas'
   }
 

@@ -744,7 +744,7 @@ export const LECCIONES = Object.freeze({
     },
     noDice: [
       'No te dice si la operación es buena: solo que, si sale mal, perderás lo que decidiste.',
-      'El valor del pip cambia según el par. En los pares con dólar al final (EUR/USD, GBP/USD…) es 10 USD por lote; en los demás depende del precio, y la calculadora lo hace sola.',
+      'El valor del pip cambia según el par y según la moneda de tu cuenta. En una cuenta en dólares, en los pares con dólar al final (EUR/USD, GBP/USD…) es 10 USD por lote; en los demás depende del precio. Si tu bróker te lleva la cuenta en euros, elige euros en «Mi perfil de riesgo» y la calculadora lo convierte sola.',
       'No incluye el spread ni el swap.',
     ],
     video: {
