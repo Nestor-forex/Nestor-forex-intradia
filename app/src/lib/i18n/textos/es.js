@@ -685,6 +685,12 @@ export default {
     abrirApp: "Abrir la app",
     enApp: "El mismo curso está dentro de las dos apps, con tu progreso compartido.",
     lecciones: "Lecciones:",
+    gratisTitulo: "Lecciones gratis",
+    gratisDesc: "Sin suscripción puedes ver completos el módulo 0 (qué es y qué no es la app) y el módulo 2 (manejar el riesgo), y la primera lección de cada uno de los demás. Aquí no se guarda tu avance.",
+    gratisModulo: "completo y gratis",
+    unaGratis: "1 lección gratis",
+    muestraFin: "Esta lección es gratis. Para ver el resto del curso, con sus videos, y guardar tu avance, entra con tu suscripción.",
+    volverGratis: "Volver a las lecciones gratis",
     beneficios: "Lo que tu suscripción trae además del curso",
   },
   estilo: {

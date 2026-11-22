@@ -3,8 +3,10 @@
 // ventaja de tenerlo siempre a mano.
 //
 // ⚠️ SIN SUSCRIPCIÓN ACTIVA SOLO SE VE LA VISTA PREVIA: el temario (títulos),
-// unas pocas imágenes y la invitación a entrar. Las lecciones solo se pintan
-// con la ficha en `aprobado` (o el administrador).
+// unas pocas imágenes, las lecciones GRATIS (`GRATIS` de curso.js: los módulos
+// 0 y 2 enteros y la primera lección de cada uno de los demás, sin guardar
+// avance) y la invitación a entrar. El curso entero solo se pinta con la ficha
+// en `aprobado` (o el administrador).
 //
 // ⚠️ Esto es una PUERTA, no una caja fuerte: mientras los repositorios sean
 // públicos, el texto de las lecciones se puede leer en GitHub. Está escrito en
@@ -12,12 +14,12 @@
 
 import { useState } from 'react'
 import Auth from '../components/Auth'
-import Curso from '../components/Curso'
+import Curso, { Leccion } from '../components/Curso'
 import SelectorIdioma from '../components/SelectorIdioma'
 import { useT } from '../lib/i18n'
 import { useAuthUser } from '../lib/useAuthUser'
 import { firebaseListo } from '../lib/firebase'
-import { MODULOS, PROXIMOS } from '../lib/curso'
+import { GRATIS, LECCIONES, MODULOS, MODULOS_GRATIS, PROXIMOS, siguienteGratis } from '../lib/curso'
 import { PRECIO_SEGUIMIENTO_USD } from '../lib/laboratorio'
 import { NOMBRE_APP } from '../lib/identidad'
 
@@ -77,7 +79,65 @@ function Beneficios({ t }) {
   )
 }
 
+// Las lecciones gratis, agrupadas por módulo. Al tocar una se abre entera, en
+// modo muestra (sin guardar nada).
+function Gratis({ t, abierta, onAbrir }) {
+  if (abierta) {
+    return (
+      <section style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 820 }}>
+        <div>
+          <button type="button" className="btn-ghost" onClick={() => onAbrir(null)}>
+            ← {t('cursoWeb.volverGratis')}
+          </button>
+        </div>
+        <Leccion
+          key={abierta}
+          id={abierta}
+          onSiguiente={onAbrir}
+          onIr={() => window.open(BASE, '_blank', 'noopener')}
+          t={t}
+          muestra={{ siguiente: siguienteGratis(abierta) }}
+        />
+      </section>
+    )
+  }
+  return (
+    <section className="card" style={{ display: 'flex', flexDirection: 'column', gap: 12, borderColor: 'var(--cta)' }}>
+      <h2 style={{ margin: 0, fontSize: 18 }}>{t('cursoWeb.gratisTitulo')}</h2>
+      <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: 'var(--text-secondary)' }}>{t('cursoWeb.gratisDesc')}</p>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 }}>
+        {MODULOS.map((m) => {
+          const ids = m.lecciones.filter((id) => GRATIS.includes(id))
+          return (
+            <div key={m.id} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>
+                {t('curso.modulo', { n: m.n })} · <span {...ES}>{m.titulo}</span>
+              </span>
+              {ids.map((id) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => onAbrir(id)}
+                  style={{ textAlign: 'start', border: '1px solid var(--border)', background: 'var(--bg-input)', borderRadius: 8, padding: '8px 10px', color: 'var(--text)', font: 'inherit', fontSize: 13.5, cursor: 'pointer' }}
+                >
+                  <span {...ES}>▶ {LECCIONES[id].titulo}</span>
+                </button>
+              ))}
+            </div>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
 function VistaPrevia({ t, estado, auth }) {
+  const [abierta, setAbierta] = useState(null)
+  const abrir = (id) => {
+    setAbierta(id)
+    window.scrollTo?.(0, 0)
+  }
+  if (abierta) return <Gratis t={t} abierta={abierta} onAbrir={abrir} />
   const temario = [...MODULOS.map((m) => ({ ...m, listo: true })), ...PROXIMOS.map((p) => ({ ...p, listo: false }))].sort((a, b) => a.n - b.n)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
@@ -91,6 +151,8 @@ function VistaPrevia({ t, estado, auth }) {
         <p style={{ margin: 0, fontSize: 12.5, color: 'var(--text-muted)' }}>{t('cursoWeb.enApp')}</p>
         {auth}
       </section>
+
+      <Gratis t={t} abierta={null} onAbrir={abrir} />
 
       <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <h2 style={{ margin: 0, fontSize: 18 }}>{t('cursoWeb.vistaPrevia')}</h2>
@@ -107,7 +169,7 @@ function VistaPrevia({ t, estado, auth }) {
           {temario.map((m) => (
             <li key={m.id || `p${m.n}`} className="card" style={{ display: 'flex', flexDirection: 'column', gap: 4, opacity: m.listo ? 1 : 0.6 }}>
               <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>
-                🔒 {t('curso.modulo', { n: m.n })} · {m.listo ? <>{t('cursoWeb.lecciones')} <span className="mono" dir="ltr">{m.lecciones.length}</span></> : t('curso.proximamente')}
+                {m.listo && MODULOS_GRATIS.includes(m.id) ? '🔓' : '🔒'} {t('curso.modulo', { n: m.n })} · {m.listo ? <>{t('cursoWeb.lecciones')} <span className="mono" dir="ltr">{m.lecciones.length}</span> · {MODULOS_GRATIS.includes(m.id) ? t('cursoWeb.gratisModulo') : t('cursoWeb.unaGratis')}</> : t('curso.proximamente')}
               </span>
               <span {...ES} style={{ fontSize: 15, fontWeight: 700 }}>{m.titulo}</span>
               {m.listo && <span {...ES} style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{m.desc}</span>}

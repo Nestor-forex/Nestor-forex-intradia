@@ -611,6 +611,12 @@ export default {
     abrirApp: "打开应用",
     enApp: "两个应用里都有同样的课程，进度共享。",
     lecciones: "课时：",
+    gratisTitulo: "免费课时",
+    gratisDesc: "无需订阅即可完整观看第 0 模块（这个应用是什么、不是什么）和第 2 模块（管理风险），以及其他每个模块的第一课。这里不会保存你的进度。",
+    gratisModulo: "完整免费",
+    unaGratis: "1 节免费课",
+    muestraFin: "本课免费。要观看课程其余部分及其视频并保存进度，请用你的订阅登录。",
+    volverGratis: "返回免费课时",
     beneficios: "除了课程，你的订阅还包括",
   },
   estilo: {

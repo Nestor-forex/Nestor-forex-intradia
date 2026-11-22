@@ -29,13 +29,22 @@ const web = leer('src/web/CursoWeb.jsx')
 const iAprobado = web.indexOf("perfilEstado === 'aprobado'")
 const iCurso = web.indexOf('<Curso ')
 ok(iAprobado > 0 && iCurso > iAprobado && /else if \(aprobado\) \{[\s\S]*?<Curso /.test(web), 'las lecciones solo se pintan con la ficha aprobada')
-ok(!/<Leccion|LECCIONES\[/.test(web), 'la vista previa no pinta ninguna lección por su cuenta')
+// Sin suscripción solo se pintan las lecciones de GRATIS, y en modo muestra
+// (sin guardar avance: no se le pasa onTerminar).
+const leccionesSueltas = [...web.matchAll(/<Leccion\b[\s\S]*?\/>/g)].map((m) => m[0])
+ok(leccionesSueltas.length === 1 && /muestra=\{/.test(leccionesSueltas[0]) && !/onTerminar/.test(leccionesSueltas[0]), 'la vista previa solo pinta lecciones en modo muestra, sin guardar avance')
+ok(/GRATIS\.includes\(id\)/.test(web), 'y solo las de la lista GRATIS')
+const { GRATIS, MODULOS, MODULOS_GRATIS } = await import('../src/lib/curso.js')
+const esperadas = MODULOS.flatMap((m) => (MODULOS_GRATIS.includes(m.id) ? m.lecciones : [m.lecciones[0]]))
+ok(JSON.stringify(GRATIS) === JSON.stringify(esperadas) && MODULOS_GRATIS.join() === 'm0,m2', `gratis: los módulos 0 y 2 enteros y la primera lección de los demás (${GRATIS.length} de ${MODULOS.flatMap((m) => m.lecciones).length})`)
+const curso = leer('src/components/Curso.jsx')
+ok(/muestra \? \(\s*<p[^>]*>\{t\('cursoWeb\.muestraFin'\)\}/.test(curso), 'una lección en modo muestra no ofrece «Marcar como terminada»')
 const vistas = [...web.matchAll(/'(vista-\d\.png)'/g)].map((m) => m[1])
 ok(vistas.length >= 2 && vistas.every((f) => existsSync(join(RAIZ, 'public/curso', f))), `las imágenes de la vista previa existen (${vistas.join(', ')})`)
 ok(/t\('curso\.aviso'\)/.test(web), 'la vista previa lleva el aviso de que no es asesoría')
 
 console.log('\n3. Los textos en los 13 idiomas')
-const claves = ['eyebrow', 'titulo', 'intro', 'queAprendes', 'vistaPrevia', 'bloqueado', 'entrar', 'pendiente', 'inactiva', 'abrirApp', 'enApp', 'lecciones']
+const claves = ['eyebrow', 'titulo', 'intro', 'queAprendes', 'vistaPrevia', 'bloqueado', 'entrar', 'pendiente', 'inactiva', 'abrirApp', 'enApp', 'lecciones', 'gratisTitulo', 'gratisDesc', 'gratisModulo', 'unaGratis', 'muestraFin', 'volverGratis']
 for (const { codigo } of IDIOMAS) {
   const t = crearT(codigo)
   const faltan = claves.filter((k) => !t(`cursoWeb.${k}`))

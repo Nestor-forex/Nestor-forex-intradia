@@ -614,6 +614,12 @@ export default {
     abrirApp: "앱 열기",
     enApp: "같은 강좌가 두 앱 모두에 있고 진도는 공유됩니다.",
     lecciones: "레슨:",
+    gratisTitulo: "무료 레슨",
+    gratisDesc: "구독 없이 모듈 0(앱이 무엇이고 무엇이 아닌지)과 모듈 2(위험 관리)를 전부, 그리고 나머지 각 모듈의 첫 레슨을 볼 수 있습니다. 여기서는 진도가 저장되지 않습니다.",
+    gratisModulo: "전체 무료",
+    unaGratis: "무료 레슨 1개",
+    muestraFin: "이 레슨은 무료입니다. 동영상이 있는 나머지 과정을 보고 진도를 저장하려면 구독으로 로그인하세요.",
+    volverGratis: "무료 레슨으로 돌아가기",
     beneficios: "코스 외에 구독에 포함된 것",
   },
   estilo: {

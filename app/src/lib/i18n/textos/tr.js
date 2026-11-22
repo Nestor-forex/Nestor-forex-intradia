@@ -614,6 +614,12 @@ export default {
     abrirApp: "Uygulamayı aç",
     enApp: "Aynı kurs iki uygulamada da var ve ilerlemen ortak.",
     lecciones: "Dersler:",
+    gratisTitulo: "Ücretsiz dersler",
+    gratisDesc: "Abonelik olmadan modül 0'ı (uygulamanın ne olduğu ve ne olmadığı) ve modül 2'yi (riski yönetmek) eksiksiz, diğer her modülün de ilk dersini görebilirsin. İlerlemen burada kaydedilmez.",
+    gratisModulo: "tamamı ücretsiz",
+    unaGratis: "1 ücretsiz ders",
+    muestraFin: "Bu ders ücretsiz. Kursun geri kalanını videolarıyla görmek ve ilerlemeni kaydetmek için aboneliğinle giriş yap.",
+    volverGratis: "Ücretsiz derslere dön",
     beneficios: "Aboneliğinin kurs dışında sundukları",
   },
   estilo: {

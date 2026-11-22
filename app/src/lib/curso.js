@@ -38,6 +38,20 @@ export const MAX_HECHAS = 100
 /** Los ids de todas las lecciones que existen, en orden. */
 export const TODAS = Object.freeze(MODULOS.flatMap((m) => m.lecciones))
 
+// Lo que se ve SIN suscripción en la página web del curso (2026-11-22, lo pidió
+// Néstor como parte de la presentación): los módulos 0 y 2 enteros, y la
+// primera lección de cada uno de los demás. Ahí no se guarda ningún avance.
+// ⚠️ Es una puerta, no una caja fuerte: el resto también es público mientras
+// los repositorios lo sean.
+export const MODULOS_GRATIS = Object.freeze(['m0', 'm2'])
+export const GRATIS = Object.freeze(MODULOS.flatMap((m) => (MODULOS_GRATIS.includes(m.id) ? m.lecciones : m.lecciones.slice(0, 1))))
+
+// La lección gratis que va después de ésta, o null si es la última.
+export function siguienteGratis(idLeccion) {
+  const i = GRATIS.indexOf(idLeccion)
+  return i >= 0 && i < GRATIS.length - 1 ? GRATIS[i + 1] : null
+}
+
 /**
  * La lista guardada, limpia: solo ids que existen, sin repetir.
  * Un valor raro (no es lista, basura dentro) devuelve [] o lo que se salve:

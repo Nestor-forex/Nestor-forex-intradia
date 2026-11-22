@@ -619,6 +619,12 @@ export default {
     abrirApp: "Ouvrir l'app",
     enApp: "Le même cours est dans les deux apps, avec ta progression partagée.",
     lecciones: "Leçons :",
+    gratisTitulo: "Leçons gratuites",
+    gratisDesc: "Sans abonnement, tu peux voir en entier le module 0 (ce qu’est l’app et ce qu’elle n’est pas) et le module 2 (gérer le risque), plus la première leçon de chacun des autres. Ta progression n’est pas enregistrée ici.",
+    gratisModulo: "complet et gratuit",
+    unaGratis: "1 leçon gratuite",
+    muestraFin: "Cette leçon est gratuite. Pour voir le reste du cours, avec ses vidéos, et enregistrer ta progression, connecte-toi avec ton abonnement.",
+    volverGratis: "Retour aux leçons gratuites",
     beneficios: "Ce que ton abonnement inclut en plus du cours",
   },
   estilo: {
