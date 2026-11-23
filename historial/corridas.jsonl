@@ -1121,3 +1121,4 @@
 {"en":"2026-11-23T00:23:36.363Z","hora":0,"minuto":23,"vela":"2026-11-23 00:00:00","factorHora":0.99,"total":0,"nuevas":0,"disparo":"workflow_dispatch"}
 {"en":"2026-11-23T01:23:29.928Z","hora":1,"minuto":23,"vela":"2026-11-23 01:00:00","factorHora":1.02,"total":0,"nuevas":0,"disparo":"workflow_dispatch"}
 {"en":"2026-11-23T02:23:35.325Z","hora":2,"minuto":23,"vela":"2026-11-23 02:00:00","factorHora":0.95,"total":0,"nuevas":0,"disparo":"workflow_dispatch"}
+{"en":"2026-11-23T03:23:30.025Z","hora":3,"minuto":23,"vela":"2026-11-23 03:00:00","factorHora":0.79,"total":0,"nuevas":0,"disparo":"workflow_dispatch"}
