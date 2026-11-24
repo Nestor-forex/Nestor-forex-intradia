@@ -1,5 +1,8 @@
 {
-  "actualizadoEl": "2026-11-24T16:24:14.907Z",
-  "vela": "2026-11-24 16:00:00",
-  "senales": []
+  "actualizadoEl": "2026-11-24T17:24:13.813Z",
+  "vela": "2026-11-24 17:00:00",
+  "senales": [
+    "NZD/USD|COMPRA|tendencia",
+    "NZD/JPY|COMPRA|tendencia"
+  ]
 }
