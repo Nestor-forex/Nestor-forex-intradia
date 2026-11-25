@@ -1,5 +1,8 @@
 {
-  "actualizadoEl": "2026-11-25T13:09:06.705Z",
-  "vela": "2026-11-25 13:00:00",
-  "senales": []
+  "actualizadoEl": "2026-11-25T14:23:55.877Z",
+  "vela": "2026-11-25 14:00:00",
+  "senales": [
+    "NZD/USD|COMPRA|rango",
+    "EUR/USD|COMPRA|rango"
+  ]
 }
