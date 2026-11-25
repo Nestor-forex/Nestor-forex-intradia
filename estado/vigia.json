@@ -1,7 +1,8 @@
 {
-  "actualizadoEl": "2026-11-25T05:24:03.974Z",
-  "vela": "2026-11-25 05:00:00",
+  "actualizadoEl": "2026-11-25T06:24:12.702Z",
+  "vela": "2026-11-25 06:00:00",
   "senales": [
-    "AUD/USD|VENTA|tendencia"
+    "AUD/USD|VENTA|tendencia",
+    "AUD/JPY|VENTA|tendencia"
   ]
 }
