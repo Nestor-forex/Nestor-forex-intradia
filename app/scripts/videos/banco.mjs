@@ -59,9 +59,14 @@ export async function abrir(chromium, { datos, video, consulta = '', reloj = nul
   const p = await ctx.newPage()
   const errores = []
   p.on('pageerror', (e) => errores.push(String(e)))
+  // El cero de los audios se mide con el reloj de VERDAD, justo antes de abrir
+  // la página. No vale `performance.timeOrigin` de la página: con `reloj` esa
+  // hora es la fingida, y la voz de los videos del calendario quedaba puesta
+  // días después del final del video (m7-1 y m7-2 salieron mudos, 2026-11-28).
+  const t0 = Date.now()
   await p.goto(`http://banco.local/index.html${consulta}`)
   await p.waitForTimeout(1500)
-  return { b, ctx, p, errores }
+  return { b, ctx, p, errores, t0 }
 }
 
 // El texto del aviso pequeño que va pegado encima del rótulo durante TODO el

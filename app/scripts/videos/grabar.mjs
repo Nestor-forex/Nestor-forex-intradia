@@ -1875,9 +1875,8 @@ async function grabar(datos, id, modo = null) {
   // cientos de archivos, y medirlos con el video ya grabando dejaba la app
   // quieta en el Barrido casi medio minuto al principio de cada video.
   const dur = modo?.voz ? duraciones(modo.voz, await leerTextos()) : null
-  const { b, ctx, p, errores } = await abrir(chromium, { datos, video: tmp, consulta: escena.consulta || '', reloj })
-  // El video empieza a grabarse al abrir la página: es el cero de los audios.
-  const t0 = await p.evaluate(() => performance.timeOrigin)
+  // `t0` (el cero de los audios) lo mide `abrir` con el reloj de verdad.
+  const { b, ctx, p, errores, t0 } = await abrir(chromium, { datos, video: tmp, consulta: escena.consulta || '', reloj })
   const r = rotuloConVoz(p, await ponerRotulo(p), dur, modo?.pron)
   await escena.correr(p, r, datos)
   await r.terminar()
