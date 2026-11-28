@@ -34,6 +34,7 @@ import {
   valoresIniciales,
 } from '../src/lib/perfilRiesgo.js'
 import es from '../src/lib/i18n/textos/es.js'
+import { MONEDAS_CUENTA } from '../src/lib/monedaCuenta.js'
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..')
 const leer = (ruta) => readFileSync(join(RAIZ, ruta), 'utf8')
@@ -82,7 +83,15 @@ titulo('3. Antes de guardar se exigen LOS CUATRO, dentro de sus límites')
 
 const v = validaPerfil({ capital: '5000', riesgoPct: '1', limiteDiarioPct: '3', maxPerdidasSeguidas: '3' })
 comprobar('lo escrito en texto se valida y sale en números', v.ok && v.limpio.capital === 5000 && v.limpio.riesgoPct === 1)
-comprobar('lo limpio lleva exactamente los cuatro campos', v.ok && Object.keys(v.limpio).sort().join() === [...CAMPOS].sort().join())
+comprobar('lo limpio lleva exactamente los cuatro campos y la moneda', v.ok && Object.keys(v.limpio).sort().join() === [...CAMPOS, 'moneda'].sort().join())
+comprobar('sin elegir moneda se guarda en dólares', v.ok && v.limpio.moneda === 'USD')
+const ve = validaPerfil({ capital: '5000', riesgoPct: '1', limiteDiarioPct: '3', maxPerdidasSeguidas: '3', moneda: 'EUR' })
+comprobar('se puede elegir euros', ve.ok && ve.limpio.moneda === 'EUR')
+const vr = validaPerfil({ capital: '5000', riesgoPct: '1', limiteDiarioPct: '3', maxPerdidasSeguidas: '3', moneda: 'XYZ' })
+comprobar('una moneda rara se rechaza, no se cambia por dólares en silencio', !vr.ok && vr.codigo === 'monedaRara' && vr.campo === 'moneda')
+comprobar('un perfil viejo sin moneda se lee como dólares', leerPerfil({ capital: 5000, riesgoPct: 1, limiteDiarioPct: 3, maxPerdidasSeguidas: 3 }).moneda === 'USD')
+comprobar('y sigue completo: la moneda no es obligatoria', perfilCompleto(leerPerfil({ capital: 5000, riesgoPct: 1, limiteDiarioPct: 3, maxPerdidasSeguidas: 3 })))
+comprobar('un perfil guardado en euros se lee en euros', leerPerfil({ capital: 5000, riesgoPct: 1, limiteDiarioPct: 3, maxPerdidasSeguidas: 3, moneda: 'EUR' }).moneda === 'EUR')
 const sinCapital = validaPerfil({ ...BUENO, capital: '' })
 comprobar('sin capital → «falta», nombrando el campo', !sinCapital.ok && sinCapital.codigo === 'falta' && sinCapital.campo === 'capital')
 const fuera = validaPerfil({ ...BUENO, riesgoPct: 20 })
@@ -127,7 +136,9 @@ const fn = reglas.match(/function perfilRiesgoValido\(p\)\s*\{([\s\S]*?)\n\s*\}/
 comprobar('existe la función perfilRiesgoValido', Boolean(fn))
 const cuerpo = fn ? fn[1] : ''
 const listaReglas = (m) => (m ? m[1].split(',').map((s) => s.trim().replace(/'/g, '')).sort().join() : '')
-comprobar('exige los cuatro campos y ni uno más (hasOnly)', listaReglas(cuerpo.match(/hasOnly\(\[([^\]]*)\]\)/)) === [...CAMPOS].sort().join())
+comprobar('admite los cuatro campos y la moneda, ni uno más (hasOnly)', listaReglas(cuerpo.match(/hasOnly\(\[([^\]]*)\]\)/)) === [...CAMPOS, 'moneda'].sort().join())
+const monedasReglas = cuerpo.match(/p\.moneda in \[([^\]]*)\]/)
+comprobar('las monedas de la regla son las de `MONEDAS_CUENTA`', listaReglas(monedasReglas) === [...MONEDAS_CUENTA].sort().join())
 comprobar('exige los cuatro campos y ni uno menos (hasAll)', listaReglas(cuerpo.match(/hasAll\(\[([^\]]*)\]\)/)) === [...CAMPOS].sort().join())
 for (const c of CAMPOS) {
   const m = cuerpo.match(new RegExp(`p\\.${c} >= ([\\d.]+) && p\\.${c} <= ([\\d.]+)`))

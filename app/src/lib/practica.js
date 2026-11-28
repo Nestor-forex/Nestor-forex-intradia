@@ -31,6 +31,7 @@
 //     CADUCADA en vez de inventar el resultado.
 
 import { LOTE_MINIMO } from './calc.js'
+import { MONEDA_POR_DEFECTO, esMonedaCuenta } from './monedaCuenta.js'
 
 export const LADOS_PRACTICA = Object.freeze(['COMPRA', 'VENTA'])
 
@@ -43,7 +44,7 @@ export const MAX_ABIERTAS = 20
 // esta lista hay que cambiar también `firestore.rules`, y `prueba-practica.mjs`
 // falla si se separan.
 export const CAMPOS_CREAR = Object.freeze(['app', 'par', 'lado', 'entrada', 'sl', 'tp', 'vela', 'metodo', 'creado'])
-export const CAMPOS_OPCIONALES = Object.freeze(['nota', 'riesgoUsd', 'lote', 'fuente', 'spread', 'spreadEl', 'swap', 'swap3', 'marcas'])
+export const CAMPOS_OPCIONALES = Object.freeze(['nota', 'riesgoUsd', 'moneda', 'lote', 'fuente', 'spread', 'spreadEl', 'swap', 'swap3', 'marcas'])
 export const NOTA_MAX = 300
 
 // El riesgo en dólares y el lote los saca el Analizador del «perfil de riesgo»
@@ -123,7 +124,13 @@ export function fichaPractica({ app, analisis, metodo, vela, nota, entrada = nul
   if (n) op.nota = n
   const riesgoUsd = a.lote?.riesgoUsd
   const lote = a.lote?.lote
-  if (num(riesgoUsd) && riesgoUsd > 0 && riesgoUsd <= RIESGO_USD_MAX) op.riesgoUsd = Math.round(riesgoUsd * 100) / 100
+  if (num(riesgoUsd) && riesgoUsd > 0 && riesgoUsd <= RIESGO_USD_MAX) {
+    op.riesgoUsd = Math.round(riesgoUsd * 100) / 100
+    // ⚠️ Desde el 2026-11-22 el riesgo va en la moneda de la cuenta (dólares o
+    // euros, ver `monedaCuenta.js`), y se guarda cuál es. Sin el campo, las
+    // de antes eran dólares.
+    op.moneda = esMonedaCuenta(a.lote?.moneda) ? a.lote.moneda : MONEDA_POR_DEFECTO
+  }
   // ⚠️ Un lote por debajo de 0,01 no se guarda: redondeado saldría 0 y se
   // leería «0.00 lote», un tamaño que no se puede abrir.
   if (num(lote) && lote >= LOTE_MINIMO && lote <= LOTE_MAX) op.lote = Math.round(lote * 100) / 100
@@ -447,7 +454,17 @@ export function velasDelPar(barrido, par) {
  * de lo que se arriesgaba. `sumaR` es el bruto (lo que dicen los niveles) y
  * `sumaNeta` el que descuenta el spread y el swap; los dólares salen del neto.
  */
-export function resumenPractica(ops) {
+/**
+ * La moneda en que se guardó el riesgo de una operación de práctica. Las de
+ * antes del 2026-11-22 no la traen y eran dólares.
+ */
+export const monedaDePractica = (op) => (esMonedaCuenta(op?.moneda) ? op.moneda : MONEDA_POR_DEFECTO)
+
+// ⚠️ El DINERO solo suma las operaciones guardadas en la moneda que la persona
+// usa ahora (`moneda`). Sumar dólares con euros daría un número que no está en
+// ninguna de las dos; las de la otra moneda se cuentan como «sin dinero» y la
+// pantalla lo dice.
+export function resumenPractica(ops, moneda = MONEDA_POR_DEFECTO) {
   const lista = Array.isArray(ops) ? ops : []
   const resueltas = lista.filter((o) => o?.estado === 'ganada' || o?.estado === 'perdida')
   const ganadas = resueltas.filter((o) => o.estado === 'ganada').length
@@ -457,7 +474,7 @@ export function resumenPractica(ops) {
   // inventa: se cuenta cuántas quedaron sin ese dato para decirlo en pantalla.
   const costes = resueltas.map(costesPractica)
   const sumaNeta = costes.reduce((s, c) => s + (c ? c.rNeto : 0), 0)
-  const conDinero = costes.filter((c) => c && num(c.usdNeto))
+  const conDinero = costes.filter((c, i) => c && num(c.usdNeto) && monedaDePractica(resueltas[i]) === moneda)
   const dinero = conDinero.reduce((s, c) => s + c.usdNeto, 0)
   return {
     conDinero: conDinero.length,

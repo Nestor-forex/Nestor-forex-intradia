@@ -18,8 +18,9 @@
 // que viaja cuando alguien lo reenvía, y fuera de la app nadie lo ve con la
 // tarjeta alrededor.
 
-import { costesPractica, rbDe } from './practica.js'
+import { costesPractica, monedaDePractica, rbDe } from './practica.js'
 import { LOTE_MINIMO } from './calc.js'
+import { dinero } from './monedaCuenta.js'
 
 const num = (x) => typeof x === 'number' && Number.isFinite(x)
 
@@ -62,7 +63,7 @@ export function csvDe(filas, { sep = ',' } = {}) {
 /** Las columnas de la tabla de práctica, en orden. Los títulos los pone el idioma. */
 export const COLUMNAS_PRACTICA = Object.freeze([
   'fecha', 'par', 'lado', 'estado', 'entrada', 'sl', 'tp', 'rb',
-  'rBruto', 'spreadR', 'swapR', 'noches', 'rNeto', 'riesgoUsd', 'usdNeto', 'fuente',
+  'rBruto', 'spreadR', 'swapR', 'noches', 'rNeto', 'riesgoUsd', 'usdNeto', 'moneda', 'fuente',
 ])
 
 const fechaDe = (o) => {
@@ -99,6 +100,9 @@ export function filasPractica(ops, { decimal = '.', etiqueta = (x) => x } = {}) 
       n(c ? c.rNeto : null, 2),
       n(o.riesgoUsd, 2),
       n(c ? c.usdNeto : null, 2),
+      // En qué moneda van las dos columnas de antes (2026-11-22): dólares o
+      // euros, la de la cuenta cuando se creó. Vacía si no guardó dinero.
+      typeof o.riesgoUsd === 'number' ? monedaDePractica(o) : '',
       o.fuente ?? '',
     ]
   })
@@ -133,8 +137,8 @@ export function textoAnalisis(a, { t, fecha = '' } = {}) {
   if (a.lote) {
     // Por debajo del lote mínimo no se escribe «0.00»: no se puede abrir.
     const lote = a.lote.bajoMinimo ? `< ${LOTE_MINIMO.toFixed(2)}` : a.lote.lote.toFixed(2)
-    L.push(`${t('exp.lote')} ${lote} · ${t('exp.riesgo')} $${a.lote.riesgoUsd.toFixed(2)}`)
-    if (a.lote.bajoMinimo) L.push(t('calc.bajoMinimo', { minimo: LOTE_MINIMO.toFixed(2), riesgo: a.lote.riesgoMinimoUsd.toFixed(2) }))
+    L.push(`${t('exp.lote')} ${lote} · ${t('exp.riesgo')} ${dinero(a.lote.riesgoUsd, a.lote.moneda)}`)
+    if (a.lote.bajoMinimo) L.push(t('calc.bajoMinimo', { minimo: LOTE_MINIMO.toFixed(2), riesgo: dinero(a.lote.riesgoMinimoUsd, a.lote.moneda) }))
   }
 
   const h = a.herramientas || {}

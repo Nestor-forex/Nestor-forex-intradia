@@ -29,6 +29,7 @@ import FuentePrecio from './FuentePrecio'
 import { useEstacionalidad } from '../lib/useEstacionalidad'
 import { usePlantillas } from '../lib/usePlantillas'
 import { LOTE_MINIMO } from '../lib/calc'
+import { dinero } from '../lib/monedaCuenta'
 import { APP, clave } from '../lib/identidad'
 import { HERRAMIENTAS_GRAFICA, MAX_ABIERTAS, fichaPractica, marcasDeAnalisis } from '../lib/practica'
 import { compartirODescargar, textoAnalisis } from '../lib/exportar'
@@ -427,7 +428,7 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
             <Fila rotulo={t('an.lote')}>
               {a.lote ? (
                 <N color={a.lote.bajoMinimo ? 'var(--amber)' : undefined}>
-                  {a.lote.bajoMinimo ? `< ${LOTE_MINIMO.toFixed(2)}` : a.lote.lote.toFixed(2)} · ${a.lote.riesgoUsd.toFixed(2)}
+                  {a.lote.bajoMinimo ? `< ${LOTE_MINIMO.toFixed(2)}` : a.lote.lote.toFixed(2)} · {dinero(a.lote.riesgoUsd, a.lote.moneda)}
                 </N>
               ) : (
                 <span style={{ color: 'var(--text-muted)' }}>{t(`an.motivoLote.${a.motivoLote}`)}</span>
@@ -439,7 +440,7 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
         {/* Con un Stop-loss muy lejano el lote sale por debajo del mínimo: se
             dice, en vez de enseñar «0.00» junto a un riesgo que no se cumple. */}
         {a.lote?.bajoMinimo && (
-          <p style={{ ...TEXTO, color: 'var(--amber)' }}>{t('calc.bajoMinimo', { minimo: LOTE_MINIMO.toFixed(2), riesgo: a.lote.riesgoMinimoUsd.toFixed(2) })}</p>
+          <p style={{ ...TEXTO, color: 'var(--amber)' }}>{t('calc.bajoMinimo', { minimo: LOTE_MINIMO.toFixed(2), riesgo: dinero(a.lote.riesgoMinimoUsd, a.lote.moneda) })}</p>
         )}
         {a.niveles && !a.lote && a.motivoLote === 'sinPerfil' && onIrAlPerfil && (
           <button className="btn" type="button" style={{ minHeight: 44 }} onClick={onIrAlPerfil}>
@@ -660,7 +661,7 @@ export default function AnalizadorTab({ fichas = [], ratesUSD, uid, ficha, trade
                   <span style={{ color: 'var(--text-muted)' }}>{t('an.diarioSin')}</span>
                 ) : (
                   <N color={h.diario.neto > 0 ? 'var(--green)' : h.diario.neto < 0 ? 'var(--red)' : undefined}>
-                    {h.diario.n} · {h.diario.pct.toFixed(0)}% ±{h.diario.margen.toFixed(0)} · {h.diario.neto >= 0 ? '+' : '−'}${Math.abs(h.diario.neto).toFixed(2)}
+                    {h.diario.n} · {h.diario.pct.toFixed(0)}% ±{h.diario.margen.toFixed(0)} · {dinero(h.diario.neto, perfil.moneda, { signo: true })}
                   </N>
                 )}
               </Fila>

@@ -25,6 +25,7 @@ import {
   operacionesHastaElFreno,
   valoresIniciales,
 } from '../lib/perfilRiesgo'
+import { MONEDAS_CUENTA, dinero } from '../lib/monedaCuenta'
 
 const TEXTO = { fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }
 const ETIQUETA = { fontSize: 11.5, color: 'var(--text-muted)', fontWeight: 600 }
@@ -38,9 +39,9 @@ const ROTULO = {
   riesgoPct: 'perfil.riesgoPct',
   limiteDiarioPct: 'perfil.limiteDiario',
   maxPerdidasSeguidas: 'perfil.maxPerdidas',
+  moneda: 'perfil.moneda',
 }
 
-const dolares = (n) => (typeof n === 'number' && Number.isFinite(n) ? '$' + n.toFixed(2) : '—')
 
 function Nivel({ activo, onClick, children }) {
   return (
@@ -83,6 +84,10 @@ export default function MiPerfil({ uid, ficha }) {
     escrito.capital !== null && escrito.riesgoPct !== null ? (escrito.capital * escrito.riesgoPct) / 100 : null
   const freno = frenoEnDolares(escrito)
   const hastaFreno = operacionesHastaElFreno(escrito)
+  // Todo el dinero de esta tarjeta va en la moneda ELEGIDA en el formulario
+  // (todavía sin guardar), para que se vea qué significa antes de guardar.
+  const moneda = escrito.moneda
+  const dolares = (n) => dinero(n, moneda)
 
   const guardar = async () => {
     setGuardando(true)
@@ -92,7 +97,7 @@ export default function MiPerfil({ uid, ficha }) {
   }
 
   const mensajeError = (r) => {
-    const campo = r.campo ? t(ROTULO[r.campo]) : ''
+    const campo = r.campo ? t(ROTULO[r.campo], r.campo === 'capital' ? { moneda } : undefined) : ''
     if (r.codigo === 'fueraDeRango') return t('perfil.err_fueraDeRango', { campo, min: LIMITES[r.campo].min, max: LIMITES[r.campo].max })
     if (r.codigo === 'falta') return t('perfil.err_falta', { campo })
     return t(`perfil.err_${r.codigo}`)
@@ -117,9 +122,23 @@ export default function MiPerfil({ uid, ficha }) {
         </div>
       </div>
 
+      {/* La moneda de la cuenta (2026-11-22): dólares o euros. Va antes del
+          capital porque es en lo que se escribe el capital. */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <span style={ETIQUETA}>{t('perfil.moneda')}</span>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {MONEDAS_CUENTA.map((m) => (
+            <Nivel key={m} activo={moneda === m} onClick={() => cambiar('moneda', m)}>
+              {t(`perfil.moneda${m}`)}
+            </Nivel>
+          ))}
+        </div>
+        <p style={{ ...TEXTO, fontSize: 11.5 }}>{t('perfil.monedaNota')}</p>
+      </div>
+
       {CAMPOS.map((c) => (
         <label key={c} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <span style={ETIQUETA}>{t(ROTULO[c])}</span>
+          <span style={ETIQUETA}>{t(ROTULO[c], c === 'capital' ? { moneda } : undefined)}</span>
           <input
             className="field"
             type="text"

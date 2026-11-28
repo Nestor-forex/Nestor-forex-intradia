@@ -17,14 +17,18 @@
 import { useMemo } from 'react'
 import { useT } from '../lib/i18n'
 import { estadoDelDia } from '../lib/guardianRiesgo'
+import { dinero, monedaDe } from '../lib/monedaCuenta'
 
 const TEXTO = { fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }
-const dolares = (n) => '$' + n.toFixed(2)
 const COLOR = { ok: 'var(--text-muted)', cerca: 'var(--amber)', freno: 'var(--red)' }
 
 export default function GuardianRiesgo({ trades, perfil, onIrAlPerfil }) {
   const tr = useT()
   const e = useMemo(() => estadoDelDia(trades, perfil), [trades, perfil])
+  // En la moneda de la cuenta (dólares o euros), la misma en que se anotan
+  // las operaciones del Diario.
+  const moneda = monedaDe(perfil)
+  const dolares = (n) => dinero(n, moneda)
 
   if (e.estado === 'sinPerfil') {
     return (

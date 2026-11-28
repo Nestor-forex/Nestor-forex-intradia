@@ -18,8 +18,15 @@
 // filtra un par ni apaga un aviso. Son las reglas de la persona sobre su
 // propio dinero; la app solo las guarda y se las recuerda.
 
+import { MONEDA_POR_DEFECTO, esMonedaCuenta } from './monedaCuenta.js'
+
 /** Los cuatro campos del perfil, en el orden en que se piden en pantalla. */
 export const CAMPOS = Object.freeze(['capital', 'riesgoPct', 'limiteDiarioPct', 'maxPerdidasSeguidas'])
+
+// ⚠️ Y UN QUINTO, `moneda` (2026-11-22): dólares o euros, ver
+// `monedaCuenta.js`. No va en `CAMPOS` porque no es un número, y es OPCIONAL:
+// un perfil guardado antes no lo trae, y se lee como dólares, que es en lo que
+// se hicieron todos. Por eso `perfilCompleto` no lo exige.
 
 /**
  * Los tres niveles que se ofrecen con un toque, y el riesgo por operación de
@@ -105,6 +112,7 @@ export function leerPerfil(guardado) {
     const n = aNumero(fuente[c], c)
     salida[c] = dentro(c, n) ? n : null
   }
+  salida.moneda = esMonedaCuenta(fuente.moneda) ? fuente.moneda : MONEDA_POR_DEFECTO
   return salida
 }
 
@@ -135,6 +143,12 @@ export function validaPerfil(escrito) {
   // El freno del día tiene que dejar hacer AL MENOS una operación: si es más
   // bajo que el riesgo de una sola, el guardián avisaría antes de empezar.
   if (limpio.limiteDiarioPct < limpio.riesgoPct) return { ok: false, codigo: 'limiteMenorQueRiesgo', campo: 'limiteDiarioPct' }
+  // La moneda: sin elegir es dólares; una que no está en la lista NO se
+  // cambia por dólares en silencio, se rechaza (sería guardar algo distinto de
+  // lo que la persona eligió).
+  const m = escrito?.moneda
+  if (m !== undefined && m !== null && m !== '' && !esMonedaCuenta(m)) return { ok: false, codigo: 'monedaRara', campo: 'moneda' }
+  limpio.moneda = esMonedaCuenta(m) ? m : MONEDA_POR_DEFECTO
   return { ok: true, limpio }
 }
 
@@ -165,11 +179,20 @@ export function operacionesHastaElFreno(perfil) {
   return Math.floor(l / r + 1e-9)
 }
 
-/** Cuánto dinero es el freno del día, en dólares. `null` si falta algo. */
-export function frenoEnDolares(perfil) {
+/**
+ * Cuánto dinero es el freno del día, en la moneda de la cuenta (la del
+ * capital). `null` si falta algo.
+ */
+export function frenoEnDinero(perfil) {
   if (!dentro('capital', perfil?.capital) || !dentro('limiteDiarioPct', perfil?.limiteDiarioPct)) return null
   return (perfil.capital * perfil.limiteDiarioPct) / 100
 }
+
+/**
+ * El nombre de antes (cuando todo era en dólares). Se queda porque lo usan el
+ * curso y sus pruebas; es la misma cuenta, en la moneda de la cuenta.
+ */
+export const frenoEnDolares = frenoEnDinero
 
 /** Lo que se pone en cada casilla del formulario al abrirlo. */
 export function valoresIniciales(perfil) {
@@ -180,5 +203,6 @@ export function valoresIniciales(perfil) {
     riesgoPct: texto('riesgoPct'),
     limiteDiarioPct: texto('limiteDiarioPct', SUGERIDO.limiteDiarioPct),
     maxPerdidasSeguidas: texto('maxPerdidasSeguidas', SUGERIDO.maxPerdidasSeguidas),
+    moneda: esMonedaCuenta(p.moneda) ? p.moneda : MONEDA_POR_DEFECTO,
   }
 }

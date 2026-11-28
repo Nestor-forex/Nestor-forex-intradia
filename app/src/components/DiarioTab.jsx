@@ -8,6 +8,7 @@ import Practica from './Practica'
 import ImportarBroker from './ImportarBroker'
 import { diaLocal } from '../lib/guardianRiesgo'
 import { leerPerfil } from '../lib/perfilRiesgo'
+import { monedaDe } from '../lib/monedaCuenta'
 
 const esAbierta = (t) => t.estado === 'abierta'
 
@@ -41,6 +42,8 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
   }, [prellenar, onPrellenado])
 
   const perfilGuardado = useMemo(() => leerPerfil(perfilRiesgo), [perfilRiesgo])
+  // Los resultados se anotan en la moneda de la cuenta (dólares o euros).
+  const moneda = monedaDe(perfilGuardado)
   const cerradas = trades.filter((t) => !esAbierta(t))
   const abiertas = trades.filter(esAbierta)
   const wins = cerradas.filter((t) => t.pl > 0).length
@@ -86,7 +89,7 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
   }
 
   const cerrarOperacion = (t) => {
-    const entrada = window.prompt(tr('diario.promptCerrar', { par: t.par }))
+    const entrada = window.prompt(tr('diario.promptCerrar', { par: t.par, moneda }))
     if (entrada === null) return
     const plNum = parseFloat(entrada)
     if (!isFinite(plNum)) return
@@ -116,7 +119,7 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
         {stat(String(trades.length), tr('diario.operaciones'), 'var(--text)')}
         {stat(statWin === '—' ? '—' : statWin + '%', tr('diario.ganadas'), 'var(--text)')}
-        {stat(statPl, tr('diario.pl'), plTot >= 0 ? 'var(--green)' : 'var(--red)')}
+        {stat(statPl, tr('diario.pl', { moneda }), plTot >= 0 ? 'var(--green)' : 'var(--red)')}
       </div>
 
       {/* El guardián va justo debajo de los totales y antes de todo lo demás:
@@ -179,7 +182,7 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
               style={{ minHeight: 46, fontSize: 14 }}
               type="number"
               step="0.01"
-              placeholder={tr('diario.resultado')}
+              placeholder={tr('diario.resultado', { moneda })}
               value={pl}
               onChange={(e) => setPl(e.target.value)}
             />
@@ -213,7 +216,7 @@ export default function DiarioTab({ trades, cargando, onGuardar, onBorrar, onCer
       <Diagnostico trades={trades} />
       {/* Disciplina y aprendizaje, nunca ganancias (`insignias.js`). */}
       <Insignias trades={trades} ficha={ficha} practica={practica} />
-      <Practica ops={practica} onBorrar={onBorrarPractica} onIrAnalizar={onIrAnalizar} velas={velasPractica} />
+      <Practica ops={practica} onBorrar={onBorrarPractica} onIrAnalizar={onIrAnalizar} velas={velasPractica} moneda={moneda} />
 
       {avisoRiesgo.length > 0 && (
         <div style={{ padding: 12, border: '1px solid oklch(0.4 0.06 85)', borderRadius: 8, background: 'oklch(0.22 0.03 85)' }}>

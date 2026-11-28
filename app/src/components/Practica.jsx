@@ -17,7 +17,8 @@ import { useMemo, useState } from 'react'
 import { useT, useIdioma } from '../lib/i18n'
 import { APP } from '../lib/identidad'
 import { margen } from '../lib/diagnostico'
-import { costesPractica, graficoDePractica, rbDe, resumenPractica } from '../lib/practica'
+import { costesPractica, graficoDePractica, monedaDePractica, rbDe, resumenPractica } from '../lib/practica'
+import { MONEDA_POR_DEFECTO, dinero } from '../lib/monedaCuenta'
 import TarjetaPlegable from './TarjetaPlegable'
 import GraficoPractica from './GraficoPractica'
 import { csvPractica, descargar } from '../lib/exportar'
@@ -25,13 +26,15 @@ import { csvPractica, descargar } from '../lib/exportar'
 const TEXTO = { fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }
 const decDe = (par) => (String(par).includes('JPY') ? 3 : 5)
 const fmtR = (r) => `${r > 0 ? '+' : r < 0 ? '−' : ''}${Math.abs(r).toFixed(2)} R`
-const fmtUsd = (v) => `${v > 0 ? '+' : v < 0 ? '−' : ''}$${Math.abs(v).toFixed(2)}`
 const colorR = (r) => (r > 0 ? 'var(--green)' : r < 0 ? 'var(--red)' : 'var(--text-secondary)')
 
-export default function Practica({ ops = [], onBorrar, onIrAnalizar, velas = null }) {
+// `moneda` es la de la cuenta de la persona: el total solo suma las operaciones
+// guardadas en esa moneda (ver `resumenPractica`). Cada operación enseña su
+// dinero en la moneda con que se guardó.
+export default function Practica({ ops = [], onBorrar, onIrAnalizar, velas = null, moneda = MONEDA_POR_DEFECTO }) {
   const tr = useT()
   const { locale } = useIdioma()
-  const res = useMemo(() => resumenPractica(ops), [ops])
+  const res = useMemo(() => resumenPractica(ops, moneda), [ops, moneda])
   const [porBorrar, setPorBorrar] = useState(null)
   // Qué gráficas están abiertas. Cerradas por defecto: con 20 operaciones
   // abiertas, 20 gráficas seguidas serían un muro.
@@ -63,7 +66,7 @@ export default function Practica({ ops = [], onBorrar, onIrAnalizar, velas = nul
       <div style={{ fontSize: 11.5, color: 'var(--text-secondary)' }}>
         {tr('prac.riesgoL')}{' '}
         <span className="mono" dir="ltr">
-          ${o.riesgoUsd.toFixed(2)}
+          {dinero(o.riesgoUsd, monedaDePractica(o))}
           {typeof o.lote === 'number' ? ` · ${o.lote.toFixed(2)} ${tr('prac.loteL')}` : ''}
         </span>
       </div>
@@ -198,7 +201,7 @@ export default function Practica({ ops = [], onBorrar, onIrAnalizar, velas = nul
           <div style={{ marginTop: 6, fontSize: 12.5 }}>
             {tr('prac.dineroL')}{' '}
             <span className="mono" dir="ltr" style={{ fontWeight: 600, color: colorR(res.dinero) }}>
-              {fmtUsd(res.dinero)}
+              {dinero(res.dinero, moneda, { signo: true })}
             </span>
             <div style={{ ...TEXTO, fontSize: 11.5, color: 'var(--text-muted)' }}>{tr('prac.dineroNota', { n: res.conDinero, total: res.resueltas })}</div>
           </div>
@@ -272,7 +275,7 @@ export default function Practica({ ops = [], onBorrar, onIrAnalizar, velas = nul
                     return (
                       <span className="mono" dir="ltr" style={{ fontSize: 13, fontWeight: 600, color: colorR(r) }}>
                         {fmtR(r)}
-                        {c && typeof c.usdNeto === 'number' ? ` · ${fmtUsd(c.usdNeto)}` : ''}
+                        {c && typeof c.usdNeto === 'number' ? ` · ${dinero(c.usdNeto, monedaDePractica(o), { signo: true })}` : ''}
                       </span>
                     )
                   })()}
