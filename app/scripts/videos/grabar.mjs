@@ -372,7 +372,7 @@ const ESCENAS = {
   },
 
   'm2-3-lote': {
-    desc: 'Video sin voz: la calculadora con un perfil de 1.000 USD y un 1 % por operación. El Stop-loss pasa de 25 a 50 pips, el lote baja a la mitad y lo que se arriesga se queda igual.',
+    desc: 'Video con voz: la calculadora con un perfil de 1.000 USD y un 1 % por operación. El Stop-loss pasa de 25 a 50 pips, el lote baja a la mitad y lo que se arriesga se queda igual. Después, la misma cuenta en el Analizador.',
     async correr(p, r) {
       await irA(p, 'Riesgo')
       await llevar(p, p.getByText('Calculadora de lote y riesgo').first(), 20)
@@ -403,6 +403,32 @@ const ESCENAS = {
       await espera(p, 3.4)
       await r(`El lote cambió. Lo que arriesgas, no: siguen siendo ${riesgo}.`)
       await espera(p, 3.8)
+      // La misma cuenta en el Analizador, con los datos reales de ese día. La
+      // dirección es una cualquiera, solo para tener la tarjeta: el rótulo lo dice.
+      await analizador(p, r)
+      await r('En el Analizador es la misma cuenta. Se elige una dirección cualquiera, solo para ver los números.')
+      await espera(p, 4.2)
+      const fs = await filaLoc(p, es.an.stop)
+      const stopTxt = exigir(await fila(p, es.an.stop), 'el Stop-loss de la tarjeta')
+      const pipsAn = exigir(stopTxt.match(/\(([\d.,]+) pips\)/)?.[1], 'los pips del Stop-loss en la tarjeta')
+      await llevar(p, fs.rotulo, 200)
+      await marcar(p, fs.rotulo.locator('xpath=..'))
+      await r(`Con los datos de hoy, el Stop-loss de EUR/USD queda a ${pipsAn} pips.`)
+      await espera(p, 3.8)
+      await desmarcar(p)
+      const loteTxt = exigir(await fila(p, es.an.lote), 'el lote de la tarjeta')
+      const fl = await filaLoc(p, es.an.lote)
+      await marcar(p, fl.valor)
+      if (/</.test(loteTxt)) {
+        await r(`Con ese Stop-loss, el lote para arriesgar 10 USD sale por debajo de 0,01, el mínimo que deja abrir un bróker. La tarjeta lo avisa.`)
+      } else {
+        // El lote viene redondeado a 0,01: se dice así, sin afirmar que arriesga
+        // exactamente lo pedido.
+        const [loteAn, riesgoAn] = loteTxt.split(' · ')
+        await r(`La tarjeta hace la misma cuenta con tu perfil: le sale ${loteAn} lotes, lo más cerca de ${exigir(riesgoAn, 'el riesgo de la tarjeta')} que se puede con lotes de 0,01.`)
+      }
+      await espera(p, 4.8)
+      await desmarcar(p)
       await r(FIN)
       await espera(p, 2.8)
     },
@@ -1845,10 +1871,13 @@ async function grabar(datos, id, modo = null) {
   const tmp = join(datos, '..', `grabando-${id}`)
   await rm(tmp, { recursive: true, force: true })
   const reloj = escena.reloj ? await escena.reloj(datos) : null
+  // Las duraciones de los audios se miden ANTES de abrir el navegador: son
+  // cientos de archivos, y medirlos con el video ya grabando dejaba la app
+  // quieta en el Barrido casi medio minuto al principio de cada video.
+  const dur = modo?.voz ? duraciones(modo.voz, await leerTextos()) : null
   const { b, ctx, p, errores } = await abrir(chromium, { datos, video: tmp, consulta: escena.consulta || '', reloj })
   // El video empieza a grabarse al abrir la página: es el cero de los audios.
   const t0 = await p.evaluate(() => performance.timeOrigin)
-  const dur = modo?.voz ? duraciones(modo.voz, await leerTextos()) : null
   const r = rotuloConVoz(p, await ponerRotulo(p), dur, modo?.pron)
   await escena.correr(p, r, datos)
   await r.terminar()

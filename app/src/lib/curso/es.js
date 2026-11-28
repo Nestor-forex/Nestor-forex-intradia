@@ -57,6 +57,10 @@ const PERFIL_EJEMPLO = Object.freeze({ capital: 1000, riesgoPct: 1, ...SUGERIDO 
 const FRENO_USD = frenoEnDolares(PERFIL_EJEMPLO)
 const OPS_FRENO = operacionesHastaElFreno(PERFIL_EJEMPLO)
 const fmt = (n) => String(n).replace('.', ',')
+// m2-3: el ejemplo de «acertaste más y perdiste». Se calcula, no se escribe:
+// la prueba comprueba que con este número salen más aciertos que fallos y aun
+// así un resultado negativo.
+export const ACIERTOS_LOTE = 6
 
 // Módulo 4: la fuerza se calcula con las ventanas y los pesos que usa ESTA app
 // (velas diarias en swing, de una hora en intradía). Se leen de `marketCalc.js`.
@@ -727,9 +731,11 @@ export const LECCIONES = Object.freeze({
     titulo: 'El lote sale del Stop-loss',
     objetivo: 'Calcular el lote para arriesgar siempre lo mismo, sea el Stop-loss corto o largo.',
     explicacion: [
+      'Un lote mal calculado te puede vaciar la cuenta aunque aciertes más de lo que fallas. Un lote bien calculado hace que cada error te cueste exactamente lo que decidiste.',
       'El error más común es usar siempre el mismo lote. Así, una operación con el Stop-loss lejos arriesga mucho más que una con el Stop-loss cerca, sin que te des cuenta.',
       'Lo correcto es al revés: primero decides cuánto arriesgar en dinero (tu porcentaje), después miras a cuántos pips está el Stop-loss, y de ahí sale el lote.',
       'Con el Stop-loss lejos, el lote baja. Con el Stop-loss cerca, sube. Lo que se queda igual es lo que arriesgas.',
+      'No tienes que hacer la cuenta a mano: la calculadora (pestaña Riesgo) y la tarjeta del Analizador sacan el lote de tu perfil de riesgo. Esta lección es para que sepas de dónde sale ese número y lo uses tal cual en tu bróker.',
     ],
     ejemplo: [
       'Capital 1.000 USD, riesgo del 1 %: arriesgas 10 USD.',
@@ -737,6 +743,7 @@ export const LECCIONES = Object.freeze({
       'Con el Stop-loss a 25 pips: 10 ÷ (25 × 10) = 0,04 lotes.',
       'Con el Stop-loss a 50 pips: 10 ÷ (50 × 10) = 0,02 lotes.',
       'En los dos casos, si toca el Stop-loss pierdes 10 USD.',
+      `Y lo que pasa sin calcularlo: aciertas ${ACIERTOS_LOTE} de 10 ganando 10 USD cada vez, pero las ${10 - ACIERTOS_LOTE} que fallas llevaban un lote tres veces más grande y pierdes 30 USD en cada una. ${ACIERTOS_LOTE} × 10 = +${ACIERTOS_LOTE * 10} USD y ${10 - ACIERTOS_LOTE} × 30 = −${(10 - ACIERTOS_LOTE) * 30} USD: acertaste más veces y perdiste ${(10 - ACIERTOS_LOTE) * 30 - ACIERTOS_LOTE * 10} USD.`,
     ],
     formula: {
       texto: 'lote = dinero que arriesgas ÷ (pips del Stop-loss × valor del pip por lote)',
@@ -749,12 +756,12 @@ export const LECCIONES = Object.freeze({
     ],
     video: {
       archivo: 'm2-3-lote',
-      desc: 'Video con voz: la calculadora con un perfil de 1.000 USD y un 1 % por operación. El Stop-loss pasa de 25 a 50 pips, el lote baja de 0,04 a 0,02 y lo que se arriesga se queda en 10 USD.',
+      desc: 'Video con voz: la calculadora con un perfil de 1.000 USD y un 1 % por operación. El Stop-loss pasa de 25 a 50 pips, el lote baja de 0,04 a 0,02 y lo que se arriesga se queda en 10 USD. Después, la misma cuenta en la tarjeta del Analizador, con los datos reales de ese día.',
     },
     hazlo: {
       tab: 'calc',
       boton: 'Ir a Riesgo',
-      texto: 'En la calculadora, pon un par y un Stop-loss de 25 pips. Mira el lote. Cambia el Stop-loss a 50 pips y mira cómo baja el lote mientras el riesgo en dólares se queda igual.',
+      texto: 'En la calculadora, pon un par y un Stop-loss de 25 pips. Mira el lote. Cambia el Stop-loss a 50 pips y mira cómo baja el lote mientras lo que arriesgas se queda igual. Después, en Analizar, elige un par y una dirección: la tarjeta te da el lote con tu perfil.',
     },
     preguntas: [
       {
