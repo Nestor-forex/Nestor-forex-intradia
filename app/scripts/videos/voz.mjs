@@ -84,8 +84,19 @@ export function paraVoz(texto, pron = 'fonetica') {
   t = t.replace(/\b(\d{1,3})((?:\.\d{3})+)(?![\d.,])(?=\s+(?:dólares|operaciones|velas|días|horas))/g, (m, a, b) => a + b.replace(/\./g, ''))
   t = t.replace(/(\d)\.(\d)/g, '$1,$2')
   t = t.replace(/(\d),00\b/g, '$1')
-  // Una relación riesgo/beneficio: «1:1,5» → «1 a 1,5».
-  t = t.replace(/(\d+(?:,\d+)?)\s?:\s?(\d+(?:,\d+)?)/g, '$1 a $2')
+  // Una hora: «11:30 p. m.» → «11 y 30 p. m.», «07:00 a. m.» → «7 a. m.»,
+  // «21:00 UTC» → «21 horas UTC». Va ANTES de la relación riesgo/beneficio: esa
+  // regla se comía las horas y la voz decía «11 a 30» (2026-11-28). Solo con
+  // «a. m.», «p. m.» o «UTC» detrás, que es como las escribe la app.
+  t = t.replace(/\b(\d{1,2}):(\d{2})(?=\s?(a\.\s?m\.|p\.\s?m\.|UTC\b))/g, (m, h, mm, tras) => {
+    const hh = String(Number(h))
+    if (mm !== '00') return `${hh} y ${mm}`
+    return tras === 'UTC' ? `${hh} horas` : hh
+  })
+  // Una relación riesgo/beneficio: «1:1,5» → «1 a 1,5». Sin espacio DESPUÉS de
+  // los dos puntos (la app lo escribe pegado): «Prueba 1: 114 operaciones» no
+  // es una relación y la voz decía «Prueba 1 a 114».
+  t = t.replace(/(\d+(?:,\d+)?)\s?:(\d+(?:,\d+)?)/g, '$1 a $2')
   // Una palabra en mayúsculas para resaltarla se lee como palabra, no letra a letra.
   t = t.replace(/\b[A-ZÁÉÍÓÚÑ]{4,}\b/g, (w) => w.toLowerCase())
   t = t.replace(/(\d)\s?%/g, '$1 por ciento')
