@@ -65,6 +65,14 @@ const b = calcularLote({ capital: 1000, riesgoPct: 1, pips: 50, par: 'EUR/USD', 
 const c = calcularLote({ capital: 2000, riesgoPct: 1, pips: 20, par: 'EUR/USD', tasas: {} })
 ok(Math.abs(a.lote - 0.04) < 1e-9 && Math.abs(b.lote - 0.02) < 1e-9, 'el ejemplo del lote (0,04 y 0,02) es lo que da la calculadora')
 ok(Math.abs(c.lote - 0.1) < 1e-9 && LECCIONES['m2-3'].preguntas[1].opciones[LECCIONES['m2-3'].preguntas[1].correcta] === '0,1', 'la pregunta del lote (0,1) también')
+// «Acertaste más y perdiste»: tiene que ser verdad con el número que se enseña.
+{
+  const { ACIERTOS_LOTE: k } = await import('../src/lib/curso/es.js')
+  const neto = k * 10 - (10 - k) * 30
+  const texto = LECCIONES['m2-3'].ejemplo.at(-1)
+  ok(k > 10 - k && neto < 0 && texto.includes(`perdiste ${-neto} USD`), `el ejemplo del lote mal calculado: ${k} aciertos de 10 y aun así −${-neto} USD`)
+  ok(LECCIONES['m2-3'].explicacion[0].startsWith('Un lote mal calculado te puede vaciar la cuenta aunque aciertes más de lo que fallas.'), 'la lección abre con la frase acordada')
+}
 
 // El módulo 3 lee los frenos que propone la app y los calcula con las MISMAS
 // funciones que «Tu freno de hoy».

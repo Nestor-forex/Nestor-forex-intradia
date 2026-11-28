@@ -64,15 +64,31 @@ export async function abrir(chromium, { datos, video, consulta = '', reloj = nul
   return { b, ctx, p, errores }
 }
 
-// El rótulo de abajo: el texto que explica el video (no hay voz).
+// El texto del aviso pequeño que va pegado encima del rótulo durante TODO el
+// video (acordado con Néstor el 2026-11-22). El rótulo final lo dice largo;
+// éste está ahí aunque alguien vea solo diez segundos del video.
+export const AVISO_ESQUINA = 'Formación · no es una señal'
+
+// El rótulo de abajo: el texto que explica el video (la voz dice lo mismo).
+// Encima, a la derecha, va el aviso pequeño; se mueve con el rótulo porque el
+// rótulo cambia de alto según lo largo que sea el texto.
 export async function ponerRotulo(p) {
-  await p.evaluate(() => {
+  await p.evaluate((aviso) => {
     const d = document.createElement('div')
     d.id = 'rotulo'
     Object.assign(d.style, { position: 'fixed', left: '12px', right: '12px', bottom: '78px', padding: '12px 14px', borderRadius: '12px', background: 'rgba(10,14,22,0.95)', border: '1px solid #23c4d8', color: '#fff', font: '600 15px/1.4 system-ui, sans-serif', zIndex: 99999, boxShadow: '0 6px 24px rgba(0,0,0,.5)' })
     document.body.appendChild(d)
-  })
-  return (t) => p.evaluate((x) => { document.getElementById('rotulo').textContent = x }, t)
+    const a = document.createElement('div')
+    a.id = 'aviso-esquina'
+    a.textContent = aviso
+    Object.assign(a.style, { position: 'fixed', right: '20px', bottom: `${78 + d.offsetHeight + 6}px`, padding: '3px 8px', borderRadius: '6px', background: 'rgba(10,14,22,0.88)', border: '1px solid rgba(255,255,255,0.25)', color: 'rgba(255,255,255,0.85)', font: '600 11px/1.3 system-ui, sans-serif', zIndex: 99999, pointerEvents: 'none' })
+    document.body.appendChild(a)
+  }, AVISO_ESQUINA)
+  return (t) => p.evaluate((x) => {
+    const d = document.getElementById('rotulo')
+    d.textContent = x
+    document.getElementById('aviso-esquina').style.bottom = `${78 + d.offsetHeight + 6}px`
+  }, t)
 }
 
 // Resalta un elemento con un marco: sirve para decir «mira aquí».
